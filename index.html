@@ -54,7 +54,10 @@
   var CHUNK = 800000;           /* characters per part of a big one-document file */
   var MAX_FILE = 940000;        /* the relay takes at most 1,000,000 bytes a save */
   var ACTIVITY_KEEP = 1500;     /* the activity log keeps its newest entries */
-  var SHARDS = { people: 4 };   /* collections spread over several files to stay under that */
+  var SHARDS = { people: 4 };
+  /* Only these people can move sessions on the Schedule's week grid (Jonna, 2026-09-26).
+     Everyone else can still edit session details, rules, requests and Hotel Specs. */
+  var GRID_OWNERS = ['jcritchley@mismo.org'];   /* collections spread over several files to stay under that */
   var ROS = ['tasks', 'summits', 'discussion', 'notes', 'meta'];
 
   /* ---------- browser storage: every tool shares this web address ----------
@@ -73,6 +76,7 @@
   })();
 
   function RS() { return window.ResourcesSession || null; }
+  function gridOwner() { var s = RS() && RS().current(); return !!s && GRID_OWNERS.indexOf(String(s.email || '').toLowerCase()) >= 0; }
   function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
   /* the relay's file names: lowercase letters, digits and hyphens, at most 40 */
   function hash8(s) { var h = 5381; s = String(s); for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return ('0000000' + h.toString(36)).slice(-8); }
@@ -210,7 +214,7 @@
     return new Promise(function (res, rej) {
       var go = function () {
         if (kind === 'update' && f.loaded && docIn(f, path) === null) { rej(err('not-found', 'No document to update: ' + path)); return; }
-        var op = { kind: kind, path: path, data: data, res: res, rej: rej };
+        var op = { kind: kind, path: path, data: data, res: res, rej: rej, lockGrid: path === 'schedule/summits' && !gridOwner() };
         f.pending.push(op); f.view = null;
         if (p.own) register(path, kind !== 'delete');
         notify(f, true);
@@ -253,11 +257,13 @@
     var attempt = function () {
       return ensure(f).then(function () {
         var next = prune(f, applyOps(f, clone(f.server), batch));
+        lockGrid(f, next, batch);
         if (!f.own && JSON.stringify(next).length > MAX_FILE) throw err('TOO_BIG', 'This part of Summit HQ has grown too big to save in one piece.');
         return putContent(f, next).then(function (b) {
           f.server = next; f.sha = (b && b.sha) || f.sha; f.loadedAt = now();
           f.pending = f.pending.filter(function (op) { return batch.indexOf(op) < 0; }); f.view = null;
           batch.forEach(function (op) { op.res(); });
+          notify(f, false);
           saved();
         });
       }).catch(function (e) {
@@ -287,6 +293,23 @@
       if (f.pending.length && !f.waitingSignIn) schedule(f, FLUSH_MS);
     });
   }
+  /* the week's placements keep what is saved unless the person saving may move them */
+  var gridWarned = 0;
+  function lockGrid(f, next, batch) {
+    if (f.name !== 'schedule' || !batch.some(function (op) { return op.lockGrid; })) return;
+    var was = f.server && f.server.docs['schedule/summits'], now_ = next.docs['schedule/summits'];
+    if (!was || !now_) return;
+    if (JSON.stringify(was.schedules) === JSON.stringify(now_.schedules)) return;
+    now_.schedules = clone(was.schedules);
+    if (now() - gridWarned > 4000) { gridWarned = now(); toast('Only Jonna Critchley can move sessions on the grid \u2014 that move was put back.', 'bad'); }
+  }
+  document.addEventListener('dragstart', function (e) {
+    if (!ready || gridOwner()) return;
+    var t = e.target;
+    if (!(t && t.closest && t.closest('#app-grid'))) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (now() - gridWarned > 4000) { gridWarned = now(); toast('Only Jonna Critchley can move sessions on the grid.', 'bad'); }
+  }, true);
   function anyPending() { return Object.keys(F).some(function (k) { return F[k].pending.length; }); }
   window.addEventListener('beforeunload', function (e) {
     if (anyPending()) { e.preventDefault(); e.returnValue = 'Summit HQ is still saving.'; return e.returnValue; }
@@ -475,7 +498,7 @@
   /* ---------- who is signed in ---------- */
   function me() { var s = RS() && RS().current(); return { name: (s && s.name) || '', email: (s && s.email) || '' }; }
   var USER = {
-    can: function () { return Promise.resolve(!!(RS() && RS().role(PROJECT))); },
+    can: function () { return Promise.resolve(ready); },   /* the relay let this person read, and checks every save itself */
     me: function () { return Promise.resolve(me()); },
     profile: function () { return Promise.resolve(me()); }
   };
@@ -540,7 +563,8 @@
     if (!rs) { gate('nosession'); return; }
     var s = rs.current();
     if (!s) { gate('signin'); return; }
-    if (!rs.role(PROJECT)) { gate('noaccess'); return; }
+    /* The access list saved with a sign-in can be out of date (access granted after signing
+       in), so the relay — which checks afresh on every request — has the final say. */
     if (ready) { gate(null); resumeWrites(); return; }
     if (starting) return;
     starting = true; gate('loading');
