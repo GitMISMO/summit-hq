@@ -279,7 +279,11 @@
       });
     };
     attempt().catch(function (e) {
-      if (e && (e.code === 'OFFLINE' || e.status === 401 || e.code === 'SIGNED_OUT' || e.status >= 500)) {
+      /* a 502 from the relay with TOKEN or GITHUB is a setup problem, not a blip: say so at once
+         rather than retrying quietly forever */
+      var transient = e && (e.code === 'OFFLINE' || e.status === 401 || e.code === 'SIGNED_OUT' ||
+        (e.status >= 500 && e.code !== 'TOKEN' && e.code !== 'GITHUB' && e.code !== 'REJECTED'));
+      if (transient) {
         /* nothing is lost: the change stays queued and goes out once the relay is back */
         if (e.status === 401 || e.code === 'SIGNED_OUT') f.waitingSignIn = true;
         else setTimeout(function () { schedule(f, 0); }, RETRY_MS);
@@ -523,8 +527,8 @@
   var WHY = {
     UNKNOWN_PROJECT: 'The save relay doesn’t know Summit HQ yet.',
     NO_ACCESS: 'Your account doesn’t have Summit HQ yet. Ask Jonna Critchley to add you.',
-    TOKEN: 'The save relay can’t reach the summit-hq-data repository yet.',
-    GITHUB: 'GitHub refused the request. Check that the summit-hq-data repository exists and the relay can reach it.',
+    TOKEN: 'The save relay’s GitHub key was refused. It needs the summit-hq-data repository added to it.',
+    GITHUB: 'GitHub refused the save. The save relay’s GitHub key most likely doesn’t include the summit-hq-data repository yet.',
     CONFIG_UNAVAILABLE: 'The save relay can’t read its settings right now.',
     OFFLINE: 'Summit HQ couldn’t reach the save relay. Check your connection.'
   };
