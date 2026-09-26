@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Summit HQ</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --navy:#0d314c; --sky:#74bfeb; --navy-deep:#06202f; --navy-mid:#14486e; --sky-soft:#a9d8f3; --sky-wash:#e4f2fb;
+  --ground:#f1f6fa; --surface:#ffffff; --surface-2:#f6fafd; --surface-3:#e9f1f8;
+  --border:#d5e2ed; --border-strong:#adc4d6; --rule:#e5eef5;
+  --ink:#0d314c; --ink-2:#456179; --ink-3:#7794aa;
+  --good:#0f7b5c; --bad:#b3372c; --warn:#a2701a;
+  --good-wash:#e3f3ec; --bad-wash:#f9e7e5; --field:#ffffff; --btn:#0d314c; --btn-ink:#ffffff;
+  --sans:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --mono:'IBM Plex Mono',-apple-system,BlinkMacSystemFont,"Segoe UI",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --ground:#061722; --surface:#0d2837; --surface-2:#123143; --surface-3:#173c52;
+  --border:#1f4a63; --border-strong:#2f6688; --rule:#173547;
+  --ink:#e9f4fb; --ink-2:#a6c5d9; --ink-3:#7a9db4;
+  --good:#4fc79b; --bad:#f08579; --warn:#e0a83c;
+  --good-wash:#0f3a32; --bad-wash:#3d1f22; --field:#0a2230; --btn:#74bfeb; --btn-ink:#06202f;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --ground:#061722; --surface:#0d2837; --surface-2:#123143; --surface-3:#173c52;
+  --border:#1f4a63; --border-strong:#2f6688; --rule:#173547;
+  --ink:#e9f4fb; --ink-2:#a6c5d9; --ink-3:#7a9db4;
+  --good:#4fc79b; --bad:#f08579; --warn:#e0a83c;
+  --good-wash:#0f3a32; --bad-wash:#3d1f22; --field:#0a2230; --btn:#74bfeb; --btn-ink:#06202f;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+h1,h2,h3{letter-spacing:-.012em;margin:0}
+
+/* masthead: plate, rule, name, eyebrow, theme */
+.masthead{background:var(--navy)}
+.masthead-in{display:flex;align-items:center;gap:16px;padding:12px 24px;max-width:1100px;margin:0 auto}
+.logoplate{background:#fff;border-radius:5px;padding:9px 13px;display:flex;align-items:center;line-height:0;flex:0 0 auto;position:relative;box-shadow:0 1px 0 rgba(80,164,219,.35)}
+.logoplate .wordmark{height:24px;width:auto;display:block}
+.mrule{width:1px;align-self:stretch;background:rgba(116,191,235,.4)}
+.pname{color:var(--sky-soft);font-weight:500;font-size:17px;white-space:nowrap}
+.mright{margin-left:auto;display:flex;align-items:center;gap:16px}
+.eyebrow-m{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:600;white-space:nowrap}
+.theme-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:5px;padding:5px 10px;font-size:11.5px;cursor:pointer;font-family:inherit}
+.theme-btn:hover{background:rgba(255,255,255,.18)}
+.santa{position:absolute;display:none;pointer-events:none;left:-9px;top:-12px;width:31px;height:31px}
+html[data-season="december"] .santa{display:block}
+html[data-season="december"] .masthead-in{padding-top:20px}
+@media (max-width:560px){
+  .masthead-in{padding:10px 16px;gap:12px}
+  .logoplate{padding:7px 10px}
+  .logoplate .wordmark{height:19px}
+  .eyebrow-m{display:none}
+  .pname{font-size:15px}
+}
+
+main{max-width:560px;margin:40px auto 64px;padding:0 20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:28px}
+.card + .card{margin-top:28px}
+.card h1{font-size:22px;font-weight:600}
+.lead{color:var(--ink-2);margin:8px 0 22px;font-size:14.5px}
+label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}
+input{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--border-strong);border-radius:6px;padding:10px 12px}
+input:focus{outline:2px solid var(--sky);outline-offset:1px;border-color:var(--sky)}
+.field{margin-bottom:16px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+button.primary{font:inherit;font-weight:600;background:var(--btn);color:var(--btn-ink);border:0;border-radius:6px;padding:10px 18px;cursor:pointer}
+button.primary:disabled{opacity:.55;cursor:default}
+button.quiet{font:inherit;font-size:13.5px;background:none;border:1px solid var(--border-strong);color:var(--ink-2);border-radius:6px;padding:7px 14px;cursor:pointer}
+button:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.msg{margin-top:16px;padding:11px 14px;border-radius:6px;font-size:14px;display:none}
+.msg.show{display:block}
+.msg.bad{background:var(--bad-wash);color:var(--bad)}
+.msg.good{background:var(--good-wash);color:var(--good)}
+
+.checks{list-style:none;margin:0 0 24px;padding:0;border-top:1px solid var(--rule)}
+.checks li{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.dot{width:18px;height:18px;border-radius:50%;margin-top:2px;border:2px solid var(--border-strong)}
+.checks li.ok .dot{background:var(--good);border-color:var(--good)}
+.checks li.no .dot{background:var(--bad);border-color:var(--bad)}
+.ctitle{font-weight:600}
+.cdetail{color:var(--ink-2);font-size:13.5px}
+.saved{font-size:13px;color:var(--ink-3);margin-top:8px;font-variant-numeric:tabular-nums}
+.hidden{display:none}
+.foot{color:var(--ink-3);font-size:12.5px;margin-top:20px;text-align:center}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="mismo-logo" viewBox="0 0 708 108"><g transform="translate(0.000000,108.000000) scale(0.100000,-0.100000)" fill="var(--logo-body, #0f314c)"><path d="M5917 1065 c-169 -46 -279 -153 -335 -323 -21 -65 -25 -96 -25 -197
+0 -101 4 -132 25 -197 57 -172 168 -280 335 -323 84 -22 723 -22 808 0 222 58
+355 253 355 520 0 270 -132 459 -361 520 -74 20 -730 20 -802 0z m692 -320
+c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
+-297 0 -307 2 -346 83 -30 61 -31 198 -2 262 41 93 68 100 368 97 219 -2 243
+-4 274 -22z M0 545 l0 -515 225 0 225 0 2 296 3 296 116 -294 116 -293 197 0 198
+0 119 295 118 295 1 -297 0 -298 225 0 225 0 0 515 0 515 -337 -2 -338 -3
+-104 -264 c-80 -204 -107 -260 -113 -245 -5 10 -52 129 -106 264 l-98 245
+-337 3 -337 2 0 -515z M1892 1044 l-22 -15 0 -483 c0 -455 1 -484 18 -499 16 -15 48 -17
+246 -17 128 0 235 4 246 10 32 17 34 57 4 95 -33 44 -64 143 -64 206 l0 49
+203 0 c191 0 205 -1 222 -20 10 -11 34 -24 54 -30 49 -13 586 -13 612 0 22 12
+26 62 7 78 -8 6 -174 15 -413 21 -502 15 -549 23 -628 110 -43 48 -57 93 -57
+187 0 82 19 156 55 208 30 44 32 77 7 99 -27 25 -456 25 -490 1z M3716 1044 c-23 -22 -20 -31 19 -77 43 -49 78 -155 73 -218 l-3 -44
+-204 -3 c-194 -2 -205 -1 -218 17 -24 35 -78 41 -355 41 -255 0 -269 -1 -288
+-20 -27 -27 -26 -58 3 -70 12 -5 202 -14 422 -19 421 -12 476 -18 555 -62 92
+-51 132 -159 111 -299 -12 -77 -34 -129 -77 -179 -23 -28 -25 -36 -16 -57 l12
+-24 215 0 215 0 2 306 3 306 120 -303 120 -304 197 -3 196 -2 118 296 119 297
+3 -296 2 -297 225 0 225 0 0 515 0 515 -338 0 -337 0 -104 -265 c-58 -146
+-106 -263 -108 -261 -2 2 -50 120 -107 262 l-104 259 -340 3 c-300 2 -342 0
+-356 -14z"/></g><g transform="translate(0.000000,108.000000) scale(0.100000,-0.100000)" fill="var(--logo-s, #50a4db)"><path d="M2485 1046 c-44 -20 -111 -94 -136 -151 -27 -60 -37 -198 -20 -263
+13 -48 68 -115 114 -138 64 -34 162 -43 562 -55 239 -6 405 -15 413 -21 19
+-16 15 -66 -7 -78 -26 -13 -563 -13 -612 0 -20 6 -44 19 -54 30 -17 19 -31 20
+-222 20 l-203 0 0 -49 c0 -81 34 -172 86 -230 78 -87 31 -81 672 -81 l568 0
+46 29 c79 50 122 121 139 231 21 140 -19 248 -111 299 -79 44 -134 50 -555 62
+-220 5 -410 14 -422 19 -29 12 -30 43 -3 70 19 19 33 20 288 20 277 0 331 -6
+355 -41 13 -18 24 -19 218 -17 l204 3 3 44 c4 60 -31 168 -70 215 -17 21 -52
+52 -77 67 l-45 29 -550 0 c-440 -1 -557 -3 -581 -14z"/></g></symbol>
+<symbol id="mismo-hat" viewBox="0 0 100 100">
+  <path d="M17,73 C9,44 20,17 42,9 C59,3 72,10 80,22 C85,30 86,38 81,41
+           C76,44 70,40 65,32 C60,46 57,60 57,73 Z" fill="#c0392f"/>
+  <path d="M17,73 C9,44 20,17 42,9 C48,7 53,6 58,7 C41,19 30,45 30,73 Z"
+        fill="#0f314c" opacity=".17"/>
+  <rect x="10" y="65" width="56" height="20" rx="10" fill="#ffffff"/>
+  <rect x="10" y="75" width="56" height="10" rx="5" fill="#0f314c" opacity=".07"/>
+  <circle cx="86" cy="45" r="11.5" fill="#ffffff"/>
+</symbol>
+</defs></svg>
+
+<header class="masthead"><div class="masthead-in">
+  <div class="logoplate">
+    <svg class="wordmark" role="img" aria-label="MISMO" viewBox="0 0 708 108"><use href="#mismo-logo"/></svg>
+    <svg class="santa" viewBox="0 0 100 100" aria-hidden="true"><use href="#mismo-hat"/></svg>
+  </div>
+  <div class="mrule"></div>
+  <div class="pname">Summit HQ</div>
+  <div class="mright">
+    <span class="eyebrow-m">Programs &amp; Operations</span>
+    <button class="theme-btn" id="theme-btn" type="button">Dark</button>
+  </div>
+</div></header>
+
+<main>
+  <!-- signed out -->
+  <section class="card" id="signin">
+    <h1>Sign In to Summit HQ</h1>
+    <p class="lead">Summit HQ is moving here from Claude. Until it's ready, this page checks that signing in and saving work.</p>
+    <form id="siForm" novalidate>
+      <div class="field"><label for="siEmail">Email</label><input id="siEmail" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="siPass">Password</label><input id="siPass" type="password" autocomplete="current-password" required></div>
+      <button class="primary" id="siBtn" type="submit">Sign In</button>
+    </form>
+    <div class="msg bad" id="siMsg" role="alert"></div>
+  </section>
+
+  <!-- signed in -->
+  <section class="card hidden" id="check">
+    <div class="row" style="justify-content:space-between">
+      <h1>Connection Check</h1>
+      <button class="quiet" id="soBtn" type="button">Sign Out</button>
+    </div>
+    <p class="lead">Three things have to work before Summit HQ can move. Each turns green when it does.</p>
+    <ul class="checks">
+      <li id="c1"><span class="dot"></span><div><div class="ctitle">Signed In</div><div class="cdetail" id="c1d">Checking…</div></div></li>
+      <li id="c2"><span class="dot"></span><div><div class="ctitle">Access to Summit HQ</div><div class="cdetail" id="c2d">Checking…</div></div></li>
+      <li id="c3"><span class="dot"></span><div><div class="ctitle">Private Data Store</div><div class="cdetail" id="c3d">Save a test note below to check this.</div></div></li>
+    </ul>
+    <div class="field"><label for="note">Test Note</label><input id="note" type="text" maxlength="200" placeholder="Anything — try “First save from GitHub”"></div>
+    <div class="row"><button class="primary" id="saveBtn" type="button">Save Test Note</button></div>
+    <div class="saved" id="savedLine"></div>
+    <div class="msg" id="saveMsg" role="status"></div>
+  </section>
+  <p class="foot">Nothing on this page is stored in the page itself. Notes are saved to a private MISMO repository.</p>
+</main>
+
+<script>
+(function season(){ if(new Date().getMonth()===11) document.documentElement.setAttribute("data-season","december"); })();
+(function theme(){
+  var btn=document.getElementById("theme-btn");
+  function cur(){ var t=document.documentElement.getAttribute("data-theme"); if(t) return t;
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; }
+  function paint(){ btn.textContent = cur()==="dark" ? "Light" : "Dark"; }
+  btn.addEventListener("click",function(){ document.documentElement.setAttribute("data-theme", cur()==="dark"?"light":"dark"); paint();
+    try{ localStorage.setItem("mismo.portal.theme", cur()); }catch(e){} });
+  try{ var saved=localStorage.getItem("mismo.portal.theme"); if(saved) document.documentElement.setAttribute("data-theme",saved); }catch(e){}
+  paint();
+})();
+
+/* ---- The door. Every call to the save relay goes through here, so moving to
+   Microsoft sign-in and SharePoint later means replacing this block only. ---- */
+var RELAY   = 'https://rgvdi67cg27o5kcmiytcqbqnrm0hmztx.lambda-url.us-east-1.on.aws';
+var PROJECT = 'summit-hq';
+var SESSION_KEY = 'tools:summit-hq:session';   // namespaced: every tool shares this web address
+var TEST_ID = 'connection-test';
+
+var session = null;
+function loadSession(){ try{ var s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');
+  if(s && s.expiresAt && Date.parse(s.expiresAt) > Date.now()+60000) return s; }catch(e){} return null; }
+function keepSession(s){ session=s; try{ sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); }catch(e){} }
+function dropSession(){ session=null; try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){} }
+
+/* Plain-language meaning of each relay answer, including the ones that mean setup is unfinished. */
+function explain(status, body){
+  var code = body && body.error;
+  var map = {
+    SIGNIN_FAILED: "That email and password don't match an account.",
+    MISSING_CREDENTIALS: "Enter both your email and password.",
+    UNKNOWN_PROJECT: "The relay doesn't know Summit HQ yet. Add the summit-hq entry to projects.json (Part 2, Step 2).",
+    CONFIG_UNAVAILABLE: "The relay can't read its settings. Check that the GitHub key includes relay-config and that PROJECTS_REPO is GitMISMO/relay-config.",
+    NO_AUTH_SECRET: "AUTH_SECRET is missing from the relay's settings in AWS.",
+    DIRECTORY_UNREADABLE: "The relay can't read the account list. Check access.json in relay-config for a stray comma.",
+    NO_ACCESS: "Your account doesn't have Summit HQ access yet. Add \"summit-hq\": \"admin\" to your entry in access.json (Part 2, Step 3).",
+    TOKEN: "The relay's GitHub key was refused. It probably doesn't include the summit-hq-data repository yet.",
+    TOKEN_EXPIRED: "Your session ran out. Sign in again.",
+    TOKEN_BAD: "Your session couldn't be confirmed. Sign in again.",
+    NO_ACCOUNT: "That account no longer exists.",
+    ACCOUNT_EXPIRED: "That account has expired.",
+    CONFLICT: "Someone saved since this page loaded. Reload to see their note, then save again.",
+    ORIGIN: "This page has to be opened from resources.mismo.org/summit-hq/.",
+    GITHUB: "GitHub refused the save. Check that the summit-hq-data repository exists and the key can reach it."
+  };
+  if(code && map[code]) return map[code];
+  if(status===0) return "Couldn't reach the relay. Check your connection, and that this page is open at resources.mismo.org/summit-hq/.";
+  return (body && body.message) || ("Something went wrong (" + status + (code ? ", " + code : "") + ").");
+}
+
+async function relay(method, path, body, auth){
+  var headers = {};
+  if(body) headers['Content-Type']='application/json';
+  if(auth && session) headers['Authorization']='Bearer '+session.token;
+  var res, json=null;
+  try{ res = await fetch(RELAY+'/'+PROJECT+path, { method:method, headers:headers, body: body?JSON.stringify(body):undefined }); }
+  catch(e){ return { ok:false, status:0, error:explain(0,null) }; }
+  try{ json = await res.json(); }catch(e){}
+  if(!res.ok){
+    if(res.status===401 && json && /TOKEN_EXPIRED|TOKEN_BAD|NO_ACCOUNT/.test(json.error||'')) dropSession();
+    return { ok:false, status:res.status, code:json&&json.error, error:explain(res.status,json) };
+  }
+  return { ok:true, data:json };
+}
+var Door = {
+  signIn: function(email,password){ return relay('POST','/auth/login',{email:email,password:password},false); },
+  load:   function(id){ return relay('GET','/data/'+id,null,true); },
+  save:   function(id,content,sha){ return relay('PUT','/data/'+id,{content:content,sha:sha||null},true); }
+};
+
+/* ---- The page ---- */
+var $=function(id){return document.getElementById(id);};
+var loadedSha=null;
+function show(el,on){ el.classList.toggle('hidden',!on); }
+function msg(el,text,kind){ el.textContent=text||''; el.className='msg'+(text?' show '+(kind||'bad'):''); }
+function mark(li,state,text){ var el=$(li); el.classList.remove('ok','no'); if(state) el.classList.add(state); $(li+'d').textContent=text; }
+function when(iso){ try{ return new Date(iso).toLocaleString([], {dateStyle:'medium', timeStyle:'short'}); }catch(e){ return iso; } }
+
+$('siForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var email=$('siEmail').value.trim(), pw=$('siPass').value;
+  if(!email || !pw){ msg($('siMsg'),"Enter both your email and password."); return; }
+  $('siBtn').disabled=true; $('siBtn').textContent='Signing In…'; msg($('siMsg'),'');
+  var r = await Door.signIn(email,pw);
+  $('siBtn').disabled=false; $('siBtn').textContent='Sign In';
+  if(!r.ok){ msg($('siMsg'), r.error); return; }
+  $('siPass').value='';
+  keepSession(r.data);
+  enter();
+});
+
+async function enter(){
+  show($('signin'),false); show($('check'),true);
+  mark('c1','ok', 'As '+session.name+' ('+session.email+').');
+  var role = session.access && session.access[PROJECT];
+  mark('c2', role ? 'ok' : 'no', role ? ('Your role: '+(role==='admin'?'Admin':'Staff')+'.') : explain(403,{error:'NO_ACCESS'}));
+  var r = await Door.load(TEST_ID);
+  if(!r.ok){
+    if(r.code==='TOKEN_EXPIRED' || r.code==='TOKEN_BAD'){ return leave(r.error); }
+    mark('c3','no', r.error); return;
+  }
+  loadedSha = r.data.sha;
+  var d = r.data.data;
+  if(d){ $('note').value = d.note || ''; $('savedLine').textContent = 'Last saved by '+(d.savedBy||'someone')+', '+when(d.savedAt); mark('c3','ok','Reading works. Save a note to check writing.'); }
+  else { mark('c3',null,'Reading works. Nothing saved yet — save a test note to check writing.'); }
+}
+
+$('saveBtn').addEventListener('click', async function(){
+  var note=$('note').value.trim();
+  if(!note){ msg($('saveMsg'),'Type a note first.','bad'); return; }
+  $('saveBtn').disabled=true; $('saveBtn').textContent='Saving…'; msg($('saveMsg'),'');
+  var r = await Door.save(TEST_ID, {note:note}, loadedSha);
+  $('saveBtn').disabled=false; $('saveBtn').textContent='Save Test Note';
+  if(!r.ok){ mark('c3','no', r.error); msg($('saveMsg'), r.error, 'bad'); return; }
+  loadedSha = r.data.sha;
+  $('savedLine').textContent = 'Last saved by '+r.data.savedBy+', '+when(new Date().toISOString());
+  mark('c3','ok','Reading and writing both work.');
+  msg($('saveMsg'),'Saved. All three checks are green — the setup works.','good');
+});
+
+function leave(why){
+  dropSession(); loadedSha=null;
+  show($('check'),false); show($('signin'),true);
+  msg($('saveMsg'),''); $('savedLine').textContent=''; $('note').value='';
+  msg($('siMsg'), why||'');
+}
+$('soBtn').addEventListener('click', function(){ leave(''); });
+
+session = loadSession();
+if(session) enter();
+</script>
+</body>
+</html>
