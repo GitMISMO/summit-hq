@@ -503,11 +503,13 @@
     CONFIG_UNAVAILABLE: 'The save relay can’t read its settings right now.',
     OFFLINE: 'Summit HQ couldn’t reach the save relay. Check your connection.'
   };
+  /* The gate sits UNDER the shared sign-in box (session.js draws it at z-index 9500),
+     so pressing Sign In shows that box on top rather than behind this card. */
   function gate(kind, e) {
     if (!document.body) { document.addEventListener('DOMContentLoaded', function () { gate(kind, e); }, { once: true }); return; }
     if (!gateEl) {
       var st = document.createElement('style');
-      st.textContent = '#hq-gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;' +
+      st.textContent = '#hq-gate{position:fixed;inset:0;z-index:9400;display:flex;align-items:center;justify-content:center;padding:16px;' +
         'background:var(--paper,#F7F6F3);font-family:"IBM Plex Sans",system-ui,sans-serif}' +
         '#hq-gate[hidden]{display:none}' +
         '#hq-gate .card{max-width:420px;width:100%;background:var(--surface,#fff);border:1px solid var(--line,#DFDCD5);border-radius:12px;padding:28px 26px;box-shadow:0 8px 28px rgba(13,49,76,.12)}' +
