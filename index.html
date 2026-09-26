@@ -162,7 +162,9 @@
       }
       return { content: normalise(f, c), sha: b.sha || null };
     }, function (e) {
-      if (e && e.status === 404) return { content: empty(f), sha: null };
+      /* the relay answers a missing file with {data:null}; a 404 means something else is
+         wrong (most often UNKNOWN_PROJECT) and must not be mistaken for an empty file */
+      if (e && e.status === 404 && (e.code === 'NOT_FOUND' || e.code === 'HTTP_404')) return { content: empty(f), sha: null };
       throw e;
     }).then(function (got) {
       var before = f.loaded ? JSON.stringify(f.server) : null;
@@ -460,7 +462,7 @@
           var docs = collDocs(coll); Object.keys(docs).forEach(function (p) { l.last[p] = JSON.stringify(docs[p]); });
           l.primed = true; cb(collSnap(coll, null, false));
         }).catch(function (e) {
-          if (e && e.status === 404) { l.primed = true; cb(collSnap(coll, [], false)); return; }
+          if (e && e.status === 404 && e.code === 'NOT_FOUND') { l.primed = true; cb(collSnap(coll, [], false)); return; }
           if (errCb) errCb(e);
         });
         return function () { var i = collL.indexOf(l); if (i >= 0) collL.splice(i, 1); };
@@ -637,6 +639,7 @@
     }
   };
   window.__hqRelay = { files: F, place: place, poll: function () { poll(true); }, pending: anyPending, status: status,
+    why: function () { return WHY[status.lastError] || status.lastError || ''; },
     config: { RELAY_URL: RELAY_URL, PROJECT: PROJECT, POLL_MS: POLL_MS } };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hookSession); else hookSession();
@@ -40861,7 +40864,7 @@ startClock();
           const plain=file.docs.filter(d=>!merged(d)), rest=file.docs.filter(merged);
           for(let i=0;i<plain.length;i+=60) await Promise.all(plain.slice(i,i+60).map(one));
           for(const d of rest) await one(d);
-          if(failed.length){ ui2.status('Restored '+(done-failed.length)+' of '+file.docs.length+'. These did not save: '+failed.join(', ')+'. Run the restore again to retry.'); btn.disabled=false; return; }
+          if(failed.length){ const why=(window.__hqRelay&&window.__hqRelay.why())||''; ui2.status((done-failed.length)+' of '+file.docs.length+' documents were saved.'+(why?' Reason: '+why:'')+' Nothing was lost \u2014 run the restore again once that is fixed.'); btn.disabled=false; return; }
           ui2.status('All '+done+' documents restored. Reloading…');
           setTimeout(()=>location.reload(),1200);
         }],['Cancel','no',null]]);
