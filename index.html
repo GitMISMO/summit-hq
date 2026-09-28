@@ -1072,6 +1072,10 @@ body.compact .meter .n{font-size:16px}
   .card.flagged{animation:flagpulse 1.1s ease-out 2}
   @keyframes flagpulse{0%,100%{outline-color:var(--bad)}50%{outline-color:transparent}}
 }
+/* the facilitator picker's walk-on box: a name for this summit only */
+.facwalk{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
+.facwalk input{flex:1 1 180px;min-width:0}
+.facwalk .fixbtn{margin-top:0}
 .fixbtn{margin-top:5px;background:transparent;border:1px solid var(--line-2);color:var(--ink-2);
   border-radius:3px;padding:2px 9px;font-size:11px;font-weight:600}
 .fixbtn:hover{border-color:var(--accent);color:var(--accent)}
@@ -30506,6 +30510,104 @@ window.ResumePdf = (function(){
 const FAC_POOL = ['Meghan','Kathryn','Erin','Leeann','Kellie','Kelly R.'];
 /* TBD can be chosen, but the schedule never assigns it and two TBDs never clash */
 const FAC_CHOICES = FAC_POOL.concat(['TBD']);
+/* ── The facilitators come from the shared list ─────────────────────────────────────
+   The Admin Panel (Facilitators) keeps one list for every tool and publishes the names
+   to /initiative-hub/data/facilitator-roster.json. The schedule works in first names, as
+   the saved sessions always have, so each full name is shortened to its first name
+   ("Kellie Stoll" -> "Kellie"), or first name and initial if two share a first name.
+
+   Three kinds of name, kept apart on purpose:
+     the shared list   in the drop-downs, and the schedule may assign them
+     walk-ons          someone covering at this summit only (Kelly R., who covered for a
+                       facilitator who had to miss it). In the drop-downs because a session
+                       already names them; never added to the shared list. The ones this
+                       page started with stay assignable, so today's schedule is unchanged;
+                       one typed in with "Walk-on" is only ever where it was put.
+     TBD / Staff       placeholders, never assigned, never clash.
+
+   The pool arrays are changed in place, not replaced, because the scheduler and the
+   pickers hold them by reference. If the list cannot be read, the names above stand. */
+const FAC_BASE = FAC_POOL.slice();
+const FAC_WALKON = '__walkon__';
+let FAC_ROSTER = null;               /* short names from the shared list, once loaded */
+function facShortNames(full){
+  const first = full.map(n => String(n).trim().split(/\s+/)[0]);
+  return full.map((n, i) => {
+    const parts = String(n).trim().split(/\s+/);
+    const clash = first.filter(f => f === first[i]).length > 1;
+    return clash && parts.length > 1 ? first[i] + ' ' + parts[parts.length - 1][0] + '.' : first[i];
+  });
+}
+/* every name a session or a placement already carries, whether or not it is listed */
+function facNamesInData(){
+  const seen = [];
+  const add = f => { if (typeof f === 'string' && realFac(f.trim()) && seen.indexOf(f.trim()) < 0) seen.push(f.trim()); };
+  (SESSIONS || []).forEach(x => { add(x.fac); add(x.primaryFac); add(x.covering); });
+  Object.values(schedules || {}).forEach(pl => Object.values(pl || {}).forEach(p => { if (p && typeof p === 'object') add(p.fac); }));
+  return seen;
+}
+function applyFacRoster(){
+  if (!FAC_ROSTER || !FAC_ROSTER.length) return false;
+  const listed = FAC_BASE.filter(f => FAC_ROSTER.indexOf(f) >= 0)
+    .concat(FAC_ROSTER.filter(f => FAC_BASE.indexOf(f) < 0));
+  const walkOns = FAC_BASE.filter(f => listed.indexOf(f) < 0);
+  const next = listed.concat(walkOns);
+  const changed = next.join('|') !== FAC_POOL.join('|');
+  FAC_POOL.length = 0; FAC_POOL.push(...next);
+  FAC_CHOICES.length = 0; FAC_CHOICES.push(...FAC_POOL, 'TBD');
+  return changed;
+}
+/* What a facilitator drop-down offers: the pool, anyone a session already names (so a
+   walk-on stays selectable wherever they were used), TBD, and a way to type a walk-on. */
+function facChoices(current){
+  const out = FAC_POOL.slice();
+  facNamesInData().concat(current ? [current] : []).forEach(f => { if (realFac(f) && out.indexOf(f) < 0) out.push(f); });
+  const listed = FAC_ROSTER || FAC_POOL;
+  return out.map(f => [f, listed.indexOf(f) < 0 ? f + ' (walk-on)' : f])
+    .concat([['TBD', 'TBD'], [FAC_WALKON, 'Walk-on: type a name…']]);
+}
+/* selectInput, plus the walk-on: choosing it shows a box for the name, and the name is
+   only used once it is confirmed, so an accidental pick changes nothing. */
+function facSelect(opts, val, onChange){
+  const wrap = document.createElement('div');
+  wrap.className = 'facpick';
+  const sel = selectInput(opts, val, v => {
+    if (v !== FAC_WALKON) { box.hidden = true; onChange(v); return; }
+    box.hidden = false; inp.value = ''; inp.focus();
+  });
+  const box = document.createElement('div');
+  box.className = 'facwalk'; box.hidden = true;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.maxLength = 40; inp.placeholder = 'Name, as it should show (e.g. Kelly R.)';
+  inp.setAttribute('aria-label', 'Walk-on facilitator name');
+  const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'fixbtn'; ok.textContent = 'Use this name';
+  const no = document.createElement('button'); no.type = 'button'; no.className = 'fixbtn'; no.textContent = 'Cancel';
+  const use = () => {
+    const name = inp.value.trim().replace(/\s+/g, ' ');
+    if (!name || !realFac(name)) { inp.focus(); return; }
+    box.hidden = true; onChange(name);
+  };
+  const cancel = () => { box.hidden = true; sel.value = String(val == null ? '' : val); };
+  ok.addEventListener('click', e => { e.stopPropagation(); use(); });
+  no.addEventListener('click', e => { e.stopPropagation(); cancel(); });
+  inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); use(); } if (e.key === 'Escape') { e.preventDefault(); cancel(); } });
+  box.append(inp, ok, no);
+  wrap.append(sel, box);
+  return wrap;
+}
+(function loadFacRoster(){
+  if (!window.fetch) return;
+  fetch('/initiative-hub/data/facilitator-roster.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const full = (d && Array.isArray(d.facilitators) ? d.facilitators : [])
+        .map(f => String((f && f.name) || '').trim()).filter(Boolean);
+      if (!full.length) return;
+      FAC_ROSTER = facShortNames(full);
+      if (applyFacRoster() && window.__scheduleLoaded && typeof render === 'function') render();
+    })
+    .catch(() => {});
+})();
 const realFac = f => !!f && f!=='Staff' && f!=='TBD';
 const STAFF = [
   {id:'KB', nm:'KB'}, {id:'JK', nm:'JK'}, {id:'BV', nm:'BV'},
@@ -35338,14 +35440,14 @@ function renderEditor(){
       un.addEventListener('click',e=>{e.stopPropagation(); setEdit(s.id,{facLock:false}, true);});
       form.appendChild(un);
     } else {
-      const opts=[['','Assigned by the schedule']].concat(FAC_CHOICES.map(f=>[f,f]));
       /* A session that is not on the grid yet has no placement to hold the choice, so
          it rides on the session itself and travels with it when it is placed. Without
          this the picker sprang back to “Assigned by the schedule”. */
       const onGrid = !!place()[s.id];
       const facNow = onGrid ? ((place()[s.id]||{}).fac||'') : (s.fac||'');
+      const opts=[['','Assigned by the schedule']].concat(facChoices(facNow));
       form.appendChild(field('Facilitator',
-        selectInput(opts, facNow, v=>{
+        facSelect(opts, facNow, v=>{
           if(place()[s.id]) setPlacement(s.id,{fac:v||null});
           else setEdit(s.id,{fac:v||''});   /* a full redraw, so the card picks it up too */
         }),
@@ -35468,10 +35570,10 @@ function renderEditor(){
       numInput(s.att, v=>setEdit(s.id,{att:v}), 'headcount'),
       'Drives the room-fit check and the count for Rosalyn.'));
     const facNow = s.fac && s.fac!=='Staff' ? s.fac : '';
-    form.appendChild(field('Facilitator', selectInput(
-      [['','MISMO staff \u2014 nobody named']].concat(FAC_CHOICES.map(f=>[f,f])), facNow,
+    form.appendChild(field('Facilitator', facSelect(
+      [['','MISMO staff \u2014 nobody named']].concat(facChoices(facNow)), facNow,
       v=>setEdit(s.id,{fac: v || 'Staff'})),
-      'Pick TBD to show it still needs someone.'));
+      'Pick TBD to show it still needs someone, or Walk-on for someone covering at this summit only.'));
     const roomOpts = ROOMS().filter(r=>r.role!=='office').map(r=>[r.id, r.nm]);
     const eb = editingBlk && BLOCK[editingBlk];
     if(eb && standingBlocks(s.id).length>1){
