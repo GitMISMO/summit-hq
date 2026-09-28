@@ -577,8 +577,8 @@
         '#hq-gate .ey{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3,#546F88);margin-bottom:6px}' +
         '#hq-gate h1{font-size:21px;margin:0 0 10px;color:var(--ink,#16191D);font-weight:700}' +
         '#hq-gate p{font-size:14px;line-height:1.5;margin:0 0 18px;color:var(--ink-2,#414750)}' +
-        '#hq-gate button{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid var(--accent,#0d314c);' +
-        'background:var(--accent,#0d314c);color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}';
+        '#hq-gate button{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid #0f314c;' +
+        'background:#0f314c;color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}';
       document.head.appendChild(st);
       gateEl = document.createElement('div'); gateEl.id = 'hq-gate'; gateEl.setAttribute('role', 'dialog');
       document.body.appendChild(gateEl);
@@ -586,13 +586,14 @@
     if (!kind) { gateEl.hidden = true; return; }
     gateEl.hidden = false;
     var h, p, b = null, fn = null;
-    if (kind === 'signin') { h = 'Sign In to Summit HQ'; p = 'Use the same account as the Initiative Hub and the Sponsorship Portal.'; b = 'Sign In'; fn = function () { RS().signIn().catch(function () {}); }; }
+    if (kind === 'signin') { h = 'Sign In to Summit HQ'; p = ''; b = 'Sign In'; fn = function () { RS().signIn().catch(function () {}); }; }
     else if (kind === 'noaccess') { h = 'No Access to Summit HQ Yet'; p = WHY.NO_ACCESS; b = 'Sign In as Someone Else'; fn = function () { RS().signOut(); RS().signIn().catch(function () {}); }; }
     else if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; }
     else if (kind === 'nosession') { h = 'Summit HQ Couldn’t Load'; p = 'The resources.mismo.org sign-in didn’t load. Check your connection, then reload the page.'; b = 'Reload'; fn = function () { location.reload(); }; }
     else { h = 'Summit HQ Couldn’t Reach Its Data'; p = (e && (WHY[e.code] || e.message)) || 'Something went wrong reading the data.'; b = 'Try Again'; fn = function () { start(); }; }
     gateEl.innerHTML = '<div class="card"><div class="ey">Summit HQ</div><h1></h1><p></p></div>';
-    gateEl.querySelector('h1').textContent = h; gateEl.querySelector('p').textContent = p;
+    gateEl.querySelector('h1').textContent = h;
+    var pEl = gateEl.querySelector('p'); pEl.textContent = p; pEl.hidden = !p;
     if (b) { var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = b; btn.addEventListener('click', fn); gateEl.querySelector('.card').appendChild(btn); }
   }
   var starting = false;
@@ -3789,7 +3790,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 </div>
 
 
-</div>
+
 
 <div id="app-specs" hidden>
   <div class="wrap">
@@ -3832,7 +3833,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     </div>
   </div>
 
-</div>
+
 
 <div id="app-ros" hidden>
 
