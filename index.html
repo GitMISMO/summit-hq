@@ -1,36 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><!-- Decide whether anyone is signed in BEFORE the page paints.
-
-     The session lives in localStorage, which is readable synchronously, so this needs no
-     waiting: the class lands on <html> before any of the app is drawn. Without it the app
-     rendered first and the gate appeared a moment later, which flashed the whole tool at
-     someone who is not allowed to see it — brief, but it is the content we are gating.
-
-     Only top-level children are hidden, and the gate is excluded so it can show through.
-     visibility rather than display, so the layout does not jump when it is revealed. -->
-<style>html.hq-out body > *:not(#hq-gate){visibility:hidden}</style>
-<script>(function(){
-  var out = true;
-  try {
-    var s = JSON.parse(localStorage.getItem('resources:session') || 'null');
-    out = !(s && s.token && s.expiresAt && Date.parse(s.expiresAt) > Date.now());
-  } catch (e) { out = true; }
-  document.documentElement.classList.add(out ? 'hq-out' : 'hq-in');
-})();</script>
-<script src="/assets/session.js"></script>
-<script>(function(){
-  /* Keep the class in step afterwards: signing in reveals the app without a reload, and
-     signing out in another tab hides it again. */
-  function sync(){
-    var rs = window.ResourcesSession, inn = !!(rs && rs.current());
-    document.documentElement.classList.toggle('hq-out', !inn);
-    document.documentElement.classList.toggle('hq-in', inn);
-  }
-  if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
-  else { document.addEventListener('DOMContentLoaded', function(){
-    if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
-    else document.documentElement.classList.remove('hq-out');   // module missing: do not lock the page
-  }); }
-})();</script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script src="/assets/session.js"></script>
 <script>
 /* ============================================================================
    SUMMIT HQ ON resources.mismo.org — the one door to MISMO's save relay
@@ -577,8 +545,8 @@
         '#hq-gate .ey{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3,#546F88);margin-bottom:6px}' +
         '#hq-gate h1{font-size:21px;margin:0 0 10px;color:var(--ink,#16191D);font-weight:700}' +
         '#hq-gate p{font-size:14px;line-height:1.5;margin:0 0 18px;color:var(--ink-2,#414750)}' +
-        '#hq-gate button{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid #0f314c;' +
-        'background:#0f314c;color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}';
+        '#hq-gate button{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid var(--accent,#0d314c);' +
+        'background:var(--accent,#0d314c);color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}';
       document.head.appendChild(st);
       gateEl = document.createElement('div'); gateEl.id = 'hq-gate'; gateEl.setAttribute('role', 'dialog');
       document.body.appendChild(gateEl);
@@ -586,14 +554,13 @@
     if (!kind) { gateEl.hidden = true; return; }
     gateEl.hidden = false;
     var h, p, b = null, fn = null;
-    if (kind === 'signin') { h = 'Sign In to Summit HQ'; p = ''; b = 'Sign In'; fn = function () { RS().signIn().catch(function () {}); }; }
+    if (kind === 'signin') { h = 'Sign In to Summit HQ'; p = 'Use the same account as the Initiative Hub and the Sponsorship Portal.'; b = 'Sign In'; fn = function () { RS().signIn().catch(function () {}); }; }
     else if (kind === 'noaccess') { h = 'No Access to Summit HQ Yet'; p = WHY.NO_ACCESS; b = 'Sign In as Someone Else'; fn = function () { RS().signOut(); RS().signIn().catch(function () {}); }; }
     else if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; }
     else if (kind === 'nosession') { h = 'Summit HQ Couldn’t Load'; p = 'The resources.mismo.org sign-in didn’t load. Check your connection, then reload the page.'; b = 'Reload'; fn = function () { location.reload(); }; }
     else { h = 'Summit HQ Couldn’t Reach Its Data'; p = (e && (WHY[e.code] || e.message)) || 'Something went wrong reading the data.'; b = 'Try Again'; fn = function () { start(); }; }
     gateEl.innerHTML = '<div class="card"><div class="ey">Summit HQ</div><h1></h1><p></p></div>';
-    gateEl.querySelector('h1').textContent = h;
-    var pEl = gateEl.querySelector('p'); pEl.textContent = p; pEl.hidden = !p;
+    gateEl.querySelector('h1').textContent = h; gateEl.querySelector('p').textContent = p;
     if (b) { var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = b; btn.addEventListener('click', fn); gateEl.querySelector('.card').appendChild(btn); }
   }
   var starting = false;
@@ -2589,6 +2556,49 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 
 /* ── where the plan stands: figures only ───────────────────────────────── */
 #app-ros .standpanel{background:var(--accent-soft);border-color:var(--accent)}
+/* Where the Plan Stands: one navy panel, the same in light and dark */
+#app-ros .planhero{grid-column:1/-1;background:#0f314c;color:#fff;border-radius:12px;padding:22px 24px 24px;
+  border:1px solid #0f314c;box-shadow:0 2px 10px rgba(6,32,47,.12)}
+:root[data-theme="dark"] #app-ros .planhero{background:#0e2b43;border-color:#23506f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-ros .planhero{background:#0e2b43;border-color:#23506f}}
+#app-ros .planhero .ph-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fd2f2}
+#app-ros .planhero .ph-line{font-size:19px;font-weight:700;line-height:1.4;margin:8px 0 18px;color:#fff;max-width:70ch}
+#app-ros .planhero .ph-line .hl{color:#7fc6f0}
+#app-ros .planhero .ph-line .hl.bad{color:#ffa69c}
+#app-ros .planhero .ph-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:700px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#app-ros .planhero .ph-tile{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;
+  padding:14px 16px 15px;text-align:left;color:#fff;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px}
+#app-ros .planhero .ph-tile:hover{background:rgba(255,255,255,.13);border-color:#7fc6f0}
+#app-ros .planhero .ph-tile:active{transform:translateY(1px)}
+#app-ros .planhero .ph-tile .n{font-size:30px;font-weight:700;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+#app-ros .planhero .ph-tile.bad .n{color:#ffa69c}
+#app-ros .planhero .ph-tile .k{font-size:13px;font-weight:700;color:#9fd2f2;margin-top:6px}
+#app-ros .planhero .ph-tile .d{font-size:12.5px;color:rgba(255,255,255,.74)}
+/* 2026-09-27: one row of six, compact */
+#app-ros .planhero{padding:18px 24px 20px}
+/* Jonna, 2026-09-27: shaded red, the same way Hotel Specs, People and The Trunk are tinted —
+   only while it has something in it */
+#app-ros #gapsPanel.ascard.has-gaps{background:var(--bad-soft);border-color:var(--bad);border-left:3px solid var(--bad);padding-left:15px}
+#app-ros #gapsPanel.ascard.has-gaps > h2{color:var(--bad)}
+#app-ros #gapsPanel.ascard.has-gaps .hc-w{color:var(--bad-ink)}
+#app-ros #gapsPanel.ascard.has-gaps::after{color:var(--bad)}
+#app-ros #gapsPanel.ascard.has-gaps:hover{background:var(--surface)}
+#app-ros #gapsPanel.ascard.has-gaps.cardopen{box-shadow:0 0 0 2px var(--bad-soft),var(--shadow)}
+#app-ros > .wrap > .planhero{margin:0 0 14px}
+#app-ros .viewbar{margin:0 0 14px;padding:10px 0;border-top:0}
+#app-ros .planhero .ph-line{font-size:18px;margin:6px 0 14px;max-width:none}
+#app-ros .planhero .ph-tiles{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
+@media(max-width:1300px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#app-ros .planhero .ph-tile{padding:12px 16px 13px;gap:1px;min-width:0}
+#app-ros .planhero .ph-tile .n{font-size:26px}
+#app-ros .planhero .ph-tile .k{font-size:12.5px;margin-top:5px}
+#app-ros .planhero .ph-tile .d{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* + New Task at the right end of the Run of Show strip */
+.viewbar .vb-grow{flex:1}
+.viewbar #addTask{white-space:nowrap}
+.viewbar #rs-savemark{min-width:0}
 #app-ros .standpanel > h2{background:none;border-bottom-color:var(--accent)}
 #app-ros .standpanel .body{max-height:none;overflow:visible}
 #app-ros .standrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px 22px}
@@ -2641,7 +2651,7 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 /* With nothing in it the notes box reads at exactly the size of the cards under it. */
 #app-ros .planside > .rpanel{min-height:66px}
 #app-ros .planside #noteAdd{padding:2px 9px;font-size:11px;line-height:1.3}
-#app-ros .planside > .rpanel > #noteHead{padding:10px 13px 0}
+#app-ros .planside > .rpanel > #noteHead{padding:10px 13px 10px}
 #app-ros #noteBody:has(#notes.is-empty){padding:2px 13px 11px}
 #app-ros #notes.is-empty{display:block}
 #app-ros #notes.is-empty .blank{padding:0;border:0;background:none;text-align:left;
@@ -3208,7 +3218,10 @@ body.sheeton .hqsheet{display:flex}
 
 /* ── the resume editor ── */
 #app-resume .rz-docgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
-@media(min-width:1000px){#app-resume .rz-docgrid{grid-template-columns:200px minmax(0,1fr)}}
+@media(min-width:1000px){#app-resume .rz-docgrid{grid-template-columns:max-content minmax(0,1fr)}}
+/* Jonna, 2026-09-27: each name in the contents list stays on one line; the column takes the width it needs */
+#app-resume .rz-toc a{white-space:nowrap}
+#app-resume .rz-toc a .c{white-space:nowrap;padding-left:12px}
 #app-resume .rz-toc{display:none}
 @media(min-width:1000px){#app-resume .rz-toc{display:flex;flex-direction:column;gap:1px;position:sticky;
   top:calc(var(--hq-h) + 64px);align-self:start;max-height:calc(100vh - var(--hq-h) - 80px);overflow:auto}}
@@ -3520,12 +3533,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   <span class="hqtop-r"><span class="eyebrow-m">Programs &amp; Operations</span></span>
 </header>
 
-<div class="viewbar" id="viewbar" hidden>
-  <span class="eyebrow">Run of Show</span>
-  <button class="chip" type="button" data-view="plan" aria-pressed="true">The Plan</button>
-  <button class="chip" type="button" data-view="disc" aria-pressed="false">Planning Meeting <span class="cntmini" id="nDisc">0</span></button>
-  <button class="chip" type="button" data-view="tasks" aria-pressed="false">All Tasks <span class="cntmini" id="nTasks">0</span></button>
-</div>
+
 
 <aside class="hq rail" id="rail">
   <div class="rail-top">
@@ -3790,7 +3798,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 </div>
 
 
-
+</div>
 
 <div id="app-specs" hidden>
   <div class="wrap">
@@ -3833,7 +3841,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     </div>
   </div>
 
-
+</div>
 
 <div id="app-ros" hidden>
 
@@ -3845,24 +3853,26 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <h1 id="rosTitle">Summit Run of Show</h1>
       <div class="sub" id="rs-subtitle"></div>
     </div>
-    <div class="meters"><div class="countdown" id="countdown"></div><span id="rs-meters" style="display:contents"></span></div>
   </header>
 
-  <div class="bar">
-    <span class="spacer"></span>
-    <button class="btn ghost" type="button" id="addTask">+ New task</button>
-    <span class="savemark" id="rs-savemark"></span>
-  </div>
 
   <!-- DASHBOARD -->
   <!-- THE PLAN — the cycle end to end -->
+  <section class="planhero" id="planHero" aria-label="Where the Plan Stands">
+    <div class="ph-eyebrow" id="phToday"></div>
+    <p class="ph-line" id="phLine"></p>
+    <div class="ph-tiles" id="rollup"></div>
+  </section>
+  <div class="viewbar" id="viewbar" hidden>
+  <button class="chip" type="button" data-view="plan" aria-pressed="true">The Plan</button>
+  <button class="chip" type="button" data-view="disc" aria-pressed="false">Planning Meeting <span class="cntmini" id="nDisc">0</span></button>
+  <button class="chip" type="button" data-view="tasks" aria-pressed="false">All Tasks <span class="cntmini" id="nTasks">0</span></button>
+  <span class="vb-sep" id="addTaskSep"></span>
+  <button class="btn" type="button" id="addTask">+ New Task</button>
+  <span class="vb-grow"></span>
+  <span class="savemark" id="rs-savemark"></span>
+</div>
   <section id="v-plan">
-    <div class="cols">
-      <section class="rpanel standpanel">
-        <h2>Where the Plan Stands <span class="cnt" id="planCnt"></span></h2>
-        <div class="body"><div class="standrow" id="rollup"></div></div>
-      </section>
-    </div>
     <div class="cols calnotes">
       <section class="rpanel">
         <h2 id="calHead2">
@@ -3910,13 +3920,6 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <span class="peek" data-shutonly id="gapPeek"></span></h2>
         <div class="body" id="gapBody"><div class="skel"></div></div>
       </section>
-      <section class="rpanel" id="autoPanel">
-        <h2 class="rcollapser" id="autoHead">
-          <span class="rcaret">▸</span>Marked To Automate <span class="cnt" id="autoCount">0</span>
-          <span class="hint" data-openonly>Open a task and press Mark to automate. It stands here, across every cycle, until the mark comes off.</span>
-          <span class="peek" data-shutonly id="autoPeek"></span></h2>
-        <div class="body" id="autoBody"></div>
-      </section>
       <section class="rpanel">
         <h2 class="rcollapser" id="runHead">
           <span class="rcaret">▾</span>The Run <span class="cnt" id="runCount">0</span>
@@ -3933,7 +3936,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <h2>People</h2>
       </section>
       <section class="rpanel pagecard" id="pageTrunk" data-page="trunk" role="button" tabindex="0">
-        <h2>Trunk Packing List</h2>
+        <h2>The Trunk</h2>
+      </section>
+      <section class="rpanel" id="autoPanel">
+        <h2 class="rcollapser" id="autoHead">
+          <span class="rcaret">▸</span>Marked To Automate <span class="cnt" id="autoCount">0</span>
+          <span class="hint" data-openonly>Open a task and press Mark to automate. It stands here, across every cycle, until the mark comes off.</span>
+          <span class="peek" data-shutonly id="autoPeek"></span></h2>
+        <div class="body" id="autoBody"></div>
       </section>
       <section class="rpanel">
         <h2 class="rcollapser" id="cgHead">
@@ -4431,7 +4441,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 <div id="app-trunk" hidden>
 <div class="wrap">
   <header class="mast">
-    <div><div class="eyebrow">Trunk</div><h1 id="tk-title">Trunk Packing List</h1></div>
+    <div><div class="eyebrow">Trunk</div><h1 id="tk-title">The Trunk</h1></div>
     <div class="meters" id="tk-meters"></div>
   </header>
   <div class="tk-tasks" id="tk-tasks" hidden></div>
@@ -5611,9 +5621,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
   /* a narrow screen starts with it out of the way; otherwise it is remembered */
   function start(){
-    let off=null;
-    try{ const v=localStorage.getItem(KEY); if(v!==null) off=(v==='1'); }catch(e){}
-    if(off===null) off = window.matchMedia('(max-width:900px)').matches;
+    /* Jonna, 2026-09-27: Summit HQ opens with the menu open every time, whatever it was
+       left as. Narrowing it still works for the visit. A phone-sized screen still starts
+       with it narrow, because open it would cover the page. */
+    const off = window.matchMedia('(max-width:900px)').matches;
     set(off, false);
     const h=document.getElementById('rail-hide'); if(h) h.addEventListener('click',toggle);
     const sc=document.getElementById('rail-scrim'); if(sc) sc.addEventListener('click',()=>set(true));
@@ -37221,7 +37232,7 @@ const ROS_FACE={
   /* Add A Summit paints its own line as it goes — this is only the fallback */
   "ros:new":    ["#nsCnt",       ()=>'Name it, drop the contract in', ()=>'']
 };
-const PAGE_CARDS={specs:'Hotel Specs', people:'People', trunk:'Trunk Packing List'};
+const PAGE_CARDS={specs:'Hotel Specs', people:'People', trunk:'The Trunk'};
 function wirePageCards(){
   if(!window.__pane) return;
   document.querySelectorAll('[data-page]').forEach(sec=>{
@@ -37340,6 +37351,7 @@ function breakdown(target){
 function plural(n,w){return n+" "+w+(n===1?"":"s");}
 function renderCountdown(){
   const su=activeSummit(),box=$("#countdown");
+  if(!box) return;   /* 2026-09-27: the countdown lives in the navy panel now */
   box.textContent="";box.className="countdown";
   const bd=breakdown(su.start);
   if(!bd){
@@ -37667,6 +37679,8 @@ function group(key,items,drag,noForeign,fold){
    that keeps its own order to move it up or down. */
 function cardList(items,opts){
   opts=opts||{};
+  /* Jonna, 2026-09-27: open work weighs to the top, Complete under it; each half keeps its own order */
+  items=items.filter(t=>t.status!=="Complete").concat(items.filter(t=>t.status==="Complete"));
   const g=el("div","cards");
   items.forEach(t=>g.appendChild(taskCard(t,canWrite!==false,{tick:!!opts.tick})));
   if(opts.sort&&canWrite!==false)
@@ -37932,7 +37946,7 @@ async function activateSummit(){
   catch(e){ flash("Not saved"); }
 }
 function renderMeters(){
-  const box=$("#rs-meters");box.textContent="";
+  const box=$("#rs-meters");if(!box)return;box.textContent="";
   const list=allTasks().filter(inCycle);
   const late=list.filter(t=>bucketOf(t)==="late").length;
   const soon=list.filter(t=>["now","week"].includes(bucketOf(t))).length;
@@ -37957,33 +37971,68 @@ function renderMeters(){
   });
 }
 function renderRollup(){
+  /* Jonna, 2026-09-27: the plan at a glance as one navy panel — today's date, a sentence
+     that says where things stand, and six figures that each open the list behind them. */
   const box=$("#rollup");if(!box)return;
   box.textContent="";
   const list=allTasks().filter(inCycle);
-  const c={none:0,prog:0,disc:0,busy:0,done:0};
-  list.forEach(t=>{c[SKEY[t.status]||"none"]++;});
-  const total=list.length;
-  const pct=n=>total?Math.round(n/total*100):0;
-  /* the five states of the work, as figures — click one for that list */
+  const open=list.filter(t=>t.status!=="Complete");
+  const late=open.filter(t=>bucketOf(t)==="late").length;
+  const due14=open.filter(t=>{ if(t.dueKind==="now") return true; if(t.dueKind!=="date"||!t.due) return false;
+    const n=dayDiff(t.due); return n!==null && n>=0 && n<=14; }).length;
+  const done=list.length-open.length;
+  /* the same count the Planning Meeting view carries */
+  const items=[...S.disc.values()].filter(d=>d.status!=="resolved");
+  const linked=new Set([...S.disc.values()].map(d=>d.taskId).filter(Boolean));
+  const fl=list.filter(t=>(t.flagged||t.status==="Need to Discuss")&&t.status!=="Being Discussed"&&!t.automate);
+  const still=list.filter(t=>t.status==="Being Discussed");
+  const talk=fl.concat(still).filter(t=>!linked.has(t.id)).length;
+  const discuss=items.length+talk;
+  const auto=allTasks().filter(t=>t.automate).length;
+  const su=activeSummit(), sv=scheduleVenueFor(su);
+  const name=(sv&&sv.name)||su.name||"The summit";
+  const days=su.start?dayDiff(su.start):null;
+  const plural=(n,one,many)=>n===1?one:many;
+
+  const td=$("#phToday");
+  if(td) td.textContent="Today \u00b7 "+new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  const line=$("#phLine");
+  if(line){
+    line.textContent="";
+    const hl=(t,cls)=>{ const s=el("span","hl"+(cls?" "+cls:""),String(t)); line.appendChild(s); };
+    const tx=t=>line.appendChild(document.createTextNode(t));
+    if(days===null){ tx(name+" has no first day set yet. "); }
+    else if(days>0){ tx(name+" starts in "); hl(days+" "+plural(days,"day","days")); tx(". "); }
+    else if(days===0){ tx(name+" starts "); hl("today"); tx(". "); }
+    else { tx(name+" started "); hl(Math.abs(days)+" "+plural(Math.abs(days),"day","days")); tx(" ago. "); }
+    if(late){ hl(late,"bad"); tx(" "+plural(late,"task is","tasks are")+" overdue and "); }
+    else tx("Nothing is overdue and ");
+    hl(due14); tx(" "+plural(due14,"task is","tasks are")+" due in the next 14 days, with ");
+    hl(discuss); tx(" "+plural(discuss,"item","items")+" still to discuss.");
+  }
+  const start=su.start?parseD(su.start):null;
+  const startTxt=start?start.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"no first day yet";
+  const tasksWith=status=>()=>{ S.f={q:"",owner:"",status:status||"",phase:"",cycleOnly:true}; syncFilters(); go("tasks"); };
+  const prog=list.filter(t=>t.status==="In Progress").length;
+  const pct=list.length?Math.round(done/list.length*100):0;
+  /* 2026-09-27: the masthead's tiles folded in here (In Progress, the % complete). Due Now came
+     off — every task in it is already in Due Next 14 Days — and so did Marked to Automate (it has
+     its own card). Order: time left, what needs action (late, coming, to decide), then progress. */
   [
-    ["Not started",c.none,"var(--pie-1)","Not Started"],
-    ["In progress",c.prog,"var(--pie-2)","In Progress"],
-    ["Need to discuss",c.disc,"var(--pie-3)","Need to Discuss"],
-    ["Being discussed",c.busy,"var(--busy)","Being Discussed"],
-    ["Complete",c.done,"var(--pie-4)","Complete"]
-  ].forEach(([label,n,tint,status])=>{
-    const b=el("button","statcell");b.type="button";
-    b.style.setProperty("--sc",tint);
-    b.appendChild(el("div","k",label));
-    b.appendChild(el("div","v",String(n)));
-    b.appendChild(el("div","p",pct(n)+"% of "+total));
-    b.addEventListener("click",()=>{
-      S.f={q:"",owner:"",status:status,phase:"",cycleOnly:true};
-      syncFilters();go("tasks");
-    });
+    {n:days===null?"\u2014":Math.max(days,0), k:"Until the Summit", d:"days \u00b7 "+startTxt, go:()=>{ const c=document.getElementById("calBody"); if(c) c.scrollIntoView({behavior:"smooth",block:"start"}); }},
+    {n:late, k:"Overdue", d:late?"past due":"all clear", cls:late?"bad":"", go:tasksWith("")},
+    {n:due14, k:"Due Next 14 Days", d:plural(due14,"open task","open tasks"), go:tasksWith("")},
+    {n:discuss, k:"To Discuss", d:"at the next meeting", go:()=>go("disc")},
+    {n:prog, k:"In Progress", d:"underway", go:tasksWith("In Progress")},
+    {n:pct+"%", k:"Complete", d:done+" of "+list.length+" this cycle", go:tasksWith("Complete")}
+  ].forEach(m=>{
+    const b=el("button","ph-tile"+(m.cls?" "+m.cls:""));b.type="button";
+    b.appendChild(el("div","n",String(m.n)));
+    b.appendChild(el("div","k",m.k));
+    b.appendChild(el("div","d",m.d));
+    b.addEventListener("click",m.go);
     box.appendChild(b);
   });
-  const pc=$("#planCnt");if(pc)pc.textContent=total+" tasks · "+pct(c.done)+"% done";
 }
 /* ---------- manual ordering ---------- */
 /* a hand-placed `sort` wins; anything never dragged keeps its natural order */
@@ -38789,6 +38838,8 @@ function renderGaps(){
   const seen=new Set();[late,nodate,noowner].forEach(g=>g.forEach(t=>seen.add(t.id)));
   const c=$("#gapCount");c.textContent=String(seen.size);
   c.className="cnt"+(late.length?" bad":"");
+  /* red while something is slipping, plain white when nothing is (Jonna, 2026-09-27) */
+  const gp=$("#gapsPanel"); if(gp) gp.classList.toggle("has-gaps", !!seen.size);
 
   const pk=$("#gapPeek");
   if(pk){
@@ -38930,8 +38981,8 @@ function renderAuto(){
   const pk=$("#autoPeek"); if(pk) pk.textContent="";
 }
 function renderAll(){
-  renderMast();renderMeters();renderChips();
-  if(S.view==="plan"){renderRollup();renderCalendar();renderNotes();renderGaps();renderRun();renderAuto();renderTimeline();renderDisc();renderWeek();}
+  renderMast();renderMeters();renderChips();renderRollup();
+  if(S.view==="plan"){renderCalendar();renderNotes();renderGaps();renderRun();renderAuto();renderTimeline();renderDisc();renderWeek();}
   else if(S.view==="tasks"){renderTasks();renderDisc();renderWeek();}
   else {renderDisc();renderWeek();}
   syncFilters();
@@ -40700,6 +40751,7 @@ startClock();
     if(note)note.textContent=LABEL[which]||"";
     if(vbar){
       vbar.hidden=!GROUP[which];
+      ["addTask","addTaskSep"].forEach(i=>{ const n=document.getElementById(i); if(n) n.hidden=(which!=="ros"); });
       vbar.querySelectorAll("[data-hqtab]").forEach(b=>
         b.setAttribute("aria-pressed", b.dataset.hqtab===which?"true":"false"));
       /* which of the three task views is showing is the Run of Show's own state;
