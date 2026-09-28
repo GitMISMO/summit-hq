@@ -1,4 +1,36 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script src="/assets/session.js"></script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><!-- Decide whether anyone is signed in BEFORE the page paints.
+
+     The session lives in localStorage, which is readable synchronously, so this needs no
+     waiting: the class lands on <html> before any of the app is drawn. Without it the app
+     rendered first and the gate appeared a moment later, which flashed the whole tool at
+     someone who is not allowed to see it — brief, but it is the content we are gating.
+
+     Only top-level children are hidden, and the gate is excluded so it can show through.
+     visibility rather than display, so the layout does not jump when it is revealed. -->
+<style>html.hq-out body > *:not(#hq-gate){visibility:hidden}</style>
+<script>(function(){
+  var out = true;
+  try {
+    var s = JSON.parse(localStorage.getItem('resources:session') || 'null');
+    out = !(s && s.token && s.expiresAt && Date.parse(s.expiresAt) > Date.now());
+  } catch (e) { out = true; }
+  document.documentElement.classList.add(out ? 'hq-out' : 'hq-in');
+})();</script>
+<script src="/assets/session.js"></script>
+<script>(function(){
+  /* Keep the class in step afterwards: signing in reveals the app without a reload, and
+     signing out in another tab hides it again. */
+  function sync(){
+    var rs = window.ResourcesSession, inn = !!(rs && rs.current());
+    document.documentElement.classList.toggle('hq-out', !inn);
+    document.documentElement.classList.toggle('hq-in', inn);
+  }
+  if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
+  else { document.addEventListener('DOMContentLoaded', function(){
+    if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
+    else document.documentElement.classList.remove('hq-out');   // module missing: do not lock the page
+  }); }
+})();</script>
 <script>
 /* ============================================================================
    SUMMIT HQ ON resources.mismo.org — the one door to MISMO's save relay
