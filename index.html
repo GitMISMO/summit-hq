@@ -1,4 +1,36 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><script src="/assets/session.js"></script>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Summit HQ</title><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><!-- Decide whether anyone is signed in BEFORE the page paints.
+     The session lives in localStorage, which is readable synchronously, so the class lands
+     on <html> before any of the app is drawn. Without it the app renders first and the
+     sign-in appears a moment later, flashing the whole tool at someone who may not see it.
+     Top-level children are hidden except this page's own status card (#hq-gate) and the
+     shared sign-in window (.rs-scrim), which must show through. visibility, not display,
+     so the layout does not jump when it is revealed.
+     First added Sept 28 12:26 and lost when the file was re-uploaded at 13:32; if this
+     file is replaced by an upload again, carry this block across. -->
+<style>html.hq-out body > *:not(#hq-gate):not(.rs-scrim){visibility:hidden}</style>
+<script>(function(){
+  var out = true;
+  try {
+    var s = JSON.parse(localStorage.getItem('resources:session') || 'null');
+    out = !(s && s.token && s.expiresAt && Date.parse(s.expiresAt) > Date.now());
+  } catch (e) { out = true; }
+  document.documentElement.classList.add(out ? 'hq-out' : 'hq-in');
+})();</script>
+<script src="/assets/session.js"></script>
+<script>(function(){
+  /* Keep the class in step afterwards: signing in reveals the app without a reload, and
+     signing out in another tab hides it again. */
+  function sync(){
+    var rs = window.ResourcesSession, inn = !!(rs && rs.current());
+    document.documentElement.classList.toggle('hq-out', !inn);
+    document.documentElement.classList.toggle('hq-in', inn);
+  }
+  if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
+  else { document.addEventListener('DOMContentLoaded', function(){
+    if (window.ResourcesSession) { window.ResourcesSession.onChange(sync); sync(); }
+    else document.documentElement.classList.remove('hq-out');   // module missing: do not lock the page
+  }); }
+})();</script>
 <script>
 /* ============================================================================
    SUMMIT HQ ON resources.mismo.org — the one door to MISMO's save relay
@@ -554,9 +586,12 @@
     if (!kind) { gateEl.hidden = true; return; }
     gateEl.hidden = false;
     var h, p, b = null, fn = null;
-    if (kind === 'signin') { h = 'Sign In to Summit HQ'; p = 'Use the same account as the Initiative Hub and the Sponsorship Portal.'; b = 'Sign In'; fn = function () { RS().signIn().catch(function () {}); }; }
-    else if (kind === 'noaccess') { h = 'No Access to Summit HQ Yet'; p = WHY.NO_ACCESS; b = 'Sign In as Someone Else'; fn = function () { RS().signOut(); RS().signIn().catch(function () {}); }; }
-    else if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; }
+    /* Signing in and being refused are NOT drawn here: every resources.mismo.org tool uses
+       the shared screens from session.js for those (Sept 28, 2026). This card only covers
+       the app while it waits, loads, or cannot reach its data. 'blank' is the plain
+       backdrop behind the shared sign-in window. */
+    if (kind === 'blank') { gateEl.innerHTML = ''; return; }
+    if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; }
     else if (kind === 'nosession') { h = 'Summit HQ Couldn’t Load'; p = 'The resources.mismo.org sign-in didn’t load. Check your connection, then reload the page.'; b = 'Reload'; fn = function () { location.reload(); }; }
     else { h = 'Summit HQ Couldn’t Reach Its Data'; p = (e && (WHY[e.code] || e.message)) || 'Something went wrong reading the data.'; b = 'Try Again'; fn = function () { start(); }; }
     gateEl.innerHTML = '<div class="card"><div class="ey">Summit HQ</div><h1></h1><p></p></div>';
@@ -567,19 +602,26 @@
   function start() {
     var rs = RS();
     if (!rs) { gate('nosession'); return; }
-    var s = rs.current();
-    if (!s) { gate('signin'); return; }
-    /* The access list saved with a sign-in can be out of date (access granted after signing
-       in), so the relay — which checks afresh on every request — has the final say. */
-    if (ready) { gate(null); resumeWrites(); return; }
     if (starting) return;
-    starting = true; gate('loading');
-    preload().then(function () {
-      ready = true; starting = false; gate(null);
+    if (ready && rs.current() && rs.role('summit-hq')) { gate(null); resumeWrites(); return; }
+    starting = true; gate('blank');
+    /* requireAccess shows the shared sign-in or refusal as needed, and asks the relay
+       before refusing, so access granted after signing in is picked up without another
+       sign-in. It also checks again after someone signs back in as a different person,
+       before anything already loaded is shown to them. */
+    rs.requireAccess('summit-hq', { toolName: 'Summit HQ' }).then(function () {
+      if (ready) return;
+      gate('loading');
+      return preload();
+    }).then(function () {
+      ready = true; starting = false; gate(null); resumeWrites();
       readyWaiters.splice(0).forEach(function (r) { r(); });
     }, function (e) {
       starting = false;
-      if (e && e.code === 'NO_ACCESS') gate('noaccess'); else gate('error', e);
+      /* The relay refused though the browser's copy said yes: access removed since. */
+      if (e && e.code === 'NO_ACCESS') { rs.signIn({ reason: 'no-access', toolName: 'Summit HQ', gated: true }).catch(function () {}); return; }
+      if (e && e.message === 'cancelled') return;
+      gate('error', e);
     });
   }
   /* the private file carries what must not sit in the public page: the resume's
