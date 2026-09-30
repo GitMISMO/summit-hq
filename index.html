@@ -264,15 +264,27 @@
     if (f.timer) return;
     f.timer = setTimeout(function () { f.timer = null; flush(f); }, ms);
   }
+  /* GitHub makes one commit to a branch at a time: two saves sent together (two files, or
+     the parts of a big one) and the second is refused as a conflict. So every save goes out
+     after the one before it has finished, never side by side. */
+  var putChain = Promise.resolve();
+  function put(name, body) {
+    var go = function () { return net('PUT', name, body); };
+    var p = putChain.then(go, go);
+    putChain = p.then(function () {}, function () {});
+    return p;
+  }
   function putContent(f, content) {
-    if (!f.own) return net('PUT', f.name, { content: content, sha: f.sha });
+    if (!f.own) return put(f.name, { content: content, sha: f.sha });
     var text = JSON.stringify(content.doc);
-    if (text.length <= CHUNK) return net('PUT', f.name, { content: { doc: content.doc }, sha: f.sha });
+    if (text.length <= CHUNK) return put(f.name, { content: { doc: content.doc }, sha: f.sha });
     /* a big one: the parts go first under a new name, then the head that points at
        them, so a reader never sees half of a new version */
-    var ver = now().toString(36), n = Math.ceil(text.length / CHUNK), jobs = [];
-    for (var i = 0; i < n; i++) jobs.push(net('PUT', f.name + '--' + ver + '-' + i, { content: { s: text.slice(i * CHUNK, (i + 1) * CHUNK) }, sha: null }));
-    return Promise.all(jobs).then(function () { return net('PUT', f.name, { content: { chunked: { ver: ver, n: n } }, sha: f.sha }); });
+    var ver = now().toString(36), n = Math.ceil(text.length / CHUNK), chain = Promise.resolve();
+    for (var i = 0; i < n; i++) (function (i) {
+      chain = chain.then(function () { return put(f.name + '--' + ver + '-' + i, { content: { s: text.slice(i * CHUNK, (i + 1) * CHUNK) }, sha: null }); });
+    })(i);
+    return chain.then(function () { return put(f.name, { content: { chunked: { ver: ver, n: n } }, sha: f.sha }); });
   }
   function flush(f) {
     if (f.flushing || !f.pending.length) return;
@@ -292,10 +304,10 @@
           saved();
         });
       }).catch(function (e) {
-        if (e && e.status === 409 && tries < 6) {
+        if (e && e.status === 409 && tries < 8) {
           tries++;
           f.loaded = false;
-          return new Promise(function (r) { setTimeout(r, 150 * tries + Math.random() * 250); })
+          return new Promise(function (r) { setTimeout(r, 300 * tries + Math.random() * 500); })
             .then(function () { return load(f); }).then(attempt);
         }
         throw e;
