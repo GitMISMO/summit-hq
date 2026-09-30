@@ -35261,6 +35261,24 @@ function renderEditor(){
       v=>setEdit(s.id,{chairs: v.split(',').map(t=>t.trim()).filter(Boolean)}), 'Surnames, comma separated'),
       'Two sessions sharing a chair at the same time is flagged as a conflict.'));
 
+    /* Jonna, 2026-09-30: whose group this is at every summit from now on, as opposed to
+       who happens to run it at this one. Changing it ends any "covering for" note. */
+    {
+      const pool=[];
+      const add=n=>{ n=String(n||'').trim(); if(n && !/^(tbd|staff)$/i.test(n) && n!=='__walkon__' && !pool.includes(n)) pool.push(n); };
+      try{ if(typeof facChoices==='function') facChoices(s.primaryFac||'').forEach(o=>add(o&&o[0])); }catch(e){}
+      try{ if(typeof FAC_CHOICES!=='undefined') FAC_CHOICES.forEach(add); }catch(e){}
+      WGS.forEach(w=>{ add(w.primaryFac); add(w.fac); });
+      add(s.primaryFac);
+      pool.sort((a,b)=>a.localeCompare(b));
+      const sf=selectInput([['','Not set']].concat(pool.map(n=>[n,n])), s.primaryFac||'', v=>{
+        nameUndo('the standing facilitator');
+        setEdit(s.id,{primaryFac:v||'', covering:''});
+      });
+      form.appendChild(field('Standing Facilitator', sf,
+        'Whose group this is at every summit from now on. The Facilitator below is who runs it at this summit; '
+        +'when the two differ, the card says who they are standing in for.'));
+    }
     const cur = facOf(s.id);
     if(s.facLock){
       form.appendChild(field('Facilitator', el('div','capline ok', s.fac+' \u2014 fixed for this workgroup'),
