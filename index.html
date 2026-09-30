@@ -1013,6 +1013,43 @@ body.compact .meter .n{font-size:16px}
 .jointbox .jb-line{font-weight:600;color:var(--ink)}
 .jointbox .jb-note{font-size:12px;color:var(--ink-2)}
 .jointbox .fixbtn{align-self:flex-start;margin-top:0}
+/* the Chair Survey panel */
+#app-grid #survey-sec{display:none}
+.sv-top{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.sv-step{font-weight:700;color:var(--ink)}
+.sv-sum{font-size:12.5px;color:var(--ink-2)}
+.sv-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.sv-acts a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.sv-acts a.btn.disabled{pointer-events:none;opacity:.45}
+.sv-sec{border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:10px;background:var(--surface)}
+.sv-sec > summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sv-sec[open] > summary{margin-bottom:8px}
+.sv-how{margin:4px 0 6px 18px;padding:0;color:var(--ink)}
+.sv-how li{margin:2px 0}
+.sv-list{display:flex;flex-direction:column;gap:6px}
+.sv-row{border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.sv-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;cursor:pointer}
+.sv-hd:hover{background:var(--sunk)}
+.sv-nm{font-weight:700;color:var(--ink)}
+.sv-meta{font-size:12px;color:var(--ink-2)}
+.sv-meta.warn,.sv-who .warn{color:var(--warn-ink,var(--warn))}
+.sv-bd{display:none;padding:4px 12px 12px;border-top:1px solid var(--line)}
+.sv-row.open .sv-bd{display:block}
+.sv-who{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--ink)}
+.sv-who .fixbtn{align-self:flex-start;margin-top:4px}
+.sv-chip{flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:10px;border:1px solid var(--line-2);color:var(--ink-2);white-space:nowrap}
+.sv-chip.s-sent{border-color:var(--accent);color:var(--accent)}
+.sv-chip.s-ok{border-color:var(--good);color:var(--good);background:var(--good-soft)}
+.sv-chip.s-change{border-color:var(--warn);color:var(--warn-ink,var(--warn));background:var(--warn-soft)}
+.sv-chip.s-stop{border-color:var(--bad);color:var(--bad-ink,var(--bad));background:var(--bad-soft)}
+/* Workgroup Leadership in a session's details */
+.leadlist{display:flex;flex-direction:column;gap:6px}
+.leadrow{display:grid;grid-template-columns:118px minmax(0,1fr) minmax(0,1.2fr) 28px;gap:6px;align-items:center}
+.leadrow .x{border:1px solid var(--line-2);background:transparent;color:var(--ink-3);border-radius:4px;height:30px;cursor:pointer}
+.leadrow .x:hover{color:var(--bad);border-color:var(--bad)}
+.leadlist .fixbtn{align-self:flex-start;margin-top:0}
+@media(max-width:640px){.leadrow{grid-template-columns:minmax(0,1fr) 28px}.leadrow select,.leadrow input{grid-column:1}}
+
 .card .t .jt{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid currentColor;border-radius:3px;
   font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:14px;vertical-align:1px;opacity:.85}
 .card .t{font-weight:700;font-size:11.5px;letter-spacing:-.01em;overflow-wrap:anywhere;hyphens:auto}
@@ -2310,7 +2347,7 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 }
 
 /* color grid timeline */
-#app-ros .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#app-ros .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 @media(max-width:860px){#app-ros .steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){#app-ros .steps{grid-template-columns:minmax(0,1fr)}}
 #app-ros .step{border:1px solid var(--line);border-left:4px solid var(--stc,var(--line-2));border-radius:2px;
@@ -3644,9 +3681,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   <div class="bar">
     <button class="btn ghost" id="add-session" type="button">+ New session</button>
     <button class="btn ghost" id="pdf-btn" type="button">Print / PDF</button>
+    <button class="btn ghost" id="survey-btn" type="button" title="Email each workgroup's Chair(s) and Vice Chair the draft grid">Chair Survey</button>
     <span class="spacer"></span>
     <span class="savemark" id="savemark"></span>
   </div>
+  <section class="svpanel" id="survey-sec"><h2>Chair Survey</h2><div class="body" id="survey-body"></div></section>
 
   <div class="hint barhint" id="hint"></div>
   <div class="plans" id="plans-modal" hidden>
@@ -4005,14 +4044,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <div class="steps" id="cgSteps"></div>
           <div class="tblwrap">
             <table class="tbl" id="cgTable"><thead><tr>
-              <th>Summit</th><th>1st day</th><th>Survey chairs</th><th>CoC post / review</th><th>Finalize (due)</th>
+              <th>Summit</th><th>1st day</th><th>Survey Chairs</th><th>Finalize the Schedule</th>
             </tr></thead><tbody id="cgRows"></tbody></table>
           </div>
           <div class="subform" style="margin:11px -13px -11px;border-bottom:0;border-top:1px solid var(--line)">
             <input type="text" id="sName" placeholder="Summit name, e.g. Spring 2028" style="flex:1 1 200px;max-width:none">
             <input type="date" id="sStart" aria-label="First day of summit">
             <button class="btn" type="button" id="sAdd">Add summit</button>
-            <span class="hint">Milestones are set 104 / 97 / 90 days before the first day, as they have been every summit.</span>
+            <span class="hint">Step 1 is 104 days and step 2 is 97 days before the first day, each on a Tuesday.</span>
           </div>
         </div>
       </section>
@@ -32132,7 +32171,7 @@ function lockedCard(l, blockId){
   return c;
 }
 
-function render(){ try{ render_(); fitBoard(); }catch(err){ showFatal(err); } }
+function render(){ try{ render_(); fitBoard(); try{ wireSurvey(); renderSurvey(); }catch(e){} }catch(err){ showFatal(err); } }
 function notice(msg){
   let n=$('notice');
   if(!n){ n=el('div'); n.id='notice'; n.className='notice';
@@ -34960,6 +34999,317 @@ function askCloseEditor(){
   d.appendChild(bar);
 }
 
+/* ============================ CHAIR SURVEY ============================
+   Jonna, 2026-09-30: step 1 of every summit — ask each workgroup's Chair(s) and Vice
+   Chair whether their length is right and whether anything is a showstopper, with the
+   draft grid attached. Summit HQ cannot send mail, so it writes Outlook drafts. */
+const SURVEY_STATUS=[['','Not Sent'],['sent','Sent'],['ok','All Good'],['change','Wants a Change'],['stop','Showstopper']];
+const LEAD_ROLES=['Chair','Co-Chair','Vice Chair'];
+const SURVEY_OPEN=new Set();          /* which rows are open: this visit only, never saved */
+function surveyView(){ const c=V().chairSurvey; return {settings:(c&&c.settings)||{}, rows:(c&&c.rows)||{}}; }
+function surveyState(){
+  const v=V();
+  if(!v.chairSurvey || typeof v.chairSurvey!=='object') v.chairSurvey={};
+  if(!v.chairSurvey.rows) v.chairSurvey.rows={};
+  if(!v.chairSurvey.settings) v.chairSurvey.settings={};
+  return v.chairSurvey;
+}
+function leadersOf(id){
+  const s=S[id]; if(!s) return [];
+  let out=((s._raw||s).leaders||[]).slice();
+  try{ if(s.jointWith && typeof GUESTS!=='undefined' && GUESTS[s.jointWith]) out=out.concat(GUESTS[s.jointWith].leaders||[]); }catch(e){}
+  return out.filter(l=>l && (String(l.name||'').trim() || String(l.email||'').trim()));
+}
+const leadEmail = l => String(l.email||'').trim();
+const leadFirst = l => String(l.name||'').trim().split(/\s+/)[0] || '';
+function surveyGroups(){
+  const pl=place(), order=id=>{ const p=pl[id]; const i=BLOCKS.findIndex(b=>b.id===p.b); return i*10+(p.s||0); };
+  return WGS.filter(w=>pl[w.id] && BLOCK[pl[w.id].b] && !w.dns && !(typeof isSetPiece==='function' && isSetPiece(w.id)))
+    .sort((a,b)=>order(a.id)-order(b.id) || a.nm.localeCompare(b.nm));
+}
+function surveyWhen(id){
+  const p=place()[id], b=BLOCK[p.b], s=S[id];
+  let hrs=slotHours(s, p.b);
+  if(!hrs){
+    const a=String(b.t1||'').split('–'), c=String(b.t2||'').split('–');
+    hrs = p.s===2 ? b.t2 : p.s===1 ? b.t1 : (a[0]+'–'+(c[1]||a[1]||''));
+  }
+  const part = b.eve ? 'evening' : b.lunch ? 'midday' : (b.half==='AM' ? 'morning' : 'afternoon');
+  return {day:b.dayLabel, part, hrs, room:(roomById(p.r)||{}).nm||''};
+}
+const surveyLength = s => s.dur===180 ? '3 hours' : '90 minutes';
+function surveyStart(){
+  try{ const a=window.__ros && window.__ros.active && window.__ros.active(); if(a && a.start) return a.start; }catch(e){}
+  return '';
+}
+function isoAdd(isoDay, n){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDay||''); if(!m) return '';
+  const d=new Date(+m[1],+m[2]-1,+m[3]); d.setDate(d.getDate()+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isoTueOnOrBefore(isoDay){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDay||''); if(!m) return '';
+  const d=new Date(+m[1],+m[2]-1,+m[3]); d.setDate(d.getDate()-((d.getDay()-2+7)%7));
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function surveySteps(){
+  const st=surveyStart(); if(!st) return {survey:'', final:''};
+  return {survey:isoTueOnOrBefore(isoAdd(st,-104)), final:isoTueOnOrBefore(isoAdd(st,-97))};
+}
+function surveyReplyBy(){
+  const set=surveyView().settings;
+  if(set.replyBy) return set.replyBy;
+  const f=surveySteps().final; if(!f) return '';
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(f), d=new Date(+m[1],+m[2]-1,+m[3]);
+  d.setDate(d.getDate()-((d.getDay()-5+7)%7 || 7));          /* the Friday before */
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function longDate(isoDay){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDay||''); if(!m) return '';
+  return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}); }
+function surveyFacts(){
+  const groups=surveyGroups(), rules=allRules();
+  const inRules=new Set(); rules.forEach(r=>{ inRules.add(r.a); inRules.add(r.b); });
+  const facs=new Set(groups.map(g=>facOf(g.id)).filter(realFac));
+  const rooms=(ROOMS()||[]).filter(r=>r.role==='wg');
+  return {rules:rules.length, ruleSessions:inRules.size, sessions:groups.length, facs:facs.size,
+          rooms:rooms.length || (ROOMS()||[]).filter(r=>r.role!=='office').length};
+}
+function surveyDefaults(){
+  const v=V();
+  return {subject:(v.name||'Summit')+' Schedule: Please Confirm', sigName:'Jonna Critchley',
+          sigTitle:'Director of Programs & Operations, MISMO', extra:''};
+}
+function surveySetting(k){ const s=surveyView().settings; return (s[k]!=null && s[k]!=='') ? s[k] : surveyDefaults()[k]; }
+function joinNames(a){ a=a.filter(Boolean); return a.length<2 ? (a[0]||'') : a.slice(0,-1).join(', ')+' and '+a[a.length-1]; }
+function surveyEmail(id){
+  const v=V(), s=S[id], w=surveyWhen(id), L=leadersOf(id), f=surveyFacts();
+  const len=surveyLength(s), hotel=v.city||'the hotel', reply=longDate(surveyReplyBy()), fin=longDate(surveySteps().final);
+  const greet=joinNames(L.filter(leadEmail).map(leadFirst)) || 'there';
+  const lenAdj = s.dur===180 ? '3-hour' : '90-minute';
+  const subject=surveySetting('subject')+' — '+s.nm;
+  const para=[
+    'Hi '+greet+',',
+    'We’re finalizing the schedule for the '+(v.name||'summit')+(v.dates?', '+v.dates:'')+', at '+hotel+'. The draft grid is attached.',
+    s.nm+' is scheduled for '+w.day+' '+w.part+', '+w.hrs+(w.room?', in '+w.room:'')+'. That’s a '+lenAdj+' session.',
+  ];
+  const asks=[
+    'Is '+len+' the right amount of time for '+s.nm+'? Sessions are either 90 minutes or 3 hours.',
+    'Are there any showstoppers? Anything about this day or time that would keep your leaders or key participants from attending.'
+  ];
+  const how=[
+    'Honors '+f.rules+' Do Not Overlap requests across '+f.ruleSessions+' sessions, so groups that share leaders and participants don’t meet at the same time.',
+    'Rotates groups through different days where we can, so the same groups aren’t always meeting on the same day.',
+    'Works within '+f.facs+' facilitators, keeping each of them in as few rooms as possible.',
+    'Fits the '+f.rooms+' breakout rooms available at '+hotel+'.'
+  ];
+  const tail='Because moving one session usually moves others, the sooner we hear about a problem, the more room we have to fix it.'
+    +(fin?' We’ll make final adjustments and finalize the schedule on '+fin+'.':'');
+  const extra=String(surveySetting('extra')||'').trim();
+  const sig=[surveySetting('sigName'), surveySetting('sigTitle')].filter(Boolean);
+  const text=[para[0],'',para[1],'',para[2],'',
+    'Could you let me know'+(reply?' by '+reply:'')+':', '1. '+asks[0], '2. '+asks[1], '',
+    'If it all works, a quick “all good” reply is perfect.', '',
+    'How we built this schedule', 'Every summit’s grid is a balancing act. This one:']
+    .concat(how.map(h=>'- '+h)).concat(['', tail]).concat(extra?['',extra]:[]).concat(['','Thank you,']).concat(sig).join('\r\n');
+  const e=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const html='<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1b2733;line-height:1.45">'
+    +'<p>'+e(para[0])+'</p><p>'+e(para[1])+'</p><p><b>'+e(para[2])+'</b></p>'
+    +'<p>Could you let me know'+(reply?' by <b>'+e(reply)+'</b>':'')+':</p><ol><li>'+e(asks[0])+'</li><li>'+e(asks[1])+'</li></ol>'
+    +'<p>If it all works, a quick “all good” reply is perfect.</p>'
+    +'<p style="margin-bottom:4px"><b style="color:#0f314c">How we built this schedule</b><br>Every summit’s grid is a balancing act. This one:</p>'
+    +'<ul style="margin-top:4px">'+how.map(h=>'<li>'+e(h)+'</li>').join('')+'</ul>'
+    +'<p>'+e(tail)+'</p>'+(extra?'<p>'+e(extra).replace(/\n/g,'<br>')+'</p>':'')
+    +'<p>Thank you,<br>'+sig.map(e).join('<br>')+'</p></div>';
+  return {to:L.filter(leadEmail), subject, text, html};
+}
+/* ---- files ---- */
+function b64(bytes){ let s=''; for(let i=0;i<bytes.length;i+=0x8000) s+=String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000)); return btoa(s); }
+function wrap76(s){ return s.replace(/(.{76})/g,'$1\r\n'); }
+function mimeWord(t){ return /^[\x20-\x7e]*$/.test(t) ? t : '=?UTF-8?B?'+b64(new TextEncoder().encode(t))+'?='; }
+function emlFor(mail, pdf, pdfName){
+  const B1='=_hq_mixed_'+Math.random().toString(36).slice(2), B2='=_hq_alt_'+Math.random().toString(36).slice(2);
+  const enc=t=>wrap76(b64(new TextEncoder().encode(t)));
+  const to=mail.to.map(l=>'"'+String(l.name||'').replace(/"/g,'')+'" <'+leadEmail(l)+'>').join(', ');
+  const lines=['To: '+to, 'Subject: '+mimeWord(mail.subject), 'X-Unsent: 1', 'MIME-Version: 1.0',
+    'Content-Type: multipart/mixed; boundary="'+B1+'"', '', '--'+B1,
+    'Content-Type: multipart/alternative; boundary="'+B2+'"', '', '--'+B2,
+    'Content-Type: text/plain; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', enc(mail.text), '--'+B2,
+    'Content-Type: text/html; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', enc('<html><body>'+mail.html+'</body></html>'), '--'+B2+'--'];
+  if(pdf) lines.push('--'+B1, 'Content-Type: application/pdf; name="'+pdfName+'"',
+    'Content-Disposition: attachment; filename="'+pdfName+'"', 'Content-Transfer-Encoding: base64', '', wrap76(b64(pdf)));
+  lines.push('--'+B1+'--', '');
+  return new TextEncoder().encode(lines.join('\r\n'));
+}
+const CRC_T=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC_T[(c^b[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipFiles(files){          /* stored, not compressed: the drafts are small and the PDF is already packed */
+  const parts=[], central=[]; let off=0;
+  files.forEach(f=>{
+    const name=new TextEncoder().encode(f.name), data=f.data, crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true); h.setUint16(4,20,true); h.setUint16(6,0x0800,true); h.setUint16(8,0,true);
+    h.setUint16(10,0,true); h.setUint16(12,0x21,true); h.setUint32(14,crc,true); h.setUint32(18,data.length,true);
+    h.setUint32(22,data.length,true); h.setUint16(26,name.length,true); h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer), name, data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true); c.setUint16(4,20,true); c.setUint16(6,20,true); c.setUint16(8,0x0800,true);
+    c.setUint16(10,0,true); c.setUint16(12,0,true); c.setUint16(14,0x21,true); c.setUint32(16,crc,true);
+    c.setUint32(20,data.length,true); c.setUint32(24,data.length,true); c.setUint16(28,name.length,true);
+    c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer), name);
+    off += 30+name.length+data.length;
+  });
+  const csize=central.reduce((n,p)=>n+p.length,0);
+  const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true); e.setUint16(8,files.length,true); e.setUint16(10,files.length,true);
+  e.setUint32(12,csize,true); e.setUint32(16,off,true);
+  const all=parts.concat(central,[new Uint8Array(e.buffer)]);
+  const out=new Uint8Array(all.reduce((n,p)=>n+p.length,0)); let at=0; all.forEach(p=>{ out.set(p,at); at+=p.length; });
+  return out;
+}
+function surveyPdf(){
+  const built=buildPrintSheet(); if(!built || !window.__gridPdf) return null;
+  document.body.classList.add('printing');
+  try{ return window.__gridPdf(built.sheet); } finally { try{ endPrint(); }catch(e){} }
+}
+const surveyPdfName = () => (V().name||'Summit').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-')+'-Draft-Schedule.pdf';
+async function surveySave(name, bytes, type){
+  let dl=null; try{ dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; }catch(e){ dl=null; }
+  if(dl && dl.save){ await dl.save({filename:name, data:bytes}); return; }
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([bytes],{type:type||'application/octet-stream'}));
+  a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+const fileSafe = t => String(t).replace(/[^\w\s&+-]/g,'').trim().replace(/\s+/g,'-').slice(0,60);
+async function surveyDrafts(ids){
+  const ready=ids.filter(id=>emailableLeaders(id).length);
+  if(!ready.length){ notice('Nobody on '+(ids.length===1?'that workgroup':'these workgroups')+' has an email yet. Add them under Workgroup Leadership in the workgroup’s details.'); return; }
+  let pdf=null; try{ pdf=surveyPdf(); }catch(e){ pdf=null; }
+  const pname=surveyPdfName();
+  const files=ready.map(id=>({name:fileSafe(S[id].nm)+'.eml', data:emlFor(surveyEmail(id), pdf, pname)}));
+  try{
+    if(files.length===1) await surveySave(files[0].name, files[0].data, 'message/rfc822');
+    else await surveySave(fileSafe(V().name||'Summit')+'-Chair-Survey-Drafts.zip', zipFiles(files), 'application/zip');
+  }catch(err){ if(err && err.code==='declined') return; notice('Could not save the drafts here.'); return; }
+  const rows=surveyState().rows; let n=0;
+  ready.forEach(id=>{ const r=rows[id]||(rows[id]={}); if(!r.status){ r.status='sent'; r.at=new Date().toISOString(); n++; } });
+  nameUndo('the chair survey'); save(); renderSurvey();
+  notice((files.length===1?'Draft saved':'Saved '+files.length+' drafts in one zip')+(pdf?' with the grid attached':' — the grid PDF could not be built, so attach it yourself')
+    +'. Open each one in Outlook and press Send.'+(n?' '+n+' marked Sent; change any you hold back.':'')
+    +(ready.length<ids.length?' '+(ids.length-ready.length)+' left out: no email yet.':''));
+}
+const emailableLeaders = id => leadersOf(id).filter(leadEmail);
+function surveyMailto(id){
+  const m=surveyEmail(id);
+  return 'mailto:'+m.to.map(leadEmail).join(',')+'?subject='+encodeURIComponent(m.subject)
+    +'&body='+encodeURIComponent(m.text.replace('The draft grid is attached.','The draft grid is attached (please see the PDF).'));
+}
+/* ---- the panel ---- */
+function renderSurvey(){
+  const box=document.getElementById('survey-body'); if(!box) return;
+  const a=document.activeElement;
+  if(a && box.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)){ renderSurvey._later=true; return; }
+  renderSurvey._later=false;
+  box.textContent='';
+  const st=surveyView(), set=st.settings, groups=surveyGroups(), f=surveyFacts(), steps=surveySteps();
+  const can = !(window.__gridCanMove && window.__gridCanMove()===false);
+  const withMail=groups.filter(g=>emailableLeaders(g.id).length);
+  const cnt=k=>groups.filter(g=>((st.rows[g.id]||{}).status||'')===k).length;
+
+  const top=el('div','sv-top');
+  top.appendChild(el('div','sv-step', 'Step 1 · Survey Chairs for Showstoppers'+(steps.survey?' · '+longDate(steps.survey):'')
+    +(steps.final?' — then final adjustments on '+longDate(steps.final):'')));
+  top.appendChild(el('div','sv-sum', groups.length+' workgroups on the grid · '+withMail.length+' with an email · '
+    +cnt('sent')+' sent · '+cnt('ok')+' all good · '+(cnt('change')+cnt('stop'))+' want a change'));
+  const acts=el('div','sv-acts');
+  const all=el('button','btn','Build All Outlook Drafts ('+withMail.length+')'); all.type='button';
+  all.disabled=!withMail.length;
+  all.title='One Outlook draft per workgroup, addressed to its Chair(s) and Vice Chair, with the grid attached, all in one zip';
+  all.addEventListener('click',e=>{ e.stopPropagation(); surveyDrafts(groups.map(g=>g.id)); });
+  const pdfb=el('button','btn ghost','Download the Grid PDF'); pdfb.type='button';
+  pdfb.addEventListener('click',async e=>{ e.stopPropagation(); const b=surveyPdf(); if(!b){ notice('The grid PDF could not be built here.'); return; }
+    try{ await surveySave(surveyPdfName(), b, 'application/pdf'); }catch(err){} });
+  acts.appendChild(all); acts.appendChild(pdfb); top.appendChild(acts);
+  box.appendChild(top);
+
+  /* the email itself: separate fields, blank means the default shown in grey */
+  const es=el('details','sv-sec'); es.appendChild(el('summary',null,'Email Settings'));
+  const put=(k,v)=>{ surveyState().settings[k]=v; nameUndo('the chair survey email'); save(); renderSurvey(); };
+  const row2=el('div','row2');
+  const subj=textInput(set.subject||'', v=>put('subject',v), surveyDefaults().subject);
+  row2.appendChild(field('Subject', subj, 'Each email adds the workgroup’s name after it.'));
+  const rb=document.createElement('input'); rb.type='date'; rb.value=surveyReplyBy();
+  rb.addEventListener('change',()=>put('replyBy', rb.value));
+  row2.appendChild(field('Reply By', rb, set.replyBy?'':'The Friday before final adjustments.'));
+  es.appendChild(row2);
+  const row3=el('div','row2');
+  row3.appendChild(field('Your Name', textInput(set.sigName||'', v=>put('sigName',v), surveyDefaults().sigName)));
+  row3.appendChild(field('Your Title', textInput(set.sigTitle||'', v=>put('sigTitle',v), surveyDefaults().sigTitle)));
+  es.appendChild(row3);
+  const ex=document.createElement('textarea'); ex.rows=3; ex.value=set.extra||''; ex.placeholder='Optional — added before the sign-off';
+  ex.addEventListener('change',()=>put('extra', ex.value));
+  es.appendChild(field('Anything Else to Add', ex));
+  box.appendChild(es);
+
+  const hw=el('details','sv-sec'); hw.appendChild(el('summary',null,'How We Built This Schedule'));
+  const ul=el('ul','sv-how');
+  [f.rules+' Do Not Overlap requests across '+f.ruleSessions+' sessions',
+   'Groups rotated through different days where possible',
+   f.facs+' facilitators, each kept in as few rooms as possible',
+   f.rooms+' breakout rooms at '+(V().city||'the hotel')].forEach(t=>ul.appendChild(el('li',null,t)));
+  hw.appendChild(ul);
+  hw.appendChild(el('div','note','These figures are read off the Schedule as it stands and go into every email.'));
+  box.appendChild(hw);
+
+  const list=el('div','sv-list');
+  groups.forEach(g=>{
+    const r=st.rows[g.id]||{}, L=leadersOf(g.id), mailL=L.filter(leadEmail), w=surveyWhen(g.id);
+    const item=el('div','sv-row'+(SURVEY_OPEN.has(g.id)?' open':''));
+    const hd=el('div','sv-hd'); hd.setAttribute('role','button'); hd.tabIndex=0;
+    const nm=el('div','sv-nm', g.nm);
+    const meta=el('div','sv-meta', w.day+' '+w.part+' · '+surveyLength(g)+' · '
+      +(mailL.length ? joinNames(mailL.map(l=>String(l.name||leadEmail(l)).trim())) : 'no email yet'));
+    if(!mailL.length) meta.classList.add('warn');
+    const chip=el('span','sv-chip s-'+(r.status||'none'), (SURVEY_STATUS.find(x=>x[0]===(r.status||''))||SURVEY_STATUS[0])[1]);
+    const left=el('div'); left.appendChild(nm); left.appendChild(meta);
+    hd.appendChild(left); hd.appendChild(chip);
+    const toggle=()=>{ if(SURVEY_OPEN.has(g.id)) SURVEY_OPEN.delete(g.id); else SURVEY_OPEN.add(g.id); item.classList.toggle('open', SURVEY_OPEN.has(g.id)); };
+    hd.addEventListener('click',e=>{ e.stopPropagation(); toggle(); });
+    hd.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+    item.appendChild(hd);
+    const bd=el('div','sv-bd');
+    const who=el('div','sv-who');
+    if(L.length) L.forEach(l=>who.appendChild(el('div', leadEmail(l)?'':'warn',
+      (l.role||'Chair')+': '+(String(l.name||'').trim()||'(no name)')+(leadEmail(l)?' — '+leadEmail(l):' — no email yet'))));
+    else who.appendChild(el('div','warn','No leadership listed yet.'));
+    const edit=el('button','fixbtn','Edit Leadership'); edit.type='button';
+    edit.addEventListener('click',e=>{ e.stopPropagation(); openEditor(g.id); });
+    who.appendChild(edit);
+    bd.appendChild(field('Sending To', who));
+    const r2=el('div','row2');
+    const sel=selectInput(SURVEY_STATUS, r.status||'', v=>{ const W=surveyState().rows; const rr=W[g.id]||(W[g.id]={}); rr.status=v; rr.at=new Date().toISOString();
+      nameUndo('the chair survey'); save(); renderSurvey(); });
+    r2.appendChild(field('Status', sel));
+    r2.appendChild(field('Note', textInput(r.note||'', v=>{ const W=surveyState().rows; const rr=W[g.id]||(W[g.id]={}); rr.note=v; nameUndo('the chair survey'); save(); renderSurvey(); }, 'What they said')));
+    bd.appendChild(r2);
+    const ba=el('div','sv-acts');
+    const one=el('button','btn ghost','Outlook Draft'); one.type='button'; one.disabled=!mailL.length;
+    one.addEventListener('click',e=>{ e.stopPropagation(); surveyDrafts([g.id]); });
+    const ml=el('a','btn ghost','Email Link'); ml.target='_blank'; ml.rel='noopener';
+    if(mailL.length) ml.href=surveyMailto(g.id); else ml.classList.add('disabled');
+    ml.title='Opens your mail app with the email filled in — attach the grid PDF yourself';
+    ba.appendChild(one); ba.appendChild(ml);
+    bd.appendChild(ba);
+    item.appendChild(bd);
+    list.appendChild(item);
+  });
+  if(!groups.length) list.appendChild(el('div','note','No workgroups are on the grid for this summit yet.'));
+  box.appendChild(list);
+  if(!can) box.querySelectorAll('input,select,textarea,button').forEach(n=>{ if(!/Download the Grid PDF/.test(n.textContent)) n.disabled=true; });
+}
+function wireSurvey(){
+  const sec=document.getElementById('survey-sec'); if(!sec || !window.__pane) return;
+  if(!sec.dataset.card) window.__pane.card(sec,'grid:survey');
+  const b=document.getElementById('survey-btn');
+  if(b && !b.dataset.wired){ b.dataset.wired='1';
+    b.addEventListener('click',()=>{ renderSurvey(); window.__pane.open('grid:survey'); }); }
+}
+document.addEventListener('focusout',()=>{ setTimeout(()=>{ if(renderSurvey._later) renderSurvey(); }, 0); });
 function field(label, node, note){
   const f = el('div','fld');
   f.appendChild(el('label', null, label));
@@ -35260,6 +35610,32 @@ function renderEditor(){
     form.appendChild(field('Chair(s)', textInput((s.chairs||[]).join(', '),
       v=>setEdit(s.id,{chairs: v.split(',').map(t=>t.trim()).filter(Boolean)}), 'Surnames, comma separated'),
       'Two sessions sharing a chair at the same time is flagged as a conflict.'));
+    /* Jonna, 2026-09-30: who the Chair Survey writes to — kept on the workgroup for every summit */
+    {
+      const list=((s.leaders)||[]).map(x=>Object.assign({},x));
+      const box=el('div','leadlist');
+      const commit=()=>setEdit(s.id,{leaders:list}, true);
+      list.forEach((L,i)=>{
+        const r=el('div','leadrow');
+        const role=selectInput(LEAD_ROLES.map(x=>[x,x]), L.role||'Chair', v=>{ list[i].role=v; commit(); });
+        role.setAttribute('aria-label','Role');
+        const nm=textInput(L.name||'', v=>{ list[i].name=v.trim(); commit(); }, 'Full name');
+        const em=textInput(L.email||'', v=>{ list[i].email=v.trim(); commit(); }, 'Email');
+        em.type='email';
+        const x=el('button','x','\u00d7'); x.type='button'; x.title='Remove this person';
+        x.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); list.splice(i,1); commit(); });
+        r.appendChild(role); r.appendChild(nm); r.appendChild(em); r.appendChild(x);
+        box.appendChild(r);
+      });
+      const add=el('button','fixbtn','+ Add a Person'); add.type='button';
+      add.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation();
+        list.push({role: list.some(x=>x.role==='Chair') ? 'Co-Chair' : 'Chair', name:'', email:''});
+        setEdit(s.id,{leaders:list}, true); });
+      box.appendChild(add);
+      form.appendChild(field('Workgroup Leadership', box,
+        'The Chair, any Co-Chairs and the Vice Chair, with their emails. The Chair Survey writes to everyone listed. Kept for every summit.'));
+    }
+
 
     /* Jonna, 2026-09-30: whose group this is at every summit from now on, as opposed to
        who happens to run it at this one. Changing it ends any "covering for" note. */
@@ -37172,10 +37548,10 @@ const SCOPE_SHORT={"All Summits":"All Summits","This Summit Only":"This Summit",
 const SKEY={"Not Started":"none","In Progress":"prog","Need to Discuss":"disc","Being Discussed":"busy","Complete":"done"};
 
 let db=null,canWrite=null,ready=false;
+/* Jonna, 2026-09-30: two steps, then the summit. */
 const GRID_STEPS=[
-  {key:"survey",label:"Survey chairs",offset:104,taskId:"t031"},
-  {key:"coc",label:"CoC post / review",offset:97,taskId:"t032"},
-  {key:"final",label:"Finalize the schedule",offset:90,taskId:"t034"}
+  {key:"survey",label:"Survey Chairs for Showstoppers",offset:104,taskId:"t031"},
+  {key:"final",label:"Final Adjustments and Finalize the Schedule",offset:97,taskId:"t034"}
 ];
 const S={tasks:new Map(),disc:new Map(),summits:new Map(),notes:new Map(),calMonth:null,
   cfg:{name:"Winter Summit 2027",venue:"InterContinental New Orleans",start:"2027-01-11",end:"2027-01-14",
@@ -37221,7 +37597,7 @@ const ROS_FACE={
   "ros:flagged":["#flagCount",   n=>n? n+' flagged' : 'Nothing flagged', n=>n?'warn':''],
   "ros:week":   ["#weekCount",   n=>n? n+' due this week' : 'Nothing due this week', ()=>''],
   "ros:cg":     ["#cgCnt",       n=>{ const t=(document.getElementById('cgCnt')||{}).textContent||'';
-                                      return /of/.test(t)? t.trim() : 'Survey, post, finalize'; }, ()=>''],
+                                      return /of/.test(t)? t.trim() : 'Survey the chairs, then finalize'; }, ()=>''],
   /* Add A Summit paints its own line as it goes — this is only the fallback */
   "ros:new":    ["#nsCnt",       ()=>'Name it, drop the contract in', ()=>'']
 };
@@ -37375,7 +37751,35 @@ function startClock(){
 }
 
 /* summits */
-function gridSteps(){return (S.cfg.gridSteps&&S.cfg.gridSteps.length?S.cfg.gridSteps:GRID_STEPS);}
+function gridSteps(){
+  const g=S.cfg.gridSteps;
+  if(!g||!g.length||g.some(x=>x&&x.key==="coc")) return GRID_STEPS;
+  return g;
+}
+/* The steps were saved with the config, so the old three are moved to the new two once:
+   the saved list, the CoC review task (removed at Jonna's request), the finalize task's
+   days-out and the two step tasks' names. */
+let _stepsMigrating=false;
+async function migrateSteps(){
+  if(_stepsMigrating||!db||canWrite===false||!ready) return;
+  const g=S.cfg.gridSteps||[];
+  if(!g.some(x=>x&&x.key==="coc")) return;
+  _stepsMigrating=true;
+  try{
+    const su=activeSummit();
+    const t31=S.tasks.get("t031"), t32=S.tasks.get("t032"), t34=S.tasks.get("t034");
+    if(t32 && /coc/i.test(t32.task||"")){ await db.doc("tasks/t032").delete(); S.tasks.delete("t032"); }
+    if(t34){
+      const p={daysOut:97, task:"Final Adjustments and Finalize the Schedule"};
+      if(su&&su.start){ p.due=tuesdayOnOrBefore(shift(su.start,-97)); p.dueKind="date"; }
+      await db.doc("tasks/t034").update(p); Object.assign(t34,p);
+    }
+    if(t31){ await db.doc("tasks/t031").update({task:"Survey Chairs for Showstoppers"}); t31.task="Survey Chairs for Showstoppers"; }
+    await db.doc("meta/config").update({gridSteps:GRID_STEPS});
+    S.cfg.gridSteps=GRID_STEPS;
+    renderAll();
+  }catch(e){ _stepsMigrating=false; }
+}
 function summitList(){return [...S.summits.values()].sort((a,b)=>String(a.start||"9999").localeCompare(String(b.start||"9999"))||(a.order||0)-(b.order||0));}
 function activeSummit(){
   return S.summits.get(S.cfg.activeSummitId)||
@@ -37747,7 +38151,7 @@ function renderTimeline(){
   const box=$("#cgSteps");box.textContent="";
   const steps=stepsFor(su);
   if(!steps.length){
-    box.appendChild(blank("No date set for "+(su.name||"this summit"),"Add the first day of the summit in the table below and the three milestones fill in."));
+    box.appendChild(blank("No date set for "+(su.name||"this summit"),"Add the first day of the summit in the table below and the two steps fill in."));
     $("#cgCnt").textContent="—";$("#cgCnt").className="cnt";
   }else{
     const TINT={done:"var(--good)",prog:"var(--warn)",late:"var(--bad)",soon:"var(--accent)",none:"var(--line-2)"};
@@ -37811,7 +38215,7 @@ function renderSchedule(){
 
     const steps=stepsFor(su);
     if(!steps.length){
-      const td=document.createElement("td");td.colSpan=3;td.textContent="set the first day →";td.style.opacity=".6";
+      const td=document.createElement("td");td.colSpan=2;td.textContent="set the first day →";td.style.opacity=".6";
       tr.appendChild(td);
     } else steps.forEach(st=>tr.appendChild(el("td",null,fmtMD(st.date))));
 
@@ -38974,6 +39378,7 @@ function renderAuto(){
   const pk=$("#autoPeek"); if(pk) pk.textContent="";
 }
 function renderAll(){
+  try{ migrateSteps(); }catch(e){}
   renderMast();renderMeters();renderChips();renderRollup();
   if(S.view==="plan"){renderCalendar();renderNotes();renderGaps();renderRun();renderAuto();renderTimeline();renderDisc();renderWeek();}
   else if(S.view==="tasks"){renderTasks();renderDisc();renderWeek();}
