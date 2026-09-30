@@ -51,7 +51,7 @@
      schedule                schedule/summits, schedule/contract-<summit>
      resume                  resume/<summit>
      people-0 … people-3     people/*  (spread over four files by id)
-     trunk, activity, private   one file each
+     trunk, private          one file each
      rv-<summit>-<version>   resume/<summit>/versions/<version>  (one file each)
      photo-<id>              photos/<id>            (one file per headshot)
      plans-<summit>          schedule/plans-<summit> (contract pages, floor plan;
@@ -85,7 +85,6 @@
   var FLUSH_MS = 350, RETRY_MS = 8000;
   var CHUNK = 800000;           /* characters per part of a big one-document file */
   var MAX_FILE = 940000;        /* the relay takes at most 1,000,000 bytes a save */
-  var ACTIVITY_KEEP = 1500;     /* the activity log keeps its newest entries */
   var SHARDS = { people: 4 };
   /* Only these people can move sessions on the Schedule's week grid (Jonna, 2026-09-26).
      Everyone else can still edit session details, rules, requests and Hotel Specs. */
@@ -233,15 +232,6 @@
     var d = f.own ? v.doc : v.docs[path];
     return d === undefined ? null : d;
   }
-  function prune(f, content) {
-    if (f.name !== 'activity' || f.own) return content;
-    var keys = Object.keys(content.docs);
-    if (keys.length <= ACTIVITY_KEEP) return content;
-    keys.sort(function (a, b) { return String((content.docs[a] || {}).at || '').localeCompare(String((content.docs[b] || {}).at || '')); });
-    keys.slice(0, keys.length - ACTIVITY_KEEP).forEach(function (k) { delete content.docs[k]; });
-    return content;
-  }
-
   /* ---------- saving ---------- */
   function queue(path, kind, data) {
     var p = place(path), f = file(p.file, p.own);
@@ -290,7 +280,7 @@
     var batch = f.pending.slice(), tries = 0;
     var attempt = function () {
       return ensure(f).then(function () {
-        var next = prune(f, applyOps(f, clone(f.server), batch));
+        var next = applyOps(f, clone(f.server), batch);
         lockGrid(f, next, batch);
         if (!f.own && JSON.stringify(next).length > MAX_FILE) throw err('TOO_BIG', 'This part of Summit HQ has grown too big to save in one piece.');
         return putContent(f, next).then(function (b) {
@@ -4922,323 +4912,19 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 </script>
 
 <script>
-/* ============================================================
-   THE ACTIVITY LOG
-
-   Summit HQ is worked on by the whole team, so every change is written down:
-   who made it, on which tab, to what, and what the value was before and after.
-
-   Nothing on the page calls this. It wraps the database itself — so every save
-   any tab makes, now or later, is logged without that tab knowing about it. The
-   log is written into an `activity` collection and read by the Summit HQ
-   Activity page, which is separate from this dashboard on purpose.
-   ============================================================ */
+/* Who is signed in, for Held For Next Summit's "raised by". (This used to come from the
+   activity log, which was removed on 2026-09-30 at Jonna's request.) */
 (function(){
   "use strict";
-  if(window.__hqLog) return;
-
-  const COLL='activity';
-  const TAB={grid:'Schedule', specs:'Hotel Specs', ros:'Run of Show', people:'People', resume:'Resume', trunk:'Trunk'};
-  const MAXF=12;          /* fields named per save, before it says "and N more" */
-  const CUT=140;          /* how much of a value is kept */
-  const MERGE=60000;      /* a second edit to the same field inside a minute extends the first */
-
-  let me={name:'',email:''};
-  let db=null;                       /* the real store, unwrapped */
-  const cache=new Map();             /* path -> last doc we saw, for the "before" */
-  const recent=new Map();            /* field -> {id, at, from} for merging a burst */
-  let queue=Promise.resolve();       /* writes go out in order, never blocking the page */
-  let live=false;                    /* the log is about what PEOPLE did, not what loading did */
-
-  /* ---------- what the field is called, in words ---------- */
-  const WORD={
-    room:'room', setup:'set-up', av:'AV', cap:'capacity', count:'headcount', covers:'covers',
-    note:'note', fac:'facilitator', chairs:'chairs', staff:'staff', start:'start', end:'end',
-    task:'task', owner:'owner', status:'status', due:'due date', phase:'phase', scope:'scope',
-    name:'name', email:'email', title:'title', company:'company', bio:'bio', role:'role',
-    ses:'sessions', paid:'payment', text:'text', venue:'venue', dates:'dates',
-    activeSummitId:'active summit', activeVenue:'active venue', flagged:'flagged',
-    automate:'marked to automate', sort:'order', updatedAt:'',
-    /* the People tab stores its fields short */
-    n:'name', e:'email', t:'title', c:'company', i:'', on:'on this summit',
-    speaking:'speaking', steps:'a step', at:'date', amount:'amount', by:'',
-    st:'on this summit', summit:'on this summit'
-  };
-  const COLLWORD={ tasks:'a task', discussion:'an agenda item', notes:'a note',
-    summits:'a summit', people:'a person', photos:'a headshot', sponsors:'a sponsor',
-    resume:'the resume', schedule:'the week', meta:'a setting' };
-
-  function pretty(path, field){
-    let f=String(field||'');
-    /* the People tab keeps each summit's own state under st.<summit id> */
-    f=f.replace(/^st\.[A-Za-z0-9_-]+\.?/, 'summit.').replace(/^summit\.$/, 'summit');
-    const bits=f.split('.').filter(b=>b && !/^\d+$/.test(b));
-    const tail=bits.slice(-3);
-    const last=tail[tail.length-1]||'';
-    const w=WORD[last];
-    if(w==='') return '';                                  /* bookkeeping — not worth a line */
-    const lead=tail.slice(0,-1).map(b=>WORD[b]!==undefined?WORD[b]:b).filter(Boolean).join(' › ');
-    const name=w||last.replace(/([a-z])([A-Z])/g,'$1 $2').toLowerCase();
-    return (lead? lead+' › ':'') + name;
+  let me='', asked=false;
+  function ask(){
+    if(asked) return; asked=true;
+    try{ const c=window.claude; if(!c||!c.use){ asked=false; return; }
+      c.use('user').then(u=>u&&u.profile()).then(p=>{ if(p) me=p.name||''; }).catch(()=>{}); }catch(e){}
   }
-
-  /* ---------- values, shortened so the log stays readable ---------- */
-  function show(v){
-    if(v===undefined) return '';
-    if(v===null) return '(empty)';
-    if(typeof v==='boolean') return v?'yes':'no';
-    if(typeof v==='number') return String(v);
-    if(typeof v==='string'){
-      if(/^data:/.test(v)) return '(an image, '+Math.round(v.length/1365)+' KB)';
-      const t=v.trim();
-      return t===''? '(empty)' : (t.length>CUT? t.slice(0,CUT)+'…' : t);
-    }
-    if(Array.isArray(v)) return v.length? '['+v.length+' item'+(v.length===1?'':'s')+']' : '(none)';
-    /* a small object reads better as its own fields than as JSON */
-    try{
-      const ks=Object.keys(v);
-      if(ks.length && ks.length<=4 && ks.every(k=>leaf(v[k]))){
-        const t=ks.map(k=>(WORD[k]||k)+': '+show(v[k])).filter(x=>!/^: /.test(x)).join(', ');
-        if(t.length<=CUT) return t;
-      }
-      if(ks.length===1 && v[ks[0]] && typeof v[ks[0]]==='object') return show(v[ks[0]]);
-    }catch(e){}
-    try{ const s=JSON.stringify(v); return s.length>CUT? s.slice(0,CUT)+'…' : s; }catch(e){ return '(a value)'; }
-  }
-  const leaf=v => v===null || typeof v!=='object';
-
-  /* ---------- the difference between two saves ---------- */
-  function diff(a, b, at, out, depth){
-    if(out.length>=MAXF*3 || depth>6) return out;
-    const A=a&&typeof a==='object'?a:{}, B=b&&typeof b==='object'?b:{};
-    const keys=new Set(Object.keys(A).concat(Object.keys(B)));
-    keys.forEach(k=>{
-      if(out.length>=MAXF*3) return;
-      const x=A[k], y=B[k], p=at? at+'.'+k : k;
-      if(x===y) return;
-      if(leaf(x) && leaf(y)){ out.push({f:p, from:x, to:y}); return; }
-      if(Array.isArray(x) || Array.isArray(y)){
-        let same=false; try{ same=JSON.stringify(x)===JSON.stringify(y); }catch(e){}
-        if(same) return;
-        /* the week is kept as lists inside lists, so "venues changed" would say
-           nothing. Walk into them and name the one thing that moved. */
-        const A2=Array.isArray(x)?x:[], B2=Array.isArray(y)?y:[];
-        const both=A2.length===B2.length && A2.every(v=>v&&typeof v==='object');
-        if(both && A2.length<=60){
-          const mark=v=>(v&&(v.id||v.key||v.sid||v.k||v.name))||null;
-          for(let i=0;i<A2.length;i++){
-            const nm=mark(A2[i]);
-            diff(A2[i], B2[i], p+'.'+(nm!=null?nm:i), out, depth+1);
-          }
-          return;
-        }
-        out.push({f:p, from:x, to:y});
-        return;
-      }
-      if(x===undefined || y===undefined){ out.push({f:p, from:x, to:y}); return; }
-      diff(x, y, p, out, depth+1);
-    });
-    return out;
-  }
-
-  /* ---------- which tab the person is looking at ----------
-     Read off the pane that is showing, not the menu: Hotel Specs and People are
-     views of Run of Show and have no button of their own. */
-  function whichTab(){
-    try{
-      /* Beta test, 2026-09-22: a page opened into the panel leaves BOTH it and the tab
-         it was opened from drawn, so People and the Trunk were filed under Run of Show
-         when reached from their cards. The panel knows which page it is holding. */
-      try{
-        const pg=window.__pane && window.__pane.page && window.__pane.page();
-        if(pg){ const k=String(pg).replace(/^app-/,''); if(TAB[k]) return TAB[k]; }
-      }catch(e){}
-      const on=Object.keys(TAB).find(k=>{
-        const n=document.getElementById('app-'+k); return n && !n.hidden; });
-      return TAB[on]||'';
-    }catch(e){ return ''; }
-  }
-  function whichSummit(){
-    try{
-      const s=document.querySelector('.hq select');
-      if(s && s.selectedIndex>=0) return s.options[s.selectedIndex].textContent.trim();
-    }catch(e){}
-    return '';
-  }
-
-  /* ---------- writing it down ---------- */
-  function stamp(){ return new Date().toISOString(); }
-  function newId(at){ return at.replace(/[:.]/g,'-')+'-'+Math.random().toString(36).slice(2,7); }
-
-  async function put(rows){
-    if(!db || !live || !rows.length) return;
-    const at=stamp(), tab=whichTab(), summit=whichSummit();
-    for(const r of rows){
-      const key=r.path+'|'+r.f;
-      const seen=recent.get(key);
-      /* somebody typing into one box should be one line, not one per keystroke */
-      if(seen && (Date.now()-seen.t)<MERGE){
-        try{ await db.doc(COLL+'/'+seen.id).update({to:show(r.to), at}); seen.t=Date.now(); continue; }catch(e){}
-      }
-      const id=newId(at);
-      const body={ at, who:me.name||'(not signed in)', email:me.email||'', tab, summit,
-        thing:r.thing, subject:r.subject||'', field:r.label, path:r.path, key:r.f,
-        from:show(r.from), to:show(r.to), action:r.action||'changed' };
-      try{ await db.doc(COLL+'/'+id).set(body); recent.set(key,{id, t:Date.now()}); }catch(e){}
-    }
-  }
-
-  function thingFor(path){
-    const coll=String(path).split('/')[0];
-    if(/^schedule/.test(coll)) return 'the week';
-    return COLLWORD[coll] || coll;
-  }
-  /* "a person > name" does not say whose. Take the record's own name off the
-     document so the line names what was worked on. */
-  const NAMEKEYS=['n','name','task','nm','title','text','label','company'];
-  function subjectOf(before, after){
-    const o=(after && Object.keys(after).length)? after : before;
-    if(!o || typeof o!=='object') return '';
-    for(let i=0;i<NAMEKEYS.length;i++){
-      const v=o[NAMEKEYS[i]];
-      if(typeof v==='string' && v.trim()) return v.trim().slice(0,70);
-    }
-    return '';
-  }
-
-  function rowsFor(path, before, after, action){
-    /* the contract scans are megabytes of image — say it changed, do not diff it */
-    const thing=thingFor(path);
-    const subject=subjectOf(before, after);
-    if(/^schedule\/plans-/.test(path)) return [{path, f:'pages', label:'contract pages', thing:'the contract', subject:'', from:'', to:'(updated)', action:'changed'}];
-    if(action==='deleted') return [{path, f:'', label:'', thing, subject, from:'', to:'', action:'deleted'}];
-    const d=diff(before||{}, after||{}, '', [], 0).filter(x=>pretty(path,x.f)!=='');
-    const made=(before===undefined||before===null);
-    if(made && d.length>3) return [{path, f:'', label:'', thing, subject, from:'', to:'', action:'added'}];
-    const rows=d.slice(0,MAXF).map(x=>({path, f:x.f, label:pretty(path,x.f), thing, subject,
-      from:x.from, to:x.to, action: made?'added':'changed'}));
-    if(d.length>MAXF) rows.push({path, f:'(more)', label:(d.length-MAXF)+' more fields', thing, subject,
-      from:'', to:'', action:'changed'});
-    return rows;
-  }
-
-  /* what a tab hands the store is its own live object, and it goes on editing it.
-     Keeping that reference would mean comparing a document with itself, so the
-     copy kept for the next comparison is taken now. */
-  function keep(v){
-    if(v===null || v===undefined) return null;
-    try{ return structuredClone(v); }catch(e){}
-    try{ return JSON.parse(JSON.stringify(v)); }catch(e){ return null; }
-  }
-  async function before_(path){
-    if(cache.has(path)) return cache.get(path);
-    let b=null;
-    if(db){ try{ const s=await db.doc(path).get(); b=s&&s.exists?s.data():null; }catch(e){ b=null; } }
-    cache.set(path,b);
-    return b;
-  }
-  /* `before` is read by the caller BEFORE the write lands — read afterwards it would
-     be the new value, and every change would look like no change at all.
-     `patch` is set for an update, so the patch is merged onto that before. */
-  async function note(path, body, action, patch, before){
-    if(path.indexOf(COLL+'/')===0) return;                 /* never log the log */
-    const after = action==='deleted' ? null
-      : patch ? Object.assign({}, before||{}, patch)
-      : body;
-    /* the contract scans are megabytes of image and are never diffed, so they are
-       not worth keeping a copy of either */
-    cache.set(path, /^schedule\/plans-/.test(path) ? {} : keep(after));
-    await put(rowsFor(path, before, after, action));
-  }
-
-  /* ---------- the wrapper the tabs are handed ---------- */
-  /* Everything the store already does is passed straight through, bound to the store
-     itself, so this stays a thin skin over whatever the runtime hands us.
-
-     It has to be a PLAIN OBJECT. The namespace the runtime hands a page is frozen,
-     and a Proxy over a frozen object is required to hand back that object's own
-     values unchanged — returning our own `doc` for its `doc` throws a TypeError on
-     the very first use. The page then has no store at all and falls back to its
-     built-in week, which is how a full grid, its saved versions and its staff
-     requests can all appear to vanish while every one of them is safe in the
-     database. Never wrap the store in a Proxy. */
-  function skin(real, over){
-    const out={}, seen={};
-    let o=real;
-    while(o && o!==Object.prototype){
-      Object.getOwnPropertyNames(o).forEach(k=>{
-        if(k==='constructor' || seen[k]) return;
-        seen[k]=1;
-        let v; try{ v=real[k]; }catch(e){ return; }
-        if(typeof v==='function'){ try{ out[k]=v.bind(real); }catch(e){} }
-        else {
-          try{ Object.defineProperty(out,k,{ get(){ return real[k]; },
-            enumerable:true, configurable:true }); }catch(e){}
-        }
-      });
-      o=Object.getPrototypeOf(o);
-    }
-    Object.keys(over).forEach(k=>{ out[k]=over[k]; });
-    return out;
-  }
-
-  function wrap(real){
-    db=real;
-    const doc=path=>{
-      const d=real.doc(path);
-      if(path.indexOf(COLL+'/')===0) return d;
-      return skin(d, {
-        set: async body=>{ const pre=await before_(path); const r=await d.set(body);
-          queue=queue.then(()=>note(path, body, 'set', null, pre)).catch(()=>{}); return r; },
-        update: async patch=>{ const pre=await before_(path); const r=await d.update(patch);
-          queue=queue.then(()=>note(path, null, 'update', patch, pre)).catch(()=>{}); return r; },
-        delete: async ()=>{ const pre=await before_(path); const r=await d.delete();
-          queue=queue.then(()=>note(path, null, 'deleted', null, pre)).catch(()=>{}); return r; }
-      });
-    };
-    const col=c=>{
-      const k=real.collection(c);
-      if(c===COLL) return k;
-      return skin(k, { doc: id=>doc(c+'/'+id) });
-    };
-    return skin(real, { doc, collection: col });
-  }
-
-  /* ---------- hand every tab the wrapped store instead ---------- */
-  const use=window.claude && window.claude.use ? window.claude.use.bind(window.claude) : null;
-  if(!use) return;
-  let wrapped=null;
-  window.claude.use = async cap=>{
-    const got=await use(cap);
-    if(cap==='user' && got){
-      try{ const pr=await got.profile(); me={name:(pr&&pr.name)||'', email:(pr&&pr.email)||''}; }catch(e){}
-      return got;
-    }
-    if(cap!=='db' || !got) return got;
-    if(!wrapped){
-      wrapped=wrap(got);
-      /* learn who this is, even if no tab asks for the profile first */
-      (async()=>{ try{ const u=await use('user'); const pr=u&&await u.profile();
-        if(pr) me={name:pr.name||'', email:pr.email||''}; }catch(e){} })();
-    }
-    return wrapped;
-  };
-
-  /* the page seeds and migrates its own data as it loads; none of that is somebody's
-     doing, so nothing is written down until a person touches the page */
-  ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev, ()=>{ live=true; },
-    {capture:true, once:true}));
-
-  /* who is signed in, for anything that wants to stamp a name on what it writes */
-  window.__hqWho = () => (me && me.name) || '';
-  window.__hqLog={
-    who(){ return me; },
-    /* the harness turns it on without a click */
-    start(){ live=true; },
-    /* a tab can name a change in its own words; the wrapper fills in the rest */
-    say(thing, label, from, to){ queue=queue.then(()=>put([{path:'', f:label, label, thing,
-      from, to, action:'changed'}])).catch(()=>{}); }
-  };
+  ask();
+  document.addEventListener('pointerdown', ask, {capture:true});
+  window.__hqWho = () => { ask(); return me; };
 })();
 </script>
 
@@ -40978,7 +40664,7 @@ startClock();
   /* 'people' and 'photos' are the People tab — the person records and their headshots.
      A backup with a lot of headshots in it is a big file; that is the cost of it being
      a real backup. */
-  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','activity','private'];
+  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','private'];
   const VENUES=['nola','slc','bethesda'];
   const mk=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
   let DB=null;
@@ -40991,7 +40677,7 @@ startClock();
     const NICE={meta:'the settings', summits:'the summits', tasks:'the tasks',
       discussion:'the meeting', notes:'the notes', schedule:'the Schedule',
       resume:'the resume', people:'the people', photos:'the headshots', private:'the contact details',
-      sponsors:'the sponsors', trunk:'the trunk', activity:'the activity log'};
+      sponsors:'the sponsors', trunk:'the trunk'};
     let n=0;
     for(const c of COLLECTIONS){
       n++;
