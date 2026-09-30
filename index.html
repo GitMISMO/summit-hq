@@ -1021,6 +1021,11 @@ body.compact .meter .n{font-size:16px}
 .sv-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .sv-acts a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .sv-acts a.btn.disabled{pointer-events:none;opacity:.45}
+.sv-import{cursor:pointer;display:inline-flex;align-items:center}
+.sv-import.disabled{opacity:.45}
+.sv-import-note{font-size:12.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--sunk)}
+.sv-import-note .warn{color:var(--warn-ink,var(--warn))}
+.leadrow select option{font-size:13px}
 .sv-sec{border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:10px;background:var(--surface)}
 .sv-sec > summary{cursor:pointer;font-weight:700;color:var(--ink)}
 .sv-sec[open] > summary{margin-bottom:8px}
@@ -1043,15 +1048,20 @@ body.compact .meter .n{font-size:16px}
 .sv-chip.s-change{border-color:var(--warn);color:var(--warn-ink,var(--warn));background:var(--warn-soft)}
 .sv-chip.s-stop{border-color:var(--bad);color:var(--bad-ink,var(--bad));background:var(--bad-soft)}
 /* Workgroup Leadership in a session's details */
-.leadlist{display:flex;flex-direction:column;gap:6px}
+.leadlist{display:flex;flex-direction:column;gap:10px}
+/* two lines a person: role and name, then the email; the remove button beside both */
+.leadrow{grid-template-columns:132px minmax(0,1fr) 28px !important}
+.leadrow > :nth-child(1){grid-column:1;grid-row:1}
+.leadrow > :nth-child(2){grid-column:2;grid-row:1}
+.leadrow > :nth-child(3){grid-column:1 / 3;grid-row:2}
+.leadrow > :nth-child(4){grid-column:3;grid-row:1 / 3;height:100%}
 .leadrow{display:grid;grid-template-columns:118px minmax(0,1fr) minmax(0,1.2fr) 28px;gap:6px;align-items:center}
 .leadrow .x{border:1px solid var(--line-2);background:transparent;color:var(--ink-3);border-radius:4px;height:30px;cursor:pointer}
 .leadrow .x:hover{color:var(--bad);border-color:var(--bad)}
 .leadlist .fixbtn{align-self:flex-start;margin-top:0}
 @media(max-width:640px){.leadrow{grid-template-columns:minmax(0,1fr) 28px}.leadrow select,.leadrow input{grid-column:1}}
 
-.card .t .jt{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid currentColor;border-radius:3px;
-  font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:14px;vertical-align:1px;opacity:.85}
+.card .t .jt{display:inline-block;margin-left:5px;vertical-align:1px}
 .card .t{font-weight:700;font-size:11.5px;letter-spacing:-.01em;overflow-wrap:anywhere;hyphens:auto}
 .lunch-col .card .t,.eve-col .card .t{font-size:10px;line-height:1.15}
 .lunch-col .card,.eve-col .card{padding:4px 5px;overflow:hidden;
@@ -32046,7 +32056,7 @@ function makeCard(s, flags, placed, bothSlots){
   }
   c.appendChild(el('div','t', s.nm));
   if(s.jointWith){
-    const jt=el('span','jt','Joint'); jt.title='A joint meeting this summit — open the card to split them';
+    const jt=el('span','fl fl-ask jt','Joint'); jt.title='A joint meeting this summit — open the card to split them';
     c.querySelector('.t').appendChild(jt);
     c.classList.add('joint');
   }
@@ -35004,7 +35014,7 @@ function askCloseEditor(){
    Chair whether their length is right and whether anything is a showstopper, with the
    draft grid attached. Summit HQ cannot send mail, so it writes Outlook drafts. */
 const SURVEY_STATUS=[['','Not Sent'],['sent','Sent'],['ok','All Good'],['change','Wants a Change'],['stop','Showstopper']];
-const LEAD_ROLES=['Chair','Co-Chair','Vice Chair'];
+const LEAD_ROLES=['Chair','Co-Chair','Vice Chair','Co-Vice Chair'];
 const SURVEY_OPEN=new Set();          /* which rows are open: this visit only, never saved */
 function surveyView(){ const c=V().chairSurvey; return {settings:(c&&c.settings)||{}, rows:(c&&c.rows)||{}}; }
 function surveyState(){
@@ -35225,6 +35235,22 @@ function renderSurvey(){
   pdfb.addEventListener('click',async e=>{ e.stopPropagation(); const b=surveyPdf(); if(!b){ notice('The grid PDF could not be built here.'); return; }
     try{ await surveySave(surveyPdfName(), b, 'application/pdf'); }catch(err){} });
   acts.appendChild(all); acts.appendChild(pdfb); top.appendChild(acts);
+  const imp=el('label','btn ghost sv-import','Load Leadership Tracker');
+  imp.title='Read the leadership tracker spreadsheet (.xlsx) and fill in every workgroup\u2019s Chair, Co-Chair and Vice Chair';
+  const fin=document.createElement('input'); fin.type='file'; fin.accept='.xlsx'; fin.hidden=true;
+  fin.addEventListener('change',()=>{ const f=fin.files&&fin.files[0]; if(f) loadLeadershipTracker(f); fin.value=''; });
+  imp.appendChild(fin); acts.appendChild(imp);
+  const li=st.lastImport || (V().chairSurvey&&V().chairSurvey.lastImport);
+  if(li){
+    const box2=el('div','sv-import-note');
+    box2.appendChild(el('div',null,'Leadership loaded from '+li.file+' on '+new Date(li.at).toLocaleDateString('en-US',{month:'short',day:'numeric'})
+      +' \u2014 '+li.matched+' workgroups filled in.'));
+    if(li.missed && li.missed.length) box2.appendChild(el('div','warn','In the tracker but not in Summit HQ: '+li.missed.join(', ')+'.'));
+    const still=groups.filter(g=>!emailableLeaders(g.id).length).map(g=>g.nm);
+    if(still.length) box2.appendChild(el('div','warn','On the grid with no email yet: '+still.join(', ')+'. Add them under Edit Leadership.'));
+    top.appendChild(box2);
+  }
+
   box.appendChild(top);
 
   /* the email itself: separate fields, blank means the default shown in grey */
@@ -35300,7 +35326,99 @@ function renderSurvey(){
   });
   if(!groups.length) list.appendChild(el('div','note','No workgroups are on the grid for this summit yet.'));
   box.appendChild(list);
+  if(!can) box.querySelectorAll('.sv-import').forEach(n=>{ n.classList.add('disabled'); n.style.pointerEvents='none'; });
   if(!can) box.querySelectorAll('input,select,textarea,button').forEach(n=>{ if(!/Download the Grid PDF/.test(n.textContent)) n.disabled=true; });
+}
+/* ---- Load Leadership Tracker: read the .xlsx in the page, no upload anywhere ---- */
+async function xlsxRows(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf);
+  let eocd=-1; for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+  if(eocd<0) throw new Error('not an .xlsx file');
+  const n=dv.getUint16(eocd+10,true); let p=dv.getUint32(eocd+16,true); const files={};
+  for(let k=0;k<n;k++){
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nlen=dv.getUint16(p+28,true),
+          xlen=dv.getUint16(p+30,true), clen=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nlen));
+    files[name]={method,csize,off}; p+=46+nlen+xlen+clen;
+  }
+  const read=async name=>{
+    const f=files[name]; if(!f) return null;
+    const lnl=dv.getUint16(f.off+26,true), lxl=dv.getUint16(f.off+28,true), start=f.off+30+lnl+lxl;
+    const data=u8.subarray(start,start+f.csize);
+    if(f.method===0) return new TextDecoder().decode(data);
+    const ds=new DecompressionStream('deflate-raw');
+    const out=await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer();
+    return new TextDecoder().decode(out);
+  };
+  const X=t=>new DOMParser().parseFromString(t,'application/xml');
+  const shared=[]; const ss=await read('xl/sharedStrings.xml');
+  if(ss) [...X(ss).getElementsByTagName('si')].forEach(si=>shared.push([...si.getElementsByTagName('t')].map(t=>t.textContent).join('')));
+  const sheetName=files['xl/worksheets/sheet1.xml'] ? 'xl/worksheets/sheet1.xml'
+    : Object.keys(files).filter(k=>/^xl\/worksheets\/[^/]+\.xml$/.test(k)).sort()[0];
+  const sx=await read(sheetName); if(!sx) throw new Error('no sheet found');
+  const col=r=>{ const m=/^([A-Z]+)/.exec(r||''); let c=0; if(m) for(const ch of m[1]) c=c*26+(ch.charCodeAt(0)-64); return c-1; };
+  return [...X(sx).getElementsByTagName('row')].map(row=>{
+    const out=[];
+    [...row.getElementsByTagName('c')].forEach(c=>{
+      const t=c.getAttribute('t'), v=c.getElementsByTagName('v')[0];
+      let val = t==='s' ? shared[+((v&&v.textContent)||0)]
+              : t==='inlineStr' ? [...c.getElementsByTagName('t')].map(x=>x.textContent).join('')
+              : v ? v.textContent : '';
+      out[col(c.getAttribute('r'))]=val==null?'':String(val);
+    });
+    return out;
+  });
+}
+const WG_WORDS=/\b(cop|cops|dwg|workgroup|work group|community of practice|discovery group)\b/g;
+function wgKeys(name){
+  const low=String(name||'').toLowerCase().replace(/&/g,' and ');
+  const clean=t=>t.replace(WG_WORDS,' ').replace(/[^a-z0-9]+/g,' ').trim();
+  const keys=new Set([clean(low), clean(low.replace(/\([^)]*\)/g,' '))]);
+  (low.match(/\(([^)]*)\)/g)||[]).forEach(m=>keys.add(clean(m)));
+  keys.delete(''); return [...keys];
+}
+function leaderRole(pos){
+  const p=String(pos||'').toLowerCase().replace(/[^a-z]/g,'');
+  return {chair:'Chair', cochair:'Co-Chair', vicechair:'Vice Chair', covicechair:'Co-Vice Chair'}[p] || '';
+}
+async function loadLeadershipTracker(file){
+  let rows;
+  try{ rows=await xlsxRows(await file.arrayBuffer()); }
+  catch(e){ notice('That file could not be read as a spreadsheet (.xlsx). '+(e&&e.message?e.message:'')); return; }
+  const head=(rows[0]||[]).map(h=>String(h||'').trim().toLowerCase());
+  const at=re=>head.findIndex(h=>re.test(h));
+  const cPos=at(/workgroup name|position/), cPar=at(/^parent/), cName=at(/^name$/), cMail=at(/e-?mail/), cNom=at(/nominee/);
+  if(cPos<0 || cPar<0 || (cName<0 && cNom<0)){ notice('This does not look like the leadership tracker: it needs the Workgroup Name / Position, Parent, Name and Email columns.'); return; }
+  const found={}; let archive=false;
+  rows.slice(1).forEach(r=>{
+    const pos=String(r[cPos]||'').trim(), par=String(r[cPar]||'').trim();
+    if(/^archive$/i.test(pos) || /^archive$/i.test(par)){ if(/^archive$/i.test(pos)) archive=true; return; }
+    if(archive || !par) return;
+    const role=leaderRole(pos); if(!role) return;
+    const name=String(r[cName]||r[cNom]||'').replace(/\s*\([^)]*\)\s*$/,'').trim();
+    const email=String(cMail>=0 ? r[cMail]||'' : '').trim();
+    if(!name && !email) return;
+    (found[par]=found[par]||[]).push({role, name, email});
+  });
+  const pool=WGS.map(w=>({id:w.id, w:(w._raw||w)}));
+  try{ if(typeof GUESTS!=='undefined') Object.keys(GUESTS).forEach(g=>pool.push({id:g, w:GUESTS[g]})); }catch(e){}
+  const keyOf=new Map(); pool.forEach(p=>{ [p.w.nm, p.w.full].forEach(n=>wgKeys(n).forEach(k=>{ if(!keyOf.has(k)) keyOf.set(k,p.id); })); });
+  const ORDER={'Chair':0,'Co-Chair':1,'Vice Chair':2,'Co-Vice Chair':3};
+  const matched=[], missed=[];
+  Object.keys(found).forEach(g=>{
+    const id=wgKeys(g).map(k=>keyOf.get(k)).find(Boolean);
+    if(!id){ missed.push(g); return; }
+    const L=found[g].sort((a,b)=>ORDER[a.role]-ORDER[b.role]);
+    sessionEdits[id]=Object.assign({}, sessionEdits[id], {leaders:L});
+    matched.push(id);
+  });
+  if(!matched.length){ notice('No workgroup in the tracker matched a workgroup in Summit HQ, so nothing was changed.'); return; }
+  nameUndo('the leadership tracker'); rebuildSessions(); render(); save();
+  const onGrid=surveyGroups().filter(g=>!emailableLeaders(g.id).length).map(g=>g.nm);
+  const st=surveyState(); st.lastImport={at:new Date().toISOString(), file:file.name, matched:matched.length, missed, noEmail:onGrid};
+  save(); renderSurvey();
+  notice('Loaded the leadership for '+matched.length+' workgroups from '+file.name+'.'
+    +(onGrid.length?' Still no email for '+onGrid.length+' on the grid — they are listed in the Chair Survey.':''));
 }
 function wireSurvey(){
   const sec=document.getElementById('survey-sec'); if(!sec || !window.__pane) return;
