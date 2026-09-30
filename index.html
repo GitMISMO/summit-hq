@@ -4340,6 +4340,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .sprow:last-child{border-bottom:0}
 #app-people .sprow.due{box-shadow:inset 3px 0 0 -1px var(--warn);background:var(--warn-soft)}
 #app-people .sprow.done{opacity:.72}
+#app-people .pp-stepbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px 2px}
+#app-people .pp-stephd{padding:8px 16px 10px;font-weight:600;font-size:13px;color:var(--ink-2);border-bottom:1px solid var(--line)}
 #app-people .sp-l{flex:1 1 280px;min-width:0}
 #app-people .sp-co{font-size:13px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
 #app-people .sp-me{font-size:11.5px;color:var(--ink-3);line-height:1.35;overflow-wrap:anywhere}
@@ -41902,6 +41904,7 @@ const EVENT_VENUE={'winter 2027':['nola'],'spring 2027':['slc'],'fall 2027':['be
 const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), venue:'', ready:false,
   open:new Set(), q:'', role:'', left:false, step:'', elseOpen:false, addOpen:false};
 const undoStack=[];
+const GONE=new Map();   /* people just removed: id -> when */
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 const pretty=iso=>{ if(!iso) return ''; const [y,m,d]=String(iso).split('-'); if(!d) return iso;
   return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+(+d); };
@@ -41968,6 +41971,7 @@ function rec(id,label){
 }
 const pend=new Map();
 function write(id,doc){
+  GONE.delete(id);
   ST.docs.set(id,doc);
   if(!ST.db) return;
   clearTimeout(pend.get(id));
@@ -42038,7 +42042,7 @@ function stats(){
     s.need[x.k]=mine.length;
     s.steps[x.k]=mine.filter(p=>stepDone(p,x.k)).length;
   });
-  here.forEach(p=>{ if(roleOf(p)==='sponsor'){ s.sponsors++; if((stOf(p).paid||{}).at) s.paid++; } });
+  here.forEach(p=>{ if(roleOf(p)==='sponsor'){ s.sponsors++; if(paidOf(p).at) s.paid++; } });
   s.outstanding=s.total-s.ready;
   return s;
 }
@@ -42103,6 +42107,77 @@ function showPersonRow(id){
     setTimeout(()=>{ try{ n.classList.remove('justadded'); }catch(e){} }, 2200);
   }, 60);
 }
+/* Jonna, 2026-09-30: open one of the People cards — on the sheet when People is open in
+   the right-hand panel, in the panel when People is its own page. */
+function openPeopleCard(key){
+  const ck='people:'+key;
+  try{
+    const P=window.__pane; if(!P) return;
+    const sec=document.querySelector('[data-card="'+ck+'"]'); if(!sec) return;
+    if(sec.closest('#hq-pane')){ if(!sec.classList.contains('cardon')) P.openSheet(sec); }
+    else if(P.key()!==ck) P.open(ck);
+  }catch(e){}
+}
+/* On This Summit, narrowed to one step of What Still Has To Happen */
+function stepView(box,list){
+  const x=STEPS.find(z=>z.k===ST.step)||{t:''};
+  const bar=el('div','pp-stepbar');
+  const back=el('button','btn ghost pp-back','‹ Back to What Still Has To Happen'); back.type='button';
+  back.addEventListener('click',()=>{ ST.step=''; ST.open.clear(); render(); openPeopleCard('fOpen'); });
+  bar.appendChild(back);
+  const every=el('button','btn ghost','Show Everyone on This Summit'); every.type='button';
+  every.addEventListener('click',()=>{ ST.step=''; render(); });
+  bar.appendChild(every);
+  box.appendChild(bar);
+  box.appendChild(el('div','pp-stephd', x.t+(ST.ready && list.length? ' — '+list.length+' to go' : '')));
+  if(!ST.ready){ box.appendChild(el('div','blank','Loading…')); return; }
+  if(!list.length){
+    const bl=el('div','blank');
+    bl.appendChild(el('b',null,'No tasks at this time.'));
+    bl.appendChild(document.createTextNode('Nobody on this summit is waiting on this step.'));
+    box.appendChild(bl);
+    return;
+  }
+  list.forEach(p=>box.appendChild(personRow(p)));
+}
+/* the Sponsorship Portal's record for a person, a paid one first */
+function portalFor(p){
+  if(!p) return null;
+  const em=String(p.e||'').trim().toLowerCase();
+  const hits=portalRows().filter(r=>{
+    const w=personForRow(r); if(w && w.i===p.i) return true;
+    const re=String(r.email||'').trim().toLowerCase();
+    return !!(re && em && re===em);
+  });
+  return hits.find(rowPaid) || hits[0] || null;
+}
+const amtOf = r => (r.due==null || r.due==='') ? '' : (typeof r.due==='number' ? '$'+Number(r.due).toLocaleString('en-US') : String(r.due));
+/* whether a sponsor has paid: the portal says so when it has them, otherwise what was
+   recorded by hand */
+function paidOf(p){
+  const r=portalFor(p);
+  if(r) return {from:'portal', row:r, at: rowPaid(r)? (r.paid||'yes') : '', amount: amtOf(r)};
+  const m=stOf(p).paid||{};
+  return {from:'hand', at:m.at||'', amount:m.amount||''};
+}
+/* take a person out for good: nothing waiting to be saved and no late re-read of the file
+   can bring them back */
+async function removeDoc(id){
+  clearTimeout(pend.get(id)); pend.delete(id);
+  GONE.set(id, Date.now());
+  ST.docs.delete(id); ST.open.delete(id);
+  if(ST.db){ try{ await ST.db.doc('people/'+id).delete(); }catch(x){} }
+}
+/* "Take Back" on a portal row: somebody Add and Start made from the portal is removed
+   again; anyone else is just taken off this summit */
+function takeBack(id){
+  const d=ST.docs.get(id)||{}, v=venueNow();
+  const elsewhere=Object.keys(d.st||{}).some(k=>k!==v && (d.st[k]||{}).on);
+  const seeded=SEED.some(x=>x && x.i===id);
+  if(d.add && !elsewhere && !seeded){ rec(id,'a sponsor taken back'); removeDoc(id); }
+  else patchSt(id,{on:false},'a sponsor taken back');
+  render();
+}
 function goTo(which){
   render();
   /* the block is a card now, so open it rather than scrolling to a shut one */
@@ -42147,7 +42222,7 @@ function foundLine(){
    or not, so the pane can take it the moment it is asked for. */
 /* what the line under each name says, given how many are in it */
 const PP_SAY={
-  lOpen:    n=>n? n+' on this summit' : 'Nobody on this summit yet',
+  lOpen:    n=>n? n+(ST.step?' to go':' on this summit') : (ST.step?'No tasks at this time':'Nobody on this summit yet'),
   elseOpen: n=>n+' on the master list',
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
   fOpen:    n=>n? n+' still outstanding' : 'Everyone has what they need'
@@ -42192,9 +42267,8 @@ function funnel(){
     /* Jonna, 2026-09-23: pressing a row shows the people who make up its number — it
        filters On This Summit and opens it, rather than filtering a list she cannot see. */
     b.addEventListener('click',()=>{
-      const was=ST.step;
-      ST.step = was===x.k ? '' : x.k; ST.left=false; render();
-      if(ST.step){ try{ if(window.__pane) window.__pane.open('people:lOpen'); }catch(e){} }
+      ST.step=x.k; ST.left=false; ST.open.clear(); render();
+      openPeopleCard('lOpen');
     });
     wrap.appendChild(b);
   });
@@ -42261,9 +42335,9 @@ function personRow(p, off){
   if(nx){ line='Next: '+nx.ask+' — '+(WHO[nx.who]||nx.who); }
   else { line='Ready — they have everything they need'; cls=' ok'; }
   if(roleOf(p)==='sponsor'){
-    const paid=st.paid||{};
-    line += paid.at ? '  ·  Paid '+pretty(paid.at) : '  ·  Not paid yet';
-    if(!paid.at) cls=' owed';
+    const pd=paidOf(p);
+    line += pd.at ? '  ·  Paid'+(pd.at!=='yes'?' '+pretty(pd.at):'') : '  ·  Not paid yet';
+    if(!pd.at) cls=' owed';
   }
   hd.appendChild(el('span','pp-next'+cls,line));
   hd.addEventListener('click',()=>{ if(open) ST.open.delete(p.i); else ST.open.add(p.i); render(); });
@@ -42462,23 +42536,22 @@ function personBody(p, off){
 
   /* sponsors: whether this summit has been paid for */
   if(!off && roleOf(p)==='sponsor'){
-    const fromPortal=portalRows().find(r=>{
-      const em=String(r.email||'').trim().toLowerCase();
-      return (em && em===String(p.e||'').toLowerCase())
-        || String(r.name||'').trim().toLowerCase()===String(p.n||'').trim().toLowerCase();
-    });
+    const fromPortal=portalFor(p);
     if(fromPortal){
       const pb=el('div','paidbox'+(rowPaid(fromPortal)?' yes':''));
       const L=el('div','sp-l');
       L.appendChild(el('div','sp-co',fromPortal.company||''));
       L.appendChild(el('div','sp-me',[fromPortal.level,fromPortal.opportunity,fromPortal.appNo]
         .filter(Boolean).join(' \u00b7 ')));
-      L.appendChild(el('div','sp-me', rowPaid(fromPortal)
-        ? 'Paid'+(fromPortal.paid?' '+pretty(fromPortal.paid):'')+' \u00b7 from the Sponsorship Portal'
-        : (fromPortal.status||'Not paid')+' \u00b7 from the Sponsorship Portal'));
+      L.appendChild(el('div','sp-me', (rowPaid(fromPortal)
+        ? 'Paid'+(fromPortal.paid?' '+pretty(fromPortal.paid):'')
+        : (fromPortal.status||'Not paid'))+(amtOf(fromPortal)?' · '+amtOf(fromPortal):'')));
+      L.appendChild(el('div','pnote','Updated automatically from the Sponsorship Portal.'));
       pb.appendChild(L);
       b.appendChild(pb);
     }
+    /* the by-hand record is only for sponsors the portal does not have */
+    if(!fromPortal){
     const paid=st.paid||{};
     const box=el('div','paidbox'+(paid.at?' yes':''));
     const t=el('button','btn'+(paid.at?'':' ghost'),paid.at?'✓ Paid':'Mark as paid'); t.type='button';
@@ -42495,7 +42568,9 @@ function personBody(p, off){
     a.addEventListener('change',()=>patchSt(p.i,{paid:Object.assign({},paid,{amount:a.value.trim()})},'a payment amount'));
     box.appendChild(fld('Amount',a));
     if(paid.by) box.appendChild(el('div','pnote','Recorded '+paid.by+'.'));
+    box.appendChild(el('div','pnote','Not in the Sponsorship Portal, so the payment is kept here by hand.'));
     b.appendChild(box);
+    }
   }
 
   /* which sessions they are speaking in \u2014 this is what fills the app's Session ID */
@@ -42697,6 +42772,11 @@ function render(){
           open.title='Open '+(who.n||'their')+' row under On This Summit';
           open.addEventListener('click',()=>showPersonRow(who.i));
           A.appendChild(open);
+          const tb=el('button','btn ghost danger sp-take','Take Back'); tb.type='button';
+          tb.title='Take '+(who.n||'them')+' back off this summit \u2014 for when Add and Start was pressed by mistake';
+          let armed=false;
+          tb.addEventListener('click',()=>{ if(!armed){ armed=true; tb.textContent='Click Again to Take Back'; tb.classList.add('armed'); return; } takeBack(who.i); });
+          A.appendChild(tb);
         }
         row.appendChild(A);
         box.appendChild(row);
@@ -42723,6 +42803,7 @@ function render(){
   left.appendChild(stillSec);
   left.appendChild(section('On This Summit', note||'Click a row to open it. Everything inside is a field.',
     list.length,'lOpen',true,box=>{
+    if(ST.step){ stepView(box,list); return; }
     box.appendChild(addBlock());
     if(!ST.ready){ box.appendChild(el('div','blank','Loading…')); return; }
     if(!list.length){
@@ -43105,7 +43186,7 @@ function init(){
   if(window.__hqUndo) window.__hqUndo.register('people',async()=>{
     const e=undoStack.pop(); if(!e) return;
     if(e.prev){ write(e.id,e.prev); }
-    else { ST.docs.delete(e.id); if(ST.db){ try{ await ST.db.doc('people/'+e.id).delete(); }catch(x){} } }
+    else { await removeDoc(e.id); }
     render();
   });
 
@@ -43131,7 +43212,8 @@ function init(){
       db.collection('people').onSnapshot(s=>{
         s.docChanges().forEach(c=>{
           if(c.type==='removed') ST.docs.delete(c.doc.id);
-          else ST.docs.set(c.doc.id,Object.assign({i:c.doc.id},c.doc.data()));
+          else if(!(GONE.has(c.doc.id) && Date.now()-GONE.get(c.doc.id)<120000))
+            ST.docs.set(c.doc.id,Object.assign({i:c.doc.id},c.doc.data()));
         });
         render();
       },()=>{ render(); });
