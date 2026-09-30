@@ -441,7 +441,7 @@
       var a = raw[id] || {};
       return { appNo: a.appNo || '', company: a.company || '', name: a.contactName || '', email: a.contactEmail || '',
         event: a.event || '', status: a.status || '', level: a.level2027 || a.level2026 || '',
-        opportunity: a.opportunity || '', amountDue: a.amountDue || '', paid: a.paymentReceivedDate || '' };
+        opportunity: a.opportunity || '', due: a.amountDue || '', paid: a.paymentReceivedDate || '' };
     });
     return { rows: rows, at: (f.server && (f.server.copiedAt || f.server.savedAt)) || '' };
   }
