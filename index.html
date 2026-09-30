@@ -108,6 +108,7 @@
 
   function RS() { return window.ResourcesSession || null; }
   function gridOwner() { var s = RS() && RS().current(); return !!s && GRID_OWNERS.indexOf(String(s.email || '').toLowerCase()) >= 0; }
+  window.__gridCanMove = function () { return gridOwner(); };
   function clone(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
   /* the relay's file names: lowercase letters, digits and hyphens, at most 40 */
   function hash8(s) { var h = 5381; s = String(s); for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return ('0000000' + h.toString(36)).slice(-8); }
@@ -1006,6 +1007,14 @@ body.compact .meter .n{font-size:16px}
 :root[data-theme="dark"] .card.setpiece .m .att{color:hsl(45 70% 74%)}
 .card:active{cursor:grabbing}
 .card.sel{outline:2px solid var(--accent);outline-offset:1px}
+/* the joint meeting box in a session's details */
+.jointbox{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--line-2);border-left:3px solid var(--accent);
+  border-radius:6px;background:var(--accent-soft)}
+.jointbox .jb-line{font-weight:600;color:var(--ink)}
+.jointbox .jb-note{font-size:12px;color:var(--ink-2)}
+.jointbox .fixbtn{align-self:flex-start;margin-top:0}
+.card .t .jt{display:inline-block;margin-left:6px;padding:0 5px;border:1px solid currentColor;border-radius:3px;
+  font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:14px;vertical-align:1px;opacity:.85}
 .card .t{font-weight:700;font-size:11.5px;letter-spacing:-.01em;overflow-wrap:anywhere;hyphens:auto}
 .lunch-col .card .t,.eve-col .card .t{font-size:10px;line-height:1.15}
 .lunch-col .card,.eve-col .card{padding:4px 5px;overflow:hidden;
@@ -30528,7 +30537,97 @@ function rebuildSessions(){
     .map(x=>Object.assign({}, x, sessionEdits[x.id]||{}));
   S = Object.fromEntries(SESSIONS.map(x=>[x.id,x]));
   WGS = SESSIONS.filter(x=>x.kind==='wg');
+  applyJoints();
   assignHues();
+}
+/* ============================ JOINT MEETINGS ============================
+   Jonna, 2026-09-30: two workgroups can meet together as one session for a summit.
+   The joint lives on the venue record, so it belongs to that summit only. While two
+   groups are joined, the second (the guest) is folded into the first (the host): one
+   card with both names, a combined headcount, both sets of chairs, and both groups'
+   Do Not Overlap rules. The guest is off the grid and the workgroup list until the
+   two are split again. */
+let JOINED = {};            /* guest id -> host id, for the summit on screen */
+let GUESTS = {};            /* guest id -> the guest's own session, while it is folded in */
+let JOINT_SIG = '';
+const JH = id => JOINED[id] || id;
+function jointList(){ try{ const v=V(); return Array.isArray(v&&v.joints) ? v.joints : []; }catch(e){ return []; } }
+function jointSig(){ try{ return activeVenue+'|'+JSON.stringify(jointList()); }catch(e){ return ''; } }
+function jointOf(id){ return jointList().find(j=>j.host===id || j.guest===id) || null; }
+function applyJoints(){
+  JOINED = {}; GUESTS = {};
+  const js = jointList();
+  JOINT_SIG = jointSig();
+  js.forEach(j=>{
+    const h=S[j.host], g=S[j.guest];
+    if(!h || !g || j.host===j.guest || h.kind!=='wg' || g.kind!=='wg') return;
+    if(JOINED[j.host] || JOINED[j.guest]) return;
+    JOINED[j.guest] = j.host;
+  });
+  if(!Object.keys(JOINED).length) return;
+  Object.entries(JOINED).forEach(([gid,hid])=>{
+    const H=S[hid], G=S[gid], j=js.find(x=>x.guest===gid);
+    const typed = j && j.att!=null && j.att!=='' ? Number(j.att) : null;
+    const both = (H.att==null && G.att==null) ? null : (Number(H.att)||0)+(Number(G.att)||0);
+    GUESTS[gid] = G;
+    S[hid] = Object.assign({}, H, {
+      nm: H.nm+' + '+G.nm,
+      full: (H.full||H.nm)+' + '+(G.full||G.nm),
+      att: typed!=null ? typed : both,
+      chairs: [...new Set([...(H.chairs||[]), ...(G.chairs||[])])],
+      avoid: [...new Set([...(H.avoid||[]), ...(G.avoid||[])])],
+      jointWith: gid, _raw: H
+    });
+  });
+  SESSIONS = SESSIONS.filter(x=>!JOINED[x.id]).map(x=>{
+    const y = S[x.id] || x;
+    const out = Object.assign({}, y);
+    if(Array.isArray(y.avoid))
+      out.avoid = [...new Set(y.avoid.map(JH))].filter(o=>o!==x.id);
+    if(Array.isArray(y.pairDay) && y.pairDay[0]){
+      const to = JH(y.pairDay[0]);
+      out.pairDay = to===x.id ? null : [to].concat(y.pairDay.slice(1));
+      if(!out.pairDay) delete out.pairDay;
+    }
+    return out;
+  });
+  S = Object.fromEntries(SESSIONS.map(x=>[x.id,x]));
+  WGS = SESSIONS.filter(x=>x.kind==='wg');
+}
+function joinSessions(hid, gid){
+  if(!S[hid] || !S[gid] || hid===gid) return;
+  const v=V(), pl=place();
+  const was = pl[gid] ? JSON.parse(JSON.stringify(pl[gid])) : null;
+  nameUndo('a joint meeting');
+  v.joints = (Array.isArray(v.joints)?v.joints:[]).filter(j=>
+    j.host!==hid && j.guest!==hid && j.host!==gid && j.guest!==gid);
+  v.joints.push({host:hid, guest:gid, att:null, was});
+  delete pl[gid];
+  rebuildSessions(); refreshRuleset(); refreshAskLocks(); render(); save();
+  notice(S[hid].nm+' now meet together as one session. Move the card to where they are meeting; '
+    +'split them from its details if that changes.');
+}
+function splitJoint(gid){
+  const v=V(), j=jointList().find(x=>x.guest===gid); if(!j) return;
+  nameUndo('a joint meeting split');
+  v.joints = jointList().filter(x=>x!==j);
+  rebuildSessions();
+  let back='';
+  const w=j.was, pl=place();
+  if(w && BLOCK[w.b] && roomById(w.r) && S[gid] && !pl[gid]){
+    const taken = Object.keys(pl).some(id=>id!==gid && S[id] && pl[id] && pl[id].b===w.b
+      && roomsCollide(pl[id].r, w.r) && concurrent(pl[id], w));
+    if(!taken){ pl[gid]=w; back=' It went back to '+BLOCK[w.b].dayLabel+' '+(BLOCK[w.b].half||'')+'.'; }
+  }
+  refreshRuleset(); refreshAskLocks(); render(); save();
+  notice((S[gid]?S[gid].nm:'It')+' is its own session again.'
+    +(back||' It is on the workgroup list, ready to place.'));
+}
+function setJointAtt(gid, val){
+  const j=jointList().find(x=>x.guest===gid); if(!j) return;
+  nameUndo('the joint headcount');
+  j.att = (val==null || val==='') ? null : Math.max(0, parseInt(val,10)||0);
+  rebuildSessions(); render(); save();
 }
 rebuildSessions();
 const RULE_VIA = {'emortgage|sr-advisors':'Fall note names Charlie Epperson, who chairs eMortgage'};
@@ -30701,8 +30800,8 @@ function refreshAskLocks(){
     asks().forEach(q=>{
       if(q.sev!=='must') return;
       if(!askState(q).ok) return;
-      if(q.a) next.add(q.a);
-      if(q.b) next.add(q.b);
+      if(q.a) next.add(JH(q.a));
+      if(q.b) next.add(JH(q.b));
     });
   }catch(e){}
   ASK_LOCKED=next;
@@ -31170,6 +31269,7 @@ function askSentence(q){
 /* is it met right now? returns null when it cannot be judged yet */
 function askState(q, pl){
   pl = pl || place();
+  if(q && (JOINED[q.a] || JOINED[q.b])) q = Object.assign({}, q, {a:JH(q.a), b:q.b?JH(q.b):q.b});
   const pa=pl[q.a];
   if(!S[q.a]) return {ok:false, why:'That session is no longer in this summit.'};
   if(q.kind==='when'){
@@ -31200,11 +31300,13 @@ function askState(q, pl){
 function allRules(){
   const out = new Map();
   WGS.forEach(s=>s.avoid.forEach(o=>{ if(S[o]) out.set(key(s.id,o), {a:s.id,b:o,src:'Fall'}); }));
-  extraRules.forEach(([a,b])=>{ if(S[a]&&S[b]) out.set(key(a,b), {a,b,src:'Added'}); });
+  extraRules.forEach(([a,b])=>{ a=JH(a); b=JH(b); if(a!==b && S[a]&&S[b]) out.set(key(a,b), {a,b,src:'Added'}); });
   /* A rule held for the next summit becomes live only on the summits that have
      taken it — never on the one it was raised on, and never on a summit that has
      not been asked yet. That is why it is not simply pushed into extraRules. */
-  heldRules.forEach(h=>{
+  heldRules.forEach(h0=>{
+    const h = Object.assign({}, h0, {a:JH(h0.a), b:JH(h0.b)});
+    if(h.a===h.b) return;
     if(!S[h.a] || !S[h.b]) return;
     if(!(h.taken && h.taken[activeVenue])) return;
     if(out.has(key(h.a,h.b))) return;
@@ -31215,7 +31317,8 @@ function allRules(){
 /* Slot requests this summit has taken: one session's day, checked on its own rather
    than against another session. */
 function heldSlotsHere(){
-  return heldRules.filter(h => h.kind==='slot' && S[h.a] && h.taken && h.taken[activeVenue]);
+  return heldRules.filter(h => h.kind==='slot' && S[JH(h.a)] && h.taken && h.taken[activeVenue])
+    .map(h => JOINED[h.a] ? Object.assign({}, h, {a:JH(h.a)}) : h);
 }
 let RULESET = new Set();
 let SOFTSET = new Set();      /* "would rather not" — a warning, not a conflict */
@@ -31903,6 +32006,11 @@ function makeCard(s, flags, placed, bothSlots){
     c.appendChild(dot);
   }
   c.appendChild(el('div','t', s.nm));
+  if(s.jointWith){
+    const jt=el('span','jt','Joint'); jt.title='A joint meeting this summit — open the card to split them';
+    c.querySelector('.t').appendChild(jt);
+    c.classList.add('joint');
+  }
   const hrs=slotHours(s, placed && p ? p.b : null);
   if(hrs){
     c.appendChild(el('div','tm', hrs));
@@ -32043,6 +32151,7 @@ function showFatal(err){
 }
 function render_(){
   orderRooms();
+  if(jointSig()!==JOINT_SIG) rebuildSessions();
   refreshRuleset(); refreshAskLocks();
   syncVenueAndSessions();
   const v=V(), pl=place(), LK=lockedAt();
@@ -35019,7 +35128,8 @@ function renderEditor(){
   renderEditor._later=false;
   host.textContent='';
   if(!editing || !S[editing]) return;
-  const s = S[editing], pl = place(), p = pl[editing];
+  /* a joint meeting's details edit the host's own fields; the joint itself has its own box */
+  const s = S[editing]._raw || S[editing], pl = place(), p = pl[editing];
   const rm = p ? roomById(p.r) : null;
   const isWG = s.kind==='wg';
 
@@ -35032,7 +35142,7 @@ function renderEditor(){
 
   const hd = document.createElement('header');
   const hl = el('div');
-  hl.appendChild(el('h3', null, s.nm));
+  hl.appendChild(el('h3', null, S[editing].nm));
   const stRoom = s.kind==='standing' ? roomById(standingRoomFor(s.id)) : null;
   hl.appendChild(el('div','sub', p ? (BLOCK[p.b].dayLabel+' '+(BLOCK[p.b].half||'')+' · '+(rm?rm.nm:'?'))
     : stRoom ? stRoom.nm : 'Not placed'));
@@ -35078,6 +35188,39 @@ function renderEditor(){
     form.appendChild(field('This summit', nb,
       'No Session takes it off the grid and leaves it on the workgroup list tagged DNS. '
       +'Unknown leaves it on the list to come back to.'));
+  }
+
+  if(isWG){
+    const J = jointOf(s.id);
+    const canMove = !(window.__gridCanMove && window.__gridCanMove()===false);
+    if(J && J.host===s.id && GUESTS[J.guest]){
+      const G = GUESTS[J.guest];
+      const box = el('div','jointbox');
+      box.appendChild(el('div','jb-line','Meeting together with '+G.nm+' this summit, as one session in this spot.'));
+      const sum = (s.att==null && G.att==null) ? null : (Number(s.att)||0)+(Number(G.att)||0);
+      const r = el('div','row2');
+      const n = numInput(J.att, v=>setJointAtt(J.guest, v), sum==null?'headcount':String(sum));
+      if(!canMove) n.disabled=true;
+      r.appendChild(field('Joint Headcount', n, 'Leave blank to add the two together'
+        +(sum==null?'.':': '+(s.att==null?'—':s.att)+' + '+(G.att==null?'—':G.att)+' = '+sum+'.')));
+      box.appendChild(r);
+      const sp = el('button','fixbtn','Split Back Apart'); sp.type='button';
+      if(!canMove){ sp.disabled=true; sp.title='Only the Schedule\'s owner can change the grid'; }
+      sp.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); splitJoint(J.guest); });
+      box.appendChild(sp);
+      box.appendChild(el('div','jb-note', G.nm+'\'s own chairs and Do Not Overlap rules are counted here while they meet together. '
+        +'Split them and it goes back to its own spot if that is still free, otherwise to the workgroup list.'));
+      form.appendChild(field('Joint Meeting', box));
+    } else if(!J){
+      const opts = [['','Not a joint meeting']].concat(WGS.filter(w=>w.id!==s.id && !w.jointWith)
+        .slice().sort((a,b)=>a.nm.localeCompare(b.nm)).map(w=>[w.id, w.nm]));
+      const sel = selectInput(opts, '', v=>{ if(v) joinSessions(s.id, v); });
+      if(!canMove) sel.disabled=true;
+      form.appendChild(field('Meets Jointly With', sel,
+        canMove ? 'Pick the group meeting together with this one this summit. They become one session in this spot, '
+          +'with both headcounts, chairs and Do Not Overlap rules; the other group comes off the grid until they are split.'
+          : 'Only the Schedule\'s owner can change the grid.'));
+    }
   }
 
   if(isWG){
