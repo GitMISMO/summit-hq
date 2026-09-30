@@ -42079,6 +42079,30 @@ function matches(){
   const people=all();
   return {on:people.filter(p=>onSummit(p)&&hit(p)), off:people.filter(p=>!onSummit(p)&&hit(p))};
 }
+/* Jonna, 2026-09-30: take her to a person's row under On This Summit. That block is a
+   card, so open it first — as a sheet when People is open in the right-hand panel, in the
+   panel when People is its own page — then open the row, scroll to it and light it up. */
+function showPersonRow(id){
+  ST.open.add(id); ST.lOpen=true; render();
+  const ck='people:lOpen';
+  try{
+    const P=window.__pane, sec=document.querySelector('[data-card="'+ck+'"]');
+    if(P && sec){
+      const showing=[...document.querySelectorAll('.pp-row[data-id="'+id+'"]')].find(n=>n.getClientRects().length>0);
+      if(!showing){
+        if(sec.closest('#hq-pane')) P.openSheet(sec);
+        else if(P.key()!==ck) P.open(ck);
+      }
+    }
+  }catch(e){}
+  setTimeout(()=>{
+    const n=[...document.querySelectorAll('.pp-row[data-id="'+id+'"]')].find(x=>x.getClientRects().length>0);
+    if(!n) return;
+    try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+    n.classList.add('justadded');
+    setTimeout(()=>{ try{ n.classList.remove('justadded'); }catch(e){} }, 2200);
+  }, 60);
+}
 function goTo(which){
   render();
   /* the block is a card now, so open it rather than scrolling to a shut one */
@@ -42657,11 +42681,7 @@ function render(){
               write(id,{i:id,n:r.name||r.company,e:r.email||'',c:r.company||'',add:true,
                 st:{[venueNow()]:{on:true,role:'sponsor',steps:{}}}});
             } else patchSt(id,{on:true,role:'sponsor'},'a sponsor from the portal');
-            ST.open.add(id); ST.sponOpen=true; ST.lOpen=true; render();
-            const n=document.querySelector('.pp-row[data-id="'+id+'"]');
-            if(n){ try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
-              n.classList.add('justadded');
-              setTimeout(()=>{ try{ n.classList.remove('justadded'); }catch(e){} }, 2200); }
+            ST.sponOpen=true; showPersonRow(id);
           });
           A.appendChild(add);
         } else {
@@ -42675,15 +42695,7 @@ function render(){
           A.appendChild(go);
           const open=el('button','btn ghost','Open'); open.type='button';
           open.title='Open '+(who.n||'their')+' row under On This Summit';
-          open.addEventListener('click',()=>{
-            ST.open.add(who.i); ST.lOpen=true; render();
-            /* it is somewhere else down the page, so go to it \u2014 otherwise pressing
-               this looks like it did nothing at all */
-            const n=document.querySelector('.pp-row[data-id="'+who.i+'"]');
-            if(n){ try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
-              n.classList.add('justadded');
-              setTimeout(()=>{ try{ n.classList.remove('justadded'); }catch(e){} }, 2200); }
-          });
+          open.addEventListener('click',()=>showPersonRow(who.i));
           A.appendChild(open);
         }
         row.appendChild(A);
