@@ -159,6 +159,7 @@
       return r.json().catch(function () { return {}; }).then(function (b) {
         if (r.ok) return b;
         var e = err((b && b.error) || ('HTTP_' + r.status), b && b.message, r.status);
+        e.gh = (b && typeof b.status === 'number') ? b.status : 0;   /* what GitHub itself answered */
         if (r.status === 401 && rs) { needSignIn(); }
         throw e;
       });
@@ -317,7 +318,8 @@
       /* a 502 from the relay with TOKEN or GITHUB is a setup problem, not a blip: say so at once
          rather than retrying quietly forever */
       var transient = e && (e.code === 'OFFLINE' || e.status === 401 || e.code === 'SIGNED_OUT' ||
-        (e.status >= 500 && e.code !== 'TOKEN' && e.code !== 'GITHUB' && e.code !== 'REJECTED'));
+        (e.status >= 500 && e.code !== 'TOKEN' && e.code !== 'GITHUB' && e.code !== 'REJECTED') ||
+        (e.code === 'GITHUB' && (e.gh >= 500 || !e.gh && /timed? ?out|ETIMEDOUT|ECONNRESET|fetch failed/i.test(e.message || ''))));
       if (transient) {
         /* nothing is lost: the change stays queued and goes out once the relay is back */
         if (e.status === 401 || e.code === 'SIGNED_OUT') f.waitingSignIn = true;
@@ -672,7 +674,13 @@
   var troubled = false;
   function problem(e, lost) {
     status.lastError = (e && (e.code || e.message)) || 'error';
-    if (lost) { toast('A change didn’t save (' + ((e && (WHY[e.code] || e.message)) || 'relay error') + '). It has been taken back.', 'bad'); return; }
+    if (lost) {
+      var why = (e && (WHY[e.code] || e.message)) || 'relay error';
+      if (e && e.code === 'GITHUB') why = e.gh === 404
+        ? 'GitHub says the save relay’s key can’t see the summit-hq-data repository. It needs adding back to the key’s repository list'
+        : 'GitHub refused the save' + (e.gh ? ': ' + e.gh + (e.message ? ' ' + e.message : '') : (e.message ? ': ' + e.message : ''));
+      toast('A change didn’t save (' + why + '). It has been taken back.', 'bad'); return;
+    }
     troubled = true;
     toast(e && (e.status === 401 || e.code === 'SIGNED_OUT') ? 'Sign in again to finish saving — nothing is lost.' : 'Not saved yet — trying again. Keep this tab open.', 'bad');
   }
@@ -1266,6 +1274,7 @@ body.compact .meter .n{font-size:16px}
   padding:3px;border:1px dashed transparent}
 /* drop a card here to take it off the grid */
 .park.drop-ok{border-color:var(--accent);background:var(--accent-soft)}
+#grid-cards .ascard.drop-ok{outline:2px dashed var(--accent);outline-offset:2px;background:var(--accent-soft)}
 .park .card{flex:0 0 auto;width:calc(50% - 3px);min-height:58px}
 @media(max-width:560px){.park .card{width:100%}}
 /* a card just added here lights up so it is easy to find in the list */
@@ -5625,7 +5634,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     /* a tab says how to step back through its own history */
     register(src, fn){ panes[src]=fn; paint(); },
     /* a tab says it has just stored a step */
-    record(src, label){
+    record(src, label, opts){
+      /* a follow-up a change set off on another tab (answering "update the resume?" after
+         moving a session) is part of that change: one Undo steps back both */
+      const top=stack[stack.length-1];
+      if(opts && opts.follow && top && top.src!==src){ (top.also=top.also||[]).push(src); paint(); return; }
       stack.push({src, label:label||''});
       if(stack.length>150) stack.shift();
       paint();
@@ -5642,6 +5655,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       stack.pop(); busy=true; paint();
       showTab(e.src);
       try{ await panes[e.src](); }catch(err){ try{ console.error(err); }catch(x){} }
+      for(const s of (e.also||[]).slice().reverse()){
+        try{ if(panes[s]) await panes[s](); }catch(err){ try{ console.error(err); }catch(x){} }
+      }
       busy=false; paint();
     },
     steps(){ return stack.length; },
@@ -32398,6 +32414,18 @@ function render_(){
     ? [String(parked.length-dnsN-unkN)].concat(unkN?[unkN+' unknown']:[]).concat(dnsN?[dnsN+' DNS']:[]).join(' + ')
     : String(parked.length);
   wireUnplace(park); wireUnplace($('consbench'));
+  /* Jonna, 2026-10-05: the cards themselves take a drop too, so a session can go back to
+     its list with the panel shut */
+  ['grid:park','grid:cons'].forEach(k=>{
+    const sec=document.querySelector('[data-card="'+k+'"]');
+    if(!sec || sec.dataset.dropback) return;
+    sec.dataset.dropback='1';
+    sec.addEventListener('dragover',e=>{ e.preventDefault(); sec.classList.add('drop-ok'); });
+    sec.addEventListener('dragleave',e=>{ if(!sec.contains(e.relatedTarget)) sec.classList.remove('drop-ok'); });
+    sec.addEventListener('drop',e=>{ e.preventDefault(); e.stopPropagation(); sec.classList.remove('drop-ok');
+      const raw=(e.dataTransfer.getData('text/plain')||'').split('#');
+      if(raw[0] && place()[raw[0]]) unplaceTo(raw[0]); });
+  });
   const bench=$('consbench'); bench.textContent='';
   bench.classList.toggle('empty', unplacedCons.length===0);
   unplacedCons.forEach(s=>bench.appendChild(makeCard(s,{bad:[],warn:[]},false)));
@@ -40162,11 +40190,11 @@ startClock();
     if(now-rzLast>900 || !RZ_UNDO.length){
       RZ_UNDO.push({venue:ST.venue, doc:rzPrev});
       if(RZ_UNDO.length>60) RZ_UNDO.shift();
-      try{ if(window.__hqUndo) window.__hqUndo.record('resume', rzLabel||'a resume edit'); }catch(e){}
+      try{ if(window.__hqUndo) window.__hqUndo.record('resume', rzLabel||'a resume edit', rzFollow?{follow:true}:null); }catch(e){}
     }
     rzLabel=''; rzLast=now; rzPrev=clone(ST.doc);
   }
-  let rzLabel='';
+  let rzLabel='', rzFollow=false;
   function rzName(s){ rzLabel=s; }
   async function rzUndo(){
     const step=RZ_UNDO.pop();
@@ -40729,7 +40757,7 @@ startClock();
       queueSave._skip=true; queueSave(); return; }
     let pend=pendingNow();
     const mine=pend.filter(p=>ST.auto.has(p.key)).map(p=>p.key);
-    if(mine.length){ ST.auto.clear(); acceptKeys(mine); pend=pend.filter(p=>!mine.includes(p.key)); }
+    if(mine.length){ ST.auto.clear(); rzFollow=true; try{ acceptKeys(mine); }finally{ rzFollow=false; } pend=pend.filter(p=>!mine.includes(p.key)); }
     const ask=pend.filter(p=>(ST.doc.ignored||{})[p.key]!==liveSig(p.key));
     showPrompt(ask);
   }
@@ -40747,10 +40775,10 @@ startClock();
     if(list.length>6) box.appendChild(mk('div','more','and '+(list.length-6)+' more'));
     const acts=mk('div','acts');
     const yes=mk('button','yes','Yes, update the resume'); yes.type='button';
-    yes.addEventListener('click',()=>{ acceptKeys(list.map(p=>p.key)); box.remove(); flash('Resume updated'); });
+    yes.addEventListener('click',()=>{ rzFollow=true; try{ acceptKeys(list.map(p=>p.key)); }finally{ rzFollow=false; } box.remove(); flash('Resume updated'); });
     const no=mk('button','no','Not now'); no.type='button';
     no.title='Leave the resume as it is. The change waits on the Resume page.';
-    no.addEventListener('click',()=>{ setAside(list.map(p=>p.key)); box.remove(); });
+    no.addEventListener('click',()=>{ rzFollow=true; try{ setAside(list.map(p=>p.key)); }finally{ rzFollow=false; } box.remove(); });
     acts.appendChild(yes); acts.appendChild(no); box.appendChild(acts);
     if(ST.canWrite===false){ yes.disabled=true; no.disabled=true; }
   }
