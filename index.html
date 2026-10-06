@@ -2044,6 +2044,17 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 #app-grid #printsheet .ps-stack{display:flex;flex-direction:column;gap:2px;height:100%}
 #app-grid #printsheet .ps-stack .ps-chip{flex:1 1 0;margin-bottom:0;min-height:0;padding:1px 2px}
 #app-grid #printsheet .ps-grid td,#app-grid #printsheet .ps-grid th{overflow:hidden}
+/* the sheet is paper: always the light colours, even when the page is in dark mode
+   (it used to take the dark ink, so a PDF made in dark mode came out white on white) */
+#app-grid #printsheet{--ink:#0f314c;--ink-2:#456179;--ink-3:#546F88;--sunk:#E9F1F8}
+/* Jonna, 2026-10-06: each day reads as its own block on the sheet too */
+#app-grid #printsheet .ps-grid th.ps-day{background:#0f314c;color:#fff;text-align:center;font-size:11px;
+  padding:4px;border-left:2.5px solid #0f314c}
+#app-grid #printsheet .ps-grid th.ps-day.d1{background:#14486e;border-color:#14486e;border-left-color:#0f314c}
+#app-grid #printsheet .ps-grid th.ps-day .ps-dt{font-family:var(--mono);font-size:8.5px;font-weight:600;
+  color:#D6E4EF;margin-left:7px;letter-spacing:.02em}
+#app-grid #printsheet .ps-grid .ps-dstart{border-left:2.5px solid #0f314c}
+
 #app-grid #printsheet .ps-meta2{font-family:var(--mono);font-size:6px;color:var(--ink-2);
   line-height:1.2;margin-top:1px}
 
@@ -37071,8 +37082,10 @@ function buildPrintSheet(){
   const r1=document.createElement('tr');
   const c0=document.createElement('th'); c0.className='ps-room-h'; c0.rowSpan=2; c0.textContent='Room';
   r1.appendChild(c0);
-  DAYS.forEach(d=>{ const th=document.createElement('th'); th.className='ps-day'; th.colSpan=5;
-    th.textContent=d.label; r1.appendChild(th); });
+  DAYS.forEach((d,i)=>{ const th=document.createElement('th'); th.className='ps-day d'+(i%2); th.colSpan=5;
+    th.appendChild(el('span',null,d.label));
+    const dd=(typeof dayDateLabel==='function')?dayDateLabel(d.label):''; if(dd) th.appendChild(el('span','ps-dt',dd));
+    r1.appendChild(th); });
   thead.appendChild(r1);
   const r2=document.createElement('tr');
   DAYS.forEach(d=>{
@@ -37156,6 +37169,13 @@ function buildPrintSheet(){
     tb.appendChild(tr);
   });
   t.appendChild(tb);
+  /* the first column of every day carries the thick line, header to foot */
+  [...t.rows].forEach((tr,ri)=>{
+    if(ri===0) return;
+    let col = ri===1 ? 1 : 0;              /* the Room header spans the two header rows */
+    [...tr.cells].forEach(c=>{ const at=col; col+=c.colSpan||1;
+      if(at>=1 && (at-1)%5===0) c.classList.add('ps-dstart'); });
+  });
   sheet.appendChild(t);
 
   const key=el('div','ps-key');
