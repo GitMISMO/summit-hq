@@ -875,6 +875,17 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .hd-day{grid-row:1;font-family:var(--display);font-weight:700;font-size:13px;background:var(--sunk);
   position:sticky;top:0;z-index:12;display:flex;align-items:baseline;gap:7px}
 .hd-day .dt{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-weight:500}
+/* Jonna, 2026-10-06: each day reads as its own block */
+:root{--dayband-a:#0f314c;--dayband-b:#14486e;--daysep:#0f314c}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){--dayband-a:#1B4A6E;--dayband-b:#245A84;--daysep:#50A4DB} }
+:root[data-theme="dark"]{--dayband-a:#1B4A6E;--dayband-b:#245A84;--daysep:#50A4DB}
+.board .hd-day{justify-content:center;align-items:center;gap:10px;background:var(--dayband-a);color:#fff;
+  font-size:15px;line-height:18px;letter-spacing:.02em;border-left:4px solid var(--daysep);border-right-color:transparent}
+.board .hd-day.d1{background:var(--dayband-b)}
+.board .hd-day .dlab{display:inline-flex;align-items:baseline;gap:10px;position:sticky;left:186px;right:14px}
+.board .hd-day .dt{color:rgba(255,255,255,.78);font-size:12px;font-weight:600;letter-spacing:.02em}
+.board .hd-time.info-col,.board .cell.info-col{border-left:4px solid var(--daysep)}
+
 .hd-time{grid-row:2;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);background:var(--sunk);
   text-align:center;font-weight:500;position:sticky;top:31px;z-index:12;padding:4px 2px}
 .corner{grid-column:1;background:var(--sunk);position:sticky;left:0;z-index:30}
@@ -32274,8 +32285,10 @@ function render_(){
   const c2=el('div','corner c2'); c2.appendChild(el('div','eyebrow','Room')); board.appendChild(c2);
   DAYS.forEach((day,i)=>{
     const c=colsFor(i);
-    const h=el('div','hd-day'); h.style.gridColumn=c.info+' / span 7';
-    h.appendChild(el('span',null, day.label));
+    const h=el('div','hd-day d'+(i%2)); h.style.gridColumn=c.info+' / span 7';
+    const lab=el('span','dlab'); lab.appendChild(el('span',null, day.label));
+    const dd=dayDateLabel(day.label); if(dd) lab.appendChild(el('span','dt', dd));
+    h.appendChild(lab);
     board.appendChild(h);
     const am=BLOCK[day.am];
     const ih=el('div','hd-time info-col','Set-up · AV'); ih.style.gridColumn=c.info; board.appendChild(ih);
@@ -33586,6 +33599,16 @@ function fitNode(sid, fallback){
 const MONTH_N={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,
   september:9,october:10,november:11,december:12};
 /* "January 11-14, 2027" sorts as 2027-01-11; anything unreadable sorts last */
+/* "Jan 11" for a day of the summit on screen: the first date on or after its first day
+   that falls on that weekday */
+function dayDateLabel(label){
+  const k=venueKey(V()); if(/^9999/.test(k)) return '';
+  const p=k.split('-').map(Number), d=new Date(p[0],p[1]-1,p[2]);
+  const want=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].indexOf(label);
+  if(want<0) return '';
+  for(let n=0;n<7 && d.getDay()!==want;n++) d.setDate(d.getDate()+1);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
 function venueKey(v){
   const t=String(v&&v.dates||'').toLowerCase();
   const y=(t.match(/(\d{4})/)||[])[1];
