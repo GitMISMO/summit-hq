@@ -882,6 +882,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .board .hd-day{justify-content:center;align-items:center;gap:10px;background:var(--dayband-a);color:#fff;
   font-size:15px;line-height:18px;letter-spacing:.02em;border-left:4px solid var(--daysep);border-right-color:transparent}
 .board .hd-day.d1{background:var(--dayband-b)}
+.nm-f input.nm-spon.fromportal{font-style:italic}
 .board .hd-day .dlab{display:inline-flex;align-items:baseline;gap:10px;position:sticky;left:186px;right:14px}
 .board .hd-day .dt{color:rgba(255,255,255,.78);font-size:12px;font-weight:600;letter-spacing:.02em}
 .board .hd-time.info-col,.board .cell.info-col{border-left:4px solid var(--daysep)}
@@ -32252,7 +32253,57 @@ function showFatal(err){
     +' — tell Claude this message.';
   try{ console.error(err); }catch(e){}
 }
+/* ---- Jonna, 2026-10-07: the Sponsorship Portal fills the Sponsor boxes ---- */
+const SPON_FROM = (id)=>{ const v=V(id); if(!v) return {};
+  if(!v.sponsorFrom || typeof v.sponsorFrom!=='object'){ try{ v.sponsorFrom={}; }catch(e){} }
+  return v.sponsorFrom || {}; };
+const PORTAL_DAY = {monday:'mon', tuesday:'tue', wednesday:'wed', thursday:'thu'};
+function portalSponsorMap(vid){
+  let rows=[]; try{ rows = window.__portalSponsors ? (window.__portalSponsors(vid)||[]) : []; }catch(e){ rows=[]; }
+  const LIVE=['approved','pending payment','paid','written off'];
+  const out={};
+  rows.forEach(r=>{
+    if(LIVE.indexOf(String(r.status||'').trim().toLowerCase())<0) return;
+    const opp=String(r.opportunity||'');
+    const n=opp.toLowerCase().replace(/\(.*?\)/g,' ').replace(/[^a-z]+/g,'');
+    const dm=/[—–-]\s*(monday|tuesday|wednesday|thursday)\b/i.exec(opp);
+    const day=dm ? PORTAL_DAY[dm[1].toLowerCase()] : '';
+    let key='';
+    if(/^newcomerluncheon/.test(n)) key='mon|newcomer';
+    else if(day && /^reception/.test(n) && (day==='mon'||day==='tue')) key=day+'|reception';
+    else if(day && /^breakfast/.test(n)) key=day+'|breakfast';
+    else if(day && /^morning(coffee)?break/.test(n)) key=day+'|am';
+    else if(day && /^afternoon(snack)?break/.test(n)) key=day+'|pm';
+    if(!key) return;
+    const who=String(r.company||r.name||'').trim(); if(!who) return;
+    out[key]=out[key] ? (out[key].split(' & ').indexOf(who)<0 ? out[key]+' & '+who : out[key]) : who;
+  });
+  return out;
+}
+/* Fill the empty boxes from the portal, keep the ones it filled in step with it, and
+   never touch one typed by hand. Saved with the summit, but not as an Undo step. */
+function syncPortalSponsors(){
+  const v=V(); if(!v) return false;
+  try{ if(window.ResourcesSession && window.ResourcesSession.canEdit && !window.ResourcesSession.canEdit('summit-hq')) return false; }catch(e){}
+  if(!window.__portalSponsors) return false;
+  const want=portalSponsorMap(v.id), sp=SPONSORS(), from=SPON_FROM();
+  let changed=false;
+  Object.keys(want).forEach(k=>{
+    const cur=(sp[k]||'').trim();
+    if(!cur){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
+    else if(from[k]!=null && cur===String(from[k]).trim() && cur!==want[k]){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
+  });
+  Object.keys(from).forEach(k=>{
+    if(want[k]) return;
+    if((sp[k]||'').trim()===String(from[k]).trim()) delete sp[k];
+    delete from[k]; changed=true;
+  });
+  if(changed){ try{ prevState=snapState(); }catch(e){} save(); }
+  return changed;
+}
+window.addEventListener('hq:portal', ()=>{ try{ if(syncPortalSponsors()) render(); }catch(e){} });
 function render_(){
+  try{ syncPortalSponsors(); }catch(e){}
   orderRooms();
   if(jointSig()!==JOINT_SIG) rebuildSessions();
   refreshRuleset(); refreshAskLocks();
@@ -33836,6 +33887,7 @@ function sponDayRow(dayLabel){
          line back and lose the lines, so nothing is written unless it really changed. */
       if(which==='serve' && flatServe(live[r.key]||'')===inp.value.trim()) return;
       if(inp.value.trim()) live[r.key]=inp.value; else delete live[r.key];
+      if(which==='spon'){ const fr=SPON_FROM(drawnOn); delete fr[r.key]; inp.classList.remove('fromportal'); inp.title=''; }
       save();
       /* if she has moved to another summit the box is about to be redrawn anyway,
          and the counts on screen belong to the summit she is looking at now */
@@ -33868,7 +33920,10 @@ function sponDayRow(dayLabel){
       lb.appendChild(x);
     }
     f.appendChild(lb);
-    f.appendChild(field(r,'spon',cur,'Sponsor', r.label+', '+r.day+' \u2014 sponsor'));
+    const sf=field(r,'spon',cur,'Sponsor', r.label+', '+r.day+' \u2014 sponsor');
+    if(cur.trim() && SPON_FROM()[r.key]!=null && String(SPON_FROM()[r.key]).trim()===cur.trim()){
+      sf.classList.add('fromportal'); sf.title='Filled in from the Sponsorship Portal. Type over it to keep your own.'; }
+    f.appendChild(sf);
     f.appendChild(field(r,'serve',srv,'What\u2019s being served',
       r.label+', '+r.day+' \u2014 what\u2019s being served'));
     return f;
@@ -43083,6 +43138,16 @@ function rowHere(r){
   const on=EVENT_VENUE[ev];
   return on ? on.indexOf(venueNow())>=0 : true;
 }
+/* Jonna, 2026-10-07: the Schedule's Hotel Specs fills its Sponsor boxes from these */
+window.__portalSponsors = function(vid){
+  const seen=new Set(), out=[];
+  ST.spon.forEach(d=>{ ((d&&d.rows)||[]).forEach(r=>{
+    const k=[r.appNo,r.company,r.email,r.opportunity].join('|'); if(seen.has(k)) return; seen.add(k);
+    const ev=String(r.event||'').trim().toLowerCase(), on=EVENT_VENUE[ev];
+    if(!ev || !on || on.indexOf(vid)>=0) out.push(r);
+  }); });
+  return out;
+};
 function portalRows(){
   /* every row the sync has brought across, from whichever document, shown on the
      summits its event actually covers */
@@ -43293,6 +43358,7 @@ function init(){
           else ST.spon.set(c.doc.id, Object.assign({}, c.doc.data()));
         });
         render();
+        try{ window.dispatchEvent(new Event('hq:portal')); }catch(e){}
       },()=>{});
       db.collection('people').onSnapshot(s=>{
         s.docChanges().forEach(c=>{
