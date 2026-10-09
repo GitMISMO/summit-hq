@@ -7,7 +7,10 @@
      so the layout does not jump when it is revealed.
      First added Sept 28 12:26 and lost when the file was re-uploaded at 13:32; if this
      file is replaced by an upload again, carry this block across. -->
-<style>html.hq-out body > *:not(#hq-gate):not(.rs-scrim){visibility:hidden}</style>
+<style>html.hq-out body > *:not(#hq-gate):not(.rs-scrim){visibility:hidden}
+/* Jonna, 2026-10-08: signed in, the app stays covered until it is ready and on the page
+   she was last on, so it never flicks through the Schedule on the way there */
+html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidden}</style>
 <script>(function(){
   var out = true;
   try {
@@ -583,23 +586,24 @@
         '#hq-gate h1{font-size:21px;margin:0 0 10px;color:var(--ink,#16191D);font-weight:700}' +
         '#hq-gate p{font-size:14px;line-height:1.5;margin:0 0 18px;color:var(--ink-2,#414750)}' +
         '#hq-gate button{font:inherit;font-size:14px;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid var(--accent,#0d314c);' +
-        'background:var(--accent,#0d314c);color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}';
+        'background:var(--accent,#0d314c);color:var(--surface,#fff);cursor:pointer}#hq-gate button:hover{filter:brightness(1.12)}' +
+        '#hq-gate .card.wait{animation:hqwait .25s ease .7s both}@keyframes hqwait{from{opacity:0}to{opacity:1}}';
       document.head.appendChild(st);
       gateEl = document.createElement('div'); gateEl.id = 'hq-gate'; gateEl.setAttribute('role', 'dialog');
       document.body.appendChild(gateEl);
     }
     if (!kind) { gateEl.hidden = true; return; }
     gateEl.hidden = false;
-    var h, p, b = null, fn = null;
+    var h, p, b = null, fn = null, wait = false;
     /* Signing in and being refused are NOT drawn here: every resources.mismo.org tool uses
        the shared screens from session.js for those (Sept 28, 2026). This card only covers
        the app while it waits, loads, or cannot reach its data. 'blank' is the plain
        backdrop behind the shared sign-in window. */
     if (kind === 'blank') { gateEl.innerHTML = ''; return; }
-    if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; }
+    if (kind === 'loading') { h = 'Opening Summit HQ…'; p = 'Reading the latest from the private data store.'; wait = true; }
     else if (kind === 'nosession') { h = 'Summit HQ Couldn’t Load'; p = 'The resources.mismo.org sign-in didn’t load. Check your connection, then reload the page.'; b = 'Reload'; fn = function () { location.reload(); }; }
     else { h = 'Summit HQ Couldn’t Reach Its Data'; p = (e && (WHY[e.code] || e.message)) || 'Something went wrong reading the data.'; b = 'Try Again'; fn = function () { start(); }; }
-    gateEl.innerHTML = '<div class="card"><div class="ey">Summit HQ</div><h1></h1><p></p></div>';
+    gateEl.innerHTML = '<div class="card' + (wait ? ' wait' : '') + '"><div class="ey">Summit HQ</div><h1></h1><p></p></div>';
     gateEl.querySelector('h1').textContent = h; gateEl.querySelector('p').textContent = p;
     if (b) { var btn = document.createElement('button'); btn.type = 'button'; btn.textContent = b; btn.addEventListener('click', fn); gateEl.querySelector('.card').appendChild(btn); }
   }
@@ -608,7 +612,7 @@
     var rs = RS();
     if (!rs) { gate('nosession'); return; }
     if (starting) return;
-    if (ready && rs.current() && rs.role('summit-hq')) { gate(null); resumeWrites(); return; }
+    if (ready && rs.current() && rs.role('summit-hq')) { gate(null); document.documentElement.classList.add('hq-ready'); resumeWrites(); return; }
     starting = true; gate('blank');
     /* requireAccess shows the shared sign-in or refusal as needed, and asks the relay
        before refusing, so access granted after signing in is picked up without another
@@ -620,6 +624,8 @@
       return preload();
     }).then(function () {
       ready = true; starting = false; gate(null); resumeWrites();
+      /* one frame later, so the page underneath has drawn the view it opens on */
+      requestAnimationFrame(function () { document.documentElement.classList.add('hq-ready'); });
       readyWaiters.splice(0).forEach(function (r) { r(); });
     }, function (e) {
       starting = false;
