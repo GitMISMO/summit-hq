@@ -5146,6 +5146,15 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-have .w{color:var(--ink-3)}
 #app-reg .ws-err{color:var(--bad);font-size:12px;margin:0}
 @media(max-width:700px){ #app-reg .ws-file{grid-template-columns:minmax(0,1fr)} }
+/* this week's stats, this year beside last year */
+#app-reg .ws-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px}
+#app-reg .ws-statcol{border:1px solid var(--line-2);border-radius:var(--ws-r);border-top:3px solid var(--s-cur);padding:10px 14px;background:var(--paper)}
+#app-reg .ws-statcol.prior{border-top-color:var(--s-prior)}
+#app-reg .ws-stath{font-size:14px;font-weight:600;color:var(--ink);margin:0 0 4px;white-space:nowrap}
+#app-reg .ws-stat{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+#app-reg .ws-stat:last-child{border-bottom:0}
+#app-reg .ws-stat .k{color:var(--ink-3);white-space:nowrap}
+#app-reg .ws-stat .v{color:var(--ink);font-weight:600;white-space:nowrap}
 </style>
 
 <div id="app-reg" hidden>
@@ -5183,7 +5192,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
    ------------------------------------------------------------
    Vanessa Rios built this as her own "Winter Summit Registration" dashboard; Jonna
    asked for it here (2026-10-22) so the whole team reads one page. Same numbers,
-   same charts, same Friday email, same registrant lists, for whichever summit the
+   same charts, the week's stats, same registrant lists, for whichever summit the
    picker is on.
 
    One document a summit, in Summit HQ's private store:
@@ -5828,17 +5837,20 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   }
 
   function paintCards(rep, hist, edit){
-    /* Friday email */
-    const ok=el('span','ws-copied','Copied'); ok.hidden=!(Date.now()-ST.copied<2000);
-    const pre=el('pre','ws-email', emailText(rep)); pre.tabIndex=0;
-    const copy=btn('Copy Email Text','',()=>{
-      const done=()=>{ ST.copied=Date.now(); ok.hidden=false; setTimeout(()=>{ ok.hidden=true; },2000); };
-      const select=()=>{ const r=document.createRange(); r.selectNodeContents(pre); const s=getSelection(); s.removeAllRanges(); s.addRange(r); };
-      try{ navigator.clipboard.writeText(pre.textContent).then(done, select); }catch(e){ select(); }
+    /* this week's stats: this year beside last year at the same week (Jonna, 2026-10-22:
+       the team gets a link to this page instead of a separate email) */
+    const em=card('rg-email','This Week\u2019s Stats');
+    note(em, weekSay(rep.weeks_prior, rep.latest.week_label)+' \u00b7 report for '+fmtDate(rep.report_date));
+    const pair=el('div','ws-stats');
+    [[rep.current_summit,'current'],[rep.prior_summit,'prior']].forEach(([title,key],i)=>{
+      const col=el('div','ws-statcol'+(i?' prior':''));
+      col.appendChild(el('div','ws-stath',title));
+      METRICS.forEach(([m,label,kind])=>{
+        const r=el('div','ws-stat'); r.appendChild(el('span','k',label)); r.appendChild(el('span','v',fmt(kind,rep.by[m][key])));
+        col.appendChild(r); });
+      pair.appendChild(col);
     });
-    const em=card('rg-email','Friday Email',[ok,copy]);
-    note(em,'The numbers in the team email, in the usual format. Copy it into a new Outlook message.');
-    em.appendChild(pre);
+    em.appendChild(pair);
 
     /* new since the last report */
     const fresh=newSince(rep);
@@ -5990,6 +6002,16 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   window.addEventListener('hq:schedule',()=>{ if(sidNow()!==ST.sid) watch(sidNow()); else render(); });
   document.addEventListener('change',e=>{ if(e.target && e.target.id==='venue-pick') watch(sidNow()); }, true);
   setInterval(()=>{ if(sidNow()!==ST.sid) watch(sidNow()); }, 2500);
+  /* a link ending in #registration opens Summit HQ on this tab, and the address bar says
+     #registration while it is open, so the link can be copied and sent */
+  function fromHash(){ if(String(location.hash).toLowerCase()==='#registration'){ try{ if(window.__hqGo) window.__hqGo('reg'); }catch(e){} } }
+  window.addEventListener('hashchange', fromHash);
+  window.addEventListener('load', ()=>setTimeout(fromHash, 0));
+  try{ new MutationObserver(()=>{
+    const on=!HOST.hidden, has=String(location.hash).toLowerCase()==='#registration';
+    try{ if(on && !has) window.history.replaceState(null,'','#registration');
+         else if(!on && has) window.history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+  }).observe(HOST,{attributes:true, attributeFilter:['hidden']}); }catch(e){}
   window.__regRender=render;
   window.__regState=()=>({sid:ST.sid, ready:ST.ready, has:!!ST.doc});
   watch(sidNow());
