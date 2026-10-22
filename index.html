@@ -129,6 +129,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     if (seg.length === 2) {
       if (c0 === 'photos') return { file: fname('photo-' + seg[1]), own: true, coll: 'photos', id: seg[1] };
       if (c0 === 'schedule' && seg[1].indexOf('plans-') === 0) return { file: fname('plans-' + seg[1].slice(6)), own: true, coll: 'schedule', id: seg[1] };
+      if (c0 === 'registration') return { file: fname('reg-' + seg[1]), own: true, coll: 'registration', id: seg[1] };
       if (SHARDS[c0]) return { file: shard(c0, seg[1]), coll: c0, id: seg[1] };
       if (ROS.indexOf(c0) >= 0) return { file: 'ros', coll: c0, id: seg[1] };
       if (c0 === 'resume') return { file: 'resume', coll: c0, id: seg[1] };
@@ -3710,6 +3711,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button type="button" data-hq="resume" title="Resume">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></svg>
       <span>Resume</span></button>
+    <button type="button" data-hq="reg" title="Registration">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+      <span>Registration</span></button>
   </nav>
 
   <div class="railsum">
@@ -5023,6 +5027,975 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 })();
 </script>
 
+
+<style>
+/* ============ REGISTRATION ============
+   Vanessa Rios's Winter Summit Registration dashboard, rebuilt as a tab of Summit HQ
+   (Jonna, 2026-10-22: "make it look more like the artifact she built"). The body copies
+   her page's own values: the six tiles, the paired cards, the two pace charts, the history
+   and registrant tables, her chips and her segmented buttons. Her tokens are mapped onto
+   Summit HQ's (her panel = --surface, her line = --line-2, her muted = --ink-3), so it
+   follows the light / dark switch. Every rule hangs off #app-reg. */
+#app-reg{--ws-sky:#74bfeb; --ws-navy:#0d314c; --ws-navy-deep:#06202f;
+  --s-cur:#2f80c8; --s-prior:#e2662f; --ws-r:8px;
+  font-variant-numeric:tabular-nums}
+#app-reg .ws-body{display:grid;gap:28px}
+#app-reg .mast{margin-bottom:22px}
+#app-reg .rg-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* the heading under the masthead */
+#app-reg .ws-head h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.012em;color:var(--ink);line-height:1.25}
+#app-reg .ws-head .ws-sub{margin:6px 0 0;color:var(--ink-3);font-size:14px;line-height:1.5}
+#app-reg .ws-head .ws-takeaway{margin:10px 0 0;font-size:16px;line-height:1.45;color:var(--ink)}
+#app-reg .ws-head b{font-weight:600}
+/* the six tiles */
+#app-reg .ws-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:760px){#app-reg .ws-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1680px){#app-reg .ws-tiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
+#app-reg .ws-tile{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
+  padding:12px 20px;display:grid;gap:4px;align-content:start;min-height:128px}
+#app-reg .ws-tile.is-key{border-top:3px solid var(--ws-sky)}
+#app-reg .ws-tile .k{white-space:nowrap;font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+#app-reg .ws-tile .v{font-size:30px;font-weight:500;line-height:1.15;color:var(--ink)}
+#app-reg .ws-tile .p{font-size:12px;color:var(--ink-3)}
+#app-reg .ws-tile .p b{color:var(--ink);font-weight:600}
+#app-reg .ws-tile .d{font-size:12px;font-weight:600;white-space:nowrap}
+#app-reg .up{color:var(--good)} #app-reg .down{color:var(--bad)} #app-reg .flat{color:var(--ink-3)}
+/* cards, two to a row */
+#app-reg .ws-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:12px}
+#app-reg .ws-card{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
+  padding:20px;min-width:0;display:grid;gap:8px;align-content:start}
+#app-reg .ws-card h2{margin:0;font-size:16px;font-weight:500;letter-spacing:-.012em;color:var(--ink)}
+#app-reg .ws-card .note{margin:0;font-size:12px;color:var(--ink-3);line-height:1.5}
+#app-reg .ws-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#app-reg .ws-row .grow{flex:1 1 auto}
+/* her buttons: solid navy, 5px corners */
+#app-reg .ws-btn{font:inherit;font-size:12px;font-weight:600;background:var(--ws-navy);color:#fff;border:1px solid var(--ws-navy);
+  border-radius:5px;padding:6px 12px;cursor:pointer;white-space:nowrap;min-width:max-content}
+#app-reg .ws-btn:hover{background:var(--ws-navy-deep)}
+#app-reg .ws-btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
+#app-reg .ws-btn.ghost:hover{background:var(--sunk)}
+#app-reg .ws-btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
+:root[data-theme="dark"] #app-reg .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-reg .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}}
+#app-reg .ws-btn:focus-visible,#app-reg .ws-seg button:focus-visible,#app-reg .ws-th:focus-visible,#app-reg .ws-search:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
+#app-reg .ws-copied{font-size:12px;color:var(--good)}
+#app-reg .ws-email{margin:0;white-space:pre-wrap;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;
+  background:var(--paper);border:1px solid var(--line-2);border-radius:var(--ws-r);padding:12px;max-height:340px;overflow:auto;min-height:120px;color:var(--ink)}
+/* the charts */
+#app-reg .ws-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+#app-reg .ws-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+#app-reg .ws-chart{position:relative;min-height:250px}
+#app-reg .ws-chart svg{display:block;overflow:visible}
+#app-reg .ws-tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line-2);
+  border-radius:var(--ws-r);box-shadow:var(--shadow);padding:4px 8px;font-size:12px;white-space:nowrap;z-index:2;color:var(--ink)}
+#app-reg .ws-tip .t{color:var(--ink-3);margin-bottom:2px}
+#app-reg .ws-tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+/* her segmented buttons, search and counts */
+#app-reg .ws-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+#app-reg .ws-seg button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;
+  padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+#app-reg .ws-seg button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper)}
+#app-reg .ws-search{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
+  background:var(--paper);color:var(--ink);min-width:0;width:15rem;max-width:100%}
+#app-reg .ws-count{font-size:12px;color:var(--ink-3)}
+/* tables */
+#app-reg .ws-tablebox{overflow:auto;max-height:460px;border:1px solid var(--line-2);border-radius:var(--ws-r)}
+#app-reg .ws-table{border-collapse:collapse;width:100%;font-size:12px}
+#app-reg .ws-table th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:600;color:var(--ink-3);
+  border-bottom:2px solid var(--line-2);padding:0;white-space:nowrap;z-index:1}
+#app-reg .ws-table td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+#app-reg .ws-table.hist td{white-space:nowrap}
+#app-reg .ws-table.hist td:last-child{white-space:normal;min-width:16rem}
+#app-reg .ws-table td.n,#app-reg .ws-table th.n{text-align:right}
+#app-reg .ws-table tr.is-latest td{background:color-mix(in srgb,var(--ws-sky) 14%,transparent)}
+#app-reg .ws-table tr.wk{cursor:pointer}
+#app-reg .ws-table tr.wk:hover td,#app-reg .ws-table tr.wk.open td{background:color-mix(in srgb,var(--ws-sky) 22%,transparent)}
+#app-reg .ws-th{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:8px 10px;cursor:pointer;width:100%;text-align:inherit;white-space:nowrap}
+#app-reg .ws-th[aria-sort="ascending"]::after{content:" \2191"} #app-reg .ws-th[aria-sort="descending"]::after{content:" \2193"}
+#app-reg .ws-plain{padding:8px 10px;display:block}
+#app-reg .ws-chip{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;white-space:nowrap}
+#app-reg .ws-chip.ip{background:color-mix(in srgb,var(--s-cur) 16%,transparent);color:var(--ink)}
+#app-reg .ws-chip.vr{background:color-mix(in srgb,var(--s-prior) 16%,transparent);color:var(--ink)}
+#app-reg .ws-chip.new{background:var(--ws-sky);color:var(--ws-navy-deep);margin-left:6px}
+#app-reg .ws-muted{color:var(--ink-3)}
+#app-reg .ws-newlist{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-height:40px;max-height:340px;overflow:auto}
+#app-reg .ws-newlist li{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px;color:var(--ink)}
+#app-reg .ws-newlist .co{color:var(--ink-3);font-size:12px}
+#app-reg .ws-newlist .dt{margin-left:auto;color:var(--ink-3);font-size:12px}
+#app-reg .ws-method{font-size:12px;color:var(--ink-3);line-height:1.6}
+#app-reg .ws-method h2{color:var(--ink);font-size:16px;font-weight:500;margin:0 0 8px}
+#app-reg .ws-method ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+#app-reg .ws-method b{color:var(--ink)}
+#app-reg .ws-blank{color:var(--ink-3);font-size:12.5px;font-style:italic;padding:6px 0}
+/* Summit HQ's additions: a Friday typed in, a week changed, the files loaded */
+#app-reg .ws-tool{border-left:3px solid var(--ws-sky)}
+#app-reg .ws-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px 12px;padding:4px 0 2px}
+#app-reg .ws-form label{display:grid;gap:3px;white-space:nowrap;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+#app-reg .ws-form input{font:inherit;font-size:12.5px;letter-spacing:0;text-transform:none;font-weight:400;width:100%;min-width:0}
+#app-reg .ws-form .acts{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#app-reg .ws-form .acts .grow{flex:1 1 auto}
+#app-reg .ws-files{display:grid;gap:6px}
+#app-reg .ws-file{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px;align-items:center;
+  padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--paper);font-size:12px;color:var(--ink)}
+#app-reg .ws-file .nm{font-weight:600;overflow-wrap:anywhere}
+#app-reg .ws-file .ab{color:var(--ink-3)}
+#app-reg .ws-file select{font:inherit;font-size:12px;min-width:0}
+#app-reg .ws-have{display:grid;gap:4px;font-size:12px}
+#app-reg .ws-have div{display:flex;gap:8px;flex-wrap:wrap}
+#app-reg .ws-have .k{font-weight:600;min-width:13.5rem;color:var(--ink)}
+#app-reg .ws-have .w{color:var(--ink-3)}
+#app-reg .ws-err{color:var(--bad);font-size:12px;margin:0}
+@media(max-width:700px){ #app-reg .ws-file{grid-template-columns:minmax(0,1fr)} }
+</style>
+
+<div id="app-reg" hidden>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Registration</div>
+      <h1 id="rg-title">Registration</h1>
+      <div class="sub" id="rg-sub"></div>
+    </div>
+    <div class="rg-acts" id="rg-acts"></div>
+  </header>
+  <div class="ws-body">
+    <section class="ws-head" id="rg-head"></section>
+    <section class="ws-tiles" id="rg-tiles" aria-label="This week compared with last year"></section>
+    <div id="rg-tool" hidden></div>
+    <div class="ws-grid2">
+      <section class="ws-card" id="rg-email"></section>
+      <section class="ws-card" id="rg-new"></section>
+    </div>
+    <div class="ws-grid2">
+      <section class="ws-card" id="rg-pace"></section>
+      <section class="ws-card" id="rg-rev"></section>
+    </div>
+    <section class="ws-card" id="rg-hist"></section>
+    <section class="ws-card" id="rg-list"></section>
+    <section class="ws-method" id="rg-method"></section>
+  </div>
+</div>
+</div>
+
+<script>
+/* ============================================================
+   REGISTRATION — the weekly registration report, inside Summit HQ
+   ------------------------------------------------------------
+   Vanessa Rios built this as her own "Winter Summit Registration" dashboard; Jonna
+   asked for it here (2026-10-22) so the whole team reads one page. Same numbers,
+   same charts, same Friday email, same registrant lists, for whichever summit the
+   picker is on.
+
+   One document a summit, in Summit HQ's private store:
+     registration/<summit>   weekly   one row per Friday report (this year's summit
+                                      and last year's, so the two can sit side by side)
+                             current  this year's registrants   {cols, rows}
+                             prior    last year's registrants   {cols, rows}
+                             files    what was loaded, when and by whom
+   Registrant names and emails live only there, never in the page.
+
+   The numbers come in two ways: Update the Numbers loads the files Vanessa's
+   dashboard keeps (JSON or CSV), and Week-by-Week History takes a Friday typed in.
+   ============================================================ */
+(function(){
+  "use strict";
+  const HOST=document.getElementById('app-reg'); if(!HOST) return;
+  const $=s=>HOST.querySelector(s);
+  const el=(t,c,x)=>{const n=document.createElement(t); if(c)n.className=c;
+    if(x!=null)n.textContent=x; return n;};
+  const SVGNS='http://www.w3.org/2000/svg';
+  const sv=(t,a)=>{ const n=document.createElementNS(SVGNS,t); Object.keys(a||{}).forEach(k=>n.setAttribute(k,a[k])); return n; };
+
+  const COLS=['registration_id','name','company','email','format','order_date','reg_revenue'];
+  const METRICS=[
+    ['total_registered','Total Registered','count'],
+    ['in_person','In-Person','count'],
+    ['virtual','Virtual','count'],
+    ['registration_revenue','Registration Revenue','money'],
+    ['sponsorships','Sponsorships','money'],
+    ['registration_plus_sponsorships','Revenue + Sponsorship','money']];
+
+  /* ---------- numbers and dates ---------- */
+  const nf=new Intl.NumberFormat('en-US');
+  const mf=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+  const num=v=>{ if(v===null||v===undefined) return null; const s=String(v).replace(/[$,\s]/g,'');
+    if(s==='') return null; const n=Number(s); return isNaN(n)? null : n; };
+  const fmt=(k,v)=>v==null||isNaN(v)?'—':(k==='money'?mf.format(v):nf.format(v));
+  const signed=(k,v)=>v==null?'':(v>0?'+':v<0?'−':'±')+fmt(k,Math.abs(v));
+  const tone=v=>v==null?'flat':v>0?'up':v<0?'down':'flat';
+  const arrow=v=>v==null||v===0?'':v>0?'▲ ':'▼ ';
+  const d0=s=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||'')); return m? new Date(Date.UTC(+m[1],+m[2]-1,+m[3])) : null; };
+  const iso=d=>d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+  const fmtDate=s=>{ const d=d0(s); return d? d.toLocaleDateString('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric',year:'numeric'}) : '—'; };
+  const fmtShort=s=>{ const d=d0(s); return d? d.toLocaleDateString('en-US',{timeZone:'UTC',month:'short',day:'numeric'}) : '—'; };
+  const DAY=86400000;
+  /* "10/16/2026", "2026-10-16T…", "Oct 16, 2026" -> "2026-10-16" */
+  function date10(v){
+    if(v==null||v==='') return '';
+    const s=String(v).trim();
+    let m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s); if(m) return m[1]+'-'+m[2]+'-'+m[3];
+    m=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(s);
+    if(m){ const y=m[3].length===2? '20'+m[3] : m[3]; return y+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0'); }
+    const t=Date.parse(s); if(!isNaN(t)){ const d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    return '';
+  }
+  const todayIso=()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+  function lastFriday(){ const d=d0(todayIso()); while(d.getUTCDay()!==5) d.setUTCDate(d.getUTCDate()-1); return iso(d); }
+
+  /* ---------- which summit ---------- */
+  function sidNow(){
+    try{ const sel=document.getElementById('venue-pick'); if(sel && sel.value) return String(sel.value); }catch(e){}
+    return 'current';
+  }
+  function venue(){
+    try{ return (window.__scheduleVenues? window.__scheduleVenues():[]).find(v=>v.id===ST.sid)||null; }catch(e){ return null; }
+  }
+  const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  /* the summit's first day, off the dates the Schedule keeps ("January 11-14, 2027") */
+  function firstDay(){
+    const v=venue(); const t=String(v&&v.dates||'').toLowerCase();
+    const y=(t.match(/(\d{4})/)||[])[1];
+    const m=/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/.exec(t);
+    if(!y||!m) return null;
+    return new Date(Date.UTC(+y, MON[m[1]]-1, +m[2]));
+  }
+  function season(){
+    const named=doc().weekly.map(r=>String(r.summit||'')).join(' ');
+    const s=/\b(Winter|Spring|Fall)\b/i.exec(named); if(s) return s[1][0].toUpperCase()+s[1].slice(1).toLowerCase();
+    const v=venue(); const vs=/\b(Winter|Spring|Fall)\b/i.exec(String(v&&v.name||'')); if(vs) return vs[1][0].toUpperCase()+vs[1].slice(1).toLowerCase();
+    const f=firstDay(); if(!f) return '';
+    const mo=f.getUTCMonth()+1; return (mo===12||mo<=2)?'Winter':(mo<=6?'Spring':'Fall');
+  }
+  /* week 0 is the Friday before the summit opens; after it is "Post" (-1) */
+  function weeksFor(report){
+    const f=firstDay(), r=d0(report); if(!f||!r) return null;
+    if(r>=f) return -1;
+    const z=new Date(f.getTime()-DAY); while(z.getUTCDay()!==5) z.setTime(z.getTime()-DAY);
+    return Math.max(0, Math.round((z-r)/(7*DAY)));
+  }
+  /* Vanessa's wording: "Week 11", "Week 11 before the Summit", "After the Summit" */
+  const weekLabel=w=>w===-1?'Post':('Week '+w);
+  const weekSay=(w,label)=>w===-1?'After the Summit':((label||weekLabel(w))+' before the Summit');
+
+  /* ---------- the store ---------- */
+  const ST={sid:'', doc:null, ready:false, unsub:null, lastWrite:0,
+    list:'current', q:'', format:'', sort:{current:['order_date',-1], prior:['name',1]},
+    openWeek:null, adding:false, pick:null, pickErr:'', undo:[], copied:0};
+  async function store(){
+    try{ return window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ return null; }
+  }
+  const own=d=>{ try{ return JSON.parse(JSON.stringify(d||{})); }catch(e){ return {}; } };
+  const blank=()=>({weekly:[], current:null, prior:null, files:{}});
+  function take(d){
+    const o=own(d), b=blank();
+    b.weekly=Array.isArray(o.weekly)? o.weekly.filter(r=>r&&typeof r==='object') : [];
+    ['current','prior'].forEach(k=>{ const x=o[k];
+      if(x && Array.isArray(x.rows)) b[k]={cols:Array.isArray(x.cols)?x.cols:COLS.slice(), rows:x.rows}; });
+    b.files=(o.files && typeof o.files==='object')? o.files : {};
+    return b;
+  }
+  function doc(){ if(!ST.doc) ST.doc=blank(); return ST.doc; }
+  function canEdit(){
+    try{ const R=window.ResourcesSession; if(R && R.canEdit) return !!R.canEdit('summit-hq'); }catch(e){}
+    return true;
+  }
+  const who=()=>{ try{ return (window.__hqWho && window.__hqWho()) || ''; }catch(e){ return ''; } };
+  const flash=t=>{ try{ if(window.__hqFlash) window.__hqFlash(t); }catch(e){} };
+
+  /* asked in Summit HQ's own box: the browser's own confirm box is blocked inside a Claude artifact */
+  function ask(title, text, yes){
+    return new Promise(res=>{
+      const box=el('div','hq-replace'); box.setAttribute('role','dialog'); box.setAttribute('aria-label',title);
+      const scrim=el('div','hq-replace-scrim'), card=el('div','hq-replace-card');
+      card.appendChild(el('div','h',title)); card.appendChild(el('div','p',text));
+      const acts=el('div','acts');
+      const done=v=>{ box.remove(); res(v); };
+      const y=el('button','yes',yes); y.type='button'; y.addEventListener('click',()=>done(true));
+      const n=el('button','no','Cancel'); n.type='button'; n.addEventListener('click',()=>done(false));
+      acts.appendChild(y); acts.appendChild(n); card.appendChild(acts);
+      scrim.addEventListener('click',()=>done(false));
+      box.addEventListener('keydown',e=>{ if(e.key==='Escape') done(false); });
+      box.appendChild(scrim); box.appendChild(card); document.body.appendChild(box); y.focus();
+    });
+  }
+
+  async function watch(sid){
+    if(ST.unsub){ try{ ST.unsub(); }catch(e){} ST.unsub=null; }
+    ST.sid=sid; ST.doc=null; ST.ready=false; ST.openWeek=null; ST.tool=null; ST.pick=null;
+    render();
+    const db=await store();
+    if(!db){ ST.ready=true; render(); return; }
+    const ref=db.doc('registration/'+sid);
+    const got=s=>{ if(sid!==ST.sid) return;
+      /* our own save comes back a moment later — do not let an older copy overwrite it */
+      if(ST.ready && ST.writeSid===sid && Date.now()-ST.lastWrite<4000) return;
+      ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; render(); };
+    if(typeof ref.onSnapshot==='function'){
+      try{ ST.unsub=ref.onSnapshot(got, ()=>{ if(sid===ST.sid){ ST.ready=true; render(); } }); return; }catch(e){}
+    }
+    try{ got(await ref.get()); }catch(e){ ST.ready=true; render(); }
+  }
+  let saveT=null;
+  function save(){
+    ST.lastWrite=Date.now(); ST.writeSid=ST.sid;
+    const sid=ST.sid, data=own(doc());
+    data.savedAt=new Date().toISOString();
+    clearTimeout(saveT);
+    saveT=setTimeout(async()=>{
+      const db=await store(); if(!db) return;
+      try{ await db.doc('registration/'+sid).set(data); ST.lastWrite=Date.now(); }
+      catch(e){ flash('The registration numbers did not save: '+((e&&e.message)||e)); }
+    },300);
+  }
+  /* one step back, through the shared Undo */
+  function step(label){
+    ST.undo.push({sid:ST.sid, data:own(doc())});
+    if(ST.undo.length>40) ST.undo.shift();
+    try{ joinUndo(); if(window.__hqUndo) window.__hqUndo.record('reg', label); }catch(e){}
+  }
+  /* the shared Undo is set up further down the page, so it is joined on first use */
+  let undoOn=false;
+  function joinUndo(){ if(undoOn || !window.__hqUndo) return; undoOn=true; window.__hqUndo.register('reg', async()=>{
+    const e=ST.undo.pop(); if(!e) return;
+    if(e.sid!==ST.sid){ const db=await store(); if(db) try{ await db.doc('registration/'+e.sid).set(e.data); }catch(x){} return; }
+    ST.doc=take(e.data); ST.openWeek=null; save(); render(true);
+  }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{ try{ joinUndo(); }catch(e){} });
+  else setTimeout(()=>{ try{ joinUndo(); }catch(e){} },0);
+
+  /* ---------- the counts, as Vanessa's page works them out ---------- */
+  function weekly(){
+    return doc().weekly.map(r=>{
+      const o=Object.assign({}, r, {summit_year:num(r.summit_year), weeks_prior:num(r.weeks_prior)});
+      METRICS.forEach(([m])=>{ o[m]=num(r[m]); });
+      return o;
+    }).filter(r=>r.summit_year!=null && r.weeks_prior!=null);
+  }
+  function report(){
+    const rows=weekly(); if(!rows.length) return null;
+    const year=Math.max.apply(null, rows.map(r=>r.summit_year));
+    const cur=rows.filter(r=>r.summit_year===year).sort((a,b)=>a.weeks_prior-b.weeks_prior);
+    const latest=cur[0], previous=cur[1]||null;
+    const prior=rows.find(r=>r.summit_year===year-1 && r.weeks_prior===latest.weeks_prior)||null;
+    const by={};
+    METRICS.forEach(([m])=>{
+      const c=latest[m], p=prior? prior[m] : null, w=previous? previous[m] : null;
+      by[m]={current:c, prior:p, vs_prior:c!=null&&p!=null?c-p:null, last_week:w, vs_last_week:c!=null&&w!=null?c-w:null};
+    });
+    const sz=season();
+    return {by, year, latest, previous, prior, weeks_prior:latest.weeks_prior,
+      report_date:latest.report_date, previous_report_date: previous? previous.report_date : null,
+      current_summit: latest.summit || (year+' '+(sz?sz+' ':'')+'Summit'),
+      prior_summit: (prior && prior.summit) || (rows.find(r=>r.summit_year===year-1&&r.summit)||{}).summit || ((year-1)+' '+(sz?sz+' ':'')+'Summit')};
+  }
+  function history(){
+    const rows=weekly(); if(!rows.length) return [];
+    const year=Math.max.apply(null, rows.map(r=>r.summit_year));
+    const weeks=[...new Set(rows.filter(r=>r.summit_year>=year-1).map(r=>r.weeks_prior))].sort((a,b)=>b-a);
+    return weeks.map(w=>{
+      const c=rows.find(r=>r.summit_year===year && r.weeks_prior===w)||{};
+      const p=rows.find(r=>r.summit_year===year-1 && r.weeks_prior===w)||{};
+      return {weeks_prior:w, week_label:c.week_label||p.week_label||weekLabel(w), current_date:c.report_date||null,
+        current_total:num(c.total_registered), prior_total:num(p.total_registered),
+        current_in_person:num(c.in_person), current_virtual:num(c.virtual),
+        current_revenue:num(c.registration_revenue), current_sponsorships:num(c.sponsorships),
+        current_combined:num(c.registration_plus_sponsorships), prior_combined:num(p.registration_plus_sponsorships),
+        current_source:c.source||null, current_year:year, has:!!c.summit_year};
+    });
+  }
+  function people(which){
+    const x=doc()[which]; if(!x || !Array.isArray(x.rows)) return [];
+    const cols=x.cols||COLS;
+    return x.rows.map(a=>{ const o={}; cols.forEach((c,i)=>{ o[c]=Array.isArray(a)? a[i] : (a||{})[c]; }); return o; });
+  }
+  function newSince(rep){
+    const rows=weekly(); if(!rep) return [];
+    const dates=rows.filter(r=>r.summit_year===rep.year && r.report_date).map(r=>String(r.report_date).slice(0,10)).sort();
+    const since=dates.length>1? dates[dates.length-2] : '0000-00-00';
+    return people('current').filter(r=>String(r.order_date||'').slice(0,10)>since)
+      .sort((a,b)=>String(a.order_date)<String(b.order_date)?1:-1);
+  }
+  function emailText(rep){
+    const block=(title,key)=>[title].concat(METRICS.map(([m,label,kind])=>'* '+label+': '+fmt(kind, rep.by[m][key]))).join('\n');
+    return [block(rep.current_summit,'current'), '', block(rep.prior_summit,'prior')].join('\n');
+  }
+
+  /* ---------- the charts: this year against last year, week by week ---------- */
+  const ROs=new WeakMap();
+  function chartBox(body, rows, ck, pk, kind, year){
+    const lg=el('div','ws-legend');
+    [[year,'--s-cur'],[year-1,'--s-prior']].forEach(([y,v])=>{ const s=el('span'); const i=el('i'); i.style.background='var('+v+')';
+      s.appendChild(i); s.appendChild(document.createTextNode(String(y)+(season()?' '+season():'')+' Summit')); lg.appendChild(s); });
+    body.appendChild(lg);
+    const box=el('div','ws-chart'); box.setAttribute('role','img');
+    box.setAttribute('aria-label',(kind==='money'?'Registration plus sponsorship revenue':'Registrations')+' by weeks before the Summit, '+year+' against '+(year-1)+'. The Week-by-Week History table has the same numbers.');
+    body.appendChild(box);
+    box._args=[rows,ck,pk,kind,year];
+    try{
+      const ro=new ResizeObserver(()=>{ const w=box.clientWidth; if(w && w!==box._w){ box._w=w; draw(box); } });
+      ro.observe(box); ROs.set(box,ro);
+    }catch(e){}
+    setTimeout(()=>{ if(box.clientWidth && box._w!==box.clientWidth){ box._w=box.clientWidth; draw(box); } },0);
+  }
+  function niceTop(max){
+    if(!(max>0)) return {top:1, step:1};
+    const raw=max/5, mag=Math.pow(10,Math.floor(Math.log10(raw))), n=raw/mag;
+    const st=(n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+    return {top:Math.ceil(max/st)*st, step:st};
+  }
+  function draw(box){
+    const [rows,ck,pk,kind,year]=box._args||[];
+    [...box.children].forEach(n=>n.remove());
+    if(!rows || !rows.length) return;
+    const W=Math.max(280, box.clientWidth), H=250, B=34, T=12;
+    const labels=rows.map(r=>r.weeks_prior===-1?'Post':String(r.weeks_prior));
+    const vals=rows.flatMap(r=>[r[ck],r[pk]]).filter(v=>v!=null);
+    const {top,step:st}=niceTop(Math.max.apply(null, vals.concat([0])));
+    const y=v=>T+(H-B-T)*(1-v/top);
+    const ticks=[]; for(let v=0; v<=top+1e-9; v+=st) ticks.push(v);
+    const tickTxt = kind==='money'
+      ? v=>v>=1e6? '$'+(v/1e6).toFixed(v%1e6?1:0)+'M' : v>=1000? '$'+nf.format(v/1000)+'k' : '$'+v
+      : v=>nf.format(v);
+    const svg=sv('svg',{width:W, height:H, viewBox:'0 0 '+W+' '+H, 'aria-hidden':'true'});
+    box.appendChild(svg);
+    const probe=sv('text',{'font-size':11}); probe.textContent=tickTxt(top); svg.appendChild(probe);
+    let left=40; try{ left=Math.ceil(probe.getComputedTextLength())+12; }catch(e){} probe.remove();
+    const right=46;
+    const x=i=>labels.length<2? (left+W-right)/2 : left+6+(W-right-left-6)*i/(labels.length-1);
+    ticks.forEach(v=>{
+      svg.appendChild(sv('line',{x1:left, x2:W-right+8, y1:y(v), y2:y(v), stroke:'var(--line)', 'stroke-width':1}));
+      const t=sv('text',{x:left-6, y:y(v), dy:'0.32em', 'text-anchor':'end', 'font-size':11, fill:'var(--ink-3)'}); t.textContent=tickTxt(v); svg.appendChild(t);
+    });
+    const every=W<420?3:W<640?2:1;
+    labels.forEach((l,i)=>{ if(i%every && l!=='Post' && l!=='0') return;
+      const t=sv('text',{x:x(i), y:H-16, 'text-anchor':'middle', 'font-size':11, fill:'var(--ink-3)'}); t.textContent=l; svg.appendChild(t); });
+    const cap=sv('text',{x:W-right+8, y:H-2, 'text-anchor':'end', 'font-size':10.5, fill:'var(--ink-3)'}); cap.textContent='weeks before the Summit →'; svg.appendChild(cap);
+    const series=[{key:pk, color:'var(--s-prior)', name:String(year-1)}, {key:ck, color:'var(--s-cur)', name:String(year)}];
+    series.forEach(s=>{
+      let d='', pen=false, last=null;
+      rows.forEach((r,i)=>{ const v=r[s.key]; if(v==null){ pen=false; return; }
+        d+=(pen?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1); pen=true; last={i,v}; });
+      if(d) svg.appendChild(sv('path',{d, fill:'none', stroke:s.color, 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round'}));
+      if(last){
+        svg.appendChild(sv('circle',{cx:x(last.i), cy:y(last.v), r:3.5, fill:s.color}));
+        const t=sv('text',{x:x(last.i)+7, y:y(last.v), dy:'0.32em', 'font-size':11, 'font-weight':600, fill:'var(--ink)'}); t.textContent=s.name; svg.appendChild(t);
+      }
+    });
+    const hl=sv('line',{y1:T, y2:H-B, stroke:'var(--line-2)', opacity:0}); svg.appendChild(hl);
+    const tip=el('div','ws-tip'); tip.hidden=true; box.appendChild(tip);
+    const hit=sv('rect',{x:left, y:0, width:Math.max(0,W-right-left+10), height:H-30, fill:'transparent'});
+    hit.addEventListener('pointermove',ev=>{
+      const bb=svg.getBoundingClientRect(), mx=(ev.clientX-bb.left)*(W/bb.width);
+      let bi=0, bd=Infinity; labels.forEach((l,i)=>{ const dd=Math.abs(x(i)-mx); if(dd<bd){ bd=dd; bi=i; } });
+      const r=rows[bi];
+      hl.setAttribute('x1',x(bi)); hl.setAttribute('x2',x(bi)); hl.setAttribute('opacity',1);
+      tip.textContent='';
+      tip.appendChild(el('div','t', (r.weeks_prior===-1?'After the Summit':r.week_label+' before')+(r.current_date?' · '+fmtShort(r.current_date):'')));
+      series.slice().reverse().forEach(s=>{ const d=el('div'); const sw=el('span','sw'); sw.style.background=s.color;
+        d.appendChild(sw); d.appendChild(document.createTextNode(s.name+': '+fmt(kind,r[s.key]))); tip.appendChild(d); });
+      tip.hidden=false;
+      const px=x(bi)*(bb.width/W), tw=tip.offsetWidth;
+      tip.style.left=Math.min(Math.max(0,px+12), box.clientWidth-tw)+'px'; tip.style.top='6px';
+    });
+    hit.addEventListener('pointerleave',()=>{ hl.setAttribute('opacity',0); tip.hidden=true; });
+    svg.appendChild(hit);
+  }
+
+  /* ---------- a Friday's numbers: typed in, or changed ---------- */
+  const FIELDS=[
+    ['report_date','Report Date','date'],
+    ['weeks_prior','Weeks Before the Summit','number'],
+    ['total_registered','Registered','number'],
+    ['in_person','In-Person','number'],
+    ['virtual','Virtual','number'],
+    ['registration_revenue','Registration Revenue','number'],
+    ['sponsorships','Sponsorships','number'],
+    ['source','Where It Came From','text']];
+  function weekForm(row, opts){
+    const f=el('div','ws-form');
+    const inputs={};
+    FIELDS.forEach(([k,label,type])=>{
+      const lab=el('label',null,label);
+      const i=document.createElement('input'); i.type=type==='date'?'date':(type==='number'?'text':'text');
+      if(type==='number') i.inputMode='decimal';
+      i.value=row[k]==null?'':String(k==='report_date'? String(row[k]).slice(0,10) : row[k]);
+      if(k==='weeks_prior') i.placeholder='-1 after the Summit';
+      inputs[k]=i; lab.appendChild(i); f.appendChild(lab);
+    });
+    inputs.report_date.addEventListener('change',()=>{ const w=weeksFor(inputs.report_date.value); if(w!=null) inputs.weeks_prior.value=String(w); });
+    const acts=el('div','acts');
+    const read=()=>{ const o={};
+      FIELDS.forEach(([k,,type])=>{ const v=inputs[k].value.trim(); o[k]= type==='number'? num(v) : v; });
+      o.report_date=date10(o.report_date); return o; };
+    if(opts.fill){
+      acts.appendChild(btn('Fill From the Registrant List','ghost',()=>{
+        const on=date10(inputs.report_date.value)||todayIso();
+        const list=people('current').filter(r=>!r.order_date || String(r.order_date).slice(0,10)<=on);
+        if(!list.length){ flash('Load this year’s registrant list first (Update the Numbers)'); return; }
+        const vr=list.filter(r=>r.format==='Virtual').length;
+        inputs.total_registered.value=String(list.length);
+        inputs.virtual.value=String(vr); inputs.in_person.value=String(list.length-vr);
+        inputs.registration_revenue.value=String(Math.round(list.reduce((s,r)=>s+(num(r.reg_revenue)||0),0)));
+        if(!inputs.source.value) inputs.source.value='Registrant list in Summit HQ';
+      }));
+    }
+    acts.appendChild(el('span','grow'));
+    (opts.buttons||[]).forEach(b=>acts.appendChild(b(read)));
+    f.appendChild(acts);
+    f._read=read;
+    return f;
+  }
+  function shapeRow(o, base){
+    const rep=report();
+    const w=o.weeks_prior!=null? o.weeks_prior : weeksFor(o.report_date);
+    const f=firstDay();
+    const year = base && base.summit_year!=null ? num(base.summit_year) : (rep? rep.year : (f? f.getUTCFullYear() : new Date().getFullYear()));
+    const sz=season();
+    const r=Object.assign({}, base||{}, {
+      summit_year:year, weeks_prior:w, week_label:(base&&base.weeks_prior===w&&base.week_label)||weekLabel(w),
+      report_date:o.report_date, summit:(base&&base.summit)||(rep&&rep.year===year? rep.current_summit : year+' '+(sz?sz+' ':'')+'Summit'),
+      total_registered:o.total_registered, in_person:o.in_person, virtual:o.virtual,
+      registration_revenue:o.registration_revenue, sponsorships:o.sponsorships,
+      registration_plus_sponsorships: o.registration_revenue!=null && o.sponsorships!=null? o.registration_revenue+o.sponsorships : null,
+      source:o.source||''});
+    return r;
+  }
+
+  /* ---------- loading the files from Vanessa's dashboard ---------- */
+  function parseCSV(t){
+    const out=[]; let row=[], f='', q=false;
+    for(let i=0;i<t.length;i++){ const c=t[i];
+      if(q){ if(c==='"'){ if(t[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+      else if(c==='"') q=true;
+      else if(c===','){ row.push(f); f=''; }
+      else if(c==='\n'){ row.push(f); out.push(row); row=[]; f=''; }
+      else if(c!=='\r') f+=c; }
+    if(f!==''||row.length){ row.push(f); out.push(row); }
+    return out.filter(r=>r.some(v=>String(v).trim()!==''));
+  }
+  const keyOf=k=>String(k).trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+  const ALIAS_R={registration_id:['registration_id','id','registrationid','attendee_id','order_line_id','order_id'],
+    name:['name','full_name','attendee','attendee_name','registrant'], company:['company','organization','company_name','employer'],
+    email:['email','email_address'], format:['format','attendance_format'], meeting:['meeting','meeting_name','event','product'],
+    order_date:['order_date','registered','registration_date','date'], reg_revenue:['reg_revenue','revenue','registration_revenue','amount']};
+  const ALIAS_W={summit_year:['summit_year','year'], weeks_prior:['weeks_prior','weeks_before','weeks_out'],
+    week_label:['week_label','week'], report_date:['report_date','current_date','date'], summit:['summit','summit_name','current_summit'],
+    total_registered:['total_registered','registered','total','registrations','current_total'], in_person:['in_person','current_in_person'],
+    virtual:['virtual','current_virtual'], registration_revenue:['registration_revenue','reg_revenue','current_revenue'],
+    sponsorships:['sponsorships','sponsorship','current_sponsorships'],
+    registration_plus_sponsorships:['registration_plus_sponsorships','reg_spons','current_combined','revenue_sponsorship'],
+    source:['source','current_source','where_it_came_from']};
+  function rowsOf(text, name){
+    text=String(text).replace(/^﻿/,'');
+    let arr;
+    if(/\.json$/i.test(name) || /^\s*[\[{]/.test(text)){
+      let j=JSON.parse(text);
+      if(!Array.isArray(j)) j=j.rows||j.data||j.records||j.items||Object.values(j).find(Array.isArray)||[];
+      arr=j.filter(r=>r && typeof r==='object');
+    } else {
+      const r=parseCSV(text), h=r.shift()||[];
+      arr=r.map(x=>{ const o={}; h.forEach((k,i)=>{ o[k]=x[i]; }); return o; });
+    }
+    return arr.map(o=>{ const n={}; Object.keys(o).forEach(k=>{ n[keyOf(k)]=o[k]; }); return n; });
+  }
+  const pickV=(o,keys)=>{ for(const k of keys) if(o[k]!==undefined && o[k]!==null && o[k]!=='') return o[k]; return undefined; };
+  function kindOf(rows){
+    const ks=new Set(); rows.slice(0,20).forEach(r=>Object.keys(r).forEach(k=>ks.add(k)));
+    if(ks.has('weeks_prior')||ks.has('total_registered')||ks.has('weeks_before')||ks.has('report_date')) return 'weekly';
+    if(ks.has('email')||ks.has('name')||ks.has('full_name')||ks.has('registration_id')) return 'people';
+    return '';
+  }
+  function asPerson(o,i){
+    const fm=String(pickV(o,ALIAS_R.format)||'').toLowerCase(), mt=String(pickV(o,ALIAS_R.meeting)||'');
+    const format = /virtual/.test(fm) ? 'Virtual' : fm ? 'In-Person' : (/virtual\s*$/i.test(mt.trim())? 'Virtual' : 'In-Person');
+    const r={name:String(pickV(o,ALIAS_R.name)||'').trim(), company:String(pickV(o,ALIAS_R.company)||'').trim(),
+      email:String(pickV(o,ALIAS_R.email)||'').trim(), format, order_date:date10(pickV(o,ALIAS_R.order_date)),
+      reg_revenue:num(pickV(o,ALIAS_R.reg_revenue))||0};
+    const id=pickV(o,ALIAS_R.registration_id);
+    r.registration_id=id!=null? String(id) : [r.email||r.name, r.order_date, i].join('|');
+    return r;
+  }
+  function asWeek(o){
+    const r={}; Object.keys(ALIAS_W).forEach(k=>{ r[k]=pickV(o,ALIAS_W[k]); });
+    ['summit_year','weeks_prior','total_registered','in_person','virtual','registration_revenue','sponsorships','registration_plus_sponsorships']
+      .forEach(k=>{ r[k]=num(r[k]); });
+    r.report_date=date10(r.report_date);
+    if(r.summit_year==null){ const m=/\b(20\d\d)\b/.exec(String(r.summit||'')); if(m) r.summit_year=+m[1]; }
+    if(r.weeks_prior==null && r.week_label!=null){ const m=/-?\d+/.exec(String(r.week_label)); if(m) r.weeks_prior=+m[0]; else if(/post/i.test(r.week_label)) r.weeks_prior=-1; }
+    if(r.weeks_prior==null && r.report_date) r.weeks_prior=weeksFor(r.report_date);
+    Object.keys(r).forEach(k=>{ if(r[k]===undefined) delete r[k]; });
+    if(r.summit!=null) r.summit=String(r.summit); if(r.source!=null) r.source=String(r.source); if(r.week_label!=null) r.week_label=String(r.week_label);
+    return r;
+  }
+  async function readFiles(files){
+    const out=[];
+    for(const f of files){
+      const item={name:f.name, rows:[], kind:'', use:'', err:''};
+      try{
+        const raw=rowsOf(await f.text(), f.name);
+        item.kind=kindOf(raw);
+        if(item.kind==='weekly'){ item.rows=raw.map(asWeek).filter(r=>r.summit_year!=null && r.weeks_prior!=null); item.use='weekly'; }
+        else if(item.kind==='people'){ item.rows=raw.map(asPerson).filter(r=>r.name||r.email);
+          item.latest=item.rows.reduce((m,r)=>r.order_date>m?r.order_date:m,''); }
+        else item.err='Not a file this page knows: it needs either the weekly report columns or the registrant columns.';
+        if(!item.rows.length && !item.err) item.err='No rows in this file.';
+      }catch(e){ item.err='Could not read this file: '+((e&&e.message)||e); }
+      out.push(item);
+    }
+    /* which registrant list is which: the one with the later orders is this year's */
+    const ppl=out.filter(i=>i.kind==='people' && !i.err).sort((a,b)=>a.latest<b.latest?1:-1);
+    if(ppl.length>=2){ ppl[0].use='current'; ppl[1].use='prior'; }
+    else if(ppl.length===1){
+      const f=firstDay(), l=d0(ppl[0].latest);
+      ppl[0].use = (f && l && (f-l)>330*DAY) ? 'prior' : 'current';
+    }
+    return out;
+  }
+  function about(i){
+    if(i.err) return i.err;
+    if(i.kind==='weekly'){ const ys=[...new Set(i.rows.map(r=>r.summit_year))].sort().join(' and ');
+      return i.rows.length+' Friday report'+(i.rows.length===1?'':'s')+(ys?' for '+ys:''); }
+    const vr=i.rows.filter(r=>r.format==='Virtual').length;
+    return nf.format(i.rows.length)+' registrations ('+nf.format(i.rows.length-vr)+' in-person, '+nf.format(vr)+' virtual)'+(i.latest?', latest '+fmtShort(i.latest):'');
+  }
+  function applyPick(){
+    const items=(ST.pick||[]).filter(i=>!i.err && i.use);
+    if(!items.length){ ST.pickErr='Choose what each file is first.'; render(true); return; }
+    const uses=items.map(i=>i.use);
+    if(new Set(uses).size!==uses.length){ ST.pickErr='Two files are set to the same thing. Each one has to be different.'; render(true); return; }
+    step('loading the registration files');
+    const d=doc(), at=new Date().toISOString(), by=who();
+    items.forEach(i=>{
+      if(i.use==='weekly'){ d.weekly=i.rows.map(r=>Object.assign({},r)); }
+      else d[i.use]={cols:COLS.slice(), rows:i.rows.map(r=>COLS.map(c=>r[c]==null?'':r[c]))};
+      d.files[i.use]={file:i.name, at, by};
+    });
+    ST.pick=null; ST.pickErr=''; ST.tool='';
+    save(); render(true);
+    flash('Registration numbers saved for this summit');
+  }
+
+  /* ---------- the page, laid out the way Vanessa's is ---------- */
+  const btn=(label,cls,fn)=>{ const b=el('button','ws-btn'+(cls?' '+cls:''),label); b.type='button'; if(fn) b.addEventListener('click',fn); return b; };
+  const note=(box,t)=>box.appendChild(el('p','note',t));
+  const blankLine=(box,t)=>box.appendChild(el('div','ws-blank',t));
+  function card(id, title, right){
+    const c=$('#'+id); c.textContent='';
+    const row=el('div','ws-row'); row.appendChild(el('h2','grow',title));
+    (right||[]).forEach(n=>row.appendChild(n));
+    c.appendChild(row);
+    return c;
+  }
+
+  /* the masthead: the summit, its hotel and dates, as on every other tab */
+  function paintMast(){
+    const t=$('#rg-title'), s=$('#rg-sub');
+    let name='', line='';
+    try{ name=(document.getElementById('rosTitle')||{}).textContent||''; }catch(e){}
+    try{ line=(document.getElementById('rs-subtitle')||{}).textContent||''; }catch(e){}
+    if(!name){ const v=venue(); name=(v&&v.name)||'Registration'; }
+    t.textContent=name.trim(); s.textContent=line.replace(/\s+/g,' ').trim();
+    const acts=$('#rg-acts'); acts.textContent='';
+    if(!canEdit()) return;
+    const add=btn('+ Add This Friday’s Numbers', ST.tool==='add'?'':'ghost', ()=>{ ST.tool = ST.tool==='add'? '' : 'add'; ST.openWeek=null; render(true); });
+    const up=btn('Update the Numbers', ST.tool==='load'?'':'ghost', ()=>{ ST.tool = ST.tool==='load'? '' : 'load'; ST.pick=null; ST.pickErr=''; render(true); });
+    acts.appendChild(add); acts.appendChild(up);
+  }
+
+  function paintHead(rep){
+    const h=$('#rg-head'); h.textContent='';
+    if(!ST.ready){ h.appendChild(el('p','ws-sub','Reading the registration numbers…')); return; }
+    if(!rep){
+      h.appendChild(el('h2',null,'No Registration Numbers Yet'));
+      h.appendChild(el('p','ws-sub', canEdit()
+        ? 'Nothing has been loaded for this summit. Press Update the Numbers to load the files from Vanessa’s registration dashboard, or add a Friday with + Add This Friday’s Numbers.'
+        : 'Nothing has been loaded for this summit yet.'));
+      return;
+    }
+    h.appendChild(el('h2',null, rep.current_summit+' · '+weekSay(rep.weeks_prior, rep.latest.week_label)));
+    h.appendChild(el('p','ws-sub','Weekly report for '+fmtDate(rep.report_date)+', compared with the '+rep.prior_summit+' at the same number of weeks before the event.'));
+    const tk=el('p','ws-takeaway'), r0=rep.by.total_registered, comb=rep.by.registration_plus_sponsorships;
+    const b=s=>el('b',null,s);
+    tk.appendChild(b(fmt('count',r0.current)+' registered'));
+    tk.appendChild(document.createTextNode(', '));
+    if(r0.vs_prior!=null) tk.appendChild(document.createTextNode(fmt('count',Math.abs(r0.vs_prior))+(r0.vs_prior>=0?' more':' fewer')+' than at this point last year ('+fmt('count',r0.prior)+'). '));
+    if(comb.current!=null){
+      tk.appendChild(document.createTextNode('Registration + sponsorship stands at '));
+      tk.appendChild(b(fmt('money',comb.current)));
+      tk.appendChild(document.createTextNode(comb.prior!=null? ' against '+fmt('money',comb.prior)+' last year.' : '.'));
+    }
+    h.appendChild(tk);
+  }
+  function paintTiles(rep){
+    const box=$('#rg-tiles'); box.textContent='';
+    box.hidden=!rep; if(!rep) return;
+    METRICS.forEach(([m,label,kind],i)=>{
+      const r=rep.by[m];
+      const t=el('div','ws-tile'+(i===0||i===5?' is-key':''));
+      t.appendChild(el('span','k',label));
+      t.appendChild(el('span','v',fmt(kind,r.current)));
+      const p=el('span','p','Last year: '); p.appendChild(el('b',null,fmt(kind,r.prior)));
+      if(r.vs_prior!=null){ p.appendChild(document.createTextNode(' ')); p.appendChild(el('span','d '+tone(r.vs_prior),'('+signed(kind,r.vs_prior)+')')); }
+      t.appendChild(p);
+      const w=el('span','p','Since last Friday: ');
+      w.appendChild(el('span','d '+tone(r.vs_last_week), r.vs_last_week==null?'—':signed(kind,r.vs_last_week)));
+      t.appendChild(w);
+      box.appendChild(t);
+    });
+  }
+
+  /* Summit HQ's two additions, opened from the buttons in the masthead */
+  function paintTool(rep, edit){
+    const box=$('#rg-tool'); box.textContent='';
+    if(!edit || !ST.tool){ box.hidden=true; return; }
+    box.hidden=false;
+    const c=el('section','ws-card ws-tool'); box.appendChild(c);
+    if(ST.tool==='add'){
+      const row=el('div','ws-row'); row.appendChild(el('h2','grow','This Friday’s Numbers')); c.appendChild(row);
+      note(c,'Fill From the Registrant List counts this year’s list up to the report date. Sponsorships starts at last week’s figure.');
+      const prev=rep? rep.latest : {};
+      const start={report_date:lastFriday(), sponsorships: prev && prev.sponsorships!=null? prev.sponsorships : null, source:''};
+      start.weeks_prior=weeksFor(start.report_date);
+      c.appendChild(weekForm(start,{fill:true, buttons:[
+        ()=>btn('Cancel','ghost',()=>{ ST.tool=''; render(true); }),
+        read=>btn('Add to the History','',async()=>{
+          const o=read();
+          if(!o.report_date){ flash('Give the week a report date'); return; }
+          if(o.weeks_prior==null){ flash('Say how many weeks before the Summit this is'); return; }
+          const n=shapeRow(o,null);
+          const same=doc().weekly.findIndex(x=>num(x.summit_year)===n.summit_year && num(x.weeks_prior)===n.weeks_prior);
+          if(same>=0 && !(await ask('Replace That Week?','There is already a report for '+weekLabel(n.weeks_prior)+' ('+fmtShort(doc().weekly[same].report_date)+'). Replace it with these numbers?','Replace'))) return;
+          step('adding a Friday report');
+          if(same>=0) doc().weekly[same]=n; else doc().weekly.push(n);
+          ST.tool=''; save(); render(true); })]}));
+      return;
+    }
+    /* Update the Numbers */
+    const row=el('div','ws-row'); row.appendChild(el('h2','grow','Update the Numbers')); c.appendChild(row);
+    const F=doc().files||{};
+    const NAME={weekly:'Weekly Report History', current:'This Year’s Registrants', prior:'Last Year’s Registrants'};
+    const have=el('div','ws-have');
+    ['weekly','current','prior'].forEach(k=>{ const d=el('div'); d.appendChild(el('span','k',NAME[k]));
+      const f=F[k]; d.appendChild(el('span','w', f? (f.file||'')+' · '+fmtShort(date10(f.at))+(f.by?' by '+f.by:'') : 'Not loaded'));
+      have.appendChild(d); });
+    c.appendChild(have);
+    note(c,'Load the three files from Vanessa’s registration dashboard (JSON or CSV): the weekly report history and the two registrant lists. Pick them all at once; each one replaces what is here now for this summit. Registrant names and emails are kept in Summit HQ’s private storage only.');
+    const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.json,.csv,application/json,text/csv'; inp.hidden=true;
+    inp.addEventListener('change',async()=>{ const fl=[...(inp.files||[])]; if(!fl.length) return;
+      ST.pick=await readFiles(fl); ST.pickErr=''; render(true); });
+    c.appendChild(inp);
+    if(!ST.pick){
+      const r=el('div','ws-row'); r.appendChild(btn('Choose Files…','',()=>inp.click())); r.appendChild(btn('Cancel','ghost',()=>{ ST.tool=''; render(true); }));
+      c.appendChild(r); return;
+    }
+    const list=el('div','ws-files');
+    ST.pick.forEach(i=>{
+      const r=el('div','ws-file');
+      const a=el('div'); a.appendChild(el('div','nm',i.name)); a.appendChild(el('div','ab',about(i))); r.appendChild(a);
+      const s=document.createElement('select'); s.setAttribute('aria-label','What '+i.name+' is');
+      const opts = i.err? [['','Can’t use this file']] : i.kind==='weekly'? [['weekly',NAME.weekly],['','Don’t use it']]
+        : [['current',NAME.current],['prior',NAME.prior],['','Don’t use it']];
+      opts.forEach(([v,t])=>{ const o=el('option',null,t); o.value=v; s.appendChild(o); });
+      s.value=i.use||''; s.disabled=!!i.err;
+      s.addEventListener('change',()=>{ i.use=s.value; });
+      r.appendChild(s); list.appendChild(r);
+    });
+    c.appendChild(list);
+    if(ST.pickErr) c.appendChild(el('p','ws-err',ST.pickErr));
+    const r2=el('div','ws-row');
+    r2.appendChild(btn('Choose Different Files','ghost',()=>inp.click()));
+    r2.appendChild(el('span','grow'));
+    r2.appendChild(btn('Cancel','ghost',()=>{ ST.pick=null; ST.pickErr=''; ST.tool=''; render(true); }));
+    r2.appendChild(btn('Save to Summit HQ','',applyPick));
+    c.appendChild(r2);
+  }
+
+  function render(force){
+    if(!$('#rg-head')) return;
+    const act=document.activeElement;
+    if(!force && act && HOST.contains(act) && /INPUT|TEXTAREA|SELECT/.test(act.tagName) && act.type!=='checkbox' && act.type!=='file'){ render._later=true; return; }
+    /* a Friday being typed in, a week open for changes or files waiting to be saved: a save
+       arriving from elsewhere must not wipe what is half done (it catches up when that closes) */
+    if(!force && (ST.tool==='add' || ST.openWeek!=null || (ST.tool==='load' && ST.pick))){ render._later=true; return; }
+    const rep=report(), hist=history(), edit=canEdit();
+    if(ST.ready && ST.tool==null) ST.tool=(!rep && edit)? 'load' : '';
+    paintMast(); paintHead(rep); paintTiles(rep); paintTool(rep, edit);
+    const shown=!!rep;
+    HOST.querySelectorAll('.ws-grid2, #rg-hist, #rg-list').forEach(n=>{ n.hidden=!shown && !(n.id==='rg-list' && (doc().current||doc().prior)); });
+    if(rep) paintCards(rep, hist, edit);
+    else if(doc().current||doc().prior) paintList([]);
+    paintMethod();
+  }
+
+  function paintCards(rep, hist, edit){
+    /* Friday email */
+    const ok=el('span','ws-copied','Copied'); ok.hidden=!(Date.now()-ST.copied<2000);
+    const pre=el('pre','ws-email', emailText(rep)); pre.tabIndex=0;
+    const copy=btn('Copy Email Text','',()=>{
+      const done=()=>{ ST.copied=Date.now(); ok.hidden=false; setTimeout(()=>{ ok.hidden=true; },2000); };
+      const select=()=>{ const r=document.createRange(); r.selectNodeContents(pre); const s=getSelection(); s.removeAllRanges(); s.addRange(r); };
+      try{ navigator.clipboard.writeText(pre.textContent).then(done, select); }catch(e){ select(); }
+    });
+    const em=card('rg-email','Friday Email',[ok,copy]);
+    note(em,'The numbers in the team email, in the usual format. Copy it into a new Outlook message.');
+    em.appendChild(pre);
+
+    /* new since the last report */
+    const fresh=newSince(rep);
+    const cnt=el('span','ws-count', doc().current? nf.format(fresh.length)+(fresh.length===1?' registration':' registrations') : '');
+    const nw=card('rg-new','New since the Last Report',[cnt]);
+    note(nw, rep.previous_report_date? 'Registrations with an order date after the '+fmtShort(rep.previous_report_date)+' report.' : 'Registrations since the first report.');
+    const ul=el('ul','ws-newlist');
+    if(!doc().current){ const li=el('li','ws-muted','Load this year’s registrant list to see who registered since the last report.'); ul.appendChild(li); }
+    else if(!fresh.length){ const li=el('li','ws-muted','No new registrations since the last report.'); ul.appendChild(li); }
+    else fresh.forEach(r=>{ const li=el('li'); li.appendChild(el('span',null,r.name||r.email));
+      li.appendChild(el('span','ws-chip '+(r.format==='Virtual'?'vr':'ip'), r.format));
+      li.appendChild(el('span','co',r.company||'')); li.appendChild(el('span','dt',fmtShort(r.order_date))); ul.appendChild(li); });
+    nw.appendChild(ul);
+
+    /* the two charts */
+    const year=hist.length? hist[0].current_year : rep.year;
+    const pc=card('rg-pace','Registrations by Weeks before the Summit');
+    note(pc,'Cumulative registrations at each Friday report. In-person and virtual combined.');
+    chartBox(pc, hist, 'current_total', 'prior_total', 'count', year);
+    const rc=card('rg-rev','Registration + Sponsorship Revenue');
+    note(rc,'Registration revenue from Aptify plus committed sponsorships at each Friday report.');
+    chartBox(rc, hist, 'current_combined', 'prior_combined', 'money', year);
+
+    /* week-by-week history */
+    const hc=card('rg-hist','Week-by-Week History');
+    note(hc,'Every Friday report, side by side with last year at the same week.'+(edit?' Click a week to change its numbers.':''));
+    const box=el('div','ws-tablebox'), t=el('table','ws-table hist');
+    const hr=el('tr');
+    [['Week'],['Report Date'],[year+' Registered','n'],[(year-1)+' Registered','n'],['In-Person','n'],['Virtual','n'],
+     ['Reg. Revenue','n'],['Sponsorships','n'],['Reg. + Spons.','n'],['Last Year Reg. + Spons.','n'],['Where It Came From']]
+      .forEach(([h,c])=>{ const th=el('th',c||null); th.appendChild(el('span','ws-plain',h)); hr.appendChild(th); });
+    const th=el('thead'); th.appendChild(hr); t.appendChild(th);
+    const tb=el('tbody');
+    const latest=Math.min.apply(null, hist.filter(r=>r.current_total!=null).map(r=>r.weeks_prior).concat([Infinity]));
+    hist.forEach(r=>{
+      const tr=el('tr',(r.weeks_prior===latest?'is-latest':'')+(edit&&r.has?' wk':'')+(ST.openWeek===r.weeks_prior?' open':''));
+      [[r.week_label,''],[fmtShort(r.current_date),''],[fmt('count',r.current_total),'n'],[fmt('count',r.prior_total),'n'],
+       [fmt('count',r.current_in_person),'n'],[fmt('count',r.current_virtual),'n'],[fmt('money',r.current_revenue),'n'],
+       [fmt('money',r.current_sponsorships),'n'],[fmt('money',r.current_combined),'n'],[fmt('money',r.prior_combined),'n'],
+       [r.current_source||'','ws-muted']].forEach(([v,c])=>tr.appendChild(el('td',c||null,v)));
+      if(edit && r.has){
+        tr.tabIndex=0; tr.title='Click to change this week';
+        const tog=()=>{ ST.openWeek = ST.openWeek===r.weeks_prior? null : r.weeks_prior; render(true); };
+        tr.addEventListener('click',tog);
+        tr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tog(); } });
+      }
+      tb.appendChild(tr);
+      if(edit && r.has && ST.openWeek===r.weeks_prior){
+        const base=doc().weekly.find(x=>num(x.summit_year)===r.current_year && num(x.weeks_prior)===r.weeks_prior);
+        if(base){
+          const fr=el('tr'), td=el('td'); td.colSpan=11; td.style.whiteSpace='normal'; fr.appendChild(td);
+          td.appendChild(weekForm(base,{buttons:[
+            ()=>btn('Remove This Week','danger',async()=>{
+              if(!(await ask('Remove This Week?','Take the '+fmtShort(base.report_date)+' report out of the history? Undo puts it back.','Remove'))) return;
+              step('removing a Friday report');
+              const i=doc().weekly.indexOf(base); if(i>=0) doc().weekly.splice(i,1);
+              ST.openWeek=null; save(); render(true); }),
+            read=>btn('Save Changes','',()=>{
+              const o=read(); if(!o.report_date){ flash('Give the week a report date'); return; }
+              step('changing a Friday report');
+              const i=doc().weekly.indexOf(base); const n=shapeRow(o, base);
+              if(i>=0) doc().weekly[i]=n; ST.openWeek=null; save(); render(true); })]}));
+          tb.appendChild(fr);
+        }
+      }
+    });
+    t.appendChild(tb); box.appendChild(t); hc.appendChild(box);
+
+    paintList(fresh, rep);
+  }
+
+  /* registrant lists */
+  function paintList(fresh, rep){
+    const lab=s=>String(s||'').replace(/\s*Summit$/,'');
+    const seg=el('div','ws-seg'); seg.setAttribute('role','group'); seg.setAttribute('aria-label','Which Summit');
+    [['current', rep? lab(rep.current_summit) : 'This Year'],['prior', rep? lab(rep.prior_summit) : 'Last Year']].forEach(([k,t])=>{
+      const b=el('button',null,t); b.type='button'; b.dataset.list=k; b.addEventListener('click',()=>{ ST.list=k; paint(); }); seg.appendChild(b); });
+    const c=card('rg-list','Registrant Lists',[seg]);
+    const r1=el('div','ws-row');
+    const q=document.createElement('input'); q.type='search'; q.className='ws-search'; q.placeholder='Search name, company or email'; q.value=ST.q;
+    q.setAttribute('aria-label','Search registrants');
+    q.addEventListener('input',()=>{ ST.q=q.value; paint(); });
+    r1.appendChild(q);
+    const fs=el('div','ws-seg'); fs.setAttribute('role','group'); fs.setAttribute('aria-label','Format');
+    [['','All'],['In-Person','In-Person'],['Virtual','Virtual']].forEach(([k,t])=>{
+      const b=el('button',null,t); b.type='button'; b.dataset.format=k; b.addEventListener('click',()=>{ ST.format=k; paint(); }); fs.appendChild(b); });
+    r1.appendChild(fs);
+    const cnt=el('span','ws-count grow'); r1.appendChild(cnt);
+    c.appendChild(r1);
+    const box=el('div','ws-tablebox'), t=el('table','ws-table'), th=el('thead'), hr=el('tr');
+    [['name','Name'],['company','Company'],['email','Email'],['format','Format'],['order_date','Registered'],['reg_revenue','Revenue','n']].forEach(([k,h,cl])=>{
+      const x=el('th',cl||null); const b=el('button','ws-th',h); b.type='button'; b.dataset.sort=k;
+      b.addEventListener('click',()=>{ const [sk,sd]=ST.sort[ST.list];
+        ST.sort[ST.list]=[k, sk===k? -sd : (k==='order_date'||k==='reg_revenue'? -1 : 1)]; paint(); });
+      x.appendChild(b); hr.appendChild(x); });
+    th.appendChild(hr); t.appendChild(th); const tb=el('tbody'); t.appendChild(tb); box.appendChild(t); c.appendChild(box);
+    const newIds=new Set((fresh||[]).map(r=>String(r.registration_id)));
+    function paint(){
+      seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.list===ST.list)));
+      fs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.format===ST.format)));
+      const all=people(ST.list), qq=ST.q.trim().toLowerCase();
+      let rows=all.filter(r=>(!ST.format||r.format===ST.format) && (!qq||[r.name,r.company,r.email].some(v=>String(v||'').toLowerCase().includes(qq))));
+      const [k,d]=ST.sort[ST.list];
+      rows=rows.slice().sort((a,b)=>{ const av=k==='reg_revenue'?(num(a[k])||0):String(a[k]||'').toLowerCase(), bv=k==='reg_revenue'?(num(b[k])||0):String(b[k]||'').toLowerCase();
+        return av<bv?-d:av>bv?d:0; });
+      hr.querySelectorAll('.ws-th').forEach(b=>{ if(b.dataset.sort===k) b.setAttribute('aria-sort', d===1?'ascending':'descending'); else b.removeAttribute('aria-sort'); });
+      tb.textContent='';
+      rows.forEach(r=>{ const tr=el('tr'); const nm=el('td',null,r.name||'');
+        if(ST.list==='current' && newIds.has(String(r.registration_id))) nm.appendChild(el('span','ws-chip new','New'));
+        tr.appendChild(nm); tr.appendChild(el('td',null,r.company||'')); tr.appendChild(el('td',null,r.email||''));
+        const fm=el('td'); fm.appendChild(el('span','ws-chip '+(r.format==='Virtual'?'vr':'ip'), r.format||'')); tr.appendChild(fm);
+        tr.appendChild(el('td',null,fmtShort(String(r.order_date||'').slice(0,10)))); tr.appendChild(el('td','n',fmt('money',num(r.reg_revenue))));
+        tb.appendChild(tr); });
+      if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=6; tr.appendChild(td); tb.appendChild(tr); }
+      cnt.textContent = rows.length===all.length? nf.format(all.length)+' registrations' : nf.format(rows.length)+' of '+nf.format(all.length)+' registrations';
+    }
+    paint();
+  }
+
+  function paintMethod(){
+    const m=$('#rg-method'); if(m.dataset.done) return; m.dataset.done='1';
+    m.appendChild(el('h2',null,'How the Numbers Are Counted'));
+    const ul=el('ul');
+    [['Registered','counts registrations in the Aptify view Event Attendance w/ Prompt, run with the Summit’s name so it picks up both the in-person and the Virtual meeting. A person registered for both is counted twice, as in the Smartsheet.'],
+     ['In-person / Virtual','is decided by whether the meeting name ends in “Virtual”.'],
+     ['Registration revenue','is the sum of Reg Revenue on those registrations.'],
+     ['Sponsorships','is Winter committed on the Sponsorship Portal’s Money tab: Winter-only deals plus one third of each series deal.'],
+     ['Weeks before the Summit',': week 0 is the Friday before the Summit opens. The comparison column is last year’s report at the same week.'],
+     ['','Each week’s numbers are saved as reported. Cancelled orders drop out of Aptify, so rebuilding a past week from today’s export can come out lower than what was reported.']]
+      .forEach(([b,t])=>{ const li=el('li'); if(b) li.appendChild(el('b',null,b)); li.appendChild(document.createTextNode(b? (t.charAt(0)===':'? t : ' '+t) : t)); ul.appendChild(li); });
+    m.appendChild(ul);
+  }
+
+  /* where registration stands, for anything else that wants to say so */
+  window.__regStats=()=>{ try{
+    const rep=report();
+    if(!ST.ready) return null;
+    if(!rep) return {has:false};
+    const r=rep.by.total_registered;
+    const stale=rep.weeks_prior!==-1 && d0(rep.report_date) && (d0(todayIso())-d0(rep.report_date))>8*DAY;
+    return {has:true, total:r.current, prior:r.prior, vs:r.vs_prior, date:fmtShort(rep.report_date), stale:!!stale};
+  }catch(e){ return null; } };
+
+  document.addEventListener('focusout',e=>{
+    if(!render._later) return;
+    setTimeout(()=>{ const a=document.activeElement;
+      if(render._later && !(a && HOST.contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName))){ render._later=false; render(); } },80);
+  }, true);
+  window.addEventListener('hq:schedule',()=>{ if(sidNow()!==ST.sid) watch(sidNow()); else render(); });
+  document.addEventListener('change',e=>{ if(e.target && e.target.id==='venue-pick') watch(sidNow()); }, true);
+  setInterval(()=>{ if(sidNow()!==ST.sid) watch(sidNow()); }, 2500);
+  window.__regRender=render;
+  window.__regState=()=>({sid:ST.sid, ready:ST.ready, has:!!ST.doc});
+  watch(sidNow());
+})();
+</script>
+
 <script>
 /* Who is signed in, for Held For Next Summit's "raised by". (This used to come from the
    activity log, which was removed on 2026-09-30 at Jonna's request.) */
@@ -5640,7 +6613,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
    ============================================================ */
 (function(){
   "use strict";
-  const TAB={grid:'Schedule', specs:'Hotel Specs', ros:'Run of Show', people:'People', resume:'Resume', trunk:'Trunk'};
+  const TAB={grid:'Schedule', specs:'Hotel Specs', ros:'Run of Show', people:'People', resume:'Resume', trunk:'Trunk', reg:'Registration'};
   const stack=[];        /* [{src, label}] — the merged timeline */
   const panes={};        /* src -> undo function */
   let btn=null, busy=false;
@@ -41394,11 +42367,11 @@ startClock();
 (function(){
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
-    resume:document.getElementById("app-resume")};
+    resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
-    ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel"};
+    ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
   const GROUP={ros:1,specs:1,people:1};
@@ -41496,7 +42469,7 @@ startClock();
   /* 'people' and 'photos' are the People tab — the person records and their headshots.
      A backup with a lot of headshots in it is a big file; that is the cost of it being
      a real backup. */
-  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','private'];
+  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','registration','private'];
   const VENUES=['nola','slc','bethesda'];
   const mk=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
   let DB=null;
@@ -41509,7 +42482,7 @@ startClock();
     const NICE={meta:'the settings', summits:'the summits', tasks:'the tasks',
       discussion:'the meeting', notes:'the notes', schedule:'the Schedule',
       resume:'the resume', people:'the people', photos:'the headshots', private:'the contact details',
-      sponsors:'the sponsors', trunk:'the trunk'};
+      sponsors:'the sponsors', trunk:'the trunk', registration:'the registration numbers'};
     let n=0;
     for(const c of COLLECTIONS){
       n++;
