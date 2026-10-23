@@ -5735,9 +5735,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     t.textContent=name.trim(); s.textContent=line.replace(/\s+/g,' ').trim();
     const acts=$('#rg-acts'); acts.textContent='';
     if(!canEdit()) return;
-    const add=btn('+ Add This Friday’s Numbers', ST.tool==='add'?'':'ghost', ()=>{ ST.tool = ST.tool==='add'? '' : 'add'; ST.openWeek=null; render(true); });
+    /* Jonna, 2026-10-23: + Add This Friday's Numbers came off; the Friday files come in
+       through Update the Numbers, and any week can still be changed from its row */
     const up=btn('Update the Numbers', ST.tool==='load'?'':'ghost', ()=>{ ST.tool = ST.tool==='load'? '' : 'load'; ST.pick=null; ST.pickErr=''; render(true); });
-    acts.appendChild(add); acts.appendChild(up);
+    acts.appendChild(up);
   }
 
   function paintHead(rep){
@@ -5746,7 +5747,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     if(!rep){
       h.appendChild(el('h2',null,'No Registration Numbers Yet'));
       h.appendChild(el('p','ws-sub', canEdit()
-        ? 'Nothing has been loaded for this summit. Press Update the Numbers to load the files from Vanessa’s registration dashboard, or add a Friday with + Add This Friday’s Numbers.'
+        ? 'Nothing has been loaded for this summit. Press Update the Numbers to load the files from Vanessa’s registration dashboard.'
         : 'Nothing has been loaded for this summit yet.'));
       return;
     }
