@@ -5155,6 +5155,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-stat:last-child{border-bottom:0}
 #app-reg .ws-stat .k{color:var(--ink-3);white-space:nowrap}
 #app-reg .ws-stat .v{color:var(--ink);font-weight:600;white-space:nowrap}
+/* the category filter, the same box as the search */
+#app-reg .ws-select{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
+  background:var(--paper);color:var(--ink);min-width:0;max-width:100%;cursor:pointer}
+#app-reg .ws-select:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
+#app-reg .ws-table td.cat{white-space:nowrap}
 </style>
 
 <div id="app-reg" hidden>
@@ -5215,7 +5220,21 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   const SVGNS='http://www.w3.org/2000/svg';
   const sv=(t,a)=>{ const n=document.createElementNS(SVGNS,t); Object.keys(a||{}).forEach(k=>n.setAttribute(k,a[k])); return n; };
 
-  const COLS=['registration_id','name','company','email','format','order_date','reg_revenue'];
+  const COLS=['registration_id','name','company','email','format','order_date','reg_revenue','category'];
+  /* Jonna, 2026-10-23: the fetcher labels every registrant with one of the categories MISMO
+     reports by. Loose spellings are brought to these; anything else is kept as written. */
+  const CATS=['Service Provider','Tech Provider','Lender/Servicer','GSE (incl. FHLBs)','Government Agency'];
+  function catOf(v){
+    const t=String(v==null?'':v).trim(); if(!t) return '';
+    const k=t.toLowerCase().replace(/[^a-z]+/g,' ').trim();
+    const exact=CATS.find(c=>c.toLowerCase().replace(/[^a-z]+/g,' ').trim()===k); if(exact) return exact;
+    if(/^(gse|fhlb|federal home loan)/.test(k) || /\bgse\b|\bfhlb/.test(k)) return 'GSE (incl. FHLBs)';
+    if(/^gov/.test(k)) return 'Government Agency';
+    if(/^tech/.test(k)) return 'Tech Provider';
+    if(/^service provider|^services? provider/.test(k)) return 'Service Provider';
+    if(/^lender|^servicer|lender servicer/.test(k)) return 'Lender/Servicer';
+    return t;
+  }
   const METRICS=[
     ['total_registered','Total Registered','count'],
     ['in_person','In-Person','count'],
@@ -5288,7 +5307,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
   /* ---------- the store ---------- */
   const ST={sid:'', doc:null, ready:false, unsub:null, lastWrite:0,
-    list:'current', q:'', format:'', sort:{current:['order_date',-1], prior:['name',1]},
+    list:'current', q:'', format:'', category:'', sort:{current:['order_date',-1], prior:['name',1]},
     openWeek:null, adding:false, pick:null, pickErr:'', undo:[], copied:0};
   async function store(){
     try{ return window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ return null; }
@@ -5609,7 +5628,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   const ALIAS_R={registration_id:['registration_id','id','registrationid','attendee_id','order_line_id','order_id'],
     name:['name','full_name','attendee','attendee_name','registrant'], company:['company','organization','company_name','employer'],
     email:['email','email_address'], format:['format','attendance_format'], meeting:['meeting','meeting_name','event','product'],
-    order_date:['order_date','registered','registration_date','date'], reg_revenue:['reg_revenue','revenue','registration_revenue','amount']};
+    order_date:['order_date','registered','registration_date','date'], reg_revenue:['reg_revenue','revenue','registration_revenue','amount'],
+    category:['category','company_category','registrant_category','segment','industry_category']};
   const ALIAS_W={summit_year:['summit_year','year'], weeks_prior:['weeks_prior','weeks_before','weeks_out'],
     week_label:['week_label','week'], report_date:['report_date','current_date','date'], summit:['summit','summit_name','current_summit'],
     total_registered:['total_registered','registered','total','registrations','current_total'], in_person:['in_person','current_in_person'],
@@ -5642,7 +5662,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const format = /virtual/.test(fm) ? 'Virtual' : fm ? 'In-Person' : (/virtual\s*$/i.test(mt.trim())? 'Virtual' : 'In-Person');
     const r={name:String(pickV(o,ALIAS_R.name)||'').trim(), company:String(pickV(o,ALIAS_R.company)||'').trim(),
       email:String(pickV(o,ALIAS_R.email)||'').trim(), format, order_date:date10(pickV(o,ALIAS_R.order_date)),
-      reg_revenue:num(pickV(o,ALIAS_R.reg_revenue))||0};
+      reg_revenue:num(pickV(o,ALIAS_R.reg_revenue))||0, category:catOf(pickV(o,ALIAS_R.category))};
     const id=pickV(o,ALIAS_R.registration_id);
     r.registration_id=id!=null? String(id) : [r.email||r.name, r.order_date, i].join('|');
     return r;
@@ -5969,10 +5989,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     [['','All'],['In-Person','In-Person'],['Virtual','Virtual']].forEach(([k,t])=>{
       const b=el('button',null,t); b.type='button'; b.dataset.format=k; b.addEventListener('click',()=>{ ST.format=k; paint(); }); fs.appendChild(b); });
     r1.appendChild(fs);
+    /* the category filter: the five, any other label the list carries, and Not Labeled */
+    const cs=document.createElement('select'); cs.className='ws-select'; cs.setAttribute('aria-label','Category');
+    cs.addEventListener('change',()=>{ ST.category=cs.value; paint(); });
+    r1.appendChild(cs);
     const cnt=el('span','ws-count grow'); r1.appendChild(cnt);
     c.appendChild(r1);
     const box=el('div','ws-tablebox'), t=el('table','ws-table'), th=el('thead'), hr=el('tr');
-    [['name','Name'],['company','Company'],['email','Email'],['format','Format'],['order_date','Registered'],['reg_revenue','Revenue','n']].forEach(([k,h,cl])=>{
+    [['name','Name'],['company','Company'],['category','Category'],['email','Email'],['format','Format'],['order_date','Registered'],['reg_revenue','Revenue','n']].forEach(([k,h,cl])=>{
       const x=el('th',cl||null); const b=el('button','ws-th',h); b.type='button'; b.dataset.sort=k;
       b.addEventListener('click',()=>{ const [sk,sd]=ST.sort[ST.list];
         ST.sort[ST.list]=[k, sk===k? -sd : (k==='order_date'||k==='reg_revenue'? -1 : 1)]; paint(); });
@@ -5983,7 +6007,18 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.list===ST.list)));
       fs.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.format===ST.format)));
       const all=people(ST.list), qq=ST.q.trim().toLowerCase();
-      let rows=all.filter(r=>(!ST.format||r.format===ST.format) && (!qq||[r.name,r.company,r.email].some(v=>String(v||'').toLowerCase().includes(qq))));
+      all.forEach(r=>{ r.category=catOf(r.category); });
+      const counts={}; all.forEach(r=>{ const k=r.category||'~none'; counts[k]=(counts[k]||0)+1; });
+      const extra=Object.keys(counts).filter(k=>k!=='~none' && CATS.indexOf(k)<0).sort();
+      cs.textContent='';
+      const opt=(v,t)=>{ const o=el('option',null,t); o.value=v; cs.appendChild(o); };
+      opt('','All Categories');
+      CATS.concat(extra).forEach(c=>opt(c, c+' ('+nf.format(counts[c]||0)+')'));
+      if(counts['~none']) opt('~none','Not Labeled ('+nf.format(counts['~none'])+')');
+      if(ST.category && ![...cs.options].some(o=>o.value===ST.category)) opt(ST.category, ST.category+' (0)');
+      cs.value=ST.category||'';
+      const catOk=r=>!ST.category || (ST.category==='~none'? !r.category : r.category===ST.category);
+      let rows=all.filter(r=>(!ST.format||r.format===ST.format) && catOk(r) && (!qq||[r.name,r.company,r.email].some(v=>String(v||'').toLowerCase().includes(qq))));
       const [k,d]=ST.sort[ST.list];
       rows=rows.slice().sort((a,b)=>{ const av=k==='reg_revenue'?(num(a[k])||0):String(a[k]||'').toLowerCase(), bv=k==='reg_revenue'?(num(b[k])||0):String(b[k]||'').toLowerCase();
         return av<bv?-d:av>bv?d:0; });
@@ -5991,11 +6026,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       tb.textContent='';
       rows.forEach(r=>{ const tr=el('tr'); const nm=el('td',null,r.name||'');
         if(ST.list==='current' && newIds.has(String(r.registration_id))) nm.appendChild(el('span','ws-chip new','New'));
-        tr.appendChild(nm); tr.appendChild(el('td',null,r.company||'')); tr.appendChild(el('td',null,r.email||''));
+        tr.appendChild(nm); tr.appendChild(el('td',null,r.company||'')); tr.appendChild(el('td',r.category?'cat':'cat ws-muted',r.category||'\u2014')); tr.appendChild(el('td',null,r.email||''));
         const fm=el('td'); fm.appendChild(el('span','ws-chip '+(r.format==='Virtual'?'vr':'ip'), r.format||'')); tr.appendChild(fm);
         tr.appendChild(el('td',null,fmtShort(String(r.order_date||'').slice(0,10)))); tr.appendChild(el('td','n',fmt('money',num(r.reg_revenue))));
         tb.appendChild(tr); });
-      if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=6; tr.appendChild(td); tb.appendChild(tr); }
+      if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=7; tr.appendChild(td); tb.appendChild(tr); }
       cnt.textContent = rows.length===all.length? nf.format(all.length)+' registrations' : nf.format(rows.length)+' of '+nf.format(all.length)+' registrations';
     }
     paint();
