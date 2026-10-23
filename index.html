@@ -5107,7 +5107,6 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-table.hist td{white-space:nowrap}
 #app-reg .ws-table.hist td:last-child{white-space:normal;min-width:16rem}
 #app-reg .ws-table td.n,#app-reg .ws-table th.n{text-align:right}
-#app-reg .ws-table td.calc{font-style:italic;color:var(--ink-2)}
 #app-reg .ws-table tr.is-latest td{background:color-mix(in srgb,var(--ws-sky) 14%,transparent)}
 #app-reg .ws-table tr.wk{cursor:pointer}
 #app-reg .ws-table tr.wk:hover td,#app-reg .ws-table tr.wk.open td{background:color-mix(in srgb,var(--ws-sky) 22%,transparent)}
@@ -5906,7 +5905,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
     /* week-by-week history */
     const hc=card('rg-hist','Week-by-Week History');
-    note(hc,'Every Friday report, side by side with last year at the same week. MBA/MISMO is how many of the registered are MBA or MISMO people (they are included in Registered); a figure in italics was worked out from this year\u2019s registrant list by order date.'+(edit?' Click a week to change its numbers.':''));
+    note(hc,'Every Friday report, side by side with last year at the same week. MBA/MISMO is how many of the registered are MBA or MISMO people (they are included in Registered).'+(edit?' Click a week to change its numbers.':''));
     const box=el('div','ws-tablebox'), t=el('table','ws-table hist');
     const hr=el('tr');
     [['Week'],['Report Date'],[year+' Registered','n'],[(year-1)+' Registered','n'],['In-Person','n'],['Virtual','n'],['MBA/MISMO','n'],
@@ -5919,7 +5918,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const tr=el('tr',(r.weeks_prior===latest?'is-latest':'')+(edit&&r.has?' wk':'')+(ST.openWeek===r.weeks_prior?' open':''));
       [[r.week_label,''],[fmtShort(r.current_date),''],[fmt('count',r.current_total),'n'],[fmt('count',r.prior_total),'n'],
        [fmt('count',r.current_in_person),'n'],[fmt('count',r.current_virtual),'n'],
-       [fmt('count',r.current_staff), 'n'+(r.current_staff_calc && r.current_staff!=null?' calc':'')],[fmt('money',r.current_revenue),'n'],
+       [fmt('count',r.current_staff),'n'],[fmt('money',r.current_revenue),'n'],
        [fmt('money',r.current_sponsorships),'n'],[fmt('money',r.current_combined),'n'],[fmt('money',r.prior_combined),'n'],
        [r.current_source||'','ws-muted']].forEach(([v,c])=>tr.appendChild(el('td',c||null,v)));
       if(edit && r.has){
