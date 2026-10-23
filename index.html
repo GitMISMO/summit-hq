@@ -5107,6 +5107,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-table.hist td{white-space:nowrap}
 #app-reg .ws-table.hist td:last-child{white-space:normal;min-width:16rem}
 #app-reg .ws-table td.n,#app-reg .ws-table th.n{text-align:right}
+#app-reg .ws-table td.calc{font-style:italic;color:var(--ink-2)}
 #app-reg .ws-table tr.is-latest td{background:color-mix(in srgb,var(--ws-sky) 14%,transparent)}
 #app-reg .ws-table tr.wk{cursor:pointer}
 #app-reg .ws-table tr.wk:hover td,#app-reg .ws-table tr.wk.open td{background:color-mix(in srgb,var(--ws-sky) 22%,transparent)}
@@ -5377,6 +5378,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     return doc().weekly.map(r=>{
       const o=Object.assign({}, r, {summit_year:num(r.summit_year), weeks_prior:num(r.weeks_prior)});
       METRICS.forEach(([m])=>{ o[m]=num(r[m]); });
+      o.mba_mismo=num(r.mba_mismo);
       return o;
     }).filter(r=>r.summit_year!=null && r.weeks_prior!=null);
   }
@@ -5407,10 +5409,30 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       return {weeks_prior:w, week_label:c.week_label||p.week_label||weekLabel(w), current_date:c.report_date||null,
         current_total:num(c.total_registered), prior_total:num(p.total_registered),
         current_in_person:num(c.in_person), current_virtual:num(c.virtual),
+        /* the number the Friday report gave; failing that, worked out from this year's list */
+        current_staff: c.summit_year==null? null : (num(c.mba_mismo)!=null? num(c.mba_mismo) : staffBy('current', c.report_date)),
+        current_staff_calc: c.summit_year!=null && num(c.mba_mismo)==null,
         current_revenue:num(c.registration_revenue), current_sponsorships:num(c.sponsorships),
         current_combined:num(c.registration_plus_sponsorships), prior_combined:num(p.registration_plus_sponsorships),
         current_source:c.source||null, current_year:year, has:!!c.summit_year};
     });
+  }
+  /* MBA and MISMO's own people (Jonna, 2026-10-22): an @mba.org or @mismo.org email, or the
+     company MISMO, MBA or Mortgage Bankers Association exactly. They stay in every count;
+     the Week-by-Week History shows how many of the registered they are. (State associations
+     such as California Mortgage Bankers Association are not MBA.) */
+  const STAFF_DOMAINS=['mba.org','mismo.org'];
+  const STAFF_COS=['mismo','mba','mortgage bankers association'];
+  function isStaff(r){
+    const em=String(r&&r.email||'').trim().toLowerCase(), dom=em.indexOf('@')>=0? em.split('@').pop() : '';
+    const co=String(r&&r.company||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.,]+$/,'');
+    return STAFF_DOMAINS.indexOf(dom)>=0 || STAFF_COS.indexOf(co)>=0;
+  }
+  /* how many of a list were registered by a date (a blank date: the whole list) */
+  function staffBy(which, date){
+    const list=people(which); if(!list.length) return null;
+    const on=date? String(date).slice(0,10) : '';
+    return list.filter(r=>isStaff(r) && (!on || !r.order_date || String(r.order_date).slice(0,10)<=on)).length;
   }
   function people(which){
     const x=doc()[which]; if(!x || !Array.isArray(x.rows)) return [];
@@ -5517,6 +5539,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     ['total_registered','Registered','number'],
     ['in_person','In-Person','number'],
     ['virtual','Virtual','number'],
+    ['mba_mismo','MBA/MISMO','number'],
     ['registration_revenue','Registration Revenue','number'],
     ['sponsorships','Sponsorships','number'],
     ['source','Where It Came From','text']];
@@ -5544,6 +5567,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         const vr=list.filter(r=>r.format==='Virtual').length;
         inputs.total_registered.value=String(list.length);
         inputs.virtual.value=String(vr); inputs.in_person.value=String(list.length-vr);
+        inputs.mba_mismo.value=String(list.filter(isStaff).length);
         inputs.registration_revenue.value=String(Math.round(list.reduce((s,r)=>s+(num(r.reg_revenue)||0),0)));
         if(!inputs.source.value) inputs.source.value='Registrant list in Summit HQ';
       }));
@@ -5563,7 +5587,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const r=Object.assign({}, base||{}, {
       summit_year:year, weeks_prior:w, week_label:(base&&base.weeks_prior===w&&base.week_label)||weekLabel(w),
       report_date:o.report_date, summit:(base&&base.summit)||(rep&&rep.year===year? rep.current_summit : year+' '+(sz?sz+' ':'')+'Summit'),
-      total_registered:o.total_registered, in_person:o.in_person, virtual:o.virtual,
+      total_registered:o.total_registered, in_person:o.in_person, virtual:o.virtual, mba_mismo:o.mba_mismo,
       registration_revenue:o.registration_revenue, sponsorships:o.sponsorships,
       registration_plus_sponsorships: o.registration_revenue!=null && o.sponsorships!=null? o.registration_revenue+o.sponsorships : null,
       source:o.source||''});
@@ -5590,7 +5614,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   const ALIAS_W={summit_year:['summit_year','year'], weeks_prior:['weeks_prior','weeks_before','weeks_out'],
     week_label:['week_label','week'], report_date:['report_date','current_date','date'], summit:['summit','summit_name','current_summit'],
     total_registered:['total_registered','registered','total','registrations','current_total'], in_person:['in_person','current_in_person'],
-    virtual:['virtual','current_virtual'], registration_revenue:['registration_revenue','reg_revenue','current_revenue'],
+    virtual:['virtual','current_virtual'], mba_mismo:['mba_mismo','mba_or_mismo','mba_mismo_registered','staff'], registration_revenue:['registration_revenue','reg_revenue','current_revenue'],
     sponsorships:['sponsorships','sponsorship','current_sponsorships'],
     registration_plus_sponsorships:['registration_plus_sponsorships','reg_spons','current_combined','revenue_sponsorship'],
     source:['source','current_source','where_it_came_from']};
@@ -5626,7 +5650,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   }
   function asWeek(o){
     const r={}; Object.keys(ALIAS_W).forEach(k=>{ r[k]=pickV(o,ALIAS_W[k]); });
-    ['summit_year','weeks_prior','total_registered','in_person','virtual','registration_revenue','sponsorships','registration_plus_sponsorships']
+    ['summit_year','weeks_prior','total_registered','in_person','virtual','mba_mismo','registration_revenue','sponsorships','registration_plus_sponsorships']
       .forEach(k=>{ r[k]=num(r[k]); });
     r.report_date=date10(r.report_date);
     if(r.summit_year==null){ const m=/\b(20\d\d)\b/.exec(String(r.summit||'')); if(m) r.summit_year=+m[1]; }
@@ -5675,7 +5699,13 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     step('loading the registration files');
     const d=doc(), at=new Date().toISOString(), by=who();
     items.forEach(i=>{
-      if(i.use==='weekly'){ d.weekly=i.rows.map(r=>Object.assign({},r)); }
+      /* a weekly file adds its weeks and replaces any week already here (same summit year
+         and week), so a file with just this Friday's row never wipes the history */
+      if(i.use==='weekly'){
+        const key=r=>num(r.summit_year)+'|'+num(r.weeks_prior);
+        const incoming=new Map(i.rows.map(r=>[key(r), Object.assign({},r)]));
+        d.weekly=d.weekly.filter(r=>!incoming.has(key(r))).concat([...incoming.values()]);
+      }
       else d[i.use]={cols:COLS.slice(), rows:i.rows.map(r=>COLS.map(c=>r[c]==null?'':r[c]))};
       d.files[i.use]={file:i.name, at, by};
     });
@@ -5788,7 +5818,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const f=F[k]; d.appendChild(el('span','w', f? (f.file||'')+' · '+fmtShort(date10(f.at))+(f.by?' by '+f.by:'') : 'Not loaded'));
       have.appendChild(d); });
     c.appendChild(have);
-    note(c,'Load the three files from Vanessa’s registration dashboard (JSON or CSV): the weekly report history and the two registrant lists. Pick them all at once; each one replaces what is here now for this summit. Registrant names and emails are kept in Summit HQ’s private storage only.');
+    note(c,'Load the three files from Vanessa’s registration dashboard (JSON or CSV): the weekly report history and the two registrant lists. Pick them together. A weekly file adds its weeks (a week already here is replaced); a registrant list replaces the list here for this summit. Registrant names and emails are kept in Summit HQ’s private storage only.');
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.json,.csv,application/json,text/csv'; inp.hidden=true;
     inp.addEventListener('change',async()=>{ const fl=[...(inp.files||[])]; if(!fl.length) return;
       ST.pick=await readFiles(fl); ST.pickErr=''; render(true); });
@@ -5876,10 +5906,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
     /* week-by-week history */
     const hc=card('rg-hist','Week-by-Week History');
-    note(hc,'Every Friday report, side by side with last year at the same week.'+(edit?' Click a week to change its numbers.':''));
+    note(hc,'Every Friday report, side by side with last year at the same week. MBA/MISMO is how many of the registered are MBA or MISMO people (they are included in Registered); a figure in italics was worked out from this year\u2019s registrant list by order date.'+(edit?' Click a week to change its numbers.':''));
     const box=el('div','ws-tablebox'), t=el('table','ws-table hist');
     const hr=el('tr');
-    [['Week'],['Report Date'],[year+' Registered','n'],[(year-1)+' Registered','n'],['In-Person','n'],['Virtual','n'],
+    [['Week'],['Report Date'],[year+' Registered','n'],[(year-1)+' Registered','n'],['In-Person','n'],['Virtual','n'],['MBA/MISMO','n'],
      ['Reg. Revenue','n'],['Sponsorships','n'],['Reg. + Spons.','n'],['Last Year Reg. + Spons.','n'],['Where It Came From']]
       .forEach(([h,c])=>{ const th=el('th',c||null); th.appendChild(el('span','ws-plain',h)); hr.appendChild(th); });
     const th=el('thead'); th.appendChild(hr); t.appendChild(th);
@@ -5888,7 +5918,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     hist.forEach(r=>{
       const tr=el('tr',(r.weeks_prior===latest?'is-latest':'')+(edit&&r.has?' wk':'')+(ST.openWeek===r.weeks_prior?' open':''));
       [[r.week_label,''],[fmtShort(r.current_date),''],[fmt('count',r.current_total),'n'],[fmt('count',r.prior_total),'n'],
-       [fmt('count',r.current_in_person),'n'],[fmt('count',r.current_virtual),'n'],[fmt('money',r.current_revenue),'n'],
+       [fmt('count',r.current_in_person),'n'],[fmt('count',r.current_virtual),'n'],
+       [fmt('count',r.current_staff), 'n'+(r.current_staff_calc && r.current_staff!=null?' calc':'')],[fmt('money',r.current_revenue),'n'],
        [fmt('money',r.current_sponsorships),'n'],[fmt('money',r.current_combined),'n'],[fmt('money',r.prior_combined),'n'],
        [r.current_source||'','ws-muted']].forEach(([v,c])=>tr.appendChild(el('td',c||null,v)));
       if(edit && r.has){
@@ -5901,7 +5932,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       if(edit && r.has && ST.openWeek===r.weeks_prior){
         const base=doc().weekly.find(x=>num(x.summit_year)===r.current_year && num(x.weeks_prior)===r.weeks_prior);
         if(base){
-          const fr=el('tr'), td=el('td'); td.colSpan=11; td.style.whiteSpace='normal'; fr.appendChild(td);
+          const fr=el('tr'), td=el('td'); td.colSpan=12; td.style.whiteSpace='normal'; fr.appendChild(td);
           td.appendChild(weekForm(base,{buttons:[
             ()=>btn('Remove This Week','danger',async()=>{
               if(!(await ask('Remove This Week?','Take the '+fmtShort(base.report_date)+' report out of the history? Undo puts it back.','Remove'))) return;
@@ -5977,6 +6008,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     [['Registered','counts registrations in the Aptify view Event Attendance w/ Prompt, run with the Summit’s name so it picks up both the in-person and the Virtual meeting. A person registered for both is counted twice, as in the Smartsheet.'],
      ['In-person / Virtual','is decided by whether the meeting name ends in “Virtual”.'],
      ['Registration revenue','is the sum of Reg Revenue on those registrations.'],
+     ['MBA/MISMO','counts registrants with an @mba.org or @mismo.org email, or whose company is MISMO, MBA or Mortgage Bankers Association. They are included in Registered; state associations are not counted as MBA.'],
      ['Sponsorships','is Winter committed on the Sponsorship Portal’s Money tab: Winter-only deals plus one third of each series deal.'],
      ['Weeks before the Summit',': week 0 is the Friday before the Summit opens. The comparison column is last year’s report at the same week.'],
      ['','Each week’s numbers are saved as reported. Cancelled orders drop out of Aptify, so rebuilding a past week from today’s export can come out lower than what was reported.']]
