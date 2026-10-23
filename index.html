@@ -6069,16 +6069,44 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   window.addEventListener('hq:schedule',()=>{ if(sidNow()!==ST.sid) watch(sidNow()); else render(); });
   document.addEventListener('change',e=>{ if(e.target && e.target.id==='venue-pick') watch(sidNow()); }, true);
   setInterval(()=>{ if(sidNow()!==ST.sid) watch(sidNow()); }, 2500);
-  /* a link ending in #registration opens Summit HQ on this tab, and the address bar says
-     #registration while it is open, so the link can be copied and sent */
-  function fromHash(){ if(String(location.hash).toLowerCase()==='#registration'){ try{ if(window.__hqGo) window.__hqGo('reg'); }catch(e){} } }
-  window.addEventListener('hashchange', fromHash);
-  window.addEventListener('load', ()=>setTimeout(fromHash, 0));
-  try{ new MutationObserver(()=>{
-    const on=!HOST.hidden, has=String(location.hash).toLowerCase()==='#registration';
+  /* A link ending in #registration opens Summit HQ on this tab, and the address bar says
+     #registration while it is open, so the link can be copied and sent.
+     Jonna, 2026-10-23: links landed on the Run of Show. The page opens on the Run of Show
+     first (and, on resources.mismo.org, only uncovers itself once its data has loaded), and
+     that first switch used to wipe #registration from the address before anything read it.
+     So the link is read once, as the page starts, and honoured until the page is ready and
+     the person has done something themselves; only then does the address follow the tab. */
+  const WANT=String(location.hash).toLowerCase()==='#registration';
+  let routed=!WANT;
+  const isReg=()=>{ try{ return !HOST.hidden; }catch(e){ return false; } };
+  function goReg(){ if(routed) return; try{ if(window.__hqGo && !isReg()) window.__hqGo('reg'); }catch(e){} }
+  function done(){ if(routed) return; routed=true; syncHash(); }
+  function syncHash(){
+    if(!routed) return;
+    const on=isReg(), has=String(location.hash).toLowerCase()==='#registration';
     try{ if(on && !has) window.history.replaceState(null,'','#registration');
          else if(!on && has) window.history.replaceState(null,'',location.pathname+location.search); }catch(e){}
-  }).observe(HOST,{attributes:true, attributeFilter:['hidden']}); }catch(e){}
+  }
+  if(WANT){
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(goReg,0)); else setTimeout(goReg,0);
+    window.addEventListener('load',()=>setTimeout(goReg,0));
+    /* resources.mismo.org: the app is covered until it is ready (html.hq-ready); go again then */
+    try{ new MutationObserver(()=>{ if(document.documentElement.classList.contains('hq-ready')) setTimeout(goReg,0); })
+      .observe(document.documentElement,{attributes:true, attributeFilter:['class']}); }catch(e){}
+    /* the person's own first click or key takes over from the link */
+    ['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,e=>{
+      if(routed) return;
+      const inGate=e.target && e.target.closest && e.target.closest('#hq-gate,.rs-scrim,[data-rs-modal],.rs-modal');
+      const h=document.documentElement.classList, relay=h.contains('hq-in')||h.contains('hq-out');
+      /* on resources.mismo.org a click while signing in or loading does not count */
+      if(!inGate && (!relay || h.contains('hq-ready'))){ goReg(); done(); }
+    },true));
+    /* a slow sign-in or load: keep the link for up to two minutes, then let the tab rule */
+    setTimeout(done, 120000);
+  }
+  window.addEventListener('hashchange',()=>{ if(String(location.hash).toLowerCase()==='#registration'){ try{ window.__hqGo && window.__hqGo('reg'); }catch(e){} } });
+  try{ new MutationObserver(()=>{ if(!routed){ if(!isReg()) setTimeout(goReg,0); return; } syncHash(); })
+    .observe(HOST,{attributes:true, attributeFilter:['hidden']}); }catch(e){}
   window.__regRender=render;
   window.__regState=()=>({sid:ST.sid, ready:ST.ready, has:!!ST.doc});
   watch(sidNow());
