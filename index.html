@@ -43195,7 +43195,7 @@ startClock();
 
    Nothing here reaches another system. The page cannot send an email, log into
    the event app or touch registration — what it does is know exactly who is
-   outstanding, write the chase for Amy to send, and build the file Dillon
+   outstanding, write the chase for Amy to send, and build the file Vanessa
    uploads, so the manual steps are quick and nobody is missed.
    ============================================================ */
 (function(){
@@ -43212,20 +43212,20 @@ let SEED=[];
 window.__peopleSetSeed=function(a){ SEED=Array.isArray(a)?a:[]; };
 
 /* the process, in the order it happens. The initials are the column owners on
-   the sheet: Amy chases the bios, Dillon builds the event app, Bernardo registers. */
+   the sheet: Amy chases the bios, Vanessa builds the event app (from Dillon, Oct 28, 2026), Bernardo registers. */
 /* Every step is work to be done, not a decision to be taken: the agenda has to be
    updated with each new speaker and each new sponsor. What differs by role is the
    middle of the run — a sponsor who is not speaking needs no bio, no headshot and no
    event app entry, but they are still added to the agenda and still registered.
    `spk:true` marks a step that only applies to somebody who is speaking. */
-/* Jonna, 2026-09-23: the two event-app steps are one step. Dillon is often asked to
+/* Jonna, 2026-09-23: the two event-app steps are one step. The event-app owner is often asked to
    put the headshot up and gets the bio later, or the other way round, so the one step
    carries a marker each and is only done when both are up. */
 const STEPS=[
   {k:'agenda',   t:'Added to the agenda',        who:'JC', ask:'Add them to the agenda'},
   {k:'contacted',t:'Asked for bio & headshot',   who:'AM', ask:'Ask for the bio and headshot', spk:true},
   {k:'bio',      t:'Bio & headshot in hand',     who:'AM', ask:'Get the bio and headshot in', auto:true, spk:true},
-  {k:'app',      t:'On the event app',           who:'DT', ask:'Put the bio and the headshot on the app',
+  {k:'app',      t:'On the event app',           who:'VR', ask:'Put the bio and the headshot on the app',
    spk:true, parts:[['appbio','Bio'],['appshot','Headshot']]},
   {k:'reg',      t:'Registered for the event',   who:'BJ', ask:'Register them'}
 ];
@@ -43236,7 +43236,7 @@ function appPart(p,which){
   if(which==='appbio') return st.appbio||'';
   return st.appshot || (st.appbio && st.app ? st.appbio : '') || '';
 }
-const WHO={AM:'Amy Moses',DT:'Dillon Tidgewell',BJ:'Bernardo Jordan',JC:'Jonna Critchley',SP:'Sponsorship Portal'};
+const WHO={AM:'Amy Moses',VR:'Vanessa Rios',DT:'Vanessa Rios',BJ:'Bernardo Jordan',JC:'Jonna Critchley',SP:'Sponsorship Portal'};
 /* Jonna, 2026-10-27: sponsors are not registered here at all. They get a sponsor comp
    code through the Sponsorship Portal and register themselves with it, so a sponsor has
    no registration step; the only thing to do for one is add them to the agenda. */
@@ -44502,7 +44502,7 @@ async function chase(){
   await saveBlob(new Blob([lines.join('\n')],{type:'text/plain'}), slugSummit()+'-bio-chase.txt');
 }
 
-/* Dillon's upload: the app's own speakers file, column for column. */
+/* Vanessa's upload: the app's own speakers file, column for column. */
 async function appFile(){
   /* the app's speakers file is for the people who are actually speaking; a sponsor
      on the agenda is not one of them */
