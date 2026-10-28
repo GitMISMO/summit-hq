@@ -459,10 +459,32 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       var a = raw[id] || {};
       return { appNo: a.appNo || '', company: a.company || '', name: a.contactName || '', email: a.contactEmail || '',
         event: a.event || '', status: a.status || '', level: a.level2027 || a.level2026 || '',
-        opportunity: a.opportunity || '', due: a.amountDue || '', paid: a.paymentReceivedDate || '' };
+        opportunity: a.opportunity || '', due: a.amountDue || '', paid: a.paymentReceivedDate || '',
+        /* Jonna, 2026-10-27: since Oct 8 the portal keeps the day (Breakfast, the breaks,
+           the receptions) in its own field, and a custom Series keeps one line per summit.
+           Both were being dropped here, so Hotel Specs never saw a breakfast or break. */
+        day: a.day || '', custom: Array.isArray(a.custom) ? a.custom : [] };
     });
     return { rows: rows, at: (f.server && (f.server.copiedAt || f.server.savedAt)) || '' };
   }
+  /* when the flow last copied the portal in, and whether the portal has changed since
+     (for the stamp at the foot of the left menu) */
+  window.__portalCopyInfo = function () {
+    var f = F['portal-applications']; if (!f || !f.loaded || !f.server) return null;
+    return { savedAt: f.server.savedAt || '', copiedAt: f.server.copiedAt || '', sourceSha: f.server.sourceSha || '' };
+  };
+  var portalShaAt = 0, portalShaP = null;
+  window.__portalSourceSha = function () {
+    /* only people with Sponsorship access can read the portal itself; everyone else
+       just sees the time of the last copy */
+    if (portalShaP && now() - portalShaAt < 30 * 60000) return portalShaP;
+    var rs = RS(), tok = rs && rs.token(); if (!tok) return Promise.resolve(null);
+    portalShaAt = now();
+    portalShaP = fetch(RELAY_URL + '/sponsorship/data/applications', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + tok } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (b) { return (b && b.sha) || null; }, function () { return null; });
+    return portalShaP;
+  };
 
   /* ---------- the store, in the shape the tabs already use ---------- */
   function docRef(path) {
@@ -1666,6 +1688,9 @@ body.compact .meter .n{font-size:16px}
 .spon-f .rm:hover{color:var(--bad)}
 .spon-others{display:flex;flex-wrap:wrap;gap:4px 12px;min-width:0}
 .spon-none{color:var(--ink-3);font-size:11px;opacity:.7}
+.spon-loose{margin-top:8px;font-size:11.5px;line-height:1.45;color:var(--warn-ink);
+  background:var(--warn-soft);border:1px solid var(--warn);border-radius:3px;padding:5px 8px}
+.spon-loose b{font-weight:700}
 .spon-add{display:flex;gap:6px;align-items:center;margin-top:10px;padding-top:9px;
   border-top:1px solid var(--line);flex-wrap:wrap}
 .spon-add select,.spon-add input{font-size:12px;padding:3px 6px}
@@ -3070,6 +3095,16 @@ html[data-season="december"] .santa{display:block}
 .theme-btn:hover:not(:disabled){color:#fff;background:rgba(255,255,255,.09)}
 .theme-btn:disabled{opacity:.4;cursor:not-allowed}
 .theme-btn:focus-visible{outline:2px solid var(--sky);outline-offset:-2px}
+/* when the Sponsorship Portal last reached Summit HQ, just above the theme row */
+.hq .mast-right .railsync{display:flex;flex-direction:column;gap:1px;padding:8px 10px 2px;
+  font-family:var(--display);font-size:11px;line-height:1.35;color:rgba(255,255,255,.62);cursor:default}
+.railsync .rsy-l{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);font-weight:600}
+.railsync .rsy-t{color:rgba(255,255,255,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.railsync .rsy-s:empty{display:none}
+.railsync .rsy-s.ok{color:#8fd6a8}
+.railsync .rsy-s.behind{color:#f3c56b;font-weight:600}
+body.railmini .hq .mast-right .railsync{display:none}
 /* the theme row sits on its own, and its mark says which way it will go */
 .hq .mast-right #theme-btn{margin-top:5px;padding-top:11px;
   border-top:1px solid rgba(80,164,219,.18);border-radius:0 0 6px 6px}
@@ -32307,8 +32342,12 @@ function migrateRooms(){
 }
 function orderRooms(){
   migrateRooms();
+  /* Jonna, 2026-10-27: the General Sessions room sits at the top, under the breakfast
+     room, wherever it is. Tuesday's General Sessions moved into La Salle A/B, a room added
+     on the page, and it had dropped to the bottom of the grid with the other added rooms. */
+  const rank = r => ROOM_ORDER[r.id] || (r.role==='plenary' ? 1.5 : 99);
   venues.forEach(v=>{ if(!Array.isArray(v.rooms)) return;
-    v.rooms.sort((a,b)=>(ROOM_ORDER[a.id]||99)-(ROOM_ORDER[b.id]||99)); });
+    v.rooms.sort((a,b)=>rank(a)-rank(b)); });
 }
 const wgRooms = ()=>ROOMS().filter(r=>r.role==='wg'||r.role==='plenary');
 
@@ -33168,6 +33207,15 @@ function colourPicker(id){
   box.appendChild(yel);
   return box;
 }
+/* Jonna, 2026-10-27: the Champions Lounge has moved out of the Fulton Room, so the
+   morning MISMO Link Office Hours have their box to themselves and fill it, instead of
+   drawing as a sliver at the start of the slot. Where a standing item still shares
+   the room, the card keeps to its hours as before. The hours still show on the card. */
+function fillsBox(s, p){
+  if(!s || !p || !/mismo link/i.test(String(s.nm||s.full||''))) return false;
+  let lk=null; try{ lk=lockedAt()[p.b+'|'+p.r]; }catch(e){ lk=null; }
+  return !lk;
+}
 function makeCard(s, flags, placed, bothSlots){
   const p = place()[s.id];
   const conf = p && p.confirmed;
@@ -33222,7 +33270,7 @@ function makeCard(s, flags, placed, bothSlots){
        measured against the whole half-day or the card runs on into the next box */
     const span = placed && p && !narrowCol ? blockSpan(p.b, bothSlots ? 0 : p.s) : null;
     const st = clockMins(s.tStart, false), en = clockMins(s.tEnd, false);
-    if(span && st!=null && en!=null && en>st){
+    if(span && st!=null && en!=null && en>st && !fillsBox(s, p)){
       const total = span.to - span.from;
       /* never let it get so narrow the name is unreadable, and never let it run past
          the edge of the box it sits in */
@@ -33354,45 +33402,80 @@ const SPON_FROM = (id)=>{ const v=V(id); if(!v) return {};
   if(!v.sponsorFrom || typeof v.sponsorFrom!=='object'){ try{ v.sponsorFrom={}; }catch(e){} }
   return v.sponsorFrom || {}; };
 const PORTAL_DAY = {monday:'mon', tuesday:'tue', wednesday:'wed', thursday:'thu'};
-function portalSponsorMap(vid){
+/* which season a summit is, so a custom Series line ("Winter: Bronze Breakfast") lands
+   on the right one */
+function seasonOf(vid){
+  const v=V(vid), m=/\b(winter|spring|fall)\b/i.exec((v&&v.name)||'');
+  return m ? m[1].toLowerCase() : ({nola:'winter', slc:'spring', bethesda:'fall'}[vid]||'');
+}
+const FOOD_RE=/^(newcomerluncheon|reception|breakfast|morning(coffee)?break|afternoon(snack)?break|lunch)/;
+/* The meals and breaks the portal has sold for one summit: the box each one fills, and
+   any that cannot be put in a box yet because the portal has no day for them. */
+function portalFood(vid){
   let rows=[]; try{ rows = window.__portalSponsors ? (window.__portalSponsors(vid)||[]) : []; }catch(e){ rows=[]; }
   const LIVE=['approved','pending payment','paid','written off'];
-  const out={};
+  const season=seasonOf(vid);
+  const out={}, loose=[];
   rows.forEach(r=>{
     if(LIVE.indexOf(String(r.status||'').trim().toLowerCase())<0) return;
-    const opp=String(r.opportunity||'');
-    const n=opp.toLowerCase().replace(/\(.*?\)/g,' ').replace(/[^a-z]+/g,'');
-    const dm=/[—–-]\s*(monday|tuesday|wednesday|thursday)\b/i.exec(opp);
-    const day=dm ? PORTAL_DAY[dm[1].toLowerCase()] : '';
-    let key='';
-    if(/^newcomerluncheon/.test(n)) key='mon|newcomer';
-    else if(day && /^reception/.test(n) && (day==='mon'||day==='tue')) key=day+'|reception';
-    else if(day && /^breakfast/.test(n)) key=day+'|breakfast';
-    else if(day && /^morning(coffee)?break/.test(n)) key=day+'|am';
-    else if(day && /^afternoon(snack)?break/.test(n)) key=day+'|pm';
-    if(!key) return;
     const who=String(r.company||r.name||'').trim(); if(!who) return;
-    out[key]=out[key] ? (out[key].split(' & ').indexOf(who)<0 ? out[key]+' & '+who : out[key]) : who;
+    /* a custom Series carries one line per summit; only this summit's line counts */
+    const custom=Array.isArray(r.custom) ? r.custom : [];
+    const items = custom.length
+      ? custom.filter(c=>String((c&&c.s)||'').trim().toLowerCase()===season)
+          .map(c=>({opp:String(c.opp||''), day:String(c.day||'')}))
+      : [{opp:String(r.opportunity||''), day:String(r.day||'')}];
+    items.forEach(it=>{
+      const n=it.opp.toLowerCase().replace(/\(.*?\)/g,' ').replace(/[^a-z]+/g,'');
+      if(!FOOD_RE.test(n)) return;
+      /* the day is its own field since Oct 8, 2026; older records carry it in the text */
+      const dm=/^(monday|tuesday|wednesday|thursday)\b/i.exec(it.day.trim())
+        || /[—–-]\s*(monday|tuesday|wednesday|thursday)\b/i.exec(it.opp);
+      const day=dm ? PORTAL_DAY[dm[1].toLowerCase()] : '';
+      let key='';
+      if(/^newcomerluncheon/.test(n)) key='mon|newcomer';
+      else if(day && /^reception/.test(n) && (day==='mon'||day==='tue')) key=day+'|reception';
+      else if(day && /^breakfast/.test(n)) key=day+'|breakfast';
+      else if(day && /^morning(coffee)?break/.test(n)) key=day+'|am';
+      else if(day && /^afternoon(snack)?break/.test(n)) key=day+'|pm';
+      if(!key){
+        const what=it.opp.replace(/\s*[—–-]\s*(monday|tuesday|wednesday|thursday)\b.*$/i,'').replace(/\s+sponsor$/i,'').trim();
+        loose.push({who, what, appNo:r.appNo||''});
+        return;
+      }
+      out[key]=out[key] ? (out[key].split(' & ').indexOf(who)<0 ? out[key]+' & '+who : out[key]) : who;
+    });
   });
-  return out;
+  return {map:out, loose};
 }
+function portalSponsorMap(vid){ return portalFood(vid).map; }
 /* Fill the empty boxes from the portal, keep the ones it filled in step with it, and
-   never touch one typed by hand. Saved with the summit, but not as an Undo step. */
+   never touch one typed by hand. Saved with the summit, but not as an Undo step.
+   Every summit is kept up to date, not only the one on screen, so Spring and Fall
+   Hotel Specs are right the first time anybody opens them. */
 function syncPortalSponsors(){
-  const v=V(); if(!v) return false;
+  if(!V()) return false;
   try{ if(window.ResourcesSession && window.ResourcesSession.canEdit && !window.ResourcesSession.canEdit('summit-hq')) return false; }catch(e){}
   if(!window.__portalSponsors) return false;
-  const want=portalSponsorMap(v.id), sp=SPONSORS(), from=SPON_FROM();
+  /* until the portal copy has loaded there is nothing to compare against, and an empty
+     list must not be read as "the portal sold nothing" and clear its boxes */
+  try{ if(window.__portalSponsorsReady && !window.__portalSponsorsReady()) return false; }catch(e){ return false; }
   let changed=false;
-  Object.keys(want).forEach(k=>{
-    const cur=(sp[k]||'').trim();
-    if(!cur){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
-    else if(from[k]!=null && cur===String(from[k]).trim() && cur!==want[k]){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
-  });
-  Object.keys(from).forEach(k=>{
-    if(want[k]) return;
-    if((sp[k]||'').trim()===String(from[k]).trim()) delete sp[k];
-    delete from[k]; changed=true;
+  (venues||[]).forEach(vv=>{
+    if(!vv || !vv.id) return;
+    const want=portalSponsorMap(vv.id), sp=SPONSORS(vv.id), from=SPON_FROM(vv.id);
+    Object.keys(want).forEach(k=>{
+      const cur=(sp[k]||'').trim();
+      if(!cur){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
+      else if(from[k]!=null && cur===String(from[k]).trim() && cur!==want[k]){ sp[k]=want[k]; from[k]=want[k]; changed=true; }
+      /* typed by hand and the portal agrees: the portal keeps it up to date from here */
+      else if(from[k]==null && cur===want[k]){ from[k]=want[k]; changed=true; }
+    });
+    Object.keys(from).forEach(k=>{
+      if(want[k]) return;
+      if((sp[k]||'').trim()===String(from[k]).trim()) delete sp[k];
+      delete from[k]; changed=true;
+    });
   });
   if(changed){ try{ prevState=snapState(); }catch(e){} save(); }
   return changed;
@@ -35192,6 +35275,17 @@ function renderSponsors(box){
     grid.appendChild(cell);
   });
   body.appendChild(grid);
+
+  /* sold in the portal, but with no day yet, so there is no box to put it in — the
+     planner still needs to know the meal or break is paid for */
+  let loose=[]; try{ loose=portalFood(V().id).loose; }catch(e){ loose=[]; }
+  if(loose.length){
+    const ln=el('div','spon-loose');
+    ln.appendChild(el('b',null,'Sold in the Sponsorship Portal, day not set yet: '));
+    ln.appendChild(document.createTextNode(loose.map(x=>x.who+' — '+x.what).join(' · ')));
+    ln.title='Set the day on the record in the Sponsorship Portal and it fills its box here.';
+    body.appendChild(ln);
+  }
 
   const addRow=el('div','spon-add');
   const daySel=document.createElement('select');
@@ -44234,6 +44328,8 @@ function rowHere(r){
   const on=EVENT_VENUE[ev];
   return on ? on.indexOf(venueNow())>=0 : true;
 }
+/* the portal copy has come in (it always files one document, even with no rows) */
+window.__portalSponsorsReady = function(){ return ST.spon.size>0; };
 /* Jonna, 2026-10-07: the Schedule's Hotel Specs fills its Sponsor boxes from these */
 window.__portalSponsors = function(vid){
   const seen=new Set(), out=[];
@@ -45049,6 +45145,65 @@ window.__people={
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
   window.__newSummit={state:()=>ST, draw, read:readContract, create};
+})();
+</script>
+
+<script>
+/* ============================================================
+   When the Sponsorship Portal last reached Summit HQ (Jonna, 2026-10-27)
+   A stamp at the foot of the left menu, just above Dark Mode: the date and time
+   the Power Automate flow last copied the portal in. The flow copies whenever the
+   portal saves, so a quiet portal means an older time. For anyone who can open the
+   portal too, the stamp also says whether the copy is in step with it.
+   ============================================================ */
+(function(){
+  'use strict';
+  let box=null, lastSha=null, shaFor='';
+  function fmt(iso){
+    const d=new Date(iso); if(isNaN(d)) return '';
+    return d.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+  function mount(){
+    const foot=document.querySelector('.hq .mast-right'), theme=document.getElementById('theme-btn');
+    if(!foot || !theme) return null;
+    if(!box){
+      box=document.createElement('div'); box.className='railsync'; box.id='rail-sync';
+      box.setAttribute('aria-live','polite');
+      box.innerHTML='<span class="rsy-l">Sponsorship Portal</span><span class="rsy-t">Not copied in yet</span><span class="rsy-s"></span>';
+    }
+    if(box.parentNode!==foot || box.nextSibling!==theme) foot.insertBefore(box, theme);
+    return box;
+  }
+  function paint(){
+    const b=mount(); if(!b) return;
+    const info=window.__portalCopyInfo ? window.__portalCopyInfo() : null;
+    const t=b.querySelector('.rsy-t'), st=b.querySelector('.rsy-s');
+    if(!info){ t.textContent='Waiting for the portal copy'; st.textContent=''; st.className='rsy-s'; return; }
+    const when=fmt(info.savedAt) || info.copiedAt || '';
+    t.textContent='Updated '+(when||'\u2014');
+    let title='The Sponsorship Portal last reached Summit HQ'+(when?' on '+when:'')+'. It is copied in whenever the portal saves.';
+    if(lastSha && info.sourceSha){
+      const ok = lastSha===info.sourceSha;
+      st.textContent = ok ? '\u2713 In step with the portal' : 'The portal has newer changes';
+      st.className = 'rsy-s '+(ok?'ok':'behind');
+      title += ok ? ' Nothing has changed in the portal since.' : ' The portal has changed since and the copy has not caught up \u2014 tell Jonna if this lasts more than a day.';
+    } else if(info.savedAt && Date.now()-Date.parse(info.savedAt) > 864e5){
+      st.textContent='No portal changes since'; st.className='rsy-s';
+    } else { st.textContent=''; st.className='rsy-s'; }
+    b.title=title;
+  }
+  function check(){
+    const info=window.__portalCopyInfo ? window.__portalCopyInfo() : null;
+    if(!info || !window.__portalSourceSha){ paint(); return; }
+    window.__portalSourceSha().then(sha=>{ lastSha=sha; shaFor=info.sourceSha; paint(); }, ()=>paint());
+  }
+  window.addEventListener('hq:portal', ()=>{ paint(); check(); });
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(); });
+  setInterval(paint, 60000);
+  setInterval(check, 30*60000);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ()=>{ paint(); setTimeout(check, 4000); });
+  else { paint(); setTimeout(check, 4000); }
+  setTimeout(paint, 1500);
 })();
 </script>
 
