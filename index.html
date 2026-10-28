@@ -60,6 +60,8 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
      plans-<summit>          schedule/plans-<summit> (contract pages, floor plan;
                              split into parts of 800 KB — the relay takes 1 MB a save)
      own-index               the list of files above that hold one document each
+     feed-<name>             feeds/tasks and feeds/sponsor-list, kept current by the page
+                             for the Power Automate emails to read
      portal-applications     a copy of the Sponsorship Portal's applications,
                              written by the Power Automate flow; read-only here
    A group file is {docs:{"<collection>/<id>": {...}}}.
@@ -130,6 +132,8 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       if (c0 === 'photos') return { file: fname('photo-' + seg[1]), own: true, coll: 'photos', id: seg[1] };
       if (c0 === 'schedule' && seg[1].indexOf('plans-') === 0) return { file: fname('plans-' + seg[1].slice(6)), own: true, coll: 'schedule', id: seg[1] };
       if (c0 === 'registration') return { file: fname('reg-' + seg[1]), own: true, coll: 'registration', id: seg[1] };
+      /* what the scheduled emails read: feeds/tasks, feeds/sponsor-list (see FEEDS) */
+      if (c0 === 'feeds') return { file: fname('feed-' + seg[1]), own: true, coll: 'feeds', id: seg[1] };
       if (SHARDS[c0]) return { file: shard(c0, seg[1]), coll: c0, id: seg[1] };
       if (ROS.indexOf(c0) >= 0) return { file: 'ros', coll: c0, id: seg[1] };
       if (c0 === 'resume') return { file: 'resume', coll: c0, id: seg[1] };
@@ -46413,6 +46417,125 @@ function attach(){
     d.close();
     setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} setTimeout(()=>f.remove(),2000); },300);
   });
+})();
+</script>
+
+<script>
+/* ============================================================
+   FEEDS — what the scheduled emails read (Jonna, 2026-10-28)
+   ------------------------------------------------------------
+   Power Automate cannot read Summit HQ's saved files the way the page does, so
+   Summit HQ keeps two small, ready-to-read documents up to date itself. They are
+   rewritten whenever what they come from changes, by whoever has Summit HQ open,
+   so they always match the page:
+
+     feeds/tasks         every open task with a due date in the active cycle.
+                         The Monday task email reads it ("Every Monday at 7:00 AM").
+     feeds/sponsor-list  for each Summit still to come: its first day, and its
+                         registrants as company and name only (no emails), with
+                         MISMO and MBA staff left out. The "Registration List to
+                         Sponsors" flow sends it to approved sponsors every Monday
+                         from seven weeks out.
+   ============================================================ */
+(function(){
+  "use strict";
+  let db=null;
+  const tasks={}, summits={}, regs={}, feed={}, ready={tasks:false,cfg:false,summits:false,ftasks:false,fspon:false};
+  let cfg={}, timer=null, venuesSeen='';
+  const canEdit=()=>{ try{ const R=window.ResourcesSession; if(!R||!R.current||!R.current()) return false;
+    return R.canEdit ? !!R.canEdit('summit-hq') : true; }catch(e){ return false; } };
+  const strip=o=>{ const c=Object.assign({},o||{}); delete c.updatedAt; return JSON.stringify(c); };
+  const soon=()=>{ clearTimeout(timer); timer=setTimeout(write,4000); };
+
+  /* the same rule the Run of Show uses for which tasks belong to the active cycle */
+  function active(){ return summits[cfg.activeSummitId] || {id:cfg.activeSummitId||'', name:cfg.name||'', start:cfg.start||''}; }
+  function inCycle(t){
+    const sc=String(t&&t.scope||'');
+    if(!sc||sc==='All Summits'||sc==='Unassigned') return true;
+    const su=active();
+    if(sc==='Fall Only') return /fall|autumn/i.test(String(su.name||''));
+    if(!t.summitId) return true;
+    if(sc==='This Summit Only') return t.summitId===su.id;
+    if(sc==='For Next Summit') return t.summitId!==su.id;
+    return true;
+  }
+  function taskFeed(){
+    const su=active();
+    const list=Object.keys(tasks).map(id=>Object.assign({id},tasks[id]))
+      .filter(t=>t.dueKind==='date' && /^\d{4}-\d{2}-\d{2}/.test(String(t.due||'')) && t.status!=='Complete' && inCycle(t))
+      .map(t=>({id:t.id, task:String(t.task||''), owner:String(t.owner||''), assists:String(t.assists||''),
+        due:String(t.due).slice(0,10), status:String(t.status||'Not Started'), desc:String(t.desc||'')}))
+      .sort((a,b)=>a.due<b.due?-1:a.due>b.due?1:a.task.localeCompare(b.task));
+    return {summit:{id:su.id||'', name:su.name||'', start:su.start||''}, tasks:list};
+  }
+
+  /* the first day, off the dates the Schedule keeps ("January 11–14, 2027") */
+  const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  function firstDay(v){
+    const t=String(v&&v.dates||'').toLowerCase(), y=(t.match(/(\d{4})/)||[])[1];
+    const m=/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/.exec(t);
+    if(!y||!m) return '';
+    return y+'-'+String(MON[m[1]]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+  }
+  const addDays=(iso,n)=>{ const d=new Date(iso+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+  function venues(){ try{ return window.__scheduleVenues ? window.__scheduleVenues() : []; }catch(e){ return []; } }
+  function sponsorFeed(){
+    const today=new Date().toISOString().slice(0,10), out=[];
+    venues().forEach(v=>{
+      const start=firstDay(v); if(!start || start<today) return;
+      const name=String(v.name||''), season=(/\b(Winter|Spring|Fall)\b/i.exec(name)||[])[1]||'', year=(/(\d{4})/.exec(name)||/(\d{4})/.exec(start)||[])[1]||'';
+      const d=regs[v.id]||{}, cur=d.current||{}, cols=Array.isArray(cur.cols)?cur.cols:[], rows=Array.isArray(cur.rows)?cur.rows:[];
+      const ix=k=>cols.indexOf(k), iN=ix('name'), iC=ix('company'), iK=ix('category');
+      const seen={}, people=[];
+      rows.forEach(r=>{
+        const get=i=>i<0?'':(Array.isArray(r)?r[i]:(r||{})[cols[i]]);
+        const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||'');
+        if(!n || /^MBA\/MISMO$/i.test(k)) return;
+        const key=(c+'|'+n).toLowerCase(); if(seen[key]) return; seen[key]=1;
+        people.push({company:c, name:n});
+      });
+      people.sort((a,b)=>a.company.localeCompare(b.company)||a.name.localeCompare(b.name));
+      const f=(d.files&&d.files.current)||{};
+      out.push({venue:v.id, name, season:season?season[0].toUpperCase()+season.slice(1).toLowerCase():'', year, start,
+        firstSend:addDays(start,-49), listDate:String(f.at||'').slice(0,10), listBy:String(f.by||''), people});
+    });
+    return {summits:out};
+  }
+
+  async function write(){
+    if(!db || !canEdit()) return;
+    if(ready.tasks && ready.cfg && ready.summits && ready.ftasks){
+      const t=taskFeed();
+      if(strip(t)!==strip(feed.tasks)){ feed.tasks=t; try{ await db.doc('feeds/tasks').set(Object.assign({updatedAt:new Date().toISOString()},t)); }catch(e){} }
+    }
+    const vs=venues();
+    if(ready.fspon && vs.length && vs.every(v=>regs[v.id]!==undefined)){
+      const s=sponsorFeed();
+      if(strip(s)!==strip(feed.spon)){ feed.spon=s; try{ await db.doc('feeds/sponsor-list').set(Object.assign({updatedAt:new Date().toISOString()},s)); }catch(e){} }
+    }
+  }
+  function watchVenues(){
+    const vs=venues(), key=vs.map(v=>v.id).join(','); if(!key || key===venuesSeen) return;
+    venuesSeen=key;
+    vs.forEach(v=>{ if(regs[v.id]!==undefined) return; regs[v.id]=undefined;
+      db.doc('registration/'+v.id).onSnapshot(s=>{ regs[v.id]=s.exists?(s.data()||{}):{}; soon(); }, ()=>{ regs[v.id]={}; soon(); }); });
+  }
+  async function start(){
+    try{ db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ db=null; }
+    if(!db) return;
+    db.collection('tasks').onSnapshot(s=>{ Object.keys(tasks).forEach(k=>delete tasks[k]); s.docs.forEach(d=>{ if(d.exists) tasks[d.id]=d.data(); }); ready.tasks=true; soon(); });
+    db.collection('summits').onSnapshot(s=>{ Object.keys(summits).forEach(k=>delete summits[k]); s.docs.forEach(d=>{ if(d.exists) summits[d.id]=Object.assign({id:d.id},d.data()); }); ready.summits=true; soon(); });
+    db.doc('meta/config').onSnapshot(s=>{ cfg=s.exists?(s.data()||{}):{}; ready.cfg=true; soon(); });
+    db.doc('feeds/tasks').onSnapshot(s=>{ feed.tasks=s.exists?s.data():null; ready.ftasks=true; soon(); });
+    db.doc('feeds/sponsor-list').onSnapshot(s=>{ feed.spon=s.exists?s.data():null; ready.fspon=true; soon(); });
+    watchVenues(); setInterval(()=>{ watchVenues(); soon(); }, 60*60000);
+    let n=0; const t=setInterval(()=>{ watchVenues(); if(venuesSeen || ++n>40) clearInterval(t); }, 3000);
+  }
+  /* only once signed in, so nothing is asked of the relay before there is a session */
+  const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
+      try{ window.ResourcesSession.onChange(()=>{ if(!db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
+    setTimeout(start,2500); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
 })();
 </script>
 
