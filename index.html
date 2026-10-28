@@ -477,15 +477,26 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     return { savedAt: f.server.savedAt || '', copiedAt: f.server.copiedAt || '', sourceSha: f.server.sourceSha || '' };
   };
   var portalShaAt = 0, portalShaP = null;
-  window.__portalSourceSha = function () {
-    /* only people with Sponsorship access can read the portal itself; everyone else
-       just sees the time of the last copy */
-    if (portalShaP && now() - portalShaAt < 30 * 60000) return portalShaP;
+  /* Summit HQ checks the portal itself (on opening, then every 30 minutes while open),
+     so the stamp can say it looked even when nothing had changed. Resolves to
+     {sha, at, changes}: changes is how many portal records were saved after the last
+     copy reached Summit HQ (0 when the two are in step). */
+  window.__portalSourceSha = function (force) {
+    if (!force && portalShaP && now() - portalShaAt < 30 * 60000) return portalShaP;
     var rs = RS(), tok = rs && rs.token(); if (!tok) return Promise.resolve(null);
     portalShaAt = now();
     portalShaP = fetch(RELAY_URL + '/sponsorship/data/applications', { cache: 'no-store', headers: { 'Authorization': 'Bearer ' + tok } })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (b) { return (b && b.sha) || null; }, function () { return null; });
+      .then(function (b) {
+        if (!b || !b.sha) return null;
+        var info = window.__portalCopyInfo ? window.__portalCopyInfo() : null, changes = 0;
+        if (!info || info.sourceSha !== b.sha) {
+          var since = (info && info.savedAt) || '', docs = (b.data && b.data.docs) || {};
+          Object.keys(docs).forEach(function (k) { var u = docs[k] && docs[k].updatedAt; if (u && (!since || String(u) > since)) changes++; });
+          if (!changes) changes = 1;   /* it changed, even if no record says when */
+        }
+        return { sha: b.sha, at: new Date().toISOString(), changes: changes };
+      }, function () { return null; });
     return portalShaP;
   };
 
@@ -3107,6 +3118,8 @@ html[data-season="december"] .santa{display:block}
 .railsync .rsy-s:empty{display:none}
 .railsync .rsy-s.ok{color:#8fd6a8}
 .railsync .rsy-s.behind{color:#f3c56b;font-weight:600}
+.railsync .rsy-c{font-size:10.5px;color:rgba(255,255,255,.5)}
+.railsync .rsy-c:empty{display:none}
 body.railmini .hq .mast-right .railsync{display:none}
 /* the theme row sits on its own, and its mark says which way it will go */
 .hq .mast-right #theme-btn{margin-top:5px;padding-top:11px;
@@ -45153,18 +45166,20 @@ window.__people={
 
 <script>
 /* ============================================================
-   When the Sponsorship Portal last reached Summit HQ (Jonna, 2026-10-27)
-   A stamp at the foot of the left menu, just above Dark Mode: the date and time
-   the Power Automate flow last copied the portal in. The flow copies whenever the
-   portal saves, so a quiet portal means an older time. For anyone who can open the
-   portal too, the stamp also says whether the copy is in step with it.
+   When Summit HQ last checked the Sponsorship Portal (Jonna, 2026-10-27)
+   A stamp at the foot of the left menu, just above Dark Mode. Summit HQ looks at the
+   portal when it opens and every 30 minutes while it is open, and says when it last
+   looked and how many changes it found, even when that is 0. Under it, when the Power
+   Automate flow last copied the portal in (it copies whenever the portal saves).
+   Someone without Sponsorship access can't look at the portal itself, so they see
+   only the time of the last copy.
    ============================================================ */
 (function(){
   'use strict';
-  let box=null, lastSha=null, shaFor='';
-  function fmt(iso){
+  let box=null, last=null, failed=false;
+  function fmt(iso, withYear){
     const d=new Date(iso); if(isNaN(d)) return '';
-    return d.toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+    return d.toLocaleString('en-US',{month:'short',day:'numeric',year:withYear?'numeric':undefined,hour:'numeric',minute:'2-digit'});
   }
   function mount(){
     const foot=document.querySelector('.hq .mast-right'), theme=document.getElementById('theme-btn');
@@ -45172,7 +45187,7 @@ window.__people={
     if(!box){
       box=document.createElement('div'); box.className='railsync'; box.id='rail-sync';
       box.setAttribute('aria-live','polite');
-      box.innerHTML='<span class="rsy-l">Sponsorship Portal</span><span class="rsy-t">Not copied in yet</span><span class="rsy-s"></span>';
+      box.innerHTML='<span class="rsy-l">Sponsorship Portal</span><span class="rsy-t">Checking\u2026</span><span class="rsy-s"></span><span class="rsy-c"></span>';
     }
     if(box.parentNode!==foot || box.nextSibling!==theme) foot.insertBefore(box, theme);
     return box;
@@ -45180,32 +45195,33 @@ window.__people={
   function paint(){
     const b=mount(); if(!b) return;
     const info=window.__portalCopyInfo ? window.__portalCopyInfo() : null;
-    const t=b.querySelector('.rsy-t'), st=b.querySelector('.rsy-s');
-    if(!info){ t.textContent='Waiting for the portal copy'; st.textContent=''; st.className='rsy-s'; return; }
-    const when=fmt(info.savedAt) || info.copiedAt || '';
-    t.textContent='Updated '+(when||'\u2014');
-    let title='The Sponsorship Portal last reached Summit HQ'+(when?' on '+when:'')+'. It is copied in whenever the portal saves.';
-    if(lastSha && info.sourceSha){
-      const ok = lastSha===info.sourceSha;
-      st.textContent = ok ? '\u2713 In step with the portal' : 'The portal has newer changes';
-      st.className = 'rsy-s '+(ok?'ok':'behind');
-      title += ok ? ' Nothing has changed in the portal since.' : ' The portal has changed since and the copy has not caught up \u2014 tell Jonna if this lasts more than a day.';
-    } else if(info.savedAt && Date.now()-Date.parse(info.savedAt) > 864e5){
-      st.textContent='No portal changes since'; st.className='rsy-s';
-    } else { st.textContent=''; st.className='rsy-s'; }
-    b.title=title;
+    const t=b.querySelector('.rsy-t'), st=b.querySelector('.rsy-s'), cp=b.querySelector('.rsy-c');
+    const copied = info ? (fmt(info.savedAt) || info.copiedAt || '') : '';
+    cp.textContent = copied ? 'Last copy '+copied : '';
+    if(last){
+      t.textContent='Checked '+fmt(last.at, true);
+      if(!last.changes){ st.textContent='\u2713 0 new changes'; st.className='rsy-s ok'; }
+      else { st.textContent=last.changes+' new change'+(last.changes===1?'':'s')+', not copied yet'; st.className='rsy-s behind'; }
+      b.title='Summit HQ checked the Sponsorship Portal at '+fmt(last.at, true)+' and found '
+        +(last.changes ? last.changes+' change'+(last.changes===1?'':'s')+' the copy does not have yet. The flow copies them in when the portal saves; tell Jonna if this lasts more than a day.' : 'nothing new.')
+        +(copied ? ' The portal last reached Summit HQ '+copied+'.' : '');
+    } else if(failed || !window.__portalSourceSha){
+      t.textContent = copied ? 'Updated '+copied : 'Not copied in yet';
+      st.textContent=''; st.className='rsy-s'; cp.textContent='';
+      b.title='When the Sponsorship Portal last reached Summit HQ. It is copied in whenever the portal saves.';
+    } else { t.textContent='Checking\u2026'; }
   }
-  function check(){
-    const info=window.__portalCopyInfo ? window.__portalCopyInfo() : null;
-    if(!info || !window.__portalSourceSha){ paint(); return; }
-    window.__portalSourceSha().then(sha=>{ lastSha=sha; shaFor=info.sourceSha; paint(); }, ()=>paint());
+  function check(force){
+    if(!window.__portalSourceSha){ paint(); return; }
+    window.__portalSourceSha(force).then(r=>{ if(r){ last=r; failed=false; } else if(!last) failed=true; paint(); },
+      ()=>{ if(!last) failed=true; paint(); });
   }
-  window.addEventListener('hq:portal', ()=>{ paint(); check(); });
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(); });
+  window.addEventListener('hq:portal', ()=>{ check(true); });
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') check(false); });
   setInterval(paint, 60000);
-  setInterval(check, 30*60000);
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', ()=>{ paint(); setTimeout(check, 4000); });
-  else { paint(); setTimeout(check, 4000); }
+  setInterval(()=>check(true), 30*60000);
+  const go=()=>{ paint(); setTimeout(()=>check(true), 3000); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', go); else go();
   setTimeout(paint, 1500);
 })();
 </script>
