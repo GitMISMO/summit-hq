@@ -3761,6 +3761,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button type="button" data-hq="grid" title="Schedule">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>
       <span>Schedule</span></button>
+    <button type="button" data-hq="gs" title="General Sessions">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4M8 22h8"/></svg>
+      <span>General Sessions</span></button>
     <button type="button" data-hq="resume" title="Resume">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></svg>
       <span>Resume</span></button>
@@ -5214,6 +5217,20 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-select:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
 #app-reg .ws-table td.cat{white-space:nowrap}
 </style>
+
+<div id="app-gs" hidden>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">General Sessions</div>
+      <h1 id="gs-title">General Sessions</h1>
+      <div class="sub" id="gs-sub"></div>
+    </div>
+    <div class="gs-acts" id="gs-acts"></div>
+  </header>
+  <div id="gs-root"></div>
+</div>
+</div>
 
 <div id="app-reg" hidden>
 <div class="wrap">
@@ -42596,11 +42613,13 @@ startClock();
 (function(){
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
-    resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg")};
+    resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg"),
+    gs:document.getElementById("app-gs")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
-    ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered"};
+    ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered",
+    gs:"Build Tuesday's General Sessions"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
   const GROUP={ros:1,specs:1,people:1};
@@ -44431,11 +44450,22 @@ function summitSessions(){
   /* a room held with nothing in it is not a session anybody speaks in, and it has no
      place on the event app's agenda either */
   const isHold=f=>/held, nothing else scheduled/i.test(f.full||f.name||'');
-  return feed.functions.filter(f=>f.kind!=='hold' && !isHold(f)).map(f=>({
+  let list=feed.functions.filter(f=>f.kind!=='hold' && !isHold(f)).map(f=>({
     key:f.key||f.sid, name:f.full||f.name, room:f.room||'', day:f.day,
     dayLabel:(feed.days.find(d=>d.id===f.day)||{}).label||'',
     start:f.start, end:f.end, idx:days.indexOf(f.day)
   })).filter(x=>x.name);
+  /* Jonna, 2026-10-28: once Tuesday's General Sessions has a running order, each
+     segment is its own session in the event app, in place of the one all-day block */
+  let segs=null; try{ segs=window.__gsSegments ? window.__gsSegments(venueNow()) : null; }catch(e){ segs=null; }
+  if(segs && segs.length){
+    const gs=list.find(x=>/^general-sessions/.test(String(x.key)));
+    const day=gs? gs.day : 'tue';
+    const label=(feed.days.find(d=>d.id===day)||{}).label||'Tuesday';
+    list=list.filter(x=>!/^general-sessions/.test(String(x.key))).concat(segs.map(g=>({
+      key:g.key, name:g.name, room:gs? gs.room : '', day, dayLabel:label, start:g.start, end:g.end, idx:days.indexOf(day)})));
+  }
+  return list;
 }
 /* the app writes the wall clock with a Z on the end, so this does the same */
 function stampFor(sess){
@@ -44601,6 +44631,29 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 /* what the rail's search may look through, and how to open somebody */
 window.__people={
   all:()=>all(),
+  /* Jonna, 2026-10-28: the General Sessions tab puts speakers on its segments. Linking
+     puts them on this summit, ticks Added to the Agenda and records the segment as one
+     of their sessions; unlinking only takes that segment off. */
+  link:(id,key,on)=>{
+    const p=byId(id); if(!p) return false;
+    const st=stOf(p);
+    const f={ses:(st.ses||[]).filter(k=>k!==key)};
+    if(on){
+      f.ses.push(key); f.on=true;
+      if(!st.role) f.role='speaker';
+      const steps=Object.assign({},st.steps||{}); if(!steps.agenda) steps.agenda=today(); f.steps=steps;
+    }
+    patchSt(id,f,on?'a General Sessions speaker':'a General Sessions speaker taken off');
+    render(); return true;
+  },
+  add:o=>{
+    const nm=String(o&&o.n||'').trim(); if(!nm) return null;
+    let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
+    if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
+    rec(id,'a new speaker');
+    write(id,{i:id,n:nm,e:o.e||'',c:o.c||'',t:o.t||'',add:true,st:{[venueNow()]:{on:true,role:o.role||'speaker',steps:{}}}});
+    render(); return id;
+  },
   open:id=>{
     const p=byId(id); if(!p) return false;
     if(onSummit(p)) ST.lOpen=true; else ST.elseOpen=true;
@@ -45240,6 +45293,613 @@ window.__people={
   const go=()=>{ paint(); setTimeout(()=>check(true), 3000); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', go); else go();
   setTimeout(paint, 1500);
+})();
+</script>
+
+<style>
+/* ── General Sessions builder (Jonna, 2026-10-28) ───────────────────────── */
+#app-gs .gs-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#app-gs .gs-strip{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 14px}
+#app-gs .gs-tile{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px;min-width:130px;
+  display:flex;flex-direction:column;gap:2px}
+#app-gs .gs-tile b{font-family:var(--display);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1}
+#app-gs .gs-tile span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+#app-gs .gs-tile.ok b{color:var(--good)} #app-gs .gs-tile.warn b{color:var(--warn-ink)} #app-gs .gs-tile.bad b{color:var(--bad-ink)}
+#app-gs .gs-tile input{font:inherit;font-family:var(--display);font-size:18px;font-weight:800;border:1px solid var(--line-2);
+  border-radius:3px;padding:1px 6px;width:110px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-empty{background:var(--surface);border:1px dashed var(--line-2);border-radius:8px;padding:28px;text-align:center;color:var(--ink-2)}
+#app-gs .gs-empty h3{font-size:18px;margin-bottom:6px;color:var(--ink)}
+#app-gs .gs-empty .gs-acts{justify-content:center;margin-top:14px}
+#app-gs .gs-list{display:flex;flex-direction:column}
+#app-gs .gs-ins{height:16px;display:flex;align-items:center;justify-content:center;position:relative}
+#app-gs .gs-ins button{opacity:0;transition:opacity .12s;font-size:11px;font-weight:600;color:var(--accent);background:var(--surface);
+  border:1px dashed var(--accent);border-radius:10px;padding:0 10px;line-height:16px;cursor:pointer}
+#app-gs .gs-ins:hover button,#app-gs .gs-ins button:focus{opacity:1}
+#app-gs .gs-gap{margin:2px 0 2px 92px;font-size:11.5px;color:var(--ink-3);font-style:italic}
+#app-gs .gs-gap.bad{color:var(--bad-ink);font-style:normal;font-weight:600}
+#app-gs .gs-item{display:grid;grid-template-columns:22px 84px 1fr;gap:0 12px;background:var(--surface);border:1px solid var(--line);
+  border-left:4px solid var(--accent);border-radius:6px;padding:12px 14px 12px 8px}
+#app-gs .gs-item.soft{border-left-color:var(--line-2);background:var(--sunk)}
+#app-gs .gs-item.over{border-color:var(--bad);border-left-color:var(--bad)}
+#app-gs .gs-item.dragging{opacity:.45}
+#app-gs .gs-item.drop-above{box-shadow:0 -3px 0 0 var(--accent)}
+#app-gs .gs-item.drop-below{box-shadow:0 3px 0 0 var(--accent)}
+#app-gs .gs-handle{cursor:grab;color:var(--ink-3);font-size:16px;line-height:1;padding-top:4px;user-select:none;text-align:center}
+#app-gs .gs-handle:active{cursor:grabbing}
+#app-gs .gs-time{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);padding-top:4px;line-height:1.3}
+#app-gs .gs-time small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-3)}
+#app-gs .gs-time .pin{display:inline-block;margin-top:4px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+  color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 4px}
+#app-gs .gs-main{min-width:0;display:flex;flex-direction:column;gap:8px}
+#app-gs .gs-row1{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#app-gs .gs-row1 select{font-size:12px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-title{flex:1 1 260px;min-width:0;font-family:var(--display);font-size:15px;font-weight:700;padding:5px 8px;border:1px solid transparent;
+  border-radius:3px;background:transparent;color:var(--ink)}
+#app-gs .gs-title:hover{border-color:var(--line)} #app-gs .gs-title:focus{border-color:var(--accent);outline:none;background:var(--surface)}
+#app-gs .gs-dur{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:3px;overflow:hidden}
+#app-gs .gs-dur button{border:0;background:var(--sunk);color:var(--ink-2);width:24px;height:26px;font-size:14px;font-weight:700;cursor:pointer}
+#app-gs .gs-dur button:hover{background:var(--accent-soft)}
+#app-gs .gs-dur input{width:40px;border:0;text-align:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--surface);color:var(--ink);padding:3px 0}
+#app-gs .gs-dur span{font-size:11px;color:var(--ink-3);padding:0 6px 0 2px;background:var(--surface);line-height:26px}
+#app-gs .gs-pin{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-2)}
+#app-gs .gs-pin input[type=time]{font-size:12px;padding:2px 4px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-tools{display:flex;gap:2px;margin-left:auto}
+#app-gs .gs-tools button{border:0;background:transparent;color:var(--ink-3);font-size:13px;width:26px;height:26px;border-radius:3px;cursor:pointer}
+#app-gs .gs-tools button:hover{background:var(--accent-soft);color:var(--ink)}
+#app-gs .gs-tools button.armed{background:var(--bad);color:#fff}
+#app-gs .gs-desc{width:100%;min-height:34px;font:inherit;font-size:13px;line-height:1.45;padding:6px 8px;border:1px solid var(--line);
+  border-radius:3px;background:var(--surface);color:var(--ink-2);resize:vertical}
+#app-gs .gs-desc:focus{border-color:var(--accent);outline:none}
+#app-gs .gs-ppl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#app-gs .gs-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:14px;padding:2px 4px 2px 4px;
+  background:var(--surface);font-size:12.5px}
+#app-gs .gs-chip .av{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
+#app-gs .gs-chip .av img{width:100%;height:100%;object-fit:cover}
+#app-gs .gs-chip .nm{font-weight:600;color:var(--ink);cursor:pointer}
+#app-gs .gs-chip .co{color:var(--ink-3);font-size:11.5px}
+#app-gs .gs-chip select{font-size:11px;border:0;background:transparent;color:var(--ink-2);padding:0}
+#app-gs .gs-chip .miss{color:var(--warn-ink);font-size:11px;font-weight:700;cursor:help}
+#app-gs .gs-chip .x{border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-size:14px;line-height:1;padding:0 4px}
+#app-gs .gs-chip .x:hover{color:var(--bad)}
+#app-gs .gs-addp{font-size:12px;font-weight:600;color:var(--accent);border:1px dashed var(--accent);background:transparent;border-radius:14px;padding:3px 10px;cursor:pointer}
+#app-gs .gs-find{position:relative;flex:1 1 260px;max-width:420px}
+#app-gs .gs-find input{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-hits{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:2px;background:var(--surface);border:1px solid var(--line-2);
+  border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:280px;overflow:auto}
+#app-gs .gs-hits button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:7px 10px;font-size:12.5px;color:var(--ink);cursor:pointer}
+#app-gs .gs-hits button:hover,#app-gs .gs-hits button.on{background:var(--accent-soft)}
+#app-gs .gs-hits button small{color:var(--ink-3);margin-left:6px}
+#app-gs .gs-hits .new{border-top:1px solid var(--line);color:var(--accent);font-weight:600}
+#app-gs .gs-newp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;align-items:end;width:100%;
+  background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:8px}
+#app-gs .gs-newp label{display:flex;flex-direction:column;gap:2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+#app-gs .gs-newp input{font-size:12.5px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+#app-gs .gs-saved{font-size:11.5px;color:var(--ink-3)}
+#app-gs .gs-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
+#app-gs .gs-side{position:sticky;top:calc(var(--hq-h,64px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:12px;max-height:calc(100vh - var(--hq-h,64px) - 32px);display:flex;flex-direction:column;gap:8px}
+#app-gs .gs-side h3{font-size:14px;display:flex;align-items:baseline;gap:6px}
+#app-gs .gs-side h3 small{font-family:var(--ui);font-size:11px;font-weight:500;color:var(--ink-3)}
+#app-gs .gs-side .hint{font-size:11.5px;color:var(--ink-3);line-height:1.4}
+#app-gs .gs-side input[type=search]{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+#app-gs .gs-seg{display:flex;gap:4px;flex-wrap:wrap}
+#app-gs .gs-seg button{font-size:11px;font-weight:600;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);border-radius:12px;padding:2px 9px;cursor:pointer}
+#app-gs .gs-seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+#app-gs .gs-plist{overflow:auto;display:flex;flex-direction:column;gap:3px;min-height:60px}
+#app-gs .gs-pr{display:flex;align-items:center;gap:8px;padding:5px 6px;border:1px solid transparent;border-radius:4px;cursor:grab;user-select:none}
+#app-gs .gs-pr:hover{background:var(--accent-soft);border-color:var(--line)}
+#app-gs .gs-pr:active{cursor:grabbing}
+#app-gs .gs-pr .av{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
+#app-gs .gs-pr .av img{width:100%;height:100%;object-fit:cover}
+#app-gs .gs-pr .tx{min-width:0;flex:1}
+#app-gs .gs-pr .tx b{display:block;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-gs .gs-pr .tx span{display:block;font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-gs .gs-pr .n{font-size:10.5px;font-weight:700;color:var(--ink-3);border:1px solid var(--line-2);border-radius:10px;padding:0 6px;white-space:nowrap}
+#app-gs .gs-pr .n.on{color:var(--good);border-color:var(--good)}
+#app-gs .gs-lend{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#7a4d00;background:#ffe7a8;
+  border:1px solid #e0b040;border-radius:3px;padding:0 4px;white-space:nowrap;cursor:pointer}
+:root[data-theme="dark"] #app-gs .gs-lend{color:#ffd77a;background:#3d3010;border-color:#8a6a1c}
+#app-gs .gs-chip.lender{border-color:#e0b040;background:#fff7e0}
+:root[data-theme="dark"] #app-gs .gs-chip.lender{background:#2e2610;border-color:#8a6a1c}
+#app-gs .gs-chip .lt{border:0;background:transparent;cursor:pointer;font-size:10px;font-weight:800;color:var(--ink-3);padding:0 3px;border-radius:3px}
+#app-gs .gs-chip .lt:hover{background:var(--accent-soft)}
+#app-gs .gs-item.has-lender{border-left-color:#e0b040}
+#app-gs .gs-item.droppable{outline:2px dashed var(--accent);outline-offset:2px}
+@media (max-width:1100px){ #app-gs .gs-layout{grid-template-columns:1fr} #app-gs .gs-side{position:static;max-height:none} #app-gs .gs-plist{max-height:300px} }
+@media (max-width:700px){
+  #app-gs .gs-item{grid-template-columns:18px 1fr}
+  #app-gs .gs-time{grid-column:2}
+  #app-gs .gs-main{grid-column:1 / -1;margin-top:6px}
+  #app-gs .gs-newp{grid-template-columns:1fr 1fr}
+}
+</style>
+<script>
+/* ============================================================
+   GENERAL SESSIONS — Tuesday's running order (Jonna, 2026-10-28)
+   "a tool to help me enter content for the general sessions (Tuesday) and then move
+   them around, add speakers, manipulate time."
+
+   One document per summit, schedule/gs-<summit>, saved through the relay like the
+   rest of the Schedule:
+     {start:'09:00', end:'16:30', items:[{id, kind, title, desc, dur, at, people:[{id, role}]}]}
+   Times are not stored: each segment starts when the one before it ends, unless it is
+   pinned to a clock time (lunch at noon). Durations are in minutes.
+
+   Speakers are people from the People tab. Putting someone on a segment puts them on
+   this summit, ticks "Added to the agenda" and links them to that segment, so the
+   event app's speakers file ties them to it. Each segment is its own session in the
+   event app's sessions file, in place of the one all-day General Sessions block.
+   ============================================================ */
+(function(){
+'use strict';
+const HOST=document.getElementById('gs-root'); if(!HOST) return;
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n;};
+const KINDS=['Welcome','Keynote','Presentation','Panel','Fireside Chat','Case Study','Workgroup Update','Q&A','Break','Lunch','Networking','Closing','Other'];
+const SOFT=new Set(['Break','Lunch','Networking']);
+const ROLES=['Speaker','Moderator','Panelist','Host'];
+const uid=()=>'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const toM=s=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(s||'')); return m? (+m[1])*60+(+m[2]) : null;};
+const toHM=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const clock=m=>{ if(m==null) return ''; let h=Math.floor(m/60), mm=m%60; const ap=h>=12?'PM':'AM'; h=h%12||12; return h+':'+String(mm).padStart(2,'0')+' '+ap; };
+const clockShort=m=>clock(m).replace(/ (AM|PM)$/,'');
+const durText=d=>{ const h=Math.floor(d/60), m=d%60; return h? (h+' hr'+(m?' '+m+' min':'')) : m+' min'; };
+
+let db=null, doc=null, vid='', unsub=null, saveT=null, dirty=false, savedAt=0, dragId=null, finding=null, newFor=null;
+let dragPerson=null, sideQ='', sideMode='speakers';
+
+/* ---------- who is a lender ----------
+   Jonna, 2026-10-28: "highlight where lenders are engaged in sessions". Member 360 knows
+   which companies are lenders (Member Type Lender, or the Lender/Servicer sector), so a
+   speaker whose company matches is marked. Anyone can be marked or unmarked by hand on
+   their chip; that choice is kept with this summit's General Sessions. People without
+   Member 360 access see only the hand-marked ones. */
+const RELAY='https://rgvdi67cg27o5kcmiytcqbqnrm0hmztx.lambda-url.us-east-1.on.aws';
+const normCo=x=>String(x||'').toLowerCase().replace(/&/g,' and ').replace(/\b(inc|llc|corp|corporation|co|company|ltd|the)\b\.?/g,' ').replace(/[^a-z0-9]+/g,'');
+let LENDERS=null, lenderLoading=false;
+async function loadLenders(){
+  if(LENDERS||lenderLoading) return; lenderLoading=true;
+  try{
+    const tok=window.ResourcesSession&&window.ResourcesSession.token(); if(!tok) throw 0;
+    const get=n=>fetch(RELAY+'/member-360/data/'+encodeURIComponent(n),{cache:'no-store',headers:{Authorization:'Bearer '+tok}}).then(r=>r.ok?r.json():null);
+    const head=await get('orgsdata'); const c=head&&head.data&&head.data.chunked; if(!c||!c.n) throw 0;
+    const parts=[]; for(let i=0;i<c.n;i++) parts.push(get('orgsdata--'+c.ver+'-'+i));
+    const txt=(await Promise.all(parts)).map(p=>(p&&p.data&&p.data.s)||'').join('');
+    const orgs=(JSON.parse(txt).orgs)||[];
+    const set=new Set();
+    orgs.forEach(o=>{ if(!o) return; const ty=String(o.type||''); if(ty==='Lender' || (/lender/i.test(String(o.sector||'')) && !/non-?lender/i.test(ty))){ const k=normCo(o.name); if(k) set.add(k); } });
+    LENDERS=set;
+  }catch(e){ LENDERS=new Set(); }
+  lenderLoading=false; render();
+}
+function isLender(p){
+  if(!p) return false;
+  const m=doc&&doc.lenders; if(m && m[p.i]!=null) return !!m[p.i];
+  const k=normCo(p.c); if(!k||!LENDERS) return false;
+  if(LENDERS.has(k)) return true;
+  for(const L of LENDERS){ if(Math.min(k.length,L.length)>5 && (k.startsWith(L)||L.startsWith(k))) return true; }
+  return false;
+}
+function setLender(pid,on){ if(!doc) return; doc.lenders=Object.assign({},doc.lenders||{}); doc.lenders[pid]=on; touch(); render(); }
+function addPersonTo(it,pid){
+  if(!pid || (it.people||[]).some(r=>r.id===pid)) return;
+  it.people=(it.people||[]).concat({id:pid,role:it.kind==='Panel'?'Panelist':'Speaker'}); linkPerson(pid,it,true); touch(); render();
+}
+
+function venue(){ try{ return (typeof V==='function') ? V() : null; }catch(e){ return null; } }
+function gsFn(){
+  try{ const f=window.__resumeFunctions && window.__resumeFunctions(); if(!f) return null;
+    return (f.functions||[]).find(x=>x.sid==='general-sessions') || null; }catch(e){ return null; }
+}
+function tuesdayLabel(){
+  const v=venue(); if(!v) return 'Tuesday';
+  let first=''; try{ first=(window.ResumeModel&&window.ResumeModel.firstDayFrom)?window.ResumeModel.firstDayFrom(v.dates||''):''; }catch(e){}
+  if(!first) return 'Tuesday';
+  const d=new Date(first+'T00:00:00'); d.setDate(d.getDate()+1);
+  return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+function people(){ try{ return window.__people ? window.__people.all() : []; }catch(e){ return []; } }
+function personById(id){ return people().find(p=>p.i===id)||null; }
+const initials=n=>String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+
+/* ---------- the times, worked out ---------- */
+function timeline(){
+  const out=[]; if(!doc) return out;
+  let t=toM(doc.start)||9*60;
+  doc.items.forEach((it,i)=>{
+    const pin=toM(it.at);
+    let s=t, gap=0, clash=0;
+    if(pin!=null){ if(pin>t) gap=pin-t; else if(pin<t) clash=t-pin; s=pin; }
+    const e=s+Math.max(0,+it.dur||0);
+    out.push({it,i,s,e,gap,clash});
+    t=e;
+  });
+  return out;
+}
+
+/* ---------- saving ---------- */
+function touch(){
+  dirty=true; doc.updatedAt=new Date().toISOString();
+  try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); doc.updatedBy=(s&&s.name)||''; }catch(e){}
+  clearTimeout(saveT); saveT=setTimeout(save,600);
+  paintSaved('Saving…');
+}
+async function save(){
+  if(!db||!doc) return;
+  try{ await db.doc('schedule/gs-'+vid).set(JSON.parse(JSON.stringify(doc))); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
+  catch(e){ paintSaved('Not saved — '+((e&&e.message)||'try again')); }
+}
+function paintSaved(t){ const n=$('gs-saved'); if(n) n.textContent=t; }
+
+/* ---------- linking speakers to the People tab ---------- */
+const segKey=it=>'gs-'+it.id;
+function linkPerson(pid,it,on){
+  try{ if(window.__people && window.__people.link) window.__people.link(pid, segKey(it), on); }catch(e){}
+}
+function onOtherItem(pid,it){ return doc.items.some(x=>x!==it && (x.people||[]).some(p=>p.id===pid)); }
+
+/* ---------- drawing ---------- */
+function render(){
+  const v=venue();
+  $('gs-title').textContent=(v&&v.name)||'Summit';
+  const fn=gsFn();
+  $('gs-sub').textContent=[tuesdayLabel(), fn? fn.room : 'Room not set on the Schedule', (v&&v.city)||''].filter(Boolean).join(' · ');
+  const acts=$('gs-acts'); acts.textContent='';
+  HOST.textContent='';
+  if(!doc){
+    const e=el('div','gs-empty');
+    e.appendChild(el('h3',null,'Nothing on the General Sessions agenda yet'));
+    e.appendChild(el('div',null,'Start from a typical Tuesday and change it, or start with a blank page.'));
+    const a=el('div','gs-acts');
+    const t=el('button','btn','Start From a Typical Tuesday'); t.type='button'; t.addEventListener('click',()=>{ doc=template(); touch(); render(); });
+    const b=el('button','btn ghost','Start Blank'); b.type='button'; b.addEventListener('click',()=>{ doc=blank(); doc.items.push(newItem('Welcome')); touch(); render(); });
+    a.appendChild(t); a.appendChild(b); e.appendChild(a); HOST.appendChild(e);
+    return;
+  }
+  const add=el('button','btn','+ Add Segment'); add.type='button'; add.addEventListener('click',()=>{ const it=newItem('Presentation'); doc.items.push(it); touch(); render(); focusTitle(it.id); });
+  const pr=el('button','btn ghost','Print Agenda'); pr.type='button'; pr.addEventListener('click',printAgenda);
+  const so=el('button','btn ghost danger','Start Over'); so.type='button'; so.title='Clear the whole running order and start again';
+  let soArmed=false;
+  so.addEventListener('click',async()=>{
+    if(!soArmed){ soArmed=true; so.classList.add('armed'); so.textContent='Click Again to Clear Everything'; setTimeout(()=>{ soArmed=false; so.classList.remove('armed'); so.textContent='Start Over'; },3000); return; }
+    doc.items.forEach(it=>(it.people||[]).forEach(p=>linkPerson(p.id,it,false)));
+    clearTimeout(saveT); dirty=false; doc=null;
+    try{ await db.doc('schedule/gs-'+vid).delete(); }catch(e){}
+    render();
+  });
+  acts.appendChild(add); acts.appendChild(pr); acts.appendChild(so);
+
+  /* the strip: when it starts and ends, how it lands against the room's hours */
+  const tl=timeline();
+  const end=tl.length? tl[tl.length-1].e : toM(doc.start);
+  const target=toM(doc.end) || (fn? fn.end : 16*60+30);
+  const strip=el('div','gs-strip');
+  const tStart=el('div','gs-tile'); const si=document.createElement('input'); si.type='time'; si.value=doc.start||'09:00';
+  si.addEventListener('change',()=>{ doc.start=si.value||'09:00'; touch(); render(); });
+  tStart.appendChild(si); tStart.appendChild(el('span',null,'Starts')); strip.appendChild(tStart);
+  const tEnd=el('div','gs-tile'); const ei=document.createElement('input'); ei.type='time'; ei.value=toHM(target);
+  ei.title='The time the General Sessions should be finished by';
+  ei.addEventListener('change',()=>{ doc.end=ei.value; touch(); render(); });
+  tEnd.appendChild(ei); tEnd.appendChild(el('span',null,'Should End By')); strip.appendChild(tEnd);
+  const diff=end-target;
+  const tLand=el('div','gs-tile '+(diff>0?'bad':diff<-30?'warn':'ok'));
+  tLand.appendChild(el('b',null,clock(end))); tLand.appendChild(el('span',null, diff>0? durText(diff)+' over' : diff<0? durText(-diff)+' to spare' : 'Ends right on time'));
+  strip.appendChild(tLand);
+  const prog=doc.items.filter(x=>!SOFT.has(x.kind)).length;
+  const t2=el('div','gs-tile'); t2.appendChild(el('b',null,String(prog))); t2.appendChild(el('span',null,'Sessions')); strip.appendChild(t2);
+  const spk=new Set(); doc.items.forEach(x=>(x.people||[]).forEach(p=>spk.add(p.id)));
+  const t3=el('div','gs-tile'); t3.appendChild(el('b',null,String(spk.size))); t3.appendChild(el('span',null,'Speakers')); strip.appendChild(t3);
+  const progItems=doc.items.filter(x=>!SOFT.has(x.kind));
+  const withL=progItems.filter(x=>(x.people||[]).some(r=>isLender(personById(r.id)))).length;
+  const t5=el('div','gs-tile '+(progItems.length&&withL?'ok':'warn')); t5.appendChild(el('b',null,withL+' of '+progItems.length));
+  t5.appendChild(el('span',null,'Sessions With a Lender')); t5.title='Sessions with at least one speaker from a lender'+(LENDERS&&LENDERS.size?' (from Member 360, or marked by hand)':' (marked by hand)'); strip.appendChild(t5);
+  const missing=[...spk].map(personById).filter(p=>p && !(String(p.bio||'').trim() && (p.thumb||p.purl))).length;
+  if(spk.size){ const t4=el('div','gs-tile '+(missing?'warn':'ok')); t4.appendChild(el('b',null,missing? String(missing) : '✓'));
+    t4.appendChild(el('span',null, missing? 'Missing a Bio or Headshot':'Bios and Headshots In')); strip.appendChild(t4); }
+  HOST.appendChild(strip);
+
+  const list=el('div','gs-list');
+  list.appendChild(insertLine(0));
+  tl.forEach(row=>{
+    if(row.gap) { const g=el('div','gs-gap', durText(row.gap)+' open before this'); list.appendChild(g); }
+    if(row.clash){ const g=el('div','gs-gap bad', 'The segment before runs '+durText(row.clash)+' into this pinned time'); list.appendChild(g); }
+    list.appendChild(card(row, row.e>target));
+    list.appendChild(insertLine(row.i+1));
+  });
+  const lay=el('div','gs-layout'); const left=el('div'); left.appendChild(list); lay.appendChild(left); lay.appendChild(sidePanel()); HOST.appendChild(lay);
+  const foot=el('div','gs-foot');
+  foot.appendChild(el('span','gs-saved',''));
+  foot.lastChild.id='gs-saved';
+  foot.lastChild.textContent= doc.updatedAt ? 'Last changed '+new Date(doc.updatedAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+(doc.updatedBy?' by '+doc.updatedBy:'') : '';
+  HOST.appendChild(foot);
+}
+function insertLine(at){
+  const d=el('div','gs-ins'); const b=el('button',null,'+ Add here'); b.type='button';
+  b.addEventListener('click',()=>{ const it=newItem('Presentation'); doc.items.splice(at,0,it); touch(); render(); focusTitle(it.id); });
+  d.appendChild(b);
+  /* a segment dropped between two others lands here */
+  d.addEventListener('dragover',e=>{ if(dragId){ e.preventDefault(); d.style.background='var(--accent-soft)'; } });
+  d.addEventListener('dragleave',()=>{ d.style.background=''; });
+  d.addEventListener('drop',e=>{ e.preventDefault(); d.style.background=''; moveTo(dragId, at); });
+  return d;
+}
+function moveTo(id, at){
+  const from=doc.items.findIndex(x=>x.id===id); if(from<0) return;
+  const [it]=doc.items.splice(from,1);
+  if(from<at) at--;
+  doc.items.splice(Math.max(0,Math.min(at,doc.items.length)),0,it);
+  dragId=null; touch(); render();
+}
+function card(row, over){
+  const it=row.it;
+  const lend=(it.people||[]).some(r=>isLender(personById(r.id)));
+  const c=el('div','gs-item'+(SOFT.has(it.kind)?' soft':'')+(over?' over':'')+(lend?' has-lender':''));
+  c.dataset.id=it.id;
+  /* a presenter dragged from the list on the right lands on the segment it is dropped on */
+  c.addEventListener('dragenter',e=>{ if(dragPerson){ e.preventDefault(); c.classList.add('droppable'); } });
+  c.addEventListener('dragover',e=>{ if(dragPerson){ e.preventDefault(); try{ e.dataTransfer.dropEffect='copy'; }catch(x){} c.classList.add('droppable'); } });
+  c.addEventListener('dragleave',e=>{ if(dragPerson && !c.contains(e.relatedTarget)) c.classList.remove('droppable'); });
+  c.addEventListener('drop',e=>{ if(dragPerson){ e.preventDefault(); e.stopPropagation(); c.classList.remove('droppable'); const pid=dragPerson; dragPerson=null; addPersonTo(it,pid); } });
+  const h=el('div','gs-handle','⋮⋮'); h.title='Drag to move'; h.draggable=true;
+  h.addEventListener('dragstart',e=>{ dragId=it.id; c.classList.add('dragging'); try{ e.dataTransfer.setData('text/plain',it.id); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setDragImage(c,20,20); }catch(x){} });
+  h.addEventListener('dragend',()=>{ c.classList.remove('dragging'); dragId=null; document.querySelectorAll('#app-gs .drop-above,#app-gs .drop-below').forEach(n=>n.classList.remove('drop-above','drop-below')); });
+  c.addEventListener('dragover',e=>{ if(dragPerson||!dragId||dragId===it.id) return; e.preventDefault(); const r=c.getBoundingClientRect(); const top=e.clientY<r.top+r.height/2;
+    c.classList.toggle('drop-above',top); c.classList.toggle('drop-below',!top); });
+  c.addEventListener('dragleave',()=>c.classList.remove('drop-above','drop-below'));
+  c.addEventListener('drop',e=>{ if(dragPerson||!dragId) return; e.preventDefault(); const r=c.getBoundingClientRect(); const top=e.clientY<r.top+r.height/2; c.classList.remove('drop-above','drop-below'); moveTo(dragId, row.i+(top?0:1)); });
+  c.appendChild(h);
+
+  const tm=el('div','gs-time'); tm.appendChild(document.createTextNode(clockShort(row.s)));
+  tm.appendChild(el('small',null,'to '+clockShort(row.e)));
+  if(it.at) tm.appendChild(el('span','pin','Pinned'));
+  if(lend){ tm.appendChild(document.createElement('br')); const lb=el('span','gs-lend','Lender'); lb.style.display='inline-block'; lb.style.marginTop='4px'; lb.style.cursor='default'; lb.title='A lender is speaking in this session'; tm.appendChild(lb); }
+  c.appendChild(tm);
+
+  const m=el('div','gs-main');
+  const r1=el('div','gs-row1');
+  const ks=document.createElement('select'); KINDS.forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=k; if(k===it.kind) o.selected=true; ks.appendChild(o); });
+  ks.addEventListener('change',()=>{ it.kind=ks.value; touch(); render(); });
+  r1.appendChild(ks);
+  const ti=document.createElement('input'); ti.className='gs-title'; ti.value=it.title||''; ti.placeholder=it.kind+' title'; ti.dataset.gsTitle=it.id;
+  ti.addEventListener('input',()=>{ it.title=ti.value; touch(); });
+  r1.appendChild(ti);
+  const du=el('div','gs-dur'); du.title='Length in minutes';
+  const minus=el('button',null,'−'); minus.type='button'; minus.title='5 minutes shorter';
+  const di=document.createElement('input'); di.type='number'; di.min='0'; di.step='5'; di.value=it.dur;
+  const plus=el('button',null,'+'); plus.type='button'; plus.title='5 minutes longer';
+  const setDur=n=>{ it.dur=Math.max(0,Math.round(n)); touch(); render(); };
+  minus.addEventListener('click',()=>setDur((+it.dur||0)-5)); plus.addEventListener('click',()=>setDur((+it.dur||0)+5));
+  di.addEventListener('change',()=>setDur(+di.value||0));
+  du.appendChild(minus); du.appendChild(di); du.appendChild(el('span',null,'min')); du.appendChild(plus);
+  r1.appendChild(du);
+  const pin=el('label','gs-pin'); const pc=document.createElement('input'); pc.type='checkbox'; pc.checked=!!it.at;
+  pin.title='Keep this segment at a set time, whatever moves around it';
+  const pt=document.createElement('input'); pt.type='time'; pt.value=it.at||toHM(row.s); pt.hidden=!it.at;
+  pc.addEventListener('change',()=>{ it.at=pc.checked? (pt.value||toHM(row.s)) : ''; touch(); render(); });
+  pt.addEventListener('change',()=>{ it.at=pt.value; touch(); render(); });
+  pin.appendChild(pc); pin.appendChild(document.createTextNode('Pin time')); pin.appendChild(pt);
+  r1.appendChild(pin);
+  const tools=el('div','gs-tools');
+  const up=el('button',null,'▲'); up.type='button'; up.title='Move up'; up.disabled=row.i===0;
+  up.addEventListener('click',()=>{ moveTo(it.id,row.i-1); });
+  const dn=el('button',null,'▼'); dn.type='button'; dn.title='Move down'; dn.disabled=row.i===doc.items.length-1;
+  dn.addEventListener('click',()=>{ moveTo(it.id,row.i+2); });
+  const cp=el('button',null,'⧉'); cp.type='button'; cp.title='Duplicate';
+  cp.addEventListener('click',()=>{ const n=Object.assign(JSON.parse(JSON.stringify(it)),{id:uid(),people:[],at:''}); doc.items.splice(row.i+1,0,n); touch(); render(); });
+  const del=el('button',null,'✕'); del.type='button'; del.title='Delete this segment';
+  let armed=false;
+  del.addEventListener('click',()=>{ if(!armed){ armed=true; del.classList.add('armed'); del.title='Click again to delete'; setTimeout(()=>{ armed=false; del.classList.remove('armed'); },2500); return; }
+    (it.people||[]).forEach(p=>linkPerson(p.id,it,false));
+    doc.items.splice(row.i,1); touch(); render(); });
+  tools.appendChild(up); tools.appendChild(dn); tools.appendChild(cp); tools.appendChild(del);
+  r1.appendChild(tools);
+  m.appendChild(r1);
+
+  const ds=document.createElement('textarea'); ds.className='gs-desc'; ds.rows=1; ds.value=it.desc||''; ds.placeholder='Description for the agenda and the event app';
+  const grow=()=>{ ds.style.height='auto'; ds.style.height=Math.max(34,ds.scrollHeight+2)+'px'; };
+  ds.addEventListener('input',()=>{ it.desc=ds.value; grow(); touch(); });
+  setTimeout(grow,0);
+  m.appendChild(ds);
+
+  if(!SOFT.has(it.kind) || (it.people||[]).length){
+    const pp=el('div','gs-ppl');
+    (it.people||[]).forEach(ref=>pp.appendChild(chip(it,ref)));
+    if(finding===it.id) pp.appendChild(finder(it));
+    else { const ab=el('button','gs-addp','+ Add Speaker'); ab.type='button'; ab.addEventListener('click',()=>{ finding=it.id; newFor=null; render(); setTimeout(()=>{ const q=document.querySelector('#app-gs .gs-find input'); if(q) q.focus(); },0); }); pp.appendChild(ab); }
+    m.appendChild(pp);
+    if(newFor===it.id) m.appendChild(newPersonForm(it));
+  }
+  c.appendChild(m);
+  return c;
+}
+function chip(it,ref){
+  const p=personById(ref.id);
+  const L=isLender(p);
+  const c=el('span','gs-chip'+(L?' lender':''));
+  const av=el('span','av'); if(p&&p.thumb){ const im=document.createElement('img'); im.src=p.thumb; im.alt=''; av.appendChild(im); } else av.textContent=initials(p?p.n:'?');
+  c.appendChild(av);
+  const nm=el('span','nm',p?p.n:'(removed from People)'); nm.title='Open '+(p?p.n:'them')+' on the People tab';
+  nm.addEventListener('click',()=>{ try{ if(window.__hqGo) window.__hqGo('people'); if(window.__people) window.__people.open(ref.id); }catch(e){} });
+  c.appendChild(nm);
+  if(p&&p.c) c.appendChild(el('span','co',p.c));
+  const rs=document.createElement('select'); ROLES.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; if(r===(ref.role||'Speaker')) o.selected=true; rs.appendChild(o); });
+  rs.addEventListener('change',()=>{ ref.role=rs.value; touch(); });
+  c.appendChild(rs);
+  if(p && !(String(p.bio||'').trim() && (p.thumb||p.purl))){
+    const w=el('span','miss','!'); w.title='Still missing '+[!String(p.bio||'').trim()?'a bio':'',!(p.thumb||p.purl)?'a headshot':''].filter(Boolean).join(' and ')+' on the People tab'; c.appendChild(w);
+  }
+  if(p){ const lt=el('button',L?'gs-lend':'lt',L?'Lender':'L?'); lt.type='button';
+    lt.title=L?'Marked as a lender \u2014 click if they are not one':'Click to mark '+p.n+' as speaking for a lender';
+    lt.addEventListener('click',()=>setLender(p.i,!L)); c.appendChild(lt); }
+  const x=el('button','x','\u00d7'); x.type='button'; x.title='Take them off this segment';
+  x.addEventListener('click',()=>{ it.people=(it.people||[]).filter(r=>r!==ref); linkPerson(ref.id,it,false); touch(); render(); });
+  c.appendChild(x);
+  return c;
+}
+function finder(it){
+  const w=el('div','gs-find'); const q=document.createElement('input'); q.placeholder='Type a name, company or email'; q.setAttribute('aria-label','Find a speaker');
+  const hits=el('div','gs-hits'); hits.hidden=true;
+  let sel=0, shown=[];
+  const draw=()=>{
+    const t=q.value.trim().toLowerCase(); hits.textContent='';
+    const have=new Set((it.people||[]).map(r=>r.id));
+    shown=t? people().filter(p=>!have.has(p.i) && [p.n,p.c,p.e].join(' ').toLowerCase().includes(t)).slice(0,12) : [];
+    shown.forEach((p,i)=>{ const b=el('button',i===sel?'on':''); b.type='button'; b.appendChild(document.createTextNode(p.n)); b.appendChild(el('small',null,[p.c,p.e].filter(Boolean).join(' · ')));
+      b.addEventListener('mousedown',e=>{ e.preventDefault(); pick(p.i); }); hits.appendChild(b); });
+    const nb=el('button','new','+ Someone new'+(t?': “'+q.value.trim()+'”':'')); nb.type='button';
+    nb.addEventListener('mousedown',e=>{ e.preventDefault(); newFor=it.id; finding=null; render(); setTimeout(()=>{ const n=document.querySelector('#app-gs .gs-newp input'); if(n){ n.value=q.value.trim(); n.focus(); } },0); });
+    hits.appendChild(nb); hits.hidden=false;
+  };
+  const pick=pid=>{ it.people=(it.people||[]).concat({id:pid,role:it.kind==='Panel'?'Panelist':'Speaker'}); linkPerson(pid,it,true); finding=null; touch(); render(); };
+  q.addEventListener('input',()=>{ sel=0; draw(); });
+  q.addEventListener('focus',draw);
+  q.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(sel+1,Math.max(0,shown.length-1)); draw(); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); draw(); }
+    else if(e.key==='Enter'){ e.preventDefault(); if(shown[sel]) pick(shown[sel].i); }
+    else if(e.key==='Escape'){ finding=null; render(); }
+  });
+  q.addEventListener('blur',()=>setTimeout(()=>{ if(finding===it.id && document.activeElement!==q){ finding=null; render(); } },150));
+  w.appendChild(q); w.appendChild(hits);
+  return w;
+}
+function newPersonForm(it){
+  const f=el('div','gs-newp');
+  const fld=(lab,ph)=>{ const l=el('label',null,lab); const i=document.createElement('input'); i.placeholder=ph||''; l.appendChild(i); f.appendChild(l); return i; };
+  const n=fld('Name','First and last name'), e=fld('Email','name@company.com'), c=fld('Company',''), t=fld('Title','');
+  const a=el('div','gs-acts');
+  const ok=el('button','btn','Add'); ok.type='button';
+  const no=el('button','btn ghost','Cancel'); no.type='button';
+  ok.addEventListener('click',()=>{
+    const nm=n.value.trim(); if(!nm){ n.focus(); return; }
+    let pid=null;
+    try{ pid=window.__people && window.__people.add ? window.__people.add({n:nm,e:e.value.trim(),c:c.value.trim(),t:t.value.trim()}) : null; }catch(x){ pid=null; }
+    if(!pid){ alert('Could not add them to the People list just now.'); return; }
+    it.people=(it.people||[]).concat({id:pid,role:it.kind==='Panel'?'Panelist':'Speaker'}); linkPerson(pid,it,true);
+    newFor=null; touch(); render();
+  });
+  no.addEventListener('click',()=>{ newFor=null; render(); });
+  a.appendChild(ok); a.appendChild(no); f.appendChild(a);
+  return f;
+}
+function focusTitle(id){ setTimeout(()=>{ const t=document.querySelector('#app-gs [data-gs-title="'+id+'"]'); if(t) t.focus(); },0); }
+
+/* ---------- presenters to drag in ---------- */
+function sidePanel(){
+  const sd=el('aside','gs-side');
+  const h=el('h3',null,'Presenters'); sd.appendChild(h);
+  sd.appendChild(el('div','hint','Drag a name onto a session to add them. Speakers on this summit are listed first; search finds anyone on the People list.'));
+  const seg=el('div','gs-seg');
+  [['speakers','On This Summit'],['unplaced','Not Placed Yet'],['lenders','Lenders'],['all','Everyone']].forEach(([k,lab])=>{
+    const b=el('button',null,lab); b.type='button'; b.setAttribute('aria-pressed',sideMode===k?'true':'false');
+    b.addEventListener('click',()=>{ sideMode=k; render(); }); seg.appendChild(b); });
+  sd.appendChild(seg);
+  const q=document.createElement('input'); q.type='search'; q.placeholder='Search names, companies'; q.value=sideQ;
+  sd.appendChild(q);
+  const lst=el('div','gs-plist'); sd.appendChild(lst);
+  const count=new Map(); doc.items.forEach(it=>(it.people||[]).forEach(r=>count.set(r.id,(count.get(r.id)||0)+1)));
+  const onHere=p=>{ const st=(p.st||{})[vid]||{}; return !!st.on && (st.role||'speaker')!=='board'; };
+  const draw=()=>{
+    lst.textContent='';
+    const t=q.value.trim().toLowerCase();
+    let ppl=people();
+    if(t) ppl=ppl.filter(p=>[p.n,p.c,p.e,p.t].join(' ').toLowerCase().includes(t));
+    else if(sideMode==='speakers') ppl=ppl.filter(onHere);
+    else if(sideMode==='unplaced') ppl=ppl.filter(p=>onHere(p) && !count.get(p.i));
+    else if(sideMode==='lenders') ppl=ppl.filter(p=>isLender(p));
+    ppl.sort((a,b)=>(onHere(b)-onHere(a)) || String(a.n).localeCompare(String(b.n)));
+    ppl.slice(0,250).forEach(p=>{
+      const r=el('div','gs-pr'); r.draggable=true; r.title='Drag onto a session';
+      const av=el('span','av'); if(p.thumb){ const im=document.createElement('img'); im.src=p.thumb; im.alt=''; av.appendChild(im); } else av.textContent=initials(p.n);
+      r.appendChild(av);
+      const tx=el('div','tx'); tx.appendChild(el('b',null,p.n)); tx.appendChild(el('span',null,[p.t,p.c].filter(Boolean).join(', ')||p.e||'')); r.appendChild(tx);
+      if(isLender(p)){ const lb=el('span','gs-lend','Lender'); lb.style.cursor='grab'; r.appendChild(lb); }
+      const n=count.get(p.i)||0; r.appendChild(el('span','n'+(n?' on':''), n? 'On '+n : 'Not placed'));
+      r.addEventListener('dragstart',e=>{ dragPerson=p.i; dragId=null; try{ e.dataTransfer.setData('text/plain',p.n); e.dataTransfer.effectAllowed='copy'; }catch(x){} });
+      r.addEventListener('dragend',()=>{ dragPerson=null; document.querySelectorAll('#app-gs .droppable').forEach(x=>x.classList.remove('droppable')); });
+      lst.appendChild(r);
+    });
+    if(!lst.childNodes.length) lst.appendChild(el('div','hint', t? 'Nobody matches \u201c'+q.value.trim()+'\u201d.' : sideMode==='lenders'? 'No lenders found yet. Mark someone as a lender from their chip on a session.' : sideMode==='unplaced'? 'Every speaker on this summit has a session.' : 'Nobody is on this summit yet. Search to find someone on the People list.'));
+    h.textContent=''; h.appendChild(document.createTextNode('Presenters ')); h.appendChild(el('small',null,String(ppl.length)));
+  };
+  q.addEventListener('input',()=>{ sideQ=q.value; draw(); });
+  draw();
+  return sd;
+}
+
+/* ---------- starting points ---------- */
+function blank(){ const fn=gsFn(); return {start: fn? toHM(fn.start):'09:00', end: fn? toHM(fn.end):'16:30', items:[]}; }
+function newItem(kind){ const d={Welcome:15,Keynote:45,Presentation:30,Panel:60,'Fireside Chat':45,'Case Study':30,'Workgroup Update':20,'Q&A':15,Break:20,Lunch:75,Networking:30,Closing:15,Other:30}[kind]||30;
+  return {id:uid(), kind, title:'', desc:'', dur:d, at:'', people:[]}; }
+function template(){
+  const d=blank();
+  const add=(k,t,dur,at)=>{ const it=newItem(k); it.title=t; it.dur=dur; if(at) it.at=at; d.items.push(it); };
+  add('Welcome','Welcome and Opening Remarks',15);
+  add('Keynote','',45);
+  add('Panel','',60);
+  add('Break','Networking Break',20);
+  add('Presentation','',40);
+  add('Lunch','Lunch',75,'12:00');
+  add('Keynote','',45);
+  add('Panel','',60);
+  add('Break','Afternoon Break',20);
+  add('Workgroup Update','',40);
+  add('Closing','Closing Remarks',15);
+  return d;
+}
+
+/* ---------- a printable agenda ---------- */
+function printAgenda(){
+  const v=venue(), fn=gsFn(), tl=timeline();
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const rows=tl.map(r=>{ const it=r.it; const ppl=(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return ''; return '<div class="p"><b>'+esc(p.n)+'</b>'+(p.t||p.c?', '+esc([p.t,p.c].filter(Boolean).join(', ')):'')+(ref.role&&ref.role!=='Speaker'?' <i>('+esc(ref.role)+')</i>':'')+'</div>'; }).join('');
+    return '<tr class="'+(SOFT.has(it.kind)?'soft':'')+'"><td class="t">'+clockShort(r.s)+'–'+clockShort(r.e)+'</td><td><div class="k">'+esc(it.kind)+'</div><div class="h">'+esc(it.title||it.kind)+'</div>'+(it.desc?'<div class="d">'+esc(it.desc).replace(/\n/g,'<br>')+'</div>':'')+ppl+'</td></tr>'; }).join('');
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>General Sessions Agenda</title><style>'+
+    'body{font-family:Arial,Helvetica,sans-serif;color:#0d314c;margin:28px 36px}h1{font-size:22px;margin:0}.s{color:#6c899f;font-size:13px;margin:4px 0 18px}'+
+    'hr{border:0;border-top:3px solid #74bfeb;margin:0 0 14px}table{width:100%;border-collapse:collapse}td{vertical-align:top;padding:9px 10px;border-bottom:1px solid #e5eef5;font-size:13px}'+
+    'td.t{width:120px;font-weight:700;white-space:nowrap}.k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#456179;font-weight:700}.h{font-weight:700;font-size:14px;margin:1px 0 3px}'+
+    '.d{color:#344;margin:2px 0 5px;line-height:1.45}.p{font-size:12.5px;margin-top:2px}tr.soft td{background:#f6fafd;color:#456179}tr.soft .h{font-weight:600}'+
+    '@page{margin:14mm}</style></head><body><h1>'+esc((v&&v.name)||'Summit')+' — General Sessions</h1><div class="s">'+esc([tuesdayLabel(), fn?fn.room:'', v&&v.city].filter(Boolean).join(' · '))+'</div><hr><table>'+rows+'</table></body></html>';
+  const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
+  f.srcdoc=html; f.onload=()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){} setTimeout(()=>f.remove(),60000); };
+}
+
+/* ---------- the event app's sessions file reads these ---------- */
+window.__gsSegments=function(forVid){
+  if(!doc || forVid!==vid) return null;
+  return timeline().map(r=>({key:segKey(r.it), name:(r.it.title||r.it.kind), kind:r.it.kind, start:r.s, end:r.e, desc:r.it.desc||'',
+    people:(r.it.people||[]).map(p=>({id:p.id, role:p.role||'Speaker'}))}));
+};
+
+/* ---------- following the summit picker, and other people's changes ---------- */
+function attach(){
+  const v=venue(); const id=v? v.id : '';
+  if(!db || !id || id===vid) return;
+  if(dirty) save();
+  if(unsub){ try{ unsub(); }catch(e){} unsub=null; }
+  vid=id; doc=null; finding=null; newFor=null; render(); loadLenders();
+  unsub=db.doc('schedule/gs-'+vid).onSnapshot(s=>{
+    const d=s.exists? s.data() : null;
+    const busy=HOST.contains(document.activeElement) || dirty || dragId;
+    if(busy && doc) return;               /* never pull the page out from under the person typing */
+    doc=d && Array.isArray(d.items) ? d : null;
+    render();
+  },()=>{});
+}
+(async()=>{
+  try{ db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ db=null; }
+  if(!db){ HOST.textContent='General Sessions saves through the shared Summit HQ data, which is not reachable here.'; return; }
+  const tryAttach=()=>{ try{ attach(); }catch(e){} };
+  const pick=$('venue-pick'); if(pick) pick.addEventListener('change',()=>setTimeout(tryAttach,50));
+  window.addEventListener('hq:schedule',tryAttach);
+  let n=0; const iv=setInterval(()=>{ tryAttach(); if(vid || ++n>40) clearInterval(iv); },500);
+  window.addEventListener('beforeunload',()=>{ if(dirty) save(); });
+  /* coming to the tab redraws it, so the room and hours follow the Schedule */
+  const nb=document.querySelector('.hq nav button[data-hq="gs"]'); if(nb) nb.addEventListener('click',()=>setTimeout(()=>{ tryAttach(); render(); },30));
+})();
 })();
 </script>
 
