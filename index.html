@@ -374,7 +374,6 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   /* the documents of a collection, as {path: data}, from whatever is loaded */
   function collDocs(coll) {
     var out = {};
-    if (coll === 'sponsors') { var s = sponsorsDoc(); if (s) out['sponsors/portal'] = s; }
     groupFor(coll).forEach(function (g) {
       var v = viewOf(file(g));
       if (v) Object.keys(v.docs).forEach(function (p) { if (parentOf(p) === coll) out[p] = v.docs[p]; });
@@ -385,6 +384,10 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       var f = F[place(p).file];
       if (f && f.loaded) { var d = docIn(f, p); if (d !== null) out[p] = d; }
     });
+    /* Jonna, 2026-10-27: the flow's copy always wins. An old "sponsors/portal" document
+       left in the sponsors file from the September 30 sync was being read after it and
+       quietly replaced it, so the People tab and Hotel Specs were a month behind. */
+    if (coll === 'sponsors') { var s = sponsorsDoc(); if (s) out['sponsors/portal'] = s; }
     return out;
   }
   function ownPaths(name) {
