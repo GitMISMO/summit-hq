@@ -466,7 +466,9 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
         /* Jonna, 2026-10-27: since Oct 8 the portal keeps the day (Breakfast, the breaks,
            the receptions) in its own field, and a custom Series keeps one line per summit.
            Both were being dropped here, so Hotel Specs never saw a breakfast or break. */
-        day: a.day || '', custom: Array.isArray(a.custom) ? a.custom : [] };
+        day: a.day || '', custom: Array.isArray(a.custom) ? a.custom : [],
+        /* Jonna, 2026-10-27: sponsors register with the comp code the portal gives them */
+        compCode: String(a.compCode || '').trim(), comps: a.numComps || '' };
     });
     return { rows: rows, at: (f.server && (f.server.copiedAt || f.server.savedAt)) || '' };
   }
@@ -43234,7 +43236,11 @@ function appPart(p,which){
   if(which==='appbio') return st.appbio||'';
   return st.appshot || (st.appbio && st.app ? st.appbio : '') || '';
 }
-const WHO={AM:'Amy Moses',DT:'Dillon Tidgewell',BJ:'Bernardo Jordan',JC:'Jonna Critchley'};
+const WHO={AM:'Amy Moses',DT:'Dillon Tidgewell',BJ:'Bernardo Jordan',JC:'Jonna Critchley',SP:'Sponsorship Portal'};
+/* Jonna, 2026-10-27: sponsors are not registered by Bernie. They get a sponsor comp code
+   through the Sponsorship Portal and register themselves with it, so for a sponsor the
+   last step is the comp code, and it is done as soon as the portal has one for them. */
+const SPON_REG={k:'reg', t:'Comp code from the portal', who:'SP', ask:'Give them their comp code in the Sponsorship Portal'};
 const ROLES=[['speaker','Speakers'],['sponsor','Sponsors'],['board','Board']];
 const ROLE1={speaker:'Speaker',sponsor:'Sponsor',board:'Board of Directors'};
 /* short enough to sit on a row in a column half the page wide */
@@ -43292,6 +43298,7 @@ function stepDone(p,k){
     if(!a || !b) return '';
     return (String(a)>String(b)? a : b);
   }
+  if(k==='reg' && !s.reg && isSponsor(p)){ const r=compRowFor(p); return r ? 'comp code '+r.compCode : ''; }
   return s[k]||'';
 }
 /* what is still missing from the event app, for the marker on the row */
@@ -43304,7 +43311,15 @@ function appMissing(p){
 /* A speaker is speaking. A sponsor or a board member is only speaking if somebody
    has said so on their row. */
 const speaking=p=>roleOf(p)==='speaker'||!!stOf(p).speaking;
-const stepsFor=p=>STEPS.filter(s=>!s.spk||speaking(p));
+const isSponsor=p=>roleOf(p)==='sponsor';
+const stepsFor=p=>STEPS.filter(s=>!s.spk||speaking(p)).map(s=>s.k==='reg'&&isSponsor(p)?SPON_REG:s);
+/* the portal record that gives this sponsor their comp code, if there is one */
+const normCo=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+function compRowFor(p){
+  const em=String(p.e||'').trim().toLowerCase(), co=normCo(p.c);
+  return portalRows().find(r=>r.compCode && (
+    (em && String(r.email||'').trim().toLowerCase()===em) || (co && normCo(r.company)===co))) || null;
+}
 const applies=(p,k)=>stepsFor(p).some(s=>s.k===k);
 function nextStep(p){ for(const s of stepsFor(p)){ if(!stepDone(p,s.k)) return s; } return null; }
 const ready=p=>!nextStep(p);
@@ -44058,17 +44073,17 @@ function render(){
   const prows=portalRows(), pdue=toRegister();
   if(prows.length){
     const sec=section('Sponsors From The Portal',
-      pdue.length? pdue.length+' paid and not registered yet'
-                 : 'Everyone paid has been registered',
+      pdue.length? pdue.length+' paid, no comp code yet'
+                 : 'Every paid sponsor has their comp code',
       prows.length,'sponOpen',!!pdue.length,box=>{
       const when=portal().at;
       box.appendChild(el('div','pnote pp-when','Straight from the Sponsorship Portal'
         + (when? ', as it stood on '+pretty(when) : '')
-        + '. Worked there, not here \u2014 this is where it becomes somebody to register.'));
+        + '. Worked there, not here. Sponsors register themselves with the comp code the portal gives them.'));
       prows.slice().sort((a,b)=>(rowPaid(b)?1:0)-(rowPaid(a)?1:0)
         || String(a.company||'').localeCompare(String(b.company||''))).forEach(r=>{
         const who=personForRow(r), paid=rowPaid(r);
-        const on=who&&onSummit(who), reg=who&&stepDone(who,'reg');
+        const on=who&&onSummit(who), code=String(r.compCode||'').trim(), reg=!!code;
         const row=el('div','sprow'+(paid&&!reg?' due':'')+(reg?' done':''));
         const L=el('div','sp-l');
         L.appendChild(el('div','sp-co',r.company||'Sponsor'));
@@ -44081,13 +44096,15 @@ function render(){
         row.appendChild(st);
         const A=el('div','sp-a');
         if(reg){
-          const un=el('button','btn ghost sp-done','\u2713 Registered'); un.type='button';
-          un.title='Registered '+pretty(stepDone(who,'reg'))+'. Click to take it back off.';
-          un.addEventListener('click',()=>{
-            const steps=Object.assign({},stOf(who).steps||{}); delete steps.reg;
-            patchSt(who.i,{steps},'a registration taken off'); render();
-          });
-          A.appendChild(un);
+          const cc=el('span','sp-tag paid sp-code','\u2713 Comp code '+code+(r.comps?' \u00b7 '+r.comps+' comps':''));
+          cc.title='Their sponsor comp code from the Sponsorship Portal \u2014 they register themselves with it.';
+          A.appendChild(cc);
+          if(who && on){
+            const open=el('button','btn ghost','Open'); open.type='button';
+            open.title='Open '+(who.n||'their')+' row under On This Summit';
+            open.addEventListener('click',()=>showPersonRow(who.i));
+            A.appendChild(open);
+          }
         }
         else if(!who || !on){
           const add=el('button','btn'+(paid?'':' ghost'), who? 'Put them on this summit' : 'Add and start');
@@ -44106,13 +44123,8 @@ function render(){
           });
           A.appendChild(add);
         } else {
-          const go=el('button','btn'+(paid?'':' ghost'),'Need Registered');
-          go.type='button';
-          go.title=(who.n||'They')+' still has to be registered. Click once Bernardo has done it.';
-          go.addEventListener('click',()=>{
-            const steps=Object.assign({},stOf(who).steps||{}); steps.reg=today();
-            patchSt(who.i,{steps,on:true,role:'sponsor'},'a sponsor registered'); render();
-          });
+          const go=el('span','sp-tag wait','No comp code yet');
+          go.title='Enter their comp code on the record in the Sponsorship Portal; it shows here once the portal copy comes in.';
           A.appendChild(go);
           const open=el('button','btn ghost','Open'); open.type='button';
           open.title='Open '+(who.n||'their')+' row under On This Summit';
@@ -44391,13 +44403,10 @@ function personForRow(r){
   return byName[0];
 }
 const rowPaid = r => !!(r.paid || String(r.status||'').toLowerCase()==='paid');
-/* paid, and still not registered \u2014 the thing she asked to be told about */
+/* paid, and still without a comp code from the portal \u2014 sponsors register themselves
+   with it (Jonna, 2026-10-27), so there is nothing for Bernie to register */
 function toRegister(){
-  return portalRows().filter(r=>{
-    if(!rowPaid(r)) return false;
-    const who=personForRow(r);
-    return !who || !onSummit(who) || !stepDone(who,'reg');
-  });
+  return portalRows().filter(r=>rowPaid(r) && !String(r.compCode||'').trim());
 }
 /* Nothing is ever read back out of the event app — Summit HQ only writes files for
    it. So a session cannot be referred to by the app's own internal id; instead both
