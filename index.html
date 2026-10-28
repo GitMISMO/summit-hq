@@ -5232,6 +5232,353 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 </div>
 </div>
 
+<style>
+/* ── Help: how Summit HQ works, for whoever picks it up (Jonna, 2026-10-28) ── */
+#app-help .hp-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#app-help .hp-body{max-width:980px}
+#app-help .hp-lede{background:var(--surface);border:1px solid var(--line);border-left:4px solid #74bfeb;border-radius:3px;
+  padding:16px 20px;margin:4px 0 18px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+#app-help .hp-lede b{color:var(--ink)}
+#app-help .hp-lede p{margin:0 0 8px} #app-help .hp-lede p:last-child{margin:0}
+#app-help .hp-panel{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:2px 22px}
+#app-help .hp-sec{border-bottom:1px solid var(--line)}
+#app-help .hp-sec:last-child{border-bottom:0}
+#app-help .hp-sec > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;
+  padding:15px 0;font-family:var(--display);font-size:15.5px;font-weight:800;color:var(--ink)}
+#app-help .hp-sec > summary::-webkit-details-marker{display:none}
+#app-help .hp-sec > summary .hp-n{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3);min-width:20px}
+#app-help .hp-sec > summary::after{content:"";margin-left:auto;flex:0 0 auto;width:8px;height:8px;
+  border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);margin-top:-4px;transition:transform .15s}
+#app-help .hp-sec[open] > summary::after{transform:rotate(-135deg);margin-top:4px}
+#app-help .hp-sec > summary:hover{color:var(--accent)}
+#app-help .hp-in{padding:0 0 18px 32px;font-size:13.5px;line-height:1.62;color:var(--ink-2)}
+#app-help .hp-in p{margin:0 0 10px}
+#app-help .hp-in ul,#app-help .hp-in ol{margin:0 0 12px;padding-left:20px}
+#app-help .hp-in li{margin:0 0 6px}
+#app-help .hp-in b{color:var(--ink)}
+#app-help .hp-in h4{font-family:var(--display);font-size:13.5px;font-weight:800;color:var(--ink);margin:16px 0 6px}
+#app-help .hp-in h4:first-child{margin-top:0}
+#app-help .hp-in code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--sunk);
+  border:1px solid var(--line);border-radius:3px;padding:0 4px}
+#app-help .hp-tbl{width:100%;border-collapse:collapse;margin:4px 0 14px;font-size:13px}
+#app-help .hp-tbl th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:700;padding:7px 10px;border-bottom:2px solid var(--line-2);background:var(--sunk)}
+#app-help .hp-tbl td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+#app-help .hp-tbl td:first-child{font-weight:700;color:var(--ink);width:26%}
+#app-help .hp-tblwrap{overflow-x:auto}
+#app-help .hp-note{border-left:3px solid var(--warn);background:var(--warn-soft);color:var(--warn-ink);
+  padding:9px 13px;border-radius:0 3px 3px 0;margin:4px 0 12px}
+#app-help .hp-note b{color:inherit}
+#app-help .hp-steps{counter-reset:hp;list-style:none;padding-left:0}
+#app-help .hp-steps > li{counter-increment:hp;position:relative;padding-left:34px;margin-bottom:9px}
+#app-help .hp-steps > li::before{content:counter(hp);position:absolute;left:0;top:1px;width:22px;height:22px;border-radius:3px;
+  background:#0d314c;color:#fff;font-family:var(--mono);font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+:root[data-theme="dark"] #app-help .hp-steps > li::before{background:#74bfeb;color:#06202f}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) #app-help .hp-steps > li::before{background:#74bfeb;color:#06202f} }
+#app-help .hp-foot{font-size:12px;color:var(--ink-3);margin:14px 2px 0}
+@media (max-width:640px){ #app-help .hp-panel{padding:2px 14px} #app-help .hp-in{padding-left:0}
+  #app-help .hp-tbl td:first-child{width:auto} }
+#help-btn[aria-current]{color:#fff;background:rgba(116,191,235,.18)}
+</style>
+
+<div id="app-help" hidden>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Help</div>
+      <h1>How Summit HQ Works</h1>
+      <div class="sub">Everything someone new would need to run the summits from here: what each part does, how it connects to the other systems, and what to do when something goes wrong.</div>
+    </div>
+    <div class="hp-acts">
+      <button class="btn ghost" type="button" id="hp-open">Open All</button>
+      <button class="btn ghost" type="button" id="hp-close">Close All</button>
+      <button class="btn" type="button" id="hp-print">Print This Guide</button>
+    </div>
+  </header>
+
+  <div class="hp-body">
+  <div class="hp-lede">
+    <p><b>Summit HQ is the MISMO team&rsquo;s one place to plan each Summit.</b> It holds the task list and deadlines, the week&rsquo;s schedule room by room, what the hotel sets up, the hotel resume, every speaker and sponsor and where they are in the process, Tuesday&rsquo;s General Sessions, and the weekly registration numbers.</p>
+    <p>Open it at <b>resources.mismo.org/summit-hq</b> and sign in with your MISMO resources account. Everything saves on its own as you work, and anyone else who has it open sees your changes within about 30 seconds. There is no Save button anywhere.</p>
+  </div>
+
+  <div class="hp-panel" id="hp-doc">
+
+  <details class="hp-sec" open>
+    <summary><span class="hp-n">01</span>If You Are Picking This Up</summary>
+    <div class="hp-in">
+      <p>Do these in your first week, in this order. They keep everything running while you learn the rest.</p>
+      <ol class="hp-steps">
+        <li><b>Get access.</b> You need a MISMO resources account with Summit HQ and Sponsorship Portal access (Perry sets these up), and access to the GitMISMO organization on GitHub.</li>
+        <li><b>Download a backup.</b> Press <b>Backup</b> at the foot of the left menu and choose Download. Save the file somewhere the team can reach, such as the MISMO Summits SharePoint site.</li>
+        <li><b>Take over the automatic emails.</b> The Power Automate flows listed under <b>Emails That Send on Their Own</b> run under Jonna&rsquo;s Microsoft account. If that account is closed they stop. Ask IT to add you as a co-owner of each flow (or make you the primary owner), then check each one still runs.</li>
+        <li><b>Move the two SharePoint lists.</b> <b>Summit HQ People</b> and <b>Summit HQ Tasks</b> live in Jonna&rsquo;s OneDrive. Ask IT to move them to the MISMO Summits site before her account is removed, then point the two flows that read them at the new location.</li>
+        <li><b>Hand over Jonna&rsquo;s tasks.</b> Open <b>Run of Show</b>, then <b>All Tasks</b>, and give each of Jonna&rsquo;s open tasks a new owner.</li>
+        <li><b>Check the Sponsorship Portal stamp</b> at the foot of the left menu. It should say <b>0 new changes</b>. If it has said there are changes waiting for more than a day, see <b>When Something Goes Wrong</b>.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">02</span>Where Everything Lives</summary>
+    <div class="hp-in">
+      <div class="hp-tblwrap"><table class="hp-tbl">
+        <thead><tr><th>What</th><th>Where</th><th>Good to Know</th></tr></thead>
+        <tbody>
+          <tr><td>Summit HQ</td><td>resources.mismo.org/summit-hq</td><td>Sign in with a MISMO resources account that has Summit HQ access.</td></tr>
+          <tr><td>Summit HQ&rsquo;s saved information</td><td>The private GitHub repository <b>GitMISMO/summit-hq-data</b>, reached through MISMO&rsquo;s save relay</td><td>Tasks, the schedule, people, headshots, the resume and its versions, registration. Every save is recorded, so earlier versions can be recovered. Names, emails and contracts are never in the page itself.</td></tr>
+          <tr><td>The page itself</td><td>The GitHub repository <b>GitMISMO/summit-hq</b>, file <code>index.html</code></td><td>A change uploaded there is live on resources.mismo.org about a minute later. See <b>Changing the Page Itself</b>.</td></tr>
+          <tr><td>Sign-in and the save relay</td><td>resources.mismo.org</td><td>Perry looks after the accounts, access and the relay that saves for Summit HQ, the Sponsorship Portal and Member 360.</td></tr>
+          <tr><td>Sponsorship Portal</td><td>resources.mismo.org/sponsorship</td><td>Where every sponsorship is worked from application to payment. It has its own Help tab.</td></tr>
+          <tr><td>Sponsorship Prospectus</td><td>resources.mismo.org/Sponsorship-Prospectus</td><td>The public page where sponsors choose and apply. It reads what is sold from the Sponsorship Requests list.</td></tr>
+          <tr><td>Member 360</td><td>resources.mismo.org/member-360</td><td>Member organizations. General Sessions uses it to tell which presenters work for lenders.</td></tr>
+          <tr><td>Power Automate flows</td><td>make.powerautomate.com (MBA environment)</td><td>The automatic emails, the portal copy into Summit HQ and the weekly task email.</td></tr>
+          <tr><td>SharePoint lists</td><td><b>Summit HQ People</b> and <b>Summit HQ Tasks</b> in Jonna&rsquo;s OneDrive; <b>Sponsorship Requests</b> on the MISMO Summits site</td><td>The first two should move to a team site (see step 4 above).</td></tr>
+          <tr><td>Registration numbers</td><td>Aptify, the view <b>Event Attendance w/ Prompt</b></td><td>Vanessa&rsquo;s registration dashboard exports these; the Registration tab loads them.</td></tr>
+          <tr><td>The event app</td><td>Vanessa builds it each Summit</td><td>Summit HQ gives her the speakers file and sessions file ready to upload.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">03</span>The Left Menu</summary>
+    <div class="hp-in">
+      <ul>
+        <li><b>Search</b> finds a session, a task or a person wherever it lives and takes you to it.</li>
+        <li><b>The tabs</b>: Run of Show, Schedule, General Sessions, Resume and Registration. Each is described below.</li>
+        <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
+        <li><b>Undo</b> steps back the last change, on any tab. Ctrl+Z (Cmd+Z on a Mac) does the same.</li>
+        <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
+        <li><b>Help</b> is this page.</li>
+        <li><b>Sponsorship Portal</b> is the stamp that says when Summit HQ last checked the portal. <b>&#10003; 0 new changes</b> means the two are in step. <b>N new changes, not copied yet</b> means the portal has saved something Summit HQ does not have yet; it normally clears within minutes. <b>Last copy</b> is when the portal&rsquo;s information last arrived. It checks when the page opens and every 30 minutes.</li>
+        <li><b>Dark Mode</b> switches the colors. The arrow at the top (or the backslash key) narrows the menu to icons.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">04</span>Run of Show: The Work and the Deadlines</summary>
+    <div class="hp-in">
+      <p>Run of Show is the task list for the whole Summit cycle. The strip across the top switches between its views.</p>
+      <h4>The Plan</h4>
+      <ul>
+        <li>A <b>calendar</b> of every task by due date. Drag a task to another day to move it; click it to open it.</li>
+        <li><b>This Week</b> lists what is due in the next seven days, with anything overdue carried in.</li>
+        <li>A panel of tasks that are <b>slipping</b>: overdue, or with no date or no owner.</li>
+        <li><b>The Run</b> reads the cycle as a countdown (20+ weeks out, 16, 12, 8, 4, 3, 2 and so on), and warns before a window closes with work still open.</li>
+        <li><b>Marked To Automate</b> holds tasks someone has flagged to automate later.</li>
+        <li><b>Schedule Timeline</b> lists every Summit and its two scheduling milestones: the Chair Survey goes out 104 days before the first day and the schedule is finalized 97 days before, each on a Tuesday. <b>Add a new Summit here</b>: type its name and first day and press Add Summit.</li>
+      </ul>
+      <h4>Planning Meeting</h4>
+      <p>Every task marked <b>Need to Discuss</b>, ready to walk through in the team planning meeting. Mark it <b>Being Discussed</b> during the meeting and record what was decided in its notes.</p>
+      <h4>All Tasks</h4>
+      <p>Every task, to sort and filter. <b>+ New Task</b> adds one. A task has an owner, people who assist, a due date, a status (Not Started, In Progress, Need to Discuss, Being Discussed, Complete), a description and notes. Tasks marked <b>All Summits</b> come back every cycle; <b>This Summit Only</b> tasks do not.</p>
+      <h4>Hotel Specs</h4>
+      <p>What the hotel sets up, room by room and day by day, built from the Schedule. Sponsor boxes for breakfasts, breaks and receptions fill in from the Sponsorship Portal once a sponsorship is approved and has its day set. Anything sold in the portal without a day is listed in a note so it can be set there. Type over a box to keep your own wording.</p>
+      <h4>People</h4>
+      <p>Every speaker, sponsor and board member, and where each stands. See <b>Speakers and Sponsors, Start to Finish</b>.</p>
+      <h4>The Trunk</h4>
+      <p>Bernie&rsquo;s packing list. The Standard kit is the same every Summit; ribbons and sponsor merchandise are per Summit, and ticks reset for the next one.</p>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">05</span>Schedule: The Week Room by Room</summary>
+    <div class="hp-in">
+      <p>The Schedule (the color grid) places every workgroup meeting, session, meal and reception in a room and a time for each day of the Summit. Everything else reads from it: Hotel Specs, the resume, the event app&rsquo;s sessions file and the printed schedule.</p>
+      <ul>
+        <li><b>Drag</b> a session to move it to another room or time. Locked sessions stay where they are.</li>
+        <li>Each room shows its capacity from the hotel contract, so a session too big for its room stands out.</li>
+        <li><b>Arrangement Options</b> builds a clean week that respects every request and keeps sessions that should not overlap apart.</li>
+        <li><b>Held for Next Summit</b> keeps a note about a future Summit (&ldquo;these two should never run together&rdquo;) without changing the week in front of you.</li>
+        <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
+        <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
+      </ul>
+      <p>General Sessions on Tuesday sit at the top of the grid in the main ballroom. MISMO Link Office Hours and the Champions Lounge are in separate rooms.</p>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">06</span>General Sessions: Tuesday&rsquo;s Running Order</summary>
+    <div class="hp-in">
+      <p>Builds Tuesday&rsquo;s General Sessions segment by segment for the Summit picked in the left menu.</p>
+      <ul>
+        <li>Start from the <b>Typical Tuesday</b> template, or <b>Start Blank</b>. <b>Start Over</b> clears it.</li>
+        <li>Add a segment, give it a type (fireside chat, case study, presentation, panel, lunch and so on), a title, a description and a length. Drag segments to reorder them, or use the arrows. The times recalculate from the start time; pin a time when a segment must start at a set time and any gap or clash is flagged.</li>
+        <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
+        <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 is marked automatically, and you can mark one by hand. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
+        <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">07</span>Resume: What the Hotel Receives</summary>
+    <div class="hp-in">
+      <p>The resume is the document the hotel works from. It is never edited in Word: everything in it comes from the Schedule, Hotel Specs, and the fields on this tab (rates, room block, cutoff, VIPs, staff, rooming).</p>
+      <ul>
+        <li><b>Issue a version</b> when it is ready to send. Each version is numbered and dated.</li>
+        <li>The <b>Word document</b> shows every difference from the version before as a tracked change, so the hotel sees exactly what moved. The <b>Final PDF</b> is the clean copy for the hotel and for on-site.</li>
+        <li><b>Versions &amp; Changes</b> lists every version issued and what is waiting to go into the next one.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">08</span>Registration: The Weekly Numbers</summary>
+    <div class="hp-in">
+      <p>The weekly registration report for the Summit picked, compared with last year at the same week. Week 0 is the Friday before the Summit opens.</p>
+      <ul>
+        <li><b>Update the Numbers</b> loads the files from Vanessa&rsquo;s registration dashboard (exported from Aptify). <b>Week-by-Week History</b> takes a Friday&rsquo;s numbers typed in.</li>
+        <li>Registrations come from the Aptify view <b>Event Attendance w/ Prompt</b>, run with the Summit&rsquo;s name so it counts in-person and virtual. Sponsorship dollars come from the Sponsorship Portal&rsquo;s Money tab.</li>
+        <li>Each week is kept as it was reported. Cancelled orders drop out of Aptify, so rebuilding an old week from today&rsquo;s export can come out lower.</li>
+        <li>The bottom of the tab explains exactly how each number is counted.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">09</span>Speakers and Sponsors, Start to Finish</summary>
+    <div class="hp-in">
+      <h4>A Speaker</h4>
+      <ol class="hp-steps">
+        <li><b>Added to the agenda</b> (Jonna).</li>
+        <li><b>Asked for a bio and headshot</b> (Amy).</li>
+        <li><b>Bio and headshot in hand</b> (Amy). Ticks itself once both are in.</li>
+        <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
+        <li><b>Registered for the event</b> (Bernie).</li>
+      </ol>
+      <p>To send Bernie the &ldquo;Speaker to Register&rdquo; email, add the speaker to the <b>Summit HQ People</b> list in SharePoint with Role set to <b>Speaker</b> (fill in Title with their name, Company, PersonEmail, Summit and Sessions). Summit HQ does not add them to that list on its own.</p>
+      <h4>A Sponsor</h4>
+      <ol class="hp-steps">
+        <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
+        <li>Paid sponsors appear in People on their own. The portal gives each one a <b>comp code</b> and they register themselves with it, so sponsors are never registered from Summit HQ.</li>
+        <li>Add them to the agenda, then press <b>Added to the Agenda</b> on their row. That is the only step for a sponsor here.</li>
+        <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
+      </ol>
+      <h4>The People Tab Tools</h4>
+      <ul>
+        <li><b>On This Summit</b> groups everyone by role, Speakers first, then Sponsors and the Board.</li>
+        <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
+        <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">10</span>How the Systems Connect</summary>
+    <div class="hp-in">
+      <ul>
+        <li><b>Sponsorship Portal &rarr; Summit HQ.</b> Every time the portal saves, the <b>Sponsorship Team Emails</b> flow in Power Automate wakes within seconds. It sends the portal&rsquo;s emails, updates the Sponsorship Requests list, and copies the portal&rsquo;s sponsorships into Summit HQ. That copy feeds People (paid sponsors, comp codes) and Hotel Specs (food and break sponsors). The stamp in the left menu shows whether the copy is current.</li>
+        <li><b>Member 360 &rarr; General Sessions.</b> Member 360&rsquo;s list of organizations says which are lenders, so General Sessions can highlight lender presenters.</li>
+        <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
+        <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
+        <li><b>SharePoint &rarr; email.</b> The Summit HQ People list triggers Bernie&rsquo;s speaker email; the Summit HQ Tasks list feeds the Monday task email.</li>
+        <li><b>Aptify &rarr; Registration.</b> Through the files from Vanessa&rsquo;s registration dashboard.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">11</span>Emails That Send on Their Own</summary>
+    <div class="hp-in">
+      <p>All are Power Automate flows, branded with the standard MISMO internal email look. To change who gets one, open the flow, edit the Send an Email step&rsquo;s To and Cc, and save.</p>
+      <div class="hp-tblwrap"><table class="hp-tbl">
+        <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
+        <tbody>
+          <tr><td>Speaker to Register</td><td>A person with Role = Speaker is added to the Summit HQ People list</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>MISMO Summit HQ - Heads Up for Bernie</td></tr>
+          <tr><td>This Week&rsquo;s Summit Tasks</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>&ldquo;Every Monday at 7:00 AM&hellip;&rdquo; (reads the Summit HQ Tasks list for tasks due in the next 7 days)</td></tr>
+          <tr><td>Sponsorship invoice, logo request, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase</td><td>Invoice: Bernie. Logo: Vanessa. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
+          <tr><td>New sponsorship application</td><td>A sponsor submits on the Prospectus</td><td>The sponsorship team</td><td>Sponsorship Intake</td></tr>
+        </tbody>
+      </table></div>
+      <p>To see whether a flow ran, open it in Power Automate and look at its <b>28-day run history</b>. A failed run can be opened to see which step failed, and resubmitted.</p>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">12</span>Backups, Undo and History</summary>
+    <div class="hp-in">
+      <ul>
+        <li><b>Undo</b> takes back the last change on any tab, one step at a time.</li>
+        <li><b>Backup &rarr; Download</b> saves everything (tasks, schedule, people and headshots, resume versions, registration) as one file. Do it monthly and before any big change. <b>Backup &rarr; Restore</b> writes a backup file back in. An empty Summit HQ offers to restore on its own.</li>
+        <li>Every save is recorded in the data repository, so Perry can recover an earlier version of anything even without a backup.</li>
+        <li>Every resume version ever issued is kept on the Resume tab.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">13</span>Changing the Page Itself</summary>
+    <div class="hp-in">
+      <p>Day-to-day work never needs this: tasks, sessions, people and the resume are all changed in the page. This is only for changing how Summit HQ itself works or looks.</p>
+      <ol class="hp-steps">
+        <li>Go to <b>github.com/GitMISMO/summit-hq</b> and download the current <code>index.html</code>. Always start from the copy on GitHub; an older copy would undo recent changes.</li>
+        <li>Make the change. Keep the sign-in block at the very top of the file.</li>
+        <li>On the repository page choose <b>Add file &rarr; Upload files</b>, drop in the new <code>index.html</code>, write a short note of what changed, and press <b>Commit changes</b>.</li>
+        <li>It is live on resources.mismo.org about a minute later. Reload Summit HQ to see it.</li>
+      </ol>
+      <p>Never put names, emails, contracts or other private details in the page; they belong in the saved information, which only arrives after sign-in. If a change breaks the page, open <code>index.html</code>&rsquo;s history on GitHub and put the previous version back the same way.</p>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">14</span>When Something Goes Wrong</summary>
+    <div class="hp-in">
+      <div class="hp-tblwrap"><table class="hp-tbl">
+        <thead><tr><th>What You See</th><th>What to Do</th></tr></thead>
+        <tbody>
+          <tr><td>The page keeps asking you to sign in, or shows nothing</td><td>Sign out and back in. If it still will not open, ask Perry to check your Summit HQ access.</td></tr>
+          <tr><td>Your change does not show for someone else</td><td>Wait 30 seconds and have them reload. If the page says a save failed, reload and make the change again. If saves keep failing, the save relay may be down: tell Perry.</td></tr>
+          <tr><td>The portal stamp says changes are not copied, for more than a day</td><td>Open the <b>Sponsorship Team Emails</b> flow in Power Automate and check its run history. Resubmit a failed run; if its connections show an error, sign them in again.</td></tr>
+          <tr><td>A food or break sponsor is missing from Hotel Specs</td><td>In the Sponsorship Portal, check the sponsorship is approved and has its day set. Sponsorships with no day are listed in the note on Hotel Specs.</td></tr>
+          <tr><td>Bernie did not get a speaker email</td><td>Check the speaker is on the Summit HQ People list with Role exactly <b>Speaker</b>, then check the Heads Up for Bernie flow&rsquo;s run history.</td></tr>
+          <tr><td>The Monday email is missing or out of date</td><td>Check the Monday flow&rsquo;s run history. It reads the Summit HQ Tasks list in SharePoint, not Summit HQ, so it is only as current as that list.</td></tr>
+          <tr><td>Something was deleted or changed by mistake</td><td>Press Undo. If it is too late for Undo, restore from the latest backup, or ask Perry to recover it from the saved history.</td></tr>
+          <tr><td>The page broke after someone changed it</td><td>On GitHub, put the previous <code>index.html</code> back (see Changing the Page Itself).</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">15</span>Limits and Known Gaps</summary>
+    <div class="hp-in">
+      <div class="hp-note"><b>The flows and two SharePoint lists belong to Jonna&rsquo;s account.</b> Until a co-owner is added and the lists are moved, they would stop if that account were closed.</div>
+      <ul>
+        <li>Nothing adds speakers to the Summit HQ People list automatically, so Bernie&rsquo;s email only goes when someone adds them there.</li>
+        <li>The Monday task email reads the Summit HQ Tasks list, which does not change when tasks change in Summit HQ.</li>
+        <li>The Sponsorship Portal copy only refreshes when the portal saves. If the portal is quiet, the stamp still shows when Summit HQ last checked.</li>
+        <li>Sponsors register themselves with their comp code; Summit HQ does not track their registration.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">16</span>Who Does What</summary>
+    <div class="hp-in">
+      <div class="hp-tblwrap"><table class="hp-tbl">
+        <thead><tr><th>Person</th><th>Role in the Summits</th></tr></thead>
+        <tbody>
+          <tr><td>Jonna Critchley</td><td>Director of Programs &amp; Operations. Owns Summit HQ, the schedule, the agenda, General Sessions and the automatic emails.</td></tr>
+          <tr><td>Amy Moses</td><td>Asks speakers for bios and headshots and gets them in.</td></tr>
+          <tr><td>Vanessa Rios</td><td>Builds the event app, keeps the registration dashboard, and receives sponsor logos.</td></tr>
+          <tr><td>Bernardo (Bernie) Jordan</td><td>Registers speakers and staff, sends sponsorship invoices, and keeps the Trunk.</td></tr>
+          <tr><td>Kelly Bradshaw</td><td>Copied on speaker and sponsorship emails; leads marketing pieces and the awards ceremony.</td></tr>
+          <tr><td>Rosalyn Milliken</td><td>Works with the hotel on the resume, room sets, furniture and arrival and departure dates.</td></tr>
+          <tr><td>Perry</td><td>Resources accounts and access, and the save relay behind Summit HQ, the Sponsorship Portal and Member 360.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </details>
+
+  </div>
+  <p class="hp-foot">Last reviewed October 28, 2026. When the process changes, update this page with it.</p>
+  </div>
+</div>
+</div>
+
 <div id="app-reg" hidden>
 <div class="wrap">
   <header class="mast">
@@ -42614,12 +42961,12 @@ startClock();
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
     resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg"),
-    gs:document.getElementById("app-gs")};
+    gs:document.getElementById("app-gs"),help:document.getElementById("app-help")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
     ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered",
-    gs:"Build Tuesday's General Sessions"};
+    gs:"Build Tuesday's General Sessions",help:"How Summit HQ works"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
   const GROUP={ros:1,specs:1,people:1};
@@ -46002,4 +46349,71 @@ function attach(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', fit); else fit();
 })();
 </script>
+<script>
+/* ============================================================
+   HELP — how Summit HQ works, for whoever picks it up (Jonna, 2026-10-28)
+   The button sits in the foot of the left menu with Undo and Backup, just above
+   the Sponsorship Portal stamp. The page is #app-help, a pane like the tabs.
+   ============================================================ */
+(function(){
+  "use strict";
+  const pane=document.getElementById('app-help'); if(!pane) return;
+  let btn=null;
+  function place(){
+    const foot=document.querySelector('.hq .mast-right'), theme=document.getElementById('theme-btn');
+    if(!foot || !theme) return;
+    if(!btn){
+      btn=document.createElement('button'); btn.type='button'; btn.className='theme-btn'; btn.id='help-btn';
+      btn.title='How Summit HQ works';
+      btn.innerHTML='<svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/>'
+        +'<path d="M9.6 9.3a2.5 2.5 0 014.8.9c0 1.7-2.4 2.2-2.4 3.8"/><path d="M12 17.2v.1"/></svg><span>Help</span>';
+      btn.addEventListener('click',()=>{
+        if(window.__hqGo) window.__hqGo('help');
+        try{ if(window.matchMedia('(max-width:900px)').matches && !document.body.classList.contains('railmini')){
+          const h=document.getElementById('rail-hide'); if(h) h.click(); } }catch(e){}
+        window.scrollTo(0,0);
+      });
+    }
+    /* just above the portal stamp, which sits just above Dark Mode */
+    const before=document.getElementById('rail-sync') || theme;
+    if(btn.parentNode!==foot || btn.nextSibling!==before) foot.insertBefore(btn, before);
+    btn.toggleAttribute('aria-current', !pane.hidden);
+  }
+  const go=()=>{ place(); setTimeout(place,60); setTimeout(place,1600); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+  new MutationObserver(()=>{ if(btn) btn.toggleAttribute('aria-current', !pane.hidden); })
+    .observe(pane,{attributes:true,attributeFilter:['hidden']});
+
+  const secs=()=>[...pane.querySelectorAll('details.hp-sec')];
+  const oa=document.getElementById('hp-open'), ca=document.getElementById('hp-close'), pr=document.getElementById('hp-print');
+  if(oa) oa.addEventListener('click',()=>secs().forEach(d=>d.open=true));
+  if(ca) ca.addEventListener('click',()=>secs().forEach(d=>d.open=false));
+  /* the whole guide, every section open, on its own page so the rest of Summit HQ stays off the paper */
+  if(pr) pr.addEventListener('click',()=>{
+    const doc=document.getElementById('hp-doc'); if(!doc) return;
+    const copy=doc.cloneNode(true); copy.querySelectorAll('details').forEach(d=>d.setAttribute('open',''));
+    const lede=pane.querySelector('.hp-lede');
+    const css='body{font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;color:#16191D;margin:0;padding:28px 34px;font-size:12.5px;line-height:1.55}'
+      +'h1{font-family:Chivo,Arial,sans-serif;font-size:24px;margin:0 0 4px;color:#0d314c}.ey{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#71777F;font-weight:700}'
+      +'.bar{height:3px;background:#74bfeb;margin:10px 0 16px}.hp-lede p{margin:0 0 8px}'
+      +'details{border-top:1px solid #DFDCD5;padding:6px 0 4px;break-inside:auto}summary{list-style:none;font-family:Chivo,Arial,sans-serif;font-weight:800;font-size:14px;color:#0d314c;padding:6px 0}'
+      +'summary::-webkit-details-marker{display:none}.hp-n{color:#71777F;font-size:10px;margin-right:10px}'
+      +'h4{font-size:12.5px;margin:12px 0 4px;color:#0d314c}p{margin:0 0 8px}ul,ol{margin:0 0 10px;padding-left:20px}li{margin:0 0 4px}'
+      +'table{width:100%;border-collapse:collapse;margin:4px 0 10px;font-size:11.5px}th{text-align:left;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#71777F;border-bottom:2px solid #C9C5BC;padding:5px 7px}'
+      +'td{border-bottom:1px solid #DFDCD5;padding:5px 7px;vertical-align:top}td:first-child{font-weight:700}'
+      +'code{font-family:Consolas,monospace;font-size:11px}.hp-note{border-left:3px solid #8A5200;background:#FBF0DC;padding:7px 11px;margin:4px 0 10px}'
+      +'.foot{margin-top:16px;font-size:10.5px;color:#71777F}@page{margin:.6in}';
+    const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    document.body.appendChild(f);
+    const w=f.contentWindow, d=w.document;
+    d.open(); d.write('<!doctype html><html><head><meta charset="utf-8"><title>How Summit HQ Works</title><style>'+css+'</style></head><body>'
+      +'<div class="ey">MISMO Summit HQ</div><h1>How Summit HQ Works</h1><div class="bar"></div>'
+      +(lede?'<div class="hp-lede">'+lede.innerHTML+'</div>':'')+copy.innerHTML
+      +'<div class="foot">Printed '+new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+' from resources.mismo.org/summit-hq.</div></body></html>');
+    d.close();
+    setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} setTimeout(()=>f.remove(),2000); },300);
+  });
+})();
+</script>
+
 </body></html>
