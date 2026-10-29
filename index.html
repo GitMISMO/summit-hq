@@ -4495,6 +4495,20 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .bd-r{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
   color:var(--accent);margin-left:7px;white-space:nowrap}
 #app-people .bdrow .btn{flex:0 0 auto;padding:4px 11px;font-size:12px;white-space:nowrap}
+#app-people .bdrow{flex-wrap:wrap}
+#app-people .bd-l{flex:1 1 220px}
+#app-people .bd-seg{flex:0 0 auto;display:inline-flex;border:1px solid var(--line-2);border-radius:4px;overflow:hidden}
+#app-people .bd-opt{background:var(--surface);border:0;padding:4px 9px;font:inherit;font-size:11.5px;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+#app-people .bd-opt + .bd-opt{border-left:1px solid var(--line-2)}
+#app-people .bd-opt:hover{background:var(--sunk)}
+#app-people .bd-opt.on{background:var(--accent);color:#fff;font-weight:600}
+#app-people .bd-tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+#app-people .bd-t{border:1px solid var(--line);border-radius:5px;padding:7px 10px;background:var(--surface)}
+#app-people .bd-t b{display:block;font-family:var(--mono);font-size:18px;line-height:1.1;color:var(--ink)}
+#app-people .bd-t span{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+#app-people .bd-t.in{border-color:var(--accent)} #app-people .bd-t.in b{color:var(--accent)}
+#app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
+@media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
 #app-people .sp-amt{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
 #app-people .sp-a{flex:0 0 auto;display:flex;gap:6px;align-items:center}
@@ -5521,7 +5535,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <ul>
         <li><b>On This Summit</b> lists this Summit&rsquo;s speakers.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
-        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
+        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
@@ -35488,9 +35502,24 @@ function sponsorRows(){
 const NC_ITEMS = [
   {ck:'newcomer', sid:'newcomer',         label:'Newcomer Orientation', detail:'presentation with lunch served', room:true},
   {ck:'gs',       sid:'general-sessions', label:'General Sessions',     detail:'classroom, stage and a rear AV position'},
-  {ck:'board',    sid:'bod',              label:'Board of Directors',   detail:'food'},
+  {ck:'board',    sid:'bod',              label:'Board of Directors',   detail:'food \u00b7 the in-person count from the Board card in People'},
   {ck:'joint',    sid:'joint-committee',  label:'Joint Committee',      detail:'food & beverage'}
 ];
+/* Jonna, 2026-10-29: the Board card in People marks each director in person or virtual,
+   and the in-person number is the Board meeting's headcount here, so Rosalyn orders
+   food for the right count. Same path as typing it in the box below. */
+window.__boardHeadcount = vid => { try{ const c=CATER(vid||activeVenue); return c && c.board ? c.board.count : null; }catch(e){ return null; } };
+window.__setBoardHeadcount = function(vid, n){
+  const c=CATER(vid||activeVenue); if(!c) return false;
+  if(!c.board) c.board={count:null};
+  if(c.board.count===n) return false;
+  c.board.count=n;
+  if(!vid || vid===activeVenue){
+    sessionEdits['bod']=Object.assign({}, sessionEdits['bod'], {att:n});
+    rebuildSessions(); render();
+  }
+  nameUndo('the Board headcount'); save(); return true;
+};
 function sponHeadText(){
   const told=NC_ITEMS.filter(it=>S[it.sid] && (CATER()[it.ck]||{}).count!=null).length;
   const all=NC_ITEMS.filter(it=>S[it.sid]).length;
@@ -44558,6 +44587,14 @@ function render(){
         +'. Each press emails him within about 20 minutes.'
       : 'Emails Bernie a list of the board members still to register. It goes out within about 20 minutes.'));
     box.appendChild(top);
+    /* where we are: in person, virtual, not marked yet, registered */
+    const tl=el('div','bd-tally');
+    [[bs.inP,'In Person','in'],[bs.virt,'Virtual','virt'],[bs.unmarked,'Not Marked','none'],[bs.reg+'/'+bs.total,'Registered','reg']]
+      .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
+    box.appendChild(tl);
+    let hc=null; try{ hc=window.__boardHeadcount? window.__boardHeadcount(venueNow()) : null; }catch(e){}
+    box.appendChild(el('div','pnote bd-hc', 'Board meeting headcount on Hotel Specs: '+(hc==null?'not set yet':hc)
+      +'. It follows the In Person number, so Rosalyn orders food for the right count.'));
     [['Board Members',BOARD.filter(b=>b.r!=='Ex-Officio')],['Ex-Officio',BOARD.filter(b=>b.r==='Ex-Officio')]].forEach(([lab,list])=>{
       box.appendChild(el('div','bd-grp',lab));
       list.forEach(m=>{
@@ -44568,6 +44605,16 @@ function render(){
         L.appendChild(nm);
         L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
         row.appendChild(L);
+        const av=boardAtt(m.i), seg=el('div','bd-seg');
+        seg.setAttribute('role','group'); seg.setAttribute('aria-label','How '+m.n+' is attending');
+        [['in','In Person'],['virt','Virtual']].forEach(([k,lab])=>{
+          const x=el('button','bd-opt'+(av===k?' on':''),lab); x.type='button';
+          x.setAttribute('aria-pressed',av===k?'true':'false');
+          x.title= av===k? 'Marked '+lab.toLowerCase()+'. Click to clear it.' : 'Mark '+m.n+' as attending '+lab.toLowerCase();
+          x.addEventListener('click',()=>setBoardAtt(m.i, av===k?'':k));
+          seg.appendChild(x);
+        });
+        row.appendChild(seg);
         const b=el('button','btn'+(at?' sp-done':'')+' ghost', at? '\u2713 Registered' : 'Registered'); b.type='button';
         b.setAttribute('aria-pressed',at?'true':'false');
         b.title= at? 'Registered '+pretty(at)+'. Click to take it off.' : 'Click once '+m.n+' is registered.';
@@ -44875,7 +44922,23 @@ function setSponAgenda(r,yes){
 /* the Board, per summit */
 const boardDoc=()=>ST.board.get(venueNow())||{};
 const boardReg=id=>(boardDoc().reg||{})[id]||'';
-function boardStat(){ const reg=BOARD.filter(b=>boardReg(b.i)).length; return {total:BOARD.length, reg, left:BOARD.length-reg}; }
+const boardAtt=id=>(boardDoc().att||{})[id]||'';
+function boardStat(){
+  const reg=BOARD.filter(b=>boardReg(b.i)).length;
+  const inP=BOARD.filter(b=>boardAtt(b.i)==='in').length, virt=BOARD.filter(b=>boardAtt(b.i)==='virt').length;
+  return {total:BOARD.length, reg, left:BOARD.length-reg, inP, virt, unmarked:BOARD.length-inP-virt};
+}
+/* the in-person number is the Board meeting's headcount on Hotel Specs */
+function pushBoardHeadcount(){
+  const s=boardStat(); if(!s.inP && !s.virt) return;
+  try{ if(window.__setBoardHeadcount) window.__setBoardHeadcount(venueNow(), s.inP); }catch(e){}
+}
+function setBoardAtt(id,v){
+  const a=Object.assign({},boardDoc().att||{});
+  if(v) a[id]=v; else delete a[id];
+  setBoard({att:a},'board attendance');
+  pushBoardHeadcount(); render();
+}
 function setBoard(fields,label){ saveColl('board',ST.board,fields,label); }
 /* Notify Bernie: Summit HQ cannot send mail, so it writes the list to feeds/board-notify
    and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
@@ -44887,13 +44950,15 @@ async function notifyBernie(){
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const td='padding:8px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,sans-serif;font-size:14px;color:#1b2733;vertical-align:top';
   const listHtml=left.map((b,i)=>'<tr><td style="'+td+';width:28px;color:#6b7a8a">'+(i+1)+'</td><td style="'+td+'"><b>'+e(b.n)+'</b>'
-    +(b.r?' <span style="color:#0f6fa8;font-size:12px">('+e(b.r)+')</span>':'')+'<br><span style="color:#55657a;font-size:13px">'+e(b.t)+'</span></td><td style="'+td+'">'+e(b.c)+'</td></tr>').join('');
+    +(b.r?' <span style="color:#0f6fa8;font-size:12px">('+e(b.r)+')</span>':'')+'<br><span style="color:#55657a;font-size:13px">'+e(b.t)+'</span></td><td style="'+td+'">'+e(b.c)
+    +(boardAtt(b.i)?'<br><span style="color:#0f6fa8;font-size:12px;font-weight:700">'+(boardAtt(b.i)==='in'?'In person':'Virtual')+'</span>':'')
+    +'</td></tr>').join('');
   /* a whole table, not bare rows: the flow drops it straight into the email, and rows
      without their table break the card's layout in Outlook */
   const listTable='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:14px 0 4px"><tbody>'+listHtml+'</tbody></table>';
   const at=new Date().toISOString();
   const feed={requestedAt:at, requestedBy:who, summit:{venue:v.id||'', name:v.name||'', city:v.city||'', dates:v.dates||''},
-    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||''})), listHtml:listTable};
+    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||'', attending:boardAtt(b.i)==='in'?'In person':boardAtt(b.i)==='virt'?'Virtual':''})), listHtml:listTable};
   try{ if(ST.db) await ST.db.doc('feeds/board-notify').set(feed); }
   catch(x){ alert('Summit HQ could not save the request for Bernie. Check you are signed in and try again.'); return; }
   setBoard({notified:{at, by:who, n:left.length}},'Bernie notified about the Board');
@@ -45077,6 +45142,7 @@ function init(){
       const map=e.coll==='board'?ST.board:ST.sag;
       if(e.prev) map.set(e.v,e.prev); else map.delete(e.v);
       if(ST.db){ try{ ST.db.doc(e.coll+'/'+e.v).set(e.prev||{}); }catch(x){} }
+      if(e.coll==='board') pushBoardHeadcount();
       render(); return;
     }
     if(e.prev){ write(e.id,e.prev); }
