@@ -5716,7 +5716,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   const SVGNS='http://www.w3.org/2000/svg';
   const sv=(t,a)=>{ const n=document.createElementNS(SVGNS,t); Object.keys(a||{}).forEach(k=>n.setAttribute(k,a[k])); return n; };
 
-  const COLS=['registration_id','name','company','email','format','order_date','reg_revenue','category'];
+  /* Kelly, 2026-10-29: job title rides along for the sponsors' weekly list */
+  const COLS=['registration_id','name','company','email','format','order_date','reg_revenue','category','title'];
   /* Jonna, 2026-10-23: the fetcher labels every registrant with one of the categories MISMO
      reports by. Loose spellings are brought to these; anything else is kept as written. */
   const CATS=['Service Provider','Tech Provider','Lender/Servicer','GSE (incl. FHLBs)','Government Agency'];
@@ -6123,6 +6124,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   const keyOf=k=>String(k).trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
   const ALIAS_R={registration_id:['registration_id','id','registrationid','attendee_id','order_line_id','order_id'],
     name:['name','full_name','attendee','attendee_name','registrant'], company:['company','organization','company_name','employer'],
+    title:['title','job_title','jobtitle','position','job','professional_title','badge_title'],
     email:['email','email_address'], format:['format','attendance_format'], meeting:['meeting','meeting_name','event','product'],
     order_date:['order_date','registered','registration_date','date'], reg_revenue:['reg_revenue','revenue','registration_revenue','amount'],
     category:['category','company_category','registrant_category','segment','industry_category']};
@@ -6158,7 +6160,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const format = /virtual/.test(fm) ? 'Virtual' : fm ? 'In-Person' : (/virtual\s*$/i.test(mt.trim())? 'Virtual' : 'In-Person');
     const r={name:String(pickV(o,ALIAS_R.name)||'').trim(), company:String(pickV(o,ALIAS_R.company)||'').trim(),
       email:String(pickV(o,ALIAS_R.email)||'').trim(), format, order_date:date10(pickV(o,ALIAS_R.order_date)),
-      reg_revenue:num(pickV(o,ALIAS_R.reg_revenue))||0, category:catOf(pickV(o,ALIAS_R.category))};
+      reg_revenue:num(pickV(o,ALIAS_R.reg_revenue))||0, category:catOf(pickV(o,ALIAS_R.category)),
+      title:String(pickV(o,ALIAS_R.title)||'').trim()};
     const id=pickV(o,ALIAS_R.registration_id);
     r.registration_id=id!=null? String(id) : [r.email||r.name, r.order_date, i].join('|');
     return r;
@@ -46636,7 +46639,7 @@ function attach(){
      feeds/tasks         every open task with a due date in the active cycle.
                          The Monday task email reads it ("Every Monday at 7:00 AM").
      feeds/sponsor-list  for each Summit still to come: its first day, and its
-                         registrants as company and name only (no emails), with
+                         registrants as company, name and job title (no emails), with
                          MISMO and MBA staff left out. The "Registration List to
                          Sponsors" flow sends it to approved sponsors every Monday
                          from seven weeks out.
@@ -46689,14 +46692,14 @@ function attach(){
       const start=firstDay(v); if(!start || start<today) return;
       const name=String(v.name||''), season=(/\b(Winter|Spring|Fall)\b/i.exec(name)||[])[1]||'', year=(/(\d{4})/.exec(name)||/(\d{4})/.exec(start)||[])[1]||'';
       const d=regs[v.id]||{}, cur=d.current||{}, cols=Array.isArray(cur.cols)?cur.cols:[], rows=Array.isArray(cur.rows)?cur.rows:[];
-      const ix=k=>cols.indexOf(k), iN=ix('name'), iC=ix('company'), iK=ix('category');
+      const ix=k=>cols.indexOf(k), iN=ix('name'), iC=ix('company'), iK=ix('category'), iT=ix('title');
       const seen={}, people=[];
       rows.forEach(r=>{
         const get=i=>i<0?'':(Array.isArray(r)?r[i]:(r||{})[cols[i]]);
-        const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||'');
+        const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||''), t=String(get(iT)||'').trim();
         if(!n || /^MBA\/MISMO$/i.test(k)) return;
         const key=(c+'|'+n).toLowerCase(); if(seen[key]) return; seen[key]=1;
-        people.push({company:c, name:n});
+        people.push({company:c, name:n, title:t});
       });
       people.sort((a,b)=>a.company.localeCompare(b.company)||a.name.localeCompare(b.name));
       const f=(d.files&&d.files.current)||{};
