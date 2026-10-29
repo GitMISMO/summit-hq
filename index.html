@@ -44773,7 +44773,8 @@ function render(){
     box.appendChild(el('div','pnote pp-when','Accepted puts them on this summit as a speaker. Declined keeps them here for future summits.'));
   });
   try{ if(window.__pane) window.__pane.face(prosSec,{note: pros.length? [pc['']&&pc['']+' to invite', pc.invited&&pc.invited+' invited', pc.accepted&&pc.accepted+' accepted', pc.declined&&pc.declined+' declined'].filter(Boolean).join(' \u00b7 ') : 'No prospects yet', tone: pc.invited? 'warn':''}); }catch(e){}
-  right.appendChild(prosSec);
+  /* Jonna, 2026-10-29: Speaker Prospects sits beside On This Summit */
+  if(boardSec.parentNode===left) left.insertBefore(prosSec, boardSec); else left.appendChild(prosSec);
   if(sponSec) right.appendChild(sponSec);
   right.appendChild(elseSec);
   cols.appendChild(left); cols.appendChild(right);
