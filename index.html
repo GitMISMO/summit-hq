@@ -1186,6 +1186,9 @@ body.compact .meter .n{font-size:16px}
 /* a session the staff have asked for: it is not free to be moved around */
 .fl.fl-ask{color:var(--accent);border-color:var(--line-2);background:var(--surface)}
 .fl.fl-ask.on{background:var(--accent-soft);border-color:var(--accent);font-weight:700}
+.fl.fl-lock{display:inline-flex;align-items:center;justify-content:center;padding:1px 3px;line-height:0}
+.fl.fl-lock svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.sv-conf{color:var(--good);font-weight:700}
 .card.asked{box-shadow:inset 3px 0 0 -1px var(--accent)}
 /* it genuinely does not move, so it does not offer to */
 .card.asklock{cursor:default}
@@ -33776,7 +33779,10 @@ function makeCard(s, flags, placed, bothSlots){
     /* not `.fl ask` — `.ask` is the Hotel Specs line style and would win on source order */
     if(askChip){
       const n=el('span','fl fl-ask'+(askChip.locked?' on':''), askChip.t);
-      n.title=askChip.title; f.appendChild(n);
+      /* Jonna, 2026-10-29: "can't move" was a lot of words for a small card; a lock says it */
+      if(askChip.locked){ n.textContent=''; n.classList.add('fl-lock'); n.setAttribute('aria-label','Can\u2019t move');
+        n.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>'; }
+      n.title=(askChip.locked?'Can\u2019t move. ':'')+askChip.title; f.appendChild(n);
     }
     c.appendChild(f);
   }
@@ -37056,6 +37062,7 @@ function renderSurvey(){
       +(mailL.length ? joinNames(mailL.map(l=>String(l.name||leadEmail(l)).trim())) : 'no email yet'));
     if(!mailL.length) meta.classList.add('warn');
     const chip=el('span','sv-chip s-'+(r.status||'none'), (SURVEY_STATUS.find(x=>x[0]===(r.status||''))||SURVEY_STATUS[0])[1]);
+    if(place()[g.id] && place()[g.id].confirmed){ meta.appendChild(document.createTextNode(' · ')); meta.appendChild(el('b','sv-conf','\u2713 Placement confirmed')); }
     const left=el('div'); left.appendChild(nm); left.appendChild(meta);
     hd.appendChild(left); hd.appendChild(chip);
     const toggle=()=>{ if(SURVEY_OPEN.has(g.id)) SURVEY_OPEN.delete(g.id); else SURVEY_OPEN.add(g.id); item.classList.toggle('open', SURVEY_OPEN.has(g.id)); };
@@ -37073,7 +37080,12 @@ function renderSurvey(){
     bd.appendChild(field('Sending To', who));
     const r2=el('div','row2');
     const sel=selectInput(SURVEY_STATUS, r.status||'', v=>{ const W=surveyState().rows; const rr=W[g.id]||(W[g.id]={}); rr.status=v; rr.at=new Date().toISOString();
-      nameUndo('the chair survey'); save(); renderSurvey(); });
+      /* Jonna, 2026-10-29: All Good from the chairs confirms the placement; a change or a
+         showstopper takes the confirmation off again */
+      const pl=place()[g.id];
+      if(pl && v==='ok') pl.confirmed=true;
+      else if(pl && (v==='change'||v==='stop')) pl.confirmed=false;
+      nameUndo('the chair survey'); save(); render(); renderSurvey(); });
     r2.appendChild(field('Status', sel));
     r2.appendChild(field('Note', textInput(r.note||'', v=>{ const W=surveyState().rows; const rr=W[g.id]||(W[g.id]={}); rr.note=v; nameUndo('the chair survey'); save(); renderSurvey(); }, 'What they said')));
     bd.appendChild(r2);
