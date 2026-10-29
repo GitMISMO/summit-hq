@@ -4480,6 +4480,22 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   font-weight:700;border-radius:2px;padding:1px 7px;white-space:nowrap}
 #app-people .sp-tag.paid{color:var(--good);border:1px solid var(--good);background:var(--good-soft)}
 #app-people .sp-tag.wait{color:var(--warn-ink);border:1px solid var(--warn);background:var(--surface)}
+#app-people .sp-tag.pend{color:var(--warn-ink);border:1px solid var(--warn);background:var(--warn-soft)}
+#app-people .sp-tag.ok{color:var(--accent);border:1px solid var(--accent);background:var(--surface)}
+/* the Board card */
+#app-people .bd-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line)}
+#app-people .bd-top .pnote{flex:1 1 220px;margin:0}
+#app-people .bd-top .btn{white-space:nowrap}
+#app-people .bd-grp{padding:12px 16px 4px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:700;border-bottom:1px solid var(--line)}
+#app-people .bdrow{display:flex;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line)}
+#app-people .bdrow.done .bd-l{opacity:.72}
+#app-people .bd-l{flex:1 1 auto;min-width:0}
+#app-people .bd-n{font-size:13px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+#app-people .bd-r{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+  color:var(--accent);margin-left:7px;white-space:nowrap}
+#app-people .bdrow .btn{flex:0 0 auto;padding:4px 11px;font-size:12px;white-space:nowrap}
+#app-people .bd-src{padding-top:10px}
 #app-people .sp-amt{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
 #app-people .sp-a{flex:0 0 auto;display:flex;gap:6px;align-items:center}
 #app-people .sp-a .btn{padding:4px 11px;font-size:12px;white-space:nowrap}
@@ -5483,7 +5499,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">09</span>Speakers and Sponsors, Start to Finish</summary>
+    <summary><span class="hp-n">09</span>Speakers, Sponsors and the Board, Start to Finish</summary>
     <div class="hp-in">
       <h4>A Speaker</h4>
       <ol class="hp-steps">
@@ -5497,13 +5513,15 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <h4>A Sponsor</h4>
       <ol class="hp-steps">
         <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
-        <li>Paid sponsors appear in People on their own. The portal gives each one a <b>comp code</b> and they register themselves with it, so sponsors are never registered from Summit HQ.</li>
-        <li>Add them to the agenda, then press <b>Added to the Agenda</b> on their row. That is the only step for a sponsor here.</li>
+        <li>Approved sponsors appear on the <b>Sponsors From The Portal</b> card on their own, with their status (Approved, Pending Payment or Paid), level, what they are sponsoring, and their <b>comp code</b> and number of comps. They register themselves with the code, so sponsors are never registered from Summit HQ.</li>
+        <li>Add them to the agenda, then press <b>Mark on Agenda</b> on their row. That is the only step for a sponsor here.</li>
         <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
       </ol>
       <h4>The People Tab Tools</h4>
       <ul>
-        <li><b>On This Summit</b> groups everyone by role, Speakers first, then Sponsors and the Board.</li>
+        <li><b>On This Summit</b> lists this Summit&rsquo;s speakers.</li>
+        <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
+        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
@@ -43690,6 +43708,39 @@ const ROLES=[['speaker','Speakers'],['sponsor','Sponsors'],['board','Board']];
 const ROLE1={speaker:'Speaker',sponsor:'Sponsor',board:'Board of Directors'};
 /* short enough to sit on a row in a column half the page wide */
 const ROLE_SHORT={speaker:'Speaker',sponsor:'Sponsor',board:'Board'};
+/* Jonna, 2026-10-28: the Board, off the MISMO Leadership page
+   (collaborate.mismo.org/mismowebsite/mismo-leadership). Bernie registers them, so the
+   Board card keeps a Registered tick per summit and can email him who is still to do.
+   The two ex-officio members sit with the Board; Brian Vieaux is staff and is left off. */
+const BOARD=[
+  {i:'timothy-j-bowler',n:'Timothy J. Bowler',t:'Chief Innovation Officer, Fixed Income and Data Services',c:'ICE Mortgage Technology',r:'Chair'},
+  {i:'mike-hogan',n:'Mike Hogan',t:'Chief Information Officer',c:'Pennymac',r:'Vice Chair'},
+  {i:'michele-bodda',n:'Michele Bodda',t:'President, Mortgage and Employer Services',c:'Experian',r:''},
+  {i:'gemma-currier',n:'Gemma Currier',t:'Senior Vice President',c:'Guild',r:''},
+  {i:'lisa-dorsey',n:'Lisa Dorsey',t:'Vice President, Data Governance',c:'Fannie Mae',r:''},
+  {i:'tim-elkins',n:'Tim Elkins',t:'Chief Strategic Officer',c:'Supreme Lending',r:''},
+  {i:'suzanne-garwood',n:'Suzanne Garwood',t:'Executive Director and Associate General Counsel',c:'JPMorgan Chase',r:''},
+  {i:'peter-grace',n:'Peter Grace',t:'Senior Vice President for Strategy and Member Services',c:'MBA',r:''},
+  {i:'patrick-hartford',n:'Patrick Hartford',t:'Vice President, Architecture and Engineering',c:'Rocket Mortgage',r:''},
+  {i:'anthony-hutchinson',n:'Anthony Hutchinson',t:'Executive Vice President',c:'VantageScore',r:''},
+  {i:'aravind-jagannathan',n:'Aravind \u201cJag\u201d Jagannathan',t:'Senior Vice President and Single-Family Data Officer',c:'Freddie Mac',r:''},
+  {i:'neenu-kainth',n:'Neenu Kainth',t:'Senior Vice President and Chief Customer Experience Officer',c:'Enact',r:''},
+  {i:'jay-kingsley',n:'Jay Kingsley',t:'President',c:'Cotality',r:''},
+  {i:'eric-lapin',n:'Eric Lapin',t:'Vice President',c:'FICO',r:''},
+  {i:'giuseppe-lucido',n:'Giuseppe \u201cJoe\u201d Lucido',t:'Senior Vice President, Operations',c:'United Wholesale Mortgage',r:''},
+  {i:'greg-mcelroy',n:'Greg McElroy',t:'Managing Director, Chief Operating Officer',c:'Amerihome Mortgage Company',r:''},
+  {i:'todd-mcgowan',n:'Todd McGowan',t:'President, Lender Division',c:'First American',r:''},
+  {i:'teri-pansing',n:'Teri Pansing',t:'Senior Vice President, Corporate Closing',c:'Fairway Independent Mortgage Corporation',r:''},
+  {i:'leslie-peeler',n:'Leslie Peeler',t:'Executive Vice President and Chief Operating Officer',c:'Cenlar FSB',r:''},
+  {i:'kevin-peranio',n:'Kevin Peranio',t:'Chief Lending Officer',c:'PRMG',r:''},
+  {i:'aaron-perlis',n:'Aaron Perlis',t:'Executive Vice President, Special Asset Management',c:'Walker and Dunlop',r:''},
+  {i:'ike-suri',n:'Ike Suri',t:'Chairman and Chief Executive Officer',c:'FundingShield',r:''},
+  {i:'courtney-thompson',n:'Courtney Thompson',t:'Founder and Chief Executive Officer',c:'Consigliera',r:''},
+  {i:'matt-tully',n:'Matt Tully, CMB',t:'Chief of Staff',c:'Sagent',r:''},
+  {i:'matt-vanfossen',n:'Matt VanFossen',t:'Chief Executive Officer',c:'Absolute Home and Mortgage Automation Technologies',r:''},
+  {i:'rusty-emory',n:'Rusty Emory',t:'Vice President, Manager Investor Delivery',c:'PrimeLending',r:'Ex-Officio'},
+  {i:'brian-hunt',n:'Brian Hunt',t:'Senior Director, Multifamily Technology Management',c:'Fannie Mae',r:'Ex-Officio'}
+];
 const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25f','2025 Fall'],
   ['25s','2025 Spring'],['25w','2025 Winter'],['24f','2024 Fall'],['24s','2024 Spring'],['24w','2024 Winter']];
 
@@ -43698,11 +43749,12 @@ const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25
    where a sponsorship is worked, this is where it turns into somebody to register. */
 const EVENT_VENUE={'winter 2027':['nola'],'spring 2027':['slc'],'fall 2027':['bethesda'],
   '2027 series':['nola','slc','bethesda']};
-const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), venue:'', ready:false,
+const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), venue:'', ready:false,
   open:new Set(), q:'', role:'', left:false, step:'', elseOpen:false, addOpen:false};
 const undoStack=[];
 const GONE=new Map();   /* people just removed: id -> when */
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const localDay=iso=>{ const d=new Date(iso); return isNaN(d)? '' : d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' at '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); };
 const pretty=iso=>{ if(!iso) return ''; const [y,m,d]=String(iso).split('-'); if(!d) return iso;
   return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+(+d); };
 
@@ -43755,6 +43807,9 @@ function appMissing(p){
 /* A speaker is speaking. A sponsor or a board member is only speaking if somebody
    has said so on their row. */
 const speaking=p=>roleOf(p)==='speaker'||!!stOf(p).speaking;
+/* Jonna, 2026-10-28: People tracks speakers. Sponsors are marked on the agenda from the
+   portal card and the Board has its own card, so neither is a row here any more. */
+const isSpk=p=>onSummit(p)&&speaking(p);
 const isSponsor=p=>roleOf(p)==='sponsor';
 const stepsFor=p=>STEPS.filter(s=>(!s.spk||speaking(p)) && !(s.k==='reg'&&isSponsor(p)));
 /* the portal record that gives this sponsor their comp code, if there is one */
@@ -43840,14 +43895,13 @@ function clearPhoto(id){
 
 /* ---------- the numbers ---------- */
 function stats(){
-  const here=all().filter(onSummit);
-  const s={total:here.length, ready:here.filter(ready).length, steps:{}, need:{}, sponsors:0, paid:0};
+  const here=all().filter(isSpk);
+  const s={total:here.length, ready:here.filter(ready).length, steps:{}, need:{}};
   STEPS.forEach(x=>{
     const mine=here.filter(p=>applies(p,x.k));
     s.need[x.k]=mine.length;
     s.steps[x.k]=mine.filter(p=>stepDone(p,x.k)).length;
   });
-  here.forEach(p=>{ if(roleOf(p)==='sponsor'){ s.sponsors++; if(paidOf(p).at) s.paid++; } });
   s.outstanding=s.total-s.ready;
   return s;
 }
@@ -43866,17 +43920,15 @@ function meters(){
     d.appendChild(el('div','n',String(n))); d.appendChild(el('div','k',k));
     if(go){ d.addEventListener('click',go); d.setAttribute('role','button'); d.tabIndex=0; }
     m.appendChild(d); };
-  tile(s.total,'On this summit',null,()=>{ST.left=false;ST.step='';render();});
+  tile(s.total,'Speakers',null,()=>{ST.left=false;ST.step='';render();openPeopleCard('lOpen');});
   tile(s.steps.bio+' / '+s.need.bio,'Bios in hand',s.steps.bio===s.need.bio&&s.need.bio?'is-good':'',()=>{ST.step='bio';ST.left=false;render();});
   tile(s.steps.app+' / '+s.need.app,'On the event app',s.steps.app===s.need.app&&s.need.app?'is-good':'',()=>{ST.step='app';ST.left=false;render();});
   tile(s.steps.reg+' / '+s.need.reg,'Registered',s.steps.reg===s.need.reg&&s.need.reg?'is-good':'',()=>{ST.step='reg';ST.left=false;render();});
-  if(s.sponsors) tile(s.paid+' / '+s.sponsors,'Sponsors paid',s.paid===s.sponsors?'is-good':'is-warn',
-    ()=>{ST.role='sponsor';ST.step='';render();});
-  const due=toRegister().length;
-  if(portalRows().length) tile(due,'Sponsors to add to the agenda',due?'is-warn':'is-good',
-    ()=>{ render();
-      try{ if(window.__pane) window.__pane.open('people:sponOpen'); }catch(e){}
-      const n=document.getElementById('pp-portal'); if(n) try{ n.scrollIntoView({block:'start'}); }catch(e){} });
+  const bs=boardStat();
+  tile(bs.reg+' / '+bs.total,'Board registered',bs.reg===bs.total?'is-good':'is-warn',()=>{ render(); openPeopleCard('boardOpen'); });
+  const pr=portalRows();
+  if(pr.length){ const onA=pr.filter(r=>sponOnAgenda(r)).length;
+    tile(onA+' / '+pr.length,'Sponsors on the agenda',onA===pr.length?'is-good':'is-warn',()=>{ render(); openPeopleCard('sponOpen'); }); }
 }
 
 /* What the search at the top found, and where it is. Without this the box is at the
@@ -43886,7 +43938,7 @@ function matches(){
   if(!t) return null;
   const hit=p=>hay(p).indexOf(t)>=0;
   const people=all();
-  return {on:people.filter(p=>onSummit(p)&&hit(p)), off:people.filter(p=>!onSummit(p)&&hit(p))};
+  return {on:people.filter(p=>isSpk(p)&&hit(p)), off:people.filter(p=>!isSpk(p)&&hit(p))};
 }
 /* Jonna, 2026-09-30: take her to a person's row under On This Summit. That block is a
    card, so open it first — as a sheet when People is open in the right-hand panel, in the
@@ -44012,11 +44064,11 @@ function foundLine(){
   box.appendChild(el('span','flab','Found'));
   const link=(n,lab,which)=>{
     const b=el('button','flink',n+' '+lab); b.type='button';
-    b.title='Go to '+(n===1?'them':'the '+n)+' under '+(which==='on'?'On This Summit':'Everyone Else');
+    b.title='Go to '+(n===1?'them':'the '+n)+' under '+(which==='on'?'On This Summit':'Master List of Speakers');
     b.addEventListener('click',()=>goTo(which));
     box.appendChild(b);
   };
-  if(m.on.length) link(m.on.length, m.on.length===1?'on this summit':'on this summit', 'on');
+  if(m.on.length) link(m.on.length, m.on.length===1?'speaker on this summit':'speakers on this summit', 'on');
   if(m.off.length) link(m.off.length, 'on the master list', 'off');
   if(m.on.length===1) box.appendChild(el('span','fnone',m.on[0].n));
   else if(!m.on.length && m.off.length===1) box.appendChild(el('span','fnone',m.off[0].n));
@@ -44027,9 +44079,10 @@ function foundLine(){
    or not, so the pane can take it the moment it is asked for. */
 /* what the line under each name says, given how many are in it */
 const PP_SAY={
-  lOpen:    n=>n? n+(ST.step?' to go':' on this summit') : (ST.step?'No tasks at this time':'Nobody on this summit yet'),
+  lOpen:    n=>n? n+(ST.step?' to go':' speaker'+(n===1?'':'s')) : (ST.step?'No tasks at this time':'No speakers yet'),
   elseOpen: n=>n+' on the master list',
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
+  boardOpen:n=>n? n+' still to register' : 'Everyone is registered',
   fOpen:    n=>n? n+' still outstanding' : 'Everyone has what they need'
 };
 function section(title,note,count,key,openDefault,build,tone){
@@ -44113,24 +44166,16 @@ function personRow(p, off){
     const line=el('div','pp-line');
     line.appendChild(hd);
     const acts=el('span','pp-add');
-    ROLES.forEach(([k])=>{
-      const add=el('button','btn ghost','+ '+ROLE_SHORT[k]); add.type='button';
-      add.title='Add '+p.n+' to this summit as a '+ROLE1[k].toLowerCase();
-      add.addEventListener('click',e=>{ e.stopPropagation();
-        /* if they were on this summit before, the work already done for them stands */
-        patchSt(p.i,{on:true,role:k,steps:(stOf(p).steps||{})},'someone added to the summit');
-        ST.open.add(p.i); render();
-        const n=document.querySelector('.pp-row[data-id="'+p.i+'"]');
-        if(n){ try{ n.scrollIntoView({block:'center'}); }catch(x){} }
-      });
-      acts.appendChild(add);
-    });
+    const add=el('button','btn ghost','+ Add as Speaker'); add.type='button';
+    add.title='Add '+p.n+' to this summit as a speaker';
+    add.addEventListener('click',e=>{ e.stopPropagation(); addSpeaker(p.i); });
+    acts.appendChild(add);
     line.appendChild(acts);
     row.appendChild(line);
     if(open) row.appendChild(personBody(p,true));
     return row;
   }
-  hd.appendChild(el('span','pp-role r-'+roleOf(p),ROLE1[roleOf(p)]||'Speaker'));
+  if(roleOf(p)!=='speaker') hd.appendChild(el('span','pp-role r-'+roleOf(p),ROLE_SHORT[roleOf(p)]||''));
   const pips=el('span','pp-pips');
   const nx=nextStep(p);
   stepsFor(p).forEach(s=>{ const d=el('span','pip'+(stepDone(p,s.k)?' on':'')+(nx&&nx.k===s.k?' next':''));
@@ -44139,11 +44184,6 @@ function personRow(p, off){
   let line, cls='';
   if(nx){ line='Next: '+nx.ask+' — '+(WHO[nx.who]||nx.who); }
   else { line='Ready — they have everything they need'; cls=' ok'; }
-  if(roleOf(p)==='sponsor'){
-    const pd=paidOf(p);
-    line += pd.at ? '  ·  Paid'+(pd.at!=='yes'?' '+pretty(pd.at):'') : '  ·  Not paid yet';
-    if(!pd.at) cls=' owed';
-  }
   hd.appendChild(el('span','pp-next'+cls,line));
   hd.addEventListener('click',()=>{ if(open) ST.open.delete(p.i); else ST.open.add(p.i); render(); });
   row.appendChild(hd);
@@ -44226,13 +44266,6 @@ function personBody(p, off){
   g.appendChild(textField('Email',p.e,x=>patch(p.i,{e:x},'an email'), p.i+':e'));
   g.appendChild(textField('Title',p.t,x=>{ patch(p.i,{t:x},'a title'); renderSoon(); }, p.i+':t'));
   g.appendChild(textField('Company',p.c,x=>{ patch(p.i,{c:x},'a company'); renderSoon(); }, p.i+':c'));
-  if(!off){
-    const rs=document.createElement('select');
-    Object.keys(ROLE1).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=ROLE1[k];
-      if(roleOf(p)===k) o.selected=true; rs.appendChild(o); });
-    rs.addEventListener('change',()=>{ patchSt(p.i,{role:rs.value},'a role'); render(); });
-    g.appendChild(fld('On this summit they are a',rs));
-  }
   b.appendChild(g);
 
   /* where they are */
@@ -44339,45 +44372,6 @@ function personBody(p, off){
   bioWrap.appendChild(ta);
   b.appendChild(bioWrap);
 
-  /* sponsors: whether this summit has been paid for */
-  if(!off && roleOf(p)==='sponsor'){
-    const fromPortal=portalFor(p);
-    if(fromPortal){
-      const pb=el('div','paidbox'+(rowPaid(fromPortal)?' yes':''));
-      const L=el('div','sp-l');
-      L.appendChild(el('div','sp-co',fromPortal.company||''));
-      L.appendChild(el('div','sp-me',[fromPortal.level,fromPortal.opportunity,fromPortal.appNo]
-        .filter(Boolean).join(' \u00b7 ')));
-      L.appendChild(el('div','sp-me', (rowPaid(fromPortal)
-        ? 'Paid'+(fromPortal.paid?' '+pretty(fromPortal.paid):'')
-        : (fromPortal.status||'Not paid'))+(amtOf(fromPortal)?' · '+amtOf(fromPortal):'')));
-      L.appendChild(el('div','pnote','Updated automatically from the Sponsorship Portal.'));
-      pb.appendChild(L);
-      b.appendChild(pb);
-    }
-    /* the by-hand record is only for sponsors the portal does not have */
-    if(!fromPortal){
-    const paid=st.paid||{};
-    const box=el('div','paidbox'+(paid.at?' yes':''));
-    const t=el('button','btn'+(paid.at?'':' ghost'),paid.at?'✓ Paid':'Mark as paid'); t.type='button';
-    t.addEventListener('click',()=>{ patchSt(p.i,{paid:paid.at?{}:{at:today(),by:'by hand'}},'a sponsor payment'); render(); });
-    box.appendChild(t);
-    /* Beta test, 2026-09-22: these three had no data-keep, so a rebuild mid-sentence
-       threw the cursor to the body and everything typed after it went nowhere. */
-    const d=document.createElement('input'); d.type='date'; d.value=paid.at||'';
-    d.dataset.keep=p.i+':paidat';
-    d.addEventListener('change',()=>patchSt(p.i,{paid:Object.assign({},paid,{at:d.value})},'a payment date'));
-    box.appendChild(fld('Paid on',d));
-    const a=document.createElement('input'); a.type='text'; a.value=paid.amount||''; a.placeholder='e.g. $15,000';
-    a.dataset.keep=p.i+':amount';
-    a.addEventListener('change',()=>patchSt(p.i,{paid:Object.assign({},paid,{amount:a.value.trim()})},'a payment amount'));
-    box.appendChild(fld('Amount',a));
-    if(paid.by) box.appendChild(el('div','pnote','Recorded '+paid.by+'.'));
-    box.appendChild(el('div','pnote','Not in the Sponsorship Portal, so the payment is kept here by hand.'));
-    b.appendChild(box);
-    }
-  }
-
   /* which sessions they are speaking in \u2014 this is what fills the app's Session ID */
   if(!off){
     const ses=summitSessions();
@@ -44469,8 +44463,7 @@ function personBody(p, off){
 const hay = p => [p.n,p.c,p.e,p.t].join(' ').replace(/\s+/g,' ').toLowerCase();
 function shown(){
   const q=ST.q.replace(/\s+/g,' ').trim().toLowerCase();
-  return all().filter(onSummit).filter(p=>{
-    if(ST.role && roleOf(p)!==ST.role) return false;
+  return all().filter(isSpk).filter(p=>{
     if(ST.left && ready(p)) return false;
     /* "1 to go" and the list you get when you press it have to agree: a sponsor is
        not waiting on a bio, so they do not belong in the bio list either */
@@ -44488,16 +44481,8 @@ function render(){
   meters();
 
   /* the role picker */
-  const rb=$('pp-roles');
-  if(rb && !rb.dataset.built){
-    rb.dataset.built='1';
-    [['','Everyone']].concat(ROLES).forEach(([k,lab])=>{
-      const b=el('button',null,lab); b.type='button'; b.dataset.role=k;
-      b.addEventListener('click',()=>{ ST.role=k; render(); });
-      rb.appendChild(b);
-    });
-  }
-  if(rb) [...rb.children].forEach(b=>b.setAttribute('aria-pressed', b.dataset.role===ST.role?'true':'false'));
+  /* Jonna, 2026-10-28: People is speakers only now, so there is no role to pick */
+  const rb=$('pp-roles'); if(rb) rb.hidden=true; ST.role='';
   const lb=$('pp-left'); if(lb) lb.setAttribute('aria-pressed',ST.left?'true':'false');
   foundLine();
 
@@ -44513,88 +44498,88 @@ function render(){
   const left=document.createDocumentFragment(), right=document.createDocumentFragment();
   const s=stats();
 
-  /* The portal's sponsors, and which of them still have to be registered. */
-  const prows=portalRows(), pdue=toRegister();
+  /* Jonna, 2026-10-28: the portal's sponsors, kept to what is needed here \u2014 their status,
+     their level, what they are sponsoring, their comp code and comps \u2014 and one tick:
+     on the agenda or not. The money and everything else stays in the portal. */
+  const prows=portalRows(), pdue=prows.filter(r=>!sponOnAgenda(r));
+  let sponSec=null;
   if(prows.length){
-    const sec=section('Sponsors From The Portal',
-      pdue.length? pdue.length+' to add to the agenda'
-                 : 'Every paid sponsor is on the agenda',
+    sponSec=section('Sponsors From The Portal',
+      pdue.length? pdue.length+' to mark on the agenda' : 'Every sponsor is on the agenda',
       prows.length,'sponOpen',!!pdue.length,box=>{
       const when=portal().at;
-      box.appendChild(el('div','pnote pp-when','Straight from the Sponsorship Portal'
-        + (when? ', as it stood on '+pretty(when) : '')
-        + '. Worked there, not here. Sponsors register themselves with the comp code the portal gives them.'));
-      prows.slice().sort((a,b)=>(rowPaid(b)?1:0)-(rowPaid(a)?1:0)
+      box.appendChild(el('div','pnote pp-when','From the Sponsorship Portal'
+        + (when? ', as of '+pretty(String(when).slice(0,10)) : '') + '. Sponsors register themselves with their comp code.'));
+      const rank={paid:0,ok:1,pend:2,wait:3};
+      prows.slice().sort((a,b)=>rank[sponStatus(a)[0]]-rank[sponStatus(b)[0]]
         || String(a.company||'').localeCompare(String(b.company||''))).forEach(r=>{
-        const who=personForRow(r), paid=rowPaid(r);
-        const on=who&&onSummit(who), code=String(r.compCode||'').trim(), reg=!!(on&&stepDone(who,'agenda'));
-        const row=el('div','sprow'+(paid&&!reg?' due':'')+(reg?' done':''));
+        const at=sponOnAgenda(r), [sk,slab]=sponStatus(r), code=String(r.compCode||'').trim();
+        const row=el('div','sprow'+(at?' done':''));
         const L=el('div','sp-l');
-        L.appendChild(el('div','sp-co',r.company||'Sponsor'));
-        L.appendChild(el('div','sp-me',[r.name,r.email].filter(Boolean).join(' \u00b7 ')));
-        L.appendChild(el('div','sp-me',[r.level,r.opportunity,r.event].filter(Boolean).join(' \u00b7 ')));
-        /* for information only: they register themselves with this */
-        if(code) L.appendChild(el('div','sp-me','Comp code '+code+(r.comps?' \u00b7 '+r.comps+' comps':'')+' \u2014 they register themselves'));
+        L.appendChild(el('div','sp-co',String(r.company||'Sponsor').trim()));
+        L.appendChild(el('div','sp-me',[r.level?titleCase(r.level):'', sponWhat(r)].filter(Boolean).join(' \u00b7 ')));
+        if(code) L.appendChild(el('div','sp-me','Code '+code+(r.comps?' \u00b7 '+r.comps+' comp'+(String(r.comps)==='1'?'':'s'):'')));
         row.appendChild(L);
-        const st=el('div','sp-st');
-        st.appendChild(el('span','sp-tag '+(paid?'paid':'wait'), paid? 'Paid'+(r.paid?' '+pretty(r.paid):'') : (r.status||'Not paid')));
-        if(r.due!=null && r.due!=='') st.appendChild(el('span','sp-amt', typeof r.due==='number'? '$'+Number(r.due).toLocaleString('en-US') : String(r.due)));
-        row.appendChild(st);
+        const st=el('div','sp-st'); st.appendChild(el('span','sp-tag '+sk,slab)); row.appendChild(st);
         const A=el('div','sp-a');
-        if(reg){
-          const ok=el('button','btn ghost sp-done','\u2713 On the agenda'); ok.type='button';
-          ok.title='Added to the agenda '+pretty(stepDone(who,'agenda'))+'. Click to take it back off.';
-          ok.addEventListener('click',()=>{
-            const steps=Object.assign({},stOf(who).steps||{}); delete steps.agenda;
-            patchSt(who.i,{steps},'off the agenda'); render();
-          });
-          A.appendChild(ok);
-        }
-        else if(!who || !on){
-          const add=el('button','btn'+(paid?'':' ghost'), who? 'Put them on this summit' : 'Add and start');
-          add.type='button';
-          add.title=(who?'':'Adds ')+(r.name||r.company)+' as a sponsor on this summit, ready to add to the agenda.';
-          add.addEventListener('click',()=>{
-            let id = who? who.i : null;
-            if(!id){
-              id=String(r.name||r.company||'sponsor').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('sp'+Date.now().toString(36));
-              if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
-              rec(id,'a sponsor from the portal');
-              write(id,{i:id,n:r.name||r.company,e:r.email||'',c:r.company||'',add:true,
-                st:{[venueNow()]:{on:true,role:'sponsor',steps:{}}}});
-            } else patchSt(id,{on:true,role:'sponsor'},'a sponsor from the portal');
-            ST.sponOpen=true; showPersonRow(id);
-          });
-          A.appendChild(add);
-        } else {
-          const go=el('button','btn'+(paid?'':' ghost'),'Added to the Agenda');
-          go.type='button';
-          go.title='Click once '+(who.n||'they')+' '+(who.n?'is':'are')+' on the agenda.';
-          go.addEventListener('click',()=>{
-            const steps=Object.assign({},stOf(who).steps||{}); steps.agenda=today();
-            patchSt(who.i,{steps,on:true,role:'sponsor'},'a sponsor added to the agenda'); render();
-          });
-          A.appendChild(go);
-          const open=el('button','btn ghost','Open'); open.type='button';
-          open.title='Open '+(who.n||'their')+' row under On This Summit';
-          open.addEventListener('click',()=>showPersonRow(who.i));
-          A.appendChild(open);
-          const tb=el('button','btn ghost danger sp-take','Take Back'); tb.type='button';
-          tb.title='Take '+(who.n||'them')+' back off this summit \u2014 for when Add and Start was pressed by mistake';
-          let armed=false;
-          tb.addEventListener('click',()=>{ if(!armed){ armed=true; tb.textContent='Click Again to Take Back'; tb.classList.add('armed'); return; } takeBack(who.i); });
-          A.appendChild(tb);
-        }
-        row.appendChild(A);
+        const b=el('button','btn'+(at?' ghost sp-done':''), at? '\u2713 On the Agenda' : 'Mark on Agenda'); b.type='button';
+        b.title= at? 'Marked on the agenda '+pretty(at)+'. Click to take the mark off.' : 'Click once they are on the agenda.';
+        b.addEventListener('click',()=>setSponAgenda(r,!at));
+        A.appendChild(b); row.appendChild(A);
         box.appendChild(row);
       });
     });
-    sec.id='pp-portal';
-    try{ if(window.__pane) window.__pane.face(sec,{
-      note: PP_SAY.sponOpen(prows.length)+(pdue.length? ' · '+pdue.length+' to add to the agenda':''),
+    sponSec.id='pp-portal';
+    try{ if(window.__pane) window.__pane.face(sponSec,{
+      note: PP_SAY.sponOpen(prows.length)+(pdue.length? ' \u00b7 '+pdue.length+' to mark on the agenda':''),
       tone: pdue.length?'warn':''}); }catch(e){}
-    right.appendChild(sec);
   }
+
+  /* the Board: a Registered tick each, and an email to Bernie with who is still to do */
+  const bs=boardStat();
+  const boardSec=section('Board of Directors',
+    bs.left? bs.left+' of '+bs.total+' still to register' : 'Every board member is registered',
+    bs.left,'boardOpen',false,box=>{
+    const top=el('div','bd-top');
+    const nb=el('button','btn'+(bs.left?'':' ghost'), 'Notify Bernie'+(bs.left?' ('+bs.left+')':'')); nb.type='button';
+    nb.disabled=!bs.left;
+    nb.title=bs.left? 'Emails Bernie the '+bs.left+' board member'+(bs.left===1?'':'s')+' still to register' : 'Everyone is registered';
+    let armed=false;
+    nb.addEventListener('click',()=>{
+      if(!armed){ armed=true; nb.textContent='Click Again to Email Bernie'; nb.classList.add('armed'); return; }
+      notifyBernie();
+    });
+    top.appendChild(nb);
+    const nt=boardDoc().notified;
+    top.appendChild(el('div','pnote', nt&&nt.at
+      ? 'Bernie was notified '+localDay(nt.at)+' about '+nt.n+' board member'+(nt.n===1?'':'s')
+        +'. Each press emails him within about 20 minutes.'
+      : 'Emails Bernie a list of the board members still to register. It goes out within about 20 minutes.'));
+    box.appendChild(top);
+    [['Board Members',BOARD.filter(b=>b.r!=='Ex-Officio')],['Ex-Officio',BOARD.filter(b=>b.r==='Ex-Officio')]].forEach(([lab,list])=>{
+      box.appendChild(el('div','bd-grp',lab));
+      list.forEach(m=>{
+        const at=boardReg(m.i);
+        const row=el('div','bdrow'+(at?' done':''));
+        const L=el('div','bd-l');
+        const nm=el('div','bd-n',m.n); if(m.r && m.r!=='Ex-Officio') nm.appendChild(el('span','bd-r',m.r));
+        L.appendChild(nm);
+        L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
+        row.appendChild(L);
+        const b=el('button','btn'+(at?' sp-done':'')+' ghost', at? '\u2713 Registered' : 'Registered'); b.type='button';
+        b.setAttribute('aria-pressed',at?'true':'false');
+        b.title= at? 'Registered '+pretty(at)+'. Click to take it off.' : 'Click once '+m.n+' is registered.';
+        b.addEventListener('click',()=>{
+          const reg=Object.assign({},boardDoc().reg||{});
+          if(reg[m.i]) delete reg[m.i]; else reg[m.i]=today();
+          setBoard({reg},'a board registration'); render();
+        });
+        row.appendChild(b);
+        box.appendChild(row);
+      });
+    });
+    box.appendChild(el('div','pnote pp-when bd-src','From the MISMO Leadership page on mismo.org.'));
+  }, bs.left?'warn':'');
 
   /* Jonna, 2026-09-22: the row reads What Still Has To Happen, On This Summit,
      Sponsors From The Portal, Everyone Else — what is outstanding leads, then the
@@ -44608,43 +44593,36 @@ function render(){
   const note=[ST.role?ROLE1[ST.role]+'s only':'', ST.left?'outstanding only':'',
     ST.step?('waiting on “'+(STEPS.find(x=>x.k===ST.step)||{}).t+'”'):''].filter(Boolean).join(' · ');
   left.appendChild(stillSec);
-  left.appendChild(section('On This Summit', note||'Click a row to open it. Everything inside is a field.',
+  left.appendChild(section('On This Summit', note||'Speakers. Click a row to open it.',
     list.length,'lOpen',true,box=>{
     if(ST.step){ stepView(box,list); return; }
     box.appendChild(addBlock());
     if(!ST.ready){ box.appendChild(el('div','blank','Loading…')); return; }
     if(!list.length){
       const bl=el('div','blank');
-      bl.appendChild(el('b',null, s.total? 'Nothing matches' : 'Nobody on this summit yet'));
+      bl.appendChild(el('b',null, s.total? 'Nothing matches' : 'No speakers yet'));
       bl.appendChild(document.createTextNode(s.total? 'Clear the filters above to see everyone.'
-        : 'Use the box above to find somebody, or open Everyone Else beside this one.'));
+        : 'Use the box above, or add them from the Master List of Speakers.'));
       box.appendChild(bl);
       return;
     }
-    /* Jonna, 2026-10-28: speakers in one group, sponsors in another, speakers first */
-    const GROUPS=[['speaker','Speakers'],['sponsor','Sponsors'],['board','Board']];
-    GROUPS.forEach(([r,lab])=>{
-      const g=list.filter(p=>roleOf(p)===r); if(!g.length) return;
-      const h=el('div','pp-grp'); h.appendChild(el('span',null,lab)); h.appendChild(el('b',null,String(g.length)));
-      box.appendChild(h);
-      g.forEach(p=>box.appendChild(personRow(p)));
-    });
-    const other=list.filter(p=>!GROUPS.some(([r])=>roleOf(p)===r));
-    if(other.length){ const h=el('div','pp-grp'); h.appendChild(el('span',null,'Others')); h.appendChild(el('b',null,String(other.length))); box.appendChild(h);
-      other.forEach(p=>box.appendChild(personRow(p))); }
+    /* Jonna, 2026-10-28: speakers only */
+    list.forEach(p=>box.appendChild(personRow(p)));
   }));
+  left.appendChild(boardSec);
 
   /* everyone on the master list who is not on this summit */
   const q=ST.q.replace(/\s+/g,' ').trim().toLowerCase();
-  const rest=all().filter(p=>!onSummit(p)).filter(p=>!q||hay(p).indexOf(q)>=0);
-  const elseSec=section('Everyone Else',
-    'The master list — '+all().length+' people. Click anyone to edit their details, or add them to this summit.',
+  const rest=all().filter(p=>!isSpk(p)).filter(p=>!q||hay(p).indexOf(q)>=0);
+  const elseSec=section('Master List of Speakers',
+    all().length+' people. Click anyone to edit their details, or add them as a speaker on this summit.',
     rest.length,'elseOpen',false,box=>{
-    if(!rest.length){ box.appendChild(el('div','blank','Nobody left — everyone on the list is on this summit.')); return; }
+    if(!rest.length){ box.appendChild(el('div','blank','Nobody left — everyone on the list is speaking at this summit.')); return; }
     rest.slice(0,400).forEach(p=>box.appendChild(personRow(p,true)));
     if(rest.length>400) box.appendChild(el('div','pmore','Showing the first 400 — search above to narrow it down.'));
   });
   elseSec.classList.add('tall');
+  if(sponSec) right.appendChild(sponSec);
   right.appendChild(elseSec);
   cols.appendChild(left); cols.appendChild(right);
   /* an open block is rebuilt on the page; the pane takes the new one */
@@ -44660,7 +44638,7 @@ function addBlock(){
   const wrap=el('div','addwrap');
   const find=el('div','findrow');
   const fw=el('div','fldmini grow');
-  fw.appendChild(el('label',null,'Add somebody who is already on the master list'));
+  fw.appendChild(el('label',null,'Add a speaker who is already on the master list'));
   const q=document.createElement('input'); q.type='search';
   q.placeholder='Start typing a name, company or email\u2026';
   q.dataset.keep='findbox';
@@ -44674,7 +44652,7 @@ function addBlock(){
     hits.textContent='';
     const t=q.value.replace(/\s+/g,' ').trim().toLowerCase();
     if(!t) return;
-    const pool=all().filter(x=>!onSummit(x))
+    const pool=all().filter(x=>!isSpk(x))
       .filter(x=>hay(x).indexOf(t)>=0);
     if(!pool.length){
       hits.appendChild(el('div','findnone','Nobody on the master list matches \u201c'+q.value.trim()
@@ -44690,17 +44668,10 @@ function addBlock(){
       L.appendChild(el('div','fh-n',x.n));
       L.appendChild(el('div','fh-s',[x.t,x.c].filter(Boolean).join(' \u00b7 ')||'No title or company yet'));
       r.appendChild(L);
-      ROLES.forEach(([k])=>{
-        const add=el('button','btn ghost','+ '+ROLE_SHORT[k]); add.type='button';
-        add.title='Add '+x.n+' to this summit as a '+ROLE1[k].toLowerCase();
-        add.addEventListener('click',()=>{
-          patchSt(x.i,{on:true,role:k,steps:(stOf(x).steps||{})},'someone added to the summit');
-          ST.open.add(x.i); render();
-          const n2=document.querySelector('.pp-row[data-id="'+x.i+'"]');
-          if(n2){ try{ n2.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){} }
-        });
-        r.appendChild(add);
-      });
+      const add=el('button','btn ghost','+ Add as Speaker'); add.type='button';
+      add.title='Add '+x.n+' to this summit as a speaker';
+      add.addEventListener('click',()=>addSpeaker(x.i));
+      r.appendChild(add);
       hits.appendChild(r);
     });
     if(pool.length>8) hits.appendChild(el('div','findnone',(pool.length-8)+' more match \u2014 keep typing.'));
@@ -44716,18 +44687,15 @@ function addForm(){
     if(key) i.dataset.keep='new:'+key;
     const w=el('div','fldmini'); w.appendChild(el('label',null,lab)); w.appendChild(i); f.appendChild(w); return i; };
   const n=mk('Name','Somebody new','n'), e=mk('Email','','e'), t=mk('Title','','t'), c=mk('Company','','c');
-  const rs=document.createElement('select'); rs.dataset.keep='new:role';
-  Object.keys(ROLE1).forEach(k=>{ const o=document.createElement('option'); o.value=k; o.textContent=ROLE1[k]; rs.appendChild(o); });
-  const rw=el('div','fldmini'); rw.appendChild(el('label',null,'They are a')); rw.appendChild(rs); f.appendChild(rw);
-  const b=el('button','btn','Add this person'); b.type='button';
-  b.title='Adds them to this summit, and to the master list for every summit after it.';
+  const b=el('button','btn','Add as a New Speaker'); b.type='button';
+  b.title='Adds them to this summit as a speaker, and to the master list for every summit after it.';
   const go=()=>{
     const nm=n.value.trim(); if(!nm){ n.focus(); return; }
     let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
     if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
     rec(id,'a person added');
     write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,
-      st:{[venueNow()]:{on:true,role:rs.value,steps:{}}}});
+      st:{[venueNow()]:{on:true,role:'speaker',steps:{}}}});
     n.value=e.value=t.value=c.value=''; ST.open.add(id); ST.q=''; const qq=$('pp-q'); if(qq) qq.value='';
     ST.clearAdd=true;           /* they are on the list now; the form starts fresh */
     render(); ST.clearAdd=false;
@@ -44862,6 +44830,79 @@ function personForRow(r){
   return byName[0];
 }
 const rowPaid = r => !!(r.paid || String(r.status||'').toLowerCase()==='paid');
+/* Jonna, 2026-10-28: a sponsor is Approved, Pending Payment or Paid */
+function sponStatus(r){
+  if(rowPaid(r)) return ['paid','Paid'];
+  const t=String(r.status||'').toLowerCase();
+  if(/pend|invoic|await/.test(t)) return ['pend','Pending Payment'];
+  if(!t || /approv/.test(t)) return ['ok','Approved'];
+  return ['wait',String(r.status)];
+}
+const titleCase=t=>String(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());
+/* what they are sponsoring at this summit: a custom series names each season's piece */
+function sponWhat(r){
+  const o=String(r.opportunity||'').trim();
+  const m=/^Custom Series\s*[\u2014-]\s*(.+)$/i.exec(o); if(!m) return o;
+  const season=(/(Winter|Spring|Fall)/i.exec(venueInfo().name||'')||[])[1];
+  if(!season) return o;
+  const bit=m[1].split(/\s*\u00b7\s*/).find(x=>new RegExp('^'+season+'\\s*:','i').test(x));
+  return bit? bit.replace(/^[^:]+:\s*/,'') : o;
+}
+/* the agenda mark, kept per summit against the portal row; a sponsor marked before this
+   card existed was marked on their person record, and that still counts */
+const sponKey=r=>String(r.appNo||'').trim() || (normCo(r.company)+'-'+normCo(r.opportunity)).slice(0,60);
+function sponOnAgenda(r){
+  const on=(ST.sag.get(venueNow())||{}).on||{}, k=sponKey(r);
+  if(Object.prototype.hasOwnProperty.call(on,k)) return on[k]||'';
+  const who=personForRow(r);
+  return (who && onSummit(who) && stepDone(who,'agenda')) || '';
+}
+function saveColl(coll,map,fields,label){
+  const v=venueNow(), prev=map.get(v)||null;
+  undoStack.push({coll,v,prev:prev?JSON.parse(JSON.stringify(prev)):null}); if(undoStack.length>80) undoStack.shift();
+  try{ if(window.__hqUndo) window.__hqUndo.record('people',label||''); }catch(e){}
+  const d=Object.assign({},prev||{},fields); map.set(v,d);
+  if(ST.db){ try{ ST.db.doc(coll+'/'+v).set(JSON.parse(JSON.stringify(d))); }catch(e){} }
+}
+function setSponAgenda(r,yes){
+  const on=Object.assign({},(ST.sag.get(venueNow())||{}).on||{});
+  on[sponKey(r)] = yes? today() : false;
+  saveColl('sponsor-agenda',ST.sag,{on},yes?'a sponsor on the agenda':'a sponsor off the agenda');
+  render();
+}
+/* the Board, per summit */
+const boardDoc=()=>ST.board.get(venueNow())||{};
+const boardReg=id=>(boardDoc().reg||{})[id]||'';
+function boardStat(){ const reg=BOARD.filter(b=>boardReg(b.i)).length; return {total:BOARD.length, reg, left:BOARD.length-reg}; }
+function setBoard(fields,label){ saveColl('board',ST.board,fields,label); }
+/* Notify Bernie: Summit HQ cannot send mail, so it writes the list to feeds/board-notify
+   and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
+   every 15 minutes for a request made 5 to 20 minutes earlier, so each press sends once. */
+async function notifyBernie(){
+  const v=venueInfo(), left=BOARD.filter(b=>!boardReg(b.i));
+  if(!left.length) return;
+  let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
+  const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const td='padding:8px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,sans-serif;font-size:14px;color:#1b2733;vertical-align:top';
+  const listHtml=left.map((b,i)=>'<tr><td style="'+td+';width:28px;color:#6b7a8a">'+(i+1)+'</td><td style="'+td+'"><b>'+e(b.n)+'</b>'
+    +(b.r?' <span style="color:#0f6fa8;font-size:12px">('+e(b.r)+')</span>':'')+'<br><span style="color:#55657a;font-size:13px">'+e(b.t)+'</span></td><td style="'+td+'">'+e(b.c)+'</td></tr>').join('');
+  const at=new Date().toISOString();
+  const feed={requestedAt:at, requestedBy:who, summit:{venue:v.id||'', name:v.name||'', city:v.city||'', dates:v.dates||''},
+    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||''})), listHtml};
+  try{ if(ST.db) await ST.db.doc('feeds/board-notify').set(feed); }
+  catch(x){ alert('Summit HQ could not save the request for Bernie. Check you are signed in and try again.'); return; }
+  setBoard({notified:{at, by:who, n:left.length}},'Bernie notified about the Board');
+  render();
+}
+/* add somebody as a speaker on this summit; work already done for them as a speaker stands */
+function addSpeaker(id){
+  const p=byId(id); if(!p) return;
+  const st=stOf(p), was=st.role||'speaker';
+  patchSt(id,{on:true, role:'speaker', speaking:false, steps: was==='speaker'? (st.steps||{}) : {}},'a speaker added to the summit');
+  ST.open.add(id); render();
+  setTimeout(()=>{ const n=[...document.querySelectorAll('.pp-row[data-id="'+id+'"]')].find(x=>x.getClientRects().length>0);
+    if(n){ try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){} } },60);
+}
 /* Jonna, 2026-10-27: a portal sponsor is never a registration to chase \u2014 they use their
    comp code. The one thing to do is add them to the agenda, so this is the paid sponsors
    who are not on the agenda yet (named for what it used to count, so callers keep working). */
@@ -44935,7 +44976,7 @@ async function chase(){
   const v=venueInfo();
   /* only the ones a bio was ever asked of — a sponsor or a director has no bio step,
      and should not be emailed about one */
-  const here=all().filter(onSummit);
+  const here=all().filter(isSpk);
   const list=here.filter(p=>applies(p,'bio')).filter(p=>!stepDone(p,'bio'));
   if(!list.length){
     alert(here.length ? 'Nothing to chase — every bio and headshot is in.'
@@ -45027,6 +45068,12 @@ function init(){
 
   if(window.__hqUndo) window.__hqUndo.register('people',async()=>{
     const e=undoStack.pop(); if(!e) return;
+    if(e.coll){
+      const map=e.coll==='board'?ST.board:ST.sag;
+      if(e.prev) map.set(e.v,e.prev); else map.delete(e.v);
+      if(ST.db){ try{ ST.db.doc(e.coll+'/'+e.v).set(e.prev||{}); }catch(x){} }
+      render(); return;
+    }
     if(e.prev){ write(e.id,e.prev); }
     else { await removeDoc(e.id); }
     render();
@@ -45052,6 +45099,12 @@ function init(){
         render();
         try{ window.dispatchEvent(new Event('hq:portal')); }catch(e){}
       },()=>{});
+      [['board',ST.board],['sponsor-agenda',ST.sag]].forEach(([coll,map])=>{
+        db.collection(coll).onSnapshot(s=>{
+          s.docChanges().forEach(c=>{ if(c.type==='removed') map.delete(c.doc.id); else map.set(c.doc.id,Object.assign({},c.doc.data())); });
+          render();
+        },()=>{});
+      });
       db.collection('people').onSnapshot(s=>{
         s.docChanges().forEach(c=>{
           if(c.type==='removed') ST.docs.delete(c.doc.id);
@@ -45093,7 +45146,7 @@ window.__people={
   },
   open:id=>{
     const p=byId(id); if(!p) return false;
-    if(onSummit(p)) ST.lOpen=true; else ST.elseOpen=true;
+    if(isSpk(p)) ST.lOpen=true; else ST.elseOpen=true;
     ST.open.add(id); render();
     setTimeout(()=>{
       const n=document.querySelector('.pp-row[data-id="'+id+'"]');
