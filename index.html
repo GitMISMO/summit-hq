@@ -1958,6 +1958,14 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
    rather than the bottom, whose position depends on which tool's tiles are tallest. */
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{align-items:flex-start}
 :root #app-grid .meters,:root #app-ros .meters,:root #app-specs .meters,:root #app-resume .rz-status{align-items:flex-start}
+/* Jonna, 2026-10-28: General Sessions and Registration carry the same header as the rest */
+:root #app-gs .mast,:root #app-reg .mast{align-items:flex-start;gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
+@media(max-height:940px){
+  :root #app-gs .wrap,:root #app-reg .wrap{padding-block:12px 30px}
+  :root #app-gs .mast,:root #app-reg .mast{padding-bottom:10px;margin-bottom:10px}
+}
+@media(max-height:780px){ :root #app-gs .mast,:root #app-reg .mast{padding-bottom:8px;margin-bottom:8px} }
+:root #app-gs .gs-acts,:root #app-reg .rg-acts{align-self:flex-start}
 
 /* EVERY FIGURE TILE IS THE SAME HEIGHT, ON EVERY TAB (Jonna, 2026-09-19: all the
    boxes the height of the 114 days box, and the same across the whole of HQ). One
@@ -5107,6 +5115,32 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-reg .ws-head .ws-sub{margin:6px 0 0;color:var(--ink-3);font-size:14px;line-height:1.5}
 #app-reg .ws-head .ws-takeaway{margin:10px 0 0;font-size:16px;line-height:1.45;color:var(--ink)}
 #app-reg .ws-head b{font-weight:600}
+/* Jonna, 2026-10-28: the week stands out, in the navy panel the Run of Show opens with */
+#app-reg .ws-head.rg-hero{display:flex;gap:26px;align-items:stretch;background:#0f314c;color:#fff;border:1px solid #0f314c;
+  border-radius:8px;padding:20px 24px;box-shadow:0 2px 10px rgba(6,32,47,.12)}
+:root[data-theme="dark"] #app-reg .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-reg .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}}
+#app-reg .rg-wk{flex:0 0 auto;min-width:132px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+  padding-right:26px;border-right:1px solid rgba(255,255,255,.18)}
+#app-reg .rg-wk-k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
+#app-reg .rg-wk-n{font-family:var(--display);font-size:68px;font-weight:900;line-height:.95;letter-spacing:-.03em;color:#fff;margin:2px 0 4px}
+#app-reg .rg-wk-n.rg-wk-post{font-size:48px}
+#app-reg .rg-wk-s{font-size:13px;font-weight:600;color:rgba(255,255,255,.78)}
+#app-reg .rg-hero-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center}
+#app-reg .rg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fd2f2}
+#app-reg .rg-line{margin:8px 0 12px;font-size:19px;font-weight:700;line-height:1.4;color:#fff;max-width:72ch}
+#app-reg .rg-line .hl{color:#7fc6f0}
+#app-reg .rg-line .hl.down{color:#ffa69c}
+#app-reg .rg-line .hl.up{color:#8fd6a8}
+#app-reg .rg-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:rgba(255,255,255,.74)}
+#app-reg .rg-meta span+span{position:relative}
+#app-reg .rg-meta span+span::before{content:"";position:absolute;left:-10px;top:50%;width:3px;height:3px;margin-top:-1.5px;background:rgba(255,255,255,.45)}
+@media(max-width:640px){
+  #app-reg .ws-head.rg-hero{flex-direction:column;gap:14px;padding:18px}
+  #app-reg .rg-wk{flex-direction:row;align-items:baseline;gap:10px;padding:0 0 12px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}
+  #app-reg .rg-wk-n{font-size:48px;margin:0}
+  #app-reg .rg-line{font-size:17px}
+}
 /* the six tiles */
 #app-reg .ws-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media(min-width:760px){#app-reg .ws-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
@@ -5316,7 +5350,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>Get access.</b> You need a MISMO resources account with Summit HQ and Sponsorship Portal access (Perry sets these up), and access to the GitMISMO organization on GitHub.</li>
         <li><b>Download a backup.</b> Press <b>Backup</b> at the foot of the left menu and choose Download. Save the file somewhere the team can reach, such as the MISMO Summits SharePoint site.</li>
         <li><b>Take over the automatic emails.</b> The Power Automate flows listed under <b>Emails That Send on Their Own</b> run under Jonna&rsquo;s Microsoft account. If that account is closed they stop. Ask IT to add you as a co-owner of each flow (or make you the primary owner), then check each one still runs.</li>
-        <li><b>Move the two SharePoint lists.</b> <b>Summit HQ People</b> and <b>Summit HQ Tasks</b> live in Jonna&rsquo;s OneDrive. Ask IT to move them to the MISMO Summits site before her account is removed, then point the two flows that read them at the new location.</li>
+        <li><b>Move the SharePoint list.</b> <b>Summit HQ People</b> (which sends Bernie his speaker email) lives in Jonna&rsquo;s OneDrive. Ask IT to move it to the MISMO Summits site before her account is removed, then point the Heads Up for Bernie flow at the new location.</li>
         <li><b>Hand over Jonna&rsquo;s tasks.</b> Open <b>Run of Show</b>, then <b>All Tasks</b>, and give each of Jonna&rsquo;s open tasks a new owner.</li>
         <li><b>Check the Sponsorship Portal stamp</b> at the foot of the left menu. It should say <b>0 new changes</b>. If it has said there are changes waiting for more than a day, see <b>When Something Goes Wrong</b>.</li>
       </ol>
@@ -5337,7 +5371,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <tr><td>Sponsorship Prospectus</td><td>resources.mismo.org/Sponsorship-Prospectus</td><td>The public page where sponsors choose and apply. It reads what is sold from the Sponsorship Requests list.</td></tr>
           <tr><td>Member 360</td><td>resources.mismo.org/member-360</td><td>Member organizations. General Sessions uses it to tell which presenters work for lenders.</td></tr>
           <tr><td>Power Automate flows</td><td>make.powerautomate.com (MBA environment)</td><td>The automatic emails, the portal copy into Summit HQ and the weekly task email.</td></tr>
-          <tr><td>SharePoint lists</td><td><b>Summit HQ People</b> and <b>Summit HQ Tasks</b> in Jonna&rsquo;s OneDrive; <b>Sponsorship Requests</b> on the MISMO Summits site</td><td>The first two should move to a team site (see step 4 above).</td></tr>
+          <tr><td>SharePoint lists</td><td><b>Summit HQ People</b> in Jonna&rsquo;s OneDrive; <b>Sponsorship Requests</b> on the MISMO Summits site</td><td>Summit HQ People should move to a team site (see step 4 above). The old Summit HQ Tasks list is no longer used.</td></tr>
           <tr><td>Registration numbers</td><td>Aptify, the view <b>Event Attendance w/ Prompt</b></td><td>Vanessa&rsquo;s registration dashboard exports these; the Registration tab loads them.</td></tr>
           <tr><td>The event app</td><td>Vanessa builds it each Summit</td><td>Summit HQ gives her the speakers file and sessions file ready to upload.</td></tr>
         </tbody>
@@ -5478,7 +5512,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>Member 360 &rarr; General Sessions.</b> Member 360&rsquo;s list of organizations says which are lenders, so General Sessions can highlight lender presenters.</li>
         <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
-        <li><b>SharePoint &rarr; email.</b> The Summit HQ People list triggers Bernie&rsquo;s speaker email; the Summit HQ Tasks list feeds the Monday task email.</li>
+        <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company and name (read by the Registration List to Sponsors email).</li>
+        <li><b>SharePoint &rarr; email.</b> The Summit HQ People list triggers Bernie&rsquo;s speaker email.</li>
         <li><b>Aptify &rarr; Registration.</b> Through the files from Vanessa&rsquo;s registration dashboard.</li>
       </ul>
     </div>
@@ -5492,7 +5527,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
         <tbody>
           <tr><td>Speaker to Register</td><td>A person with Role = Speaker is added to the Summit HQ People list</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>MISMO Summit HQ - Heads Up for Bernie</td></tr>
-          <tr><td>This Week&rsquo;s Summit Tasks</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>&ldquo;Every Monday at 7:00 AM&hellip;&rdquo; (reads the Summit HQ Tasks list for tasks due in the next 7 days)</td></tr>
+          <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
+          <tr><td>Registration List to Sponsors</td><td>Mondays at 9:00 AM Eastern, from seven weeks before each Summit until it opens</td><td>Every approved sponsor&rsquo;s contact, sent on Kelly&rsquo;s behalf; the attached list has company and name only</td><td>Summit HQ - Registration List to Sponsors</td></tr>
           <tr><td>Sponsorship invoice, logo request, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase</td><td>Invoice: Bernie. Logo: Vanessa. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
           <tr><td>New sponsorship application</td><td>A sponsor submits on the Prospectus</td><td>The sponsorship team</td><td>Sponsorship Intake</td></tr>
         </tbody>
@@ -5538,7 +5574,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <tr><td>The portal stamp says changes are not copied, for more than a day</td><td>Open the <b>Sponsorship Team Emails</b> flow in Power Automate and check its run history. Resubmit a failed run; if its connections show an error, sign them in again.</td></tr>
           <tr><td>A food or break sponsor is missing from Hotel Specs</td><td>In the Sponsorship Portal, check the sponsorship is approved and has its day set. Sponsorships with no day are listed in the note on Hotel Specs.</td></tr>
           <tr><td>Bernie did not get a speaker email</td><td>Check the speaker is on the Summit HQ People list with Role exactly <b>Speaker</b>, then check the Heads Up for Bernie flow&rsquo;s run history.</td></tr>
-          <tr><td>The Monday email is missing or out of date</td><td>Check the Monday flow&rsquo;s run history. It reads the Summit HQ Tasks list in SharePoint, not Summit HQ, so it is only as current as that list.</td></tr>
+          <tr><td>The Monday email is missing or looks wrong</td><td>Check the Summit HQ - Monday Task Email flow&rsquo;s run history. It reads Summit HQ&rsquo;s tasks as of the last change anyone made, so fixing a task in Run of Show fixes the next email.</td></tr>
           <tr><td>Something was deleted or changed by mistake</td><td>Press Undo. If it is too late for Undo, restore from the latest backup, or ask Perry to recover it from the saved history.</td></tr>
           <tr><td>The page broke after someone changed it</td><td>On GitHub, put the previous <code>index.html</code> back (see Changing the Page Itself).</td></tr>
         </tbody>
@@ -5549,11 +5585,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   <details class="hp-sec">
     <summary><span class="hp-n">15</span>Limits and Known Gaps</summary>
     <div class="hp-in">
-      <div class="hp-note"><b>The flows and two SharePoint lists belong to Jonna&rsquo;s account.</b> Until a co-owner is added and the lists are moved, they would stop if that account were closed.</div>
+      <div class="hp-note"><b>The flows and the Summit HQ People list belong to Jonna&rsquo;s account.</b> Until a co-owner is added and the list is moved, they would stop if that account were closed.</div>
       <ul>
         <li>Nothing adds speakers to the Summit HQ People list automatically, so Bernie&rsquo;s email only goes when someone adds them there.</li>
-        <li>The Monday task email reads the Summit HQ Tasks list, which does not change when tasks change in Summit HQ.</li>
-        <li>The Sponsorship Portal copy only refreshes when the portal saves. If the portal is quiet, the stamp still shows when Summit HQ last checked.</li>
+                <li>The Sponsorship Portal copy only refreshes when the portal saves. If the portal is quiet, the stamp still shows when Summit HQ last checked.</li>
         <li>Sponsors register themselves with their comp code; Summit HQ does not track their registration.</li>
       </ul>
     </div>
@@ -6183,7 +6218,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   }
 
   function paintHead(rep){
-    const h=$('#rg-head'); h.textContent='';
+    const h=$('#rg-head'); h.textContent=''; h.className='ws-head';
     if(!ST.ready){ h.appendChild(el('p','ws-sub','Reading the registration numbers…')); return; }
     if(!rep){
       h.appendChild(el('h2',null,'No Registration Numbers Yet'));
@@ -6192,19 +6227,36 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         : 'Nothing has been loaded for this summit yet.'));
       return;
     }
-    h.appendChild(el('h2',null, rep.current_summit+' · '+weekSay(rep.weeks_prior, rep.latest.week_label)));
-    h.appendChild(el('p','ws-sub','Weekly report for '+fmtDate(rep.report_date)+', compared with the '+rep.prior_summit+' at the same number of weeks before the event.'));
-    const tk=el('p','ws-takeaway'), r0=rep.by.total_registered, comb=rep.by.registration_plus_sponsorships;
-    const b=s=>el('b',null,s);
-    tk.appendChild(b(fmt('count',r0.current)+' registered'));
-    tk.appendChild(document.createTextNode(', '));
-    if(r0.vs_prior!=null) tk.appendChild(document.createTextNode(fmt('count',Math.abs(r0.vs_prior))+(r0.vs_prior>=0?' more':' fewer')+' than at this point last year ('+fmt('count',r0.prior)+'). '));
+    /* Jonna, 2026-10-28: the summit's name is already the page title, so it is not said
+       again here; the week is the thing to see first, so it stands on its own, large,
+       with the week's story beside it in the same navy panel the Run of Show opens with */
+    h.className='ws-head rg-hero';
+    const w=rep.weeks_prior, wk=el('div','rg-wk');
+    if(w===-1){ wk.appendChild(el('span','rg-wk-k','Report')); wk.appendChild(el('span','rg-wk-n rg-wk-post','Post')); wk.appendChild(el('span','rg-wk-s','after the Summit')); }
+    else { wk.appendChild(el('span','rg-wk-k','Week')); wk.appendChild(el('span','rg-wk-n',String(w))); wk.appendChild(el('span','rg-wk-s', w===0?'the Friday before the Summit':'before the Summit')); }
+    h.appendChild(wk);
+    const main=el('div','rg-hero-main'); h.appendChild(main);
+    const longDate=s=>{ const d=d0(s); return d? d.toLocaleDateString('en-US',{timeZone:'UTC',weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '—'; };
+    main.appendChild(el('div','rg-eyebrow','Weekly Report · '+longDate(rep.report_date)));
+    const tk=el('p','rg-line'), r0=rep.by.total_registered, comb=rep.by.registration_plus_sponsorships;
+    const hl=(s,c)=>el('span','hl'+(c?' '+c:''),s), tx=s=>document.createTextNode(s);
+    tk.appendChild(hl(fmt('count',r0.current)+' registered'));
+    if(r0.vs_prior!=null){
+      tk.appendChild(tx(', '));
+      tk.appendChild(hl(fmt('count',Math.abs(r0.vs_prior))+(r0.vs_prior>=0?' more':' fewer'), r0.vs_prior>=0?'up':'down'));
+      tk.appendChild(tx(' than at this point last year ('+fmt('count',r0.prior)+').'));
+    } else tk.appendChild(tx('.'));
     if(comb.current!=null){
-      tk.appendChild(document.createTextNode('Registration + sponsorship stands at '));
-      tk.appendChild(b(fmt('money',comb.current)));
-      tk.appendChild(document.createTextNode(comb.prior!=null? ' against '+fmt('money',comb.prior)+' last year.' : '.'));
+      tk.appendChild(tx(' Registration and sponsorship stand at '));
+      tk.appendChild(hl(fmt('money',comb.current)));
+      tk.appendChild(tx(comb.prior!=null? ' against '+fmt('money',comb.prior)+' last year.' : '.'));
     }
-    h.appendChild(tk);
+    main.appendChild(tk);
+    const meta=el('div','rg-meta');
+    meta.appendChild(el('span',null,'Compared with the '+rep.prior_summit+' at '+(w===-1?'the same point':weekLabel(w))));
+    if(rep.previous_report_date) meta.appendChild(el('span',null,'Previous report '+fmtShort(rep.previous_report_date)));
+    const f=firstDay(); if(f){ const days=Math.round((f.getTime()-Date.now())/DAY); if(days>0) meta.appendChild(el('span',null,days+' day'+(days===1?'':'s')+' until the Summit opens')); }
+    main.appendChild(meta);
   }
   function paintTiles(rep){
     const box=$('#rg-tiles'); box.textContent='';
@@ -45916,7 +45968,7 @@ function render(){
   HOST.textContent='';
   if(!doc){
     const e=el('div','gs-empty');
-    e.appendChild(el('h3',null,'Nothing on the General Sessions agenda yet'));
+    e.appendChild(el('h3',null,'Nothing on the General Sessions Agenda Yet'));
     e.appendChild(el('div',null,'Start from a typical Tuesday and change it, or start with a blank page.'));
     const a=el('div','gs-acts');
     const t=el('button','btn','Start From a Typical Tuesday'); t.type='button'; t.addEventListener('click',()=>{ doc=template(); touch(); render(); });
