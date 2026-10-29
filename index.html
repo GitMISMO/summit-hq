@@ -44888,9 +44888,12 @@ async function notifyBernie(){
   const td='padding:8px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,sans-serif;font-size:14px;color:#1b2733;vertical-align:top';
   const listHtml=left.map((b,i)=>'<tr><td style="'+td+';width:28px;color:#6b7a8a">'+(i+1)+'</td><td style="'+td+'"><b>'+e(b.n)+'</b>'
     +(b.r?' <span style="color:#0f6fa8;font-size:12px">('+e(b.r)+')</span>':'')+'<br><span style="color:#55657a;font-size:13px">'+e(b.t)+'</span></td><td style="'+td+'">'+e(b.c)+'</td></tr>').join('');
+  /* a whole table, not bare rows: the flow drops it straight into the email, and rows
+     without their table break the card's layout in Outlook */
+  const listTable='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:14px 0 4px"><tbody>'+listHtml+'</tbody></table>';
   const at=new Date().toISOString();
   const feed={requestedAt:at, requestedBy:who, summit:{venue:v.id||'', name:v.name||'', city:v.city||'', dates:v.dates||''},
-    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||''})), listHtml};
+    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||''})), listHtml:listTable};
   try{ if(ST.db) await ST.db.doc('feeds/board-notify').set(feed); }
   catch(x){ alert('Summit HQ could not save the request for Bernie. Check you are signed in and try again.'); return; }
   setBoard({notified:{at, by:who, n:left.length}},'Bernie notified about the Board');
