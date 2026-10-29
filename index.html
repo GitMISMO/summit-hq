@@ -4514,6 +4514,22 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
 @media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
+/* speaker prospects */
+#app-people .pros-add{padding:12px 16px;border-bottom:1px solid var(--line)}
+#app-people .pros-add .addform::before{content:"\2026 or add somebody new \2014  they go on the prospect list and the master list"}
+#app-people .prow{display:flex;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+#app-people .prow-l{flex:1 1 240px;min-width:0;display:flex;gap:10px;align-items:center}
+#app-people .prow-tx{min-width:0}
+#app-people .prow-n{font-size:13px;font-weight:600;line-height:1.25}
+#app-people .prow-s{font-size:11.5px;color:var(--ink-3);line-height:1.35;overflow-wrap:anywhere}
+#app-people .prow-st{font-size:11px;color:var(--ink-2);margin-top:1px}
+#app-people .prow.accepted .prow-st{color:var(--good);font-weight:600}
+#app-people .prow.declined .prow-l{opacity:.75}
+#app-people .prow .bd-opt.on{background:var(--accent)}
+#app-people .prow.declined .bd-opt.on{background:var(--ink-3)}
+#app-people .prow.accepted .bd-opt.on{background:var(--good)}
+#app-people .prow-x{flex:0 0 auto;background:transparent;border:0;color:var(--ink-3);font-size:16px;line-height:1;padding:2px 6px;cursor:pointer;border-radius:3px}
+#app-people .prow-x:hover,#app-people .prow-x.armed{color:var(--bad);background:var(--bad-soft,transparent)}
 #app-people .sp-amt{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
 #app-people .sp-a{flex:0 0 auto;display:flex;gap:6px;align-items:center}
 #app-people .sp-a .btn{padding:4px 11px;font-size:12px;white-space:nowrap}
@@ -5538,6 +5554,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <h4>The People Tab Tools</h4>
       <ul>
         <li><b>On This Summit</b> lists this Summit&rsquo;s speakers.</li>
+        <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted puts them on this Summit as a speaker; Declined keeps them on the list for future Summits.</li>
+        <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
@@ -43888,6 +43906,12 @@ const speaking=p=>roleOf(p)==='speaker'||!!stOf(p).speaking;
 /* Jonna, 2026-10-28: People tracks speakers. Sponsors are marked on the agenda from the
    portal card and the Board has its own card, so neither is a row here any more. */
 const isSpk=p=>onSummit(p)&&speaking(p);
+/* Amy, 2026-10-29: speaker prospects. Someone is a prospect on this summit once they are
+   added to the list, and a prospect who declined stays one for future summits. Accepted
+   puts them on this summit as a speaker, so nobody is entered twice. */
+const INVITE=[['invited','Invited'],['accepted','Accepted'],['declined','Declined']];
+const inviteOf=p=>stOf(p).invite||'';
+const isProspect=p=>!!stOf(p).prospect || (!!p.pros && !isSpk(p));
 const isSponsor=p=>roleOf(p)==='sponsor';
 const stepsFor=p=>STEPS.filter(s=>(!s.spk||speaking(p)) && !(s.k==='reg'&&isSponsor(p)));
 /* the portal record that gives this sponsor their comp code, if there is one */
@@ -44160,6 +44184,7 @@ const PP_SAY={
   lOpen:    n=>n? n+(ST.step?' to go':' speaker'+(n===1?'':'s')) : (ST.step?'No tasks at this time':'No speakers yet'),
   elseOpen: n=>n+' on the master list',
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
+  prosOpen: n=>n? n+' prospect'+(n===1?'':'s') : 'No prospects yet',
   boardOpen:n=>n? n+' still to register' : 'Everyone is registered',
   fOpen:    n=>n? n+' still outstanding' : 'Everyone has what they need'
 };
@@ -44248,6 +44273,12 @@ function personRow(p, off){
     add.title='Add '+p.n+' to this summit as a speaker';
     add.addEventListener('click',e=>{ e.stopPropagation(); addSpeaker(p.i); });
     acts.appendChild(add);
+    if(!isProspect(p)){
+      const pr=el('button','btn ghost','+ Prospect'); pr.type='button';
+      pr.title='Add '+p.n+' to the speaker prospects for this summit';
+      pr.addEventListener('click',e=>{ e.stopPropagation(); addProspect(p.i); });
+      acts.appendChild(pr);
+    }
     line.appendChild(acts);
     row.appendChild(line);
     if(open) row.appendChild(personBody(p,true));
@@ -44468,7 +44499,9 @@ function personBody(p, off){
         const xb=el('button','x','\u00d7'); xb.type='button';
         xb.title='Take them out of this session';
         xb.addEventListener('click',()=>{
-          patchSt(p.i,{ses:picked.filter(z=>z!==k)},'a session'); render();
+          patchSt(p.i,{ses:picked.filter(z=>z!==k)},'a session');
+          if(/^gs-/.test(k)) try{ if(window.__gsPerson) window.__gsPerson(p.i,k,false); }catch(e){}
+          render();
         });
         chip.appendChild(xb);
         chips.appendChild(chip);
@@ -44491,7 +44524,10 @@ function personBody(p, off){
         });
         sel.addEventListener('change',()=>{
           if(!sel.value) return;
-          patchSt(p.i,{ses:picked.concat(sel.value)},'a session'); render();
+          const k=sel.value;
+          patchSt(p.i,{ses:picked.concat(k)},'a session');
+          if(/^gs-/.test(k)) try{ if(window.__gsPerson) window.__gsPerson(p.i,k,true); }catch(e){}
+          render();
         });
         row.appendChild(sel);
       }
@@ -44718,6 +44754,26 @@ function render(){
     if(rest.length>400) box.appendChild(el('div','pmore','Showing the first 400 — search above to narrow it down.'));
   });
   elseSec.classList.add('tall');
+  /* Amy, 2026-10-29: speaker prospects \u2014 invited, accepted or declined */
+  const pros=all().filter(isProspect);
+  const pc={invited:0,accepted:0,declined:0,'':0}; pros.forEach(p=>{ pc[inviteOf(p)]=(pc[inviteOf(p)]||0)+1; });
+  const ORDER={'':0,invited:1,accepted:2,declined:3};
+  const prosSec=section('Speaker Prospects',
+    pros.length? [pc['']+' to invite', pc.invited+' invited', pc.accepted+' accepted', pc.declined+' declined'].join(' \u00b7 ')
+               : 'People you might ask to speak, and where each one stands',
+    pros.length,'prosOpen',false,box=>{
+    box.appendChild(prospectAdd());
+    const tl=el('div','bd-tally');
+    [[pc[''],'To Invite','none'],[pc.invited,'Invited','virt'],[pc.accepted,'Accepted','in'],[pc.declined,'Declined','reg']]
+      .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
+    box.appendChild(tl);
+    if(!pros.length){ box.appendChild(el('div','blank','No prospects yet. Add someone above, or press + Prospect on anyone in the Master List of Speakers.')); return; }
+    pros.slice().sort((a,b)=>(ORDER[inviteOf(a)]-ORDER[inviteOf(b)]) || String(a.n).localeCompare(String(b.n)))
+      .forEach(p=>box.appendChild(prospectRow(p)));
+    box.appendChild(el('div','pnote pp-when','Accepted puts them on this summit as a speaker. Declined keeps them here for future summits.'));
+  });
+  try{ if(window.__pane) window.__pane.face(prosSec,{note: pros.length? [pc['']&&pc['']+' to invite', pc.invited&&pc.invited+' invited', pc.accepted&&pc.accepted+' accepted', pc.declined&&pc.declined+' declined'].filter(Boolean).join(' \u00b7 ') : 'No prospects yet', tone: pc.invited? 'warn':''}); }catch(e){}
+  right.appendChild(prosSec);
   if(sponSec) right.appendChild(sponSec);
   right.appendChild(elseSec);
   cols.appendChild(left); cols.appendChild(right);
@@ -45012,6 +45068,111 @@ async function notifyBernie(){
   render();
 }
 /* add somebody as a speaker on this summit; work already done for them as a speaker stands */
+function addProspect(id){
+  const p=byId(id); if(!p) return;
+  patchSt(id,{prospect:true},'a speaker prospect');
+  patch(id,{pros:true},'a speaker prospect');
+  ST.prosOpen=true; render();
+}
+function setInvite(id,v){
+  const p=byId(id); if(!p) return;
+  const st=stOf(p), was=st.invite||'';
+  const f={prospect:true, invite:v, inviteAt:v?today():''};
+  if(v==='accepted'){
+    /* straight onto this summit as a speaker — the work already done for them stands */
+    f.on=true;
+    if((st.role||'speaker')==='speaker') f.role='speaker'; else f.speaking=true;
+  } else if(was==='accepted' && st.on){ f.on=false; }
+  patchSt(id,f,'a speaker invitation');
+  if(v==='declined') patch(id,{pros:true},'a speaker prospect');
+  else if(v==='accepted') patch(id,{pros:false},'a speaker prospect');
+  render();
+}
+function dropProspect(id){
+  const p=byId(id); if(!p) return;
+  const f={prospect:false, invite:'', inviteAt:''};
+  if(inviteOf(p)==='accepted') f.on=onSummit(p);   /* an accepted speaker stays on the summit */
+  patchSt(id,f,'a speaker prospect removed');
+  patch(id,{pros:false},'a speaker prospect removed');
+  render();
+}
+function prospectRow(p){
+  const v=inviteOf(p);
+  const row=el('div','prow'+(v?' '+v:''));
+  row.dataset.id=p.i;
+  const L=el('div','prow-l');
+  L.appendChild(avatar(p));
+  const tx=el('div','prow-tx');
+  tx.appendChild(el('div','prow-n',p.n||'Unnamed'));
+  const last=PAST.find(([k])=>(p.h||[]).indexOf(k)>=0);
+  tx.appendChild(el('div','prow-s',[[p.t,p.c].filter(Boolean).join(' \u00b7 '), last? 'Last spoke '+last[1] : 'Not spoken before'].filter(Boolean).join(' \u2014 ')));
+  const note = v==='accepted' ? 'Accepted \u2014 on this summit as a speaker'
+    : v==='declined' ? 'Declined \u2014 kept as a prospect for future summits'
+    : v==='invited' ? 'Invited '+pretty(stOf(p).inviteAt)
+    : (stOf(p).prospect ? 'Not invited yet' : 'Prospect from an earlier summit \u2014 not invited yet');
+  tx.appendChild(el('div','prow-st',note));
+  L.appendChild(tx);
+  row.appendChild(L);
+  const seg=el('div','bd-seg prow-seg'); seg.setAttribute('role','group'); seg.setAttribute('aria-label','Invitation for '+p.n);
+  INVITE.forEach(([k,lab])=>{
+    const b=el('button','bd-opt'+(v===k?' on':''),lab); b.type='button';
+    b.setAttribute('aria-pressed',v===k?'true':'false');
+    b.title = v===k ? 'Click to clear it' : (k==='accepted' ? 'Mark accepted \u2014 they go straight onto this summit as a speaker' : 'Mark '+lab.toLowerCase());
+    b.addEventListener('click',()=>setInvite(p.i, v===k?'':k));
+    seg.appendChild(b);
+  });
+  row.appendChild(seg);
+  const x=el('button','prow-x','\u00d7'); x.type='button';
+  x.title='Take '+(p.n||'them')+' off the prospect list';
+  let armed=false;
+  x.addEventListener('click',()=>{ if(!armed){ armed=true; x.classList.add('armed'); x.title='Click again to take them off the list'; setTimeout(()=>{ armed=false; x.classList.remove('armed'); },2500); return; } dropProspect(p.i); });
+  row.appendChild(x);
+  return row;
+}
+/* find somebody on the master list, or add somebody new, as a prospect */
+function prospectAdd(){
+  const wrap=el('div','addwrap pros-add');
+  const fw=el('div','fldmini grow');
+  fw.appendChild(el('label',null,'Add a prospect from the master list'));
+  const q=document.createElement('input'); q.type='search'; q.placeholder='Start typing a name, company or email\u2026';
+  q.dataset.keep='pros:q';
+  fw.appendChild(q); wrap.appendChild(fw);
+  const hits=el('div','findhits'); wrap.appendChild(hits);
+  const draw=()=>{
+    hits.textContent='';
+    const t=q.value.replace(/\s+/g,' ').trim().toLowerCase(); if(!t) return;
+    const pool=all().filter(x=>!isProspect(x) && !isSpk(x) && hay(x).indexOf(t)>=0);
+    if(!pool.length){ hits.appendChild(el('div','findnone','Nobody on the master list matches \u2014 add them as somebody new below.')); return; }
+    pool.slice(0,8).forEach(x=>{
+      const r=el('div','findhit'); r.appendChild(avatar(x));
+      const L=el('div','fh-l'); L.appendChild(el('div','fh-n',x.n)); L.appendChild(el('div','fh-s',[x.t,x.c].filter(Boolean).join(' \u00b7 ')||'No title or company yet'));
+      r.appendChild(L);
+      const b=el('button','btn ghost','+ Prospect'); b.type='button';
+      b.addEventListener('click',()=>{ q.value=''; addProspect(x.i); });
+      r.appendChild(b); hits.appendChild(r);
+    });
+  };
+  q.addEventListener('input',draw);
+  /* somebody new */
+  const f=el('div','addform');
+  const mk=(lab,key)=>{ const i=document.createElement('input'); i.type='text'; i.dataset.keep='pros:'+key;
+    const w=el('div','fldmini'); w.appendChild(el('label',null,lab)); w.appendChild(i); f.appendChild(w); return i; };
+  const n=mk('Name','n'), c=mk('Company','c'), t=mk('Title','t'), e=mk('Email','e');
+  const go=el('button','btn','Add New Prospect'); go.type='button';
+  go.addEventListener('click',()=>{
+    const nm=n.value.trim(); if(!nm){ n.focus(); return; }
+    let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
+    if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
+    rec(id,'a speaker prospect');
+    write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,pros:true,
+      st:{[venueNow()]:{on:false,prospect:true,steps:{}}}});
+    n.value=c.value=t.value=e.value='';
+    ST.clearAdd=true; render(); ST.clearAdd=false;
+  });
+  f.appendChild(go);
+  wrap.appendChild(f);
+  return wrap;
+}
 function addSpeaker(id){
   const p=byId(id); if(!p) return;
   const st=stOf(p), was=st.role||'speaker';
@@ -45964,6 +46125,11 @@ window.__people={
 #app-gs .gs-desc{width:100%;min-height:34px;font:inherit;font-size:13px;line-height:1.45;padding:6px 8px;border:1px solid var(--line);
   border-radius:3px;background:var(--surface);color:var(--ink-2);resize:vertical}
 #app-gs .gs-desc:focus{border-color:var(--accent);outline:none}
+#app-gs .gs-spon{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--ink-3)}
+#app-gs .gs-spon-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+#app-gs .gs-spon select{font:inherit;font-size:12px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);max-width:260px}
+#app-gs .gs-spon.on select{border-color:var(--accent);color:var(--accent);font-weight:700}
+#app-gs .gs-sponsored{display:inline-block;margin-top:4px;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#fff;background:var(--accent);border-radius:2px;padding:1px 5px}
 #app-gs .gs-ppl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 #app-gs .gs-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:3px;padding:2px 4px 2px 4px;
   background:var(--surface);font-size:12.5px}
@@ -46154,6 +46320,37 @@ function linkPerson(pid,it,on){
   try{ if(window.__people && window.__people.link) window.__people.link(pid, segKey(it), on); }catch(e){}
 }
 function onOtherItem(pid,it){ return doc.items.some(x=>x!==it && (x.people||[]).some(p=>p.id===pid)); }
+/* Amy, 2026-10-29: a General Sessions segment picked on someone's row in People ("Sessions
+   They Are In") puts them on that segment here too. It used to go one way only, so a
+   speaker tagged from People never showed on the segment. */
+function personRole(it){ return it.kind==='Panel'?'Panelist':'Speaker'; }
+window.__gsPerson=function(pid,key,on){
+  if(!doc) return false;
+  const it=doc.items.find(x=>segKey(x)===key); if(!it) return false;
+  const has=(it.people||[]).some(r=>r.id===pid);
+  if(on && !has) it.people=(it.people||[]).concat({id:pid,role:personRole(it)});
+  else if(!on && has) it.people=it.people.filter(r=>r.id!==pid);
+  else return false;
+  touch(); render(); return true;
+};
+/* and anyone already tagged that way before the fix lands on their segment when it draws */
+function syncFromPeople(){
+  if(!doc) return false;
+  let ch=false; const ps=people();
+  doc.items.forEach(it=>{ const k=segKey(it);
+    ps.forEach(p=>{ const st=(p.st||{})[vid]||{};
+      if(st.on && (st.ses||[]).indexOf(k)>=0 && !(it.people||[]).some(r=>r.id===p.i)){
+        it.people=(it.people||[]).concat({id:p.i,role:personRole(it)}); ch=true; } }); });
+  if(ch) touch();
+  return ch;
+}
+/* Jonna, 2026-10-29: who sponsors a segment — the portal's sponsors for this summit, or typed */
+function sponsorNamesGS(){
+  let rows=[]; try{ rows=window.__portalSponsors ? window.__portalSponsors(vid) : []; }catch(e){ rows=[]; }
+  const seen=new Set(), out=[];
+  rows.forEach(r=>{ const n=String(r.company||'').trim(); if(n && !seen.has(n.toLowerCase())){ seen.add(n.toLowerCase()); out.push(n); } });
+  return out.sort((a,b)=>a.localeCompare(b));
+}
 
 /* ---------- drawing ---------- */
 function render(){
@@ -46173,6 +46370,7 @@ function render(){
     a.appendChild(t); a.appendChild(b); e.appendChild(a); HOST.appendChild(e);
     return;
   }
+  syncFromPeople();
   const add=el('button','btn','+ Add Segment'); add.type='button'; add.addEventListener('click',()=>{ const it=newItem('Presentation'); doc.items.push(it); touch(); render(); focusTitle(it.id); });
   const pr=el('button','btn ghost','Print Agenda'); pr.type='button'; pr.addEventListener('click',printAgenda);
   const so=el('button','btn ghost danger','Start Over'); so.type='button'; so.title='Clear the whole running order and start again';
@@ -46269,6 +46467,7 @@ function card(row, over){
   const tm=el('div','gs-time'); tm.appendChild(document.createTextNode(clockShort(row.s)));
   tm.appendChild(el('small',null,'to '+clockShort(row.e)));
   if(it.at) tm.appendChild(el('span','pin','Pinned'));
+  if(it.sponsor){ const sb=el('span','gs-sponsored','Sponsored'); sb.title='Sponsored by '+it.sponsor; tm.appendChild(document.createElement('br')); tm.appendChild(sb); }
   if(lend){ tm.appendChild(document.createElement('br')); const lb=el('span','gs-lend','Lender'); lb.style.display='inline-block'; lb.style.marginTop='4px'; lb.style.cursor='default'; lb.title='A lender is speaking in this session'; tm.appendChild(lb); }
   c.appendChild(tm);
 
@@ -46317,6 +46516,20 @@ function card(row, over){
   ds.addEventListener('input',()=>{ it.desc=ds.value; grow(); touch(); });
   setTimeout(grow,0);
   m.appendChild(ds);
+
+  /* Sponsored by */
+  const sp=el('div','gs-spon'+(it.sponsor?' on':''));
+  sp.appendChild(el('span','gs-spon-l','Sponsored by'));
+  const ss=document.createElement('select');
+  const names=sponsorNamesGS(); if(it.sponsor && names.indexOf(it.sponsor)<0) names.unshift(it.sponsor);
+  [['','No sponsor']].concat(names.map(n=>[n,n])).concat([['__other','Someone else\u2026']]).forEach(([v2,l])=>{
+    const o=document.createElement('option'); o.value=v2; o.textContent=l; if(v2===(it.sponsor||'')) o.selected=true; ss.appendChild(o); });
+  ss.addEventListener('change',()=>{
+    let v2=ss.value;
+    if(v2==='__other'){ v2=(prompt('Who is sponsoring this segment?', it.sponsor||'')||'').trim(); }
+    it.sponsor=v2||''; touch(); render(); });
+  sp.appendChild(ss);
+  m.appendChild(sp);
 
   if(!SOFT.has(it.kind) || (it.people||[]).length){
     const pp=el('div','gs-ppl');
@@ -46474,12 +46687,12 @@ function printAgenda(){
   const v=venue(), fn=gsFn(), tl=timeline();
   const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=tl.map(r=>{ const it=r.it; const ppl=(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return ''; return '<div class="p"><b>'+esc(p.n)+'</b>'+(p.t||p.c?', '+esc([p.t,p.c].filter(Boolean).join(', ')):'')+(ref.role&&ref.role!=='Speaker'?' <i>('+esc(ref.role)+')</i>':'')+'</div>'; }).join('');
-    return '<tr class="'+(SOFT.has(it.kind)?'soft':'')+'"><td class="t">'+clockShort(r.s)+'–'+clockShort(r.e)+'</td><td><div class="k">'+esc(it.kind)+'</div><div class="h">'+esc(it.title||it.kind)+'</div>'+(it.desc?'<div class="d">'+esc(it.desc).replace(/\n/g,'<br>')+'</div>':'')+ppl+'</td></tr>'; }).join('');
+    return '<tr class="'+(SOFT.has(it.kind)?'soft':'')+'"><td class="t">'+clockShort(r.s)+'–'+clockShort(r.e)+'</td><td><div class="k">'+esc(it.kind)+'</div><div class="h">'+esc(it.title||it.kind)+'</div>'+(it.desc?'<div class="d">'+esc(it.desc).replace(/\n/g,'<br>')+'</div>':'')+(it.sponsor?'<div class="sp">Sponsored by '+esc(it.sponsor)+'</div>':'')+ppl+'</td></tr>'; }).join('');
   const html='<!doctype html><html><head><meta charset="utf-8"><title>General Sessions Agenda</title><style>'+
     'body{font-family:Arial,Helvetica,sans-serif;color:#0d314c;margin:28px 36px}h1{font-size:22px;margin:0}.s{color:#6c899f;font-size:13px;margin:4px 0 18px}'+
     'hr{border:0;border-top:3px solid #74bfeb;margin:0 0 14px}table{width:100%;border-collapse:collapse}td{vertical-align:top;padding:9px 10px;border-bottom:1px solid #e5eef5;font-size:13px}'+
     'td.t{width:120px;font-weight:700;white-space:nowrap}.k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#456179;font-weight:700}.h{font-weight:700;font-size:14px;margin:1px 0 3px}'+
-    '.d{color:#344;margin:2px 0 5px;line-height:1.45}.p{font-size:12.5px;margin-top:2px}tr.soft td{background:#f6fafd;color:#456179}tr.soft .h{font-weight:600}'+
+    '.d{color:#344;margin:2px 0 5px;line-height:1.45}.sp{font-size:11.5px;color:#0f6fa8;font-weight:700;margin:2px 0 4px}.p{font-size:12.5px;margin-top:2px}tr.soft td{background:#f6fafd;color:#456179}tr.soft .h{font-weight:600}'+
     '@page{margin:14mm}</style></head><body><h1>'+esc((v&&v.name)||'Summit')+' — General Sessions</h1><div class="s">'+esc([tuesdayLabel(), fn?fn.room:'', v&&v.city].filter(Boolean).join(' · '))+'</div><hr><table>'+rows+'</table></body></html>';
   const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
   f.srcdoc=html; f.onload=()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){} setTimeout(()=>f.remove(),60000); };
@@ -46488,7 +46701,7 @@ function printAgenda(){
 /* ---------- the event app's sessions file reads these ---------- */
 window.__gsSegments=function(forVid){
   if(!doc || forVid!==vid) return null;
-  return timeline().map(r=>({key:segKey(r.it), name:(r.it.title||r.it.kind), kind:r.it.kind, start:r.s, end:r.e, desc:r.it.desc||'',
+  return timeline().map(r=>({key:segKey(r.it), name:(r.it.title||r.it.kind), kind:r.it.kind, start:r.s, end:r.e, desc:r.it.desc||'', sponsor:r.it.sponsor||'',
     people:(r.it.people||[]).map(p=>({id:p.id, role:p.role||'Speaker'}))}));
 };
 
