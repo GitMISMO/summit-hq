@@ -1930,12 +1930,15 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
    and from the week's own card tiers, not from the header.
    These restate the full sizes with a `:root` prefix so neither the Schedule's own
    `body.compact` class (set below 860px) nor source order can take them back. */
-:root #app-grid .mast h1,:root #app-ros .mast h1,:root #app-specs .mast h1,:root #app-resume .rz-title{
+:root #app-grid .mast h1,:root #app-ros .mast h1,:root #app-specs .mast h1,:root #app-resume .rz-title,
+:root #app-gs .mast h1,:root #app-reg .mast h1{
   font-size:clamp(22px,3.4vw,34px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
 :root #app-grid .mast .eyebrow,:root #app-ros .mast .eyebrow,
-:root #app-specs .mast .eyebrow,:root #app-resume .rz-eyebrow{display:block;font-size:11px;letter-spacing:.11em}
+:root #app-specs .mast .eyebrow,:root #app-resume .rz-eyebrow,
+:root #app-gs .mast .eyebrow,:root #app-reg .mast .eyebrow{display:block;font-size:11px;letter-spacing:.11em}
 :root #app-grid .mast .sub,:root #app-ros .mast .sub,
-:root #app-specs .mast .sub,:root #app-resume .rz-sub{display:block;font-size:13px;margin-top:4px}
+:root #app-specs .mast .sub,:root #app-resume .rz-sub,
+:root #app-gs .mast .sub,:root #app-reg .mast .sub{display:block;font-size:13px;margin-top:4px}
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{
   gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
 
@@ -46208,7 +46211,7 @@ function focusTitle(id){ setTimeout(()=>{ const t=document.querySelector('#app-g
 function sidePanel(){
   const sd=el('aside','gs-side');
   const h=el('h3',null,'Presenters'); sd.appendChild(h);
-  sd.appendChild(el('div','hint','Drag a name onto a session to add them. Speakers on this summit are listed first; search finds anyone on the People list.'));
+  sd.appendChild(el('div','hint','Drag a name onto a session to add them. Speakers on this summit are listed first; sponsors and the board are left out unless they are speaking. Search finds anyone else on the People list.'));
   const seg=el('div','gs-seg');
   [['speakers','On This Summit'],['unplaced','Not Placed Yet'],['lenders','Lenders'],['all','Everyone']].forEach(([k,lab])=>{
     const b=el('button',null,lab); b.type='button'; b.setAttribute('aria-pressed',sideMode===k?'true':'false');
@@ -46218,11 +46221,15 @@ function sidePanel(){
   sd.appendChild(q);
   const lst=el('div','gs-plist'); sd.appendChild(lst);
   const count=new Map(); doc.items.forEach(it=>(it.people||[]).forEach(r=>count.set(r.id,(count.get(r.id)||0)+1)));
-  const onHere=p=>{ const st=(p.st||{})[vid]||{}; return !!st.on && (st.role||'speaker')!=='board'; };
+  /* Amy, 2026-10-29: sponsors and the board are not presenters. Someone is a presenter when
+     they are a speaker on this summit, or a sponsor or board member marked as speaking too. */
+  const presenting=p=>{ const st=(p.st||{})[vid]||{}; return (st.role||'speaker')==='speaker' || !!st.speaking; };
+  const notPresenter=p=>{ const st=(p.st||{})[vid]||{}; return !!st.on && !presenting(p); };
+  const onHere=p=>{ const st=(p.st||{})[vid]||{}; return !!st.on && presenting(p); };
   const draw=()=>{
     lst.textContent='';
     const t=q.value.trim().toLowerCase();
-    let ppl=people();
+    let ppl=people().filter(p=>!notPresenter(p));
     if(t) ppl=ppl.filter(p=>[p.n,p.c,p.e,p.t].join(' ').toLowerCase().includes(t));
     else if(sideMode==='speakers') ppl=ppl.filter(onHere);
     else if(sideMode==='unplaced') ppl=ppl.filter(p=>onHere(p) && !count.get(p.i));
