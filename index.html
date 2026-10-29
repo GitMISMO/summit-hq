@@ -884,6 +884,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .ptab:hover{border-color:var(--line-2)}
 .ptab.on{background:var(--surface);border-color:var(--line-2);color:var(--ink)}
 .plans-acts{display:flex;align-items:center;gap:8px}
+.plans-addbtn{position:relative;overflow:hidden;cursor:pointer}
+.plans-addbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.plans-pager select{max-width:360px}
 .plans-acts .close{background:transparent;border:0;font-size:22px;line-height:1;color:var(--ink-3);padding:0 4px}
 .plans-body{overflow:auto;background:var(--paper);padding:12px;flex:1;min-height:0;text-align:center}
 .plans-body img{max-width:100%;height:auto;border:1px solid var(--line);background:#fff}
@@ -3838,6 +3841,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <button class="ptab" data-view="contract" type="button">Contract</button>
         </div>
         <div class="plans-acts">
+          <label class="btn ghost plans-addbtn" id="plans-add" hidden title="Add more pages — pictures or PDFs">Add pages<input type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf" multiple></label>
           <button class="btn ghost danger" id="plans-remove" type="button" hidden>Remove</button>
           <button class="btn ghost" id="plans-zoom" type="button">Full size</button>
           <button class="close" id="plans-close" type="button" title="Close">&times;</button>
@@ -38667,29 +38671,58 @@ function shrinkImage(file, max){
     fr.readAsDataURL(file);
   });
 }
+/* Jonna, 2026-10-29: the floor plan and capacity chart can hold several pages (the
+   hotel's room diagrams sit behind the map), and a PDF is turned into pictures here. */
+const baseName = n => String(n||'').replace(/\.[a-z0-9]+$/i,'').replace(/[_]+/g,' ').replace(/\s+/g,' ').trim();
+async function filesToImages(files){
+  const out=[];
+  for(const f of files){
+    if(/pdf/i.test(f.type||'') || /\.pdf$/i.test(f.name||'')){
+      if(!window.__pdfPages) throw new Error('no pdf reader');
+      const pgs=await window.__pdfPages(f);
+      pgs.forEach((b,i)=>out.push({file:b, label: baseName(f.name)+(pgs.length>1?' (page '+(i+1)+')':'')}));
+    } else if(/^image\//.test(f.type||'')) out.push({file:f, label: baseName(f.name)});
+  }
+  return out;
+}
+/* every page of a document, with what each one is */
+function pagesOf(kind, d){
+  if(!d) return [];
+  if(kind==='contract') return (d.pages||[]).map((src,i,a)=>({src, label:'Page '+(i+1)+' of '+a.length}));
+  return [{src:d.src, label:d.label || (kind==='fp' ? 'Hotel map' : 'Capacity chart')}].concat(d.more||[]);
+}
 async function addPlanFiles(kind, files){
   const vid=V().id;
-  const list=[...files].filter(f=>/^image\//.test(f.type));
-  if(!list.length){ notice('Pictures only \u2014 PNG, JPEG or WebP. If yours is a PDF, save the page as an image first.'); return; }
   planBusy=kind; showPlans(planView);
+  let imgs=[];
+  try{ imgs=await filesToImages([...files]); }
+  catch(e){ planBusy=''; render(); showPlans(planView); notice('That PDF could not be opened. Try saving the pages as pictures.'); return; }
+  if(!imgs.length){ planBusy=''; render(); showPlans(planView); notice('Pictures or PDFs only — PNG, JPEG, WebP or PDF.'); return; }
   try{
-    const srcs=[];
-    for(const f of list) srcs.push(await shrinkImage(f, 1800));
+    const pages=[];
+    for(const x of imgs) pages.push({src: await shrinkImage(x.file, 1800), label: x.label});
     planDocs[vid]=Object.assign({}, planDocs[vid]||{});
     const nm=(V().name||'this summit');
+    const cur=docsFor(vid)[kind];
+    let landOn=0;
     if(kind==='contract'){
-      const had=(planDocs[vid].contract&&planDocs[vid].contract.pages)||[];
-      planDocs[vid].contract={note:(planDocs[vid].contract&&planDocs[vid].contract.note)
-        || 'Added here \u2014 '+nm+'.', pages: had.concat(srcs)};
+      const had=(cur&&cur.pages)||[];
+      planDocs[vid].contract={note:(cur&&cur.note) || 'Added here — '+nm+'.', pages: had.concat(pages.map(p=>p.src))};
+      landOn=had.length;
+    } else if(cur){
+      /* already on file: these are added as further pages behind it */
+      const more=(cur.more||[]).concat(pages);
+      planDocs[vid][kind]=Object.assign({}, cur, {more});
+      landOn=1+(cur.more||[]).length;
     } else {
-      planDocs[vid][kind]={src:srcs[0], alt:PLAN_LABEL[kind]+' for '+nm,
-        note:'Added here \u2014 '+nm+'.'};
+      planDocs[vid][kind]={src:pages[0].src, label:pages[0].label, alt:PLAN_LABEL[kind]+' for '+nm,
+        note:'Added here — '+nm+'.', more:pages.slice(1)};
     }
     planBusy='';
     await savePlanDocs(vid);
-    planPage = kind==='contract' ? ((docsFor(vid).contract||{pages:[]}).pages.length-1) : 0;
-    render(); showPlans(kind, kind==='contract'?planPage:null);
-    notice('The '+PLAN_LABEL[kind]+' is on file for '+nm+'.');
+    render(); showPlans(kind, landOn);
+    notice(pages.length>1 ? pages.length+' pages added to the '+PLAN_LABEL[kind]+' for '+nm+'.'
+                          : 'The '+PLAN_LABEL[kind]+' is on file for '+nm+'.');
   }catch(e){
     planBusy=''; render(); showPlans(planView);
     notice('That picture could not be read. Try a PNG or a JPEG.');
@@ -38698,6 +38731,17 @@ async function addPlanFiles(kind, files){
 function removePlan(kind){
   const vid=V().id;
   if(!planDocs[vid] || !planDocs[vid][kind]) return;
+  const cur=planDocs[vid][kind];
+  if(kind!=='contract' && cur.more && cur.more.length){
+    /* several pages: take off only the one on screen */
+    const pg=pagesOf(kind, cur); pg.splice(planPage,1);
+    planDocs[vid]=Object.assign({}, planDocs[vid]);
+    planDocs[vid][kind]=Object.assign({}, cur, {src:pg[0].src, label:pg[0].label, more:pg.slice(1)});
+    savePlanDocs(vid);
+    planPage=Math.max(0, Math.min(planPage, pg.length-1)); render(); showPlans(kind, planPage);
+    notice('That page is off the '+PLAN_LABEL[kind]+'.');
+    return;
+  }
   planDocs[vid]=Object.assign({}, planDocs[vid]); delete planDocs[vid][kind];
   savePlanDocs(vid);
   planPage=0; render(); showPlans(kind);
@@ -38722,35 +38766,29 @@ function showPlans(v, page){
     $('plans-note').textContent='';
     document.querySelectorAll('.ptab').forEach(t=>t.classList.toggle('on', t.dataset.view===planView));
     $('plans-remove').hidden=true;
+    { const ad=$('plans-add'); if(ad) ad.hidden=true; }
     m.hidden=false; return;
   }
   img.hidden=false;
   if(drop){ drop.hidden=true; drop.textContent=''; }
+  const d=docs[planView], pages=pagesOf(planView, d);
+  planPage = Math.max(0, Math.min(pages.length-1, planPage));
+  const pg=pages[planPage]||{};
+  img.src=pg.src||'';
+  img.alt = planView==='contract' ? 'Contract page '+(planPage+1)+' of '+pages.length : (pg.label || d.alt || '');
+  $('plans-note').textContent = planView==='contract' || pages.length<2 ? (d.note||'') : pg.label;
   const rm=$('plans-remove');
   if(rm){ rm.hidden = !(planDocs[vid] && planDocs[vid][planView]);
-    rm.textContent='Remove this '+PLAN_LABEL[planView]; }
-  if(planView==='contract' && docs.contract){
-    const c=docs.contract;
-    planPage = Math.max(0, Math.min(c.pages.length-1, planPage));
-    img.src=c.pages[planPage];
-    img.alt='Contract page '+(planPage+1)+' of '+c.pages.length;
-    $('plans-note').textContent=c.note;
-    const sel=$('plans-page');
-    if(sel.options.length!==c.pages.length){
-      sel.textContent='';
-      c.pages.forEach((_,i)=>{ const o=document.createElement('option');
-        o.value=i; o.textContent='Page '+(i+1)+' of '+c.pages.length; sel.appendChild(o); });
-    }
-    sel.value=String(planPage);
-    $('plans-prev').disabled = planPage===0;
-    $('plans-next').disabled = planPage===c.pages.length-1;
-    pager.hidden=false;
-  } else {
-    const p=docs[planView] || docs.fp;
-    img.src=p.src; img.alt=p.alt;
-    $('plans-note').textContent=p.note;
-    pager.hidden=true;
-  }
+    rm.textContent = planView!=='contract' && pages.length>1 ? 'Remove this page' : 'Remove this '+PLAN_LABEL[planView]; }
+  const ad=$('plans-add'); if(ad) ad.hidden = !!planBusy;
+  const sel=$('plans-page');
+  sel.textContent='';
+  pages.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i;
+    o.textContent = planView==='contract' ? p.label : (i+1)+'. '+p.label; sel.appendChild(o); });
+  sel.value=String(planPage);
+  $('plans-prev').disabled = planPage===0;
+  $('plans-next').disabled = planPage===pages.length-1;
+  pager.hidden = pages.length<2;
   document.querySelectorAll('.ptab').forEach(t=>t.classList.toggle('on', t.dataset.view===planView));
   body.scrollTop=0; body.scrollLeft=0;
   m.hidden=false;
@@ -38766,15 +38804,15 @@ function planAdder(kind){
   }
   w.appendChild(el('div','pa-sub', kind==='contract'
     ? 'Add the contract pages as pictures \u2014 pick them all at once and they are kept in order. You can add more later.'
-    : 'Add a picture of the '+PLAN_LABEL[kind]+' and it is kept with this summit.'));
-  const lab=el('label','btn pa-btn', kind==='contract' ? 'Choose the pages' : 'Choose a picture');
+    : 'Add the '+PLAN_LABEL[kind]+' and it is kept with this summit.'));
+  const lab=el('label','btn pa-btn', kind==='contract' ? 'Choose the pages' : 'Choose the files');
   const inp=document.createElement('input');
-  inp.type='file'; inp.accept='image/png,image/jpeg,image/webp,image/gif';
-  if(kind==='contract') inp.multiple=true;
+  inp.type='file'; inp.accept='image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf';
+  inp.multiple=true;
   inp.addEventListener('change',()=>{ if(inp.files&&inp.files.length) addPlanFiles(kind, inp.files); });
   lab.appendChild(inp);
   w.appendChild(lab);
-  w.appendChild(el('div','pa-note','PNG, JPEG or WebP. If yours is a PDF, save the page as a picture first. '
+  w.appendChild(el('div','pa-note','PNG, JPEG, WebP or PDF — pick several at once and each becomes a page. '
     +'Large pictures are scaled down so they save cleanly.'));
   return w;
 }
@@ -38784,7 +38822,7 @@ const hasContract = ()=>{ const v=V(); if(!v) return false;
 function openContract(){
   const d=docsFor((V()||{}).id);
   if(d.contract) showPlans('contract', 0);
-  else showPlans(d.fp ? 'fp' : d.cap ? 'cap' : 'fp');
+  else showPlans(d.fp ? 'fp' : d.cap ? 'cap' : 'fp', 0);
 }
 /* The Contract button now lives on Hotel Specs, and the Schedule's pane is hidden when
    that tab is showing — a fixed child of a hidden pane draws nothing. Moving the viewer
@@ -39000,9 +39038,14 @@ $('contract-btn').addEventListener('click',()=>{
   if($('contract-btn').disabled) return;
   openContract();
 });
-$('plans-prev').addEventListener('click',()=>showPlans('contract', planPage-1));
-$('plans-next').addEventListener('click',()=>showPlans('contract', planPage+1));
-$('plans-page').addEventListener('change',e=>showPlans('contract', parseInt(e.target.value,10)));
+$('plans-prev').addEventListener('click',()=>showPlans(planView, planPage-1));
+$('plans-next').addEventListener('click',()=>showPlans(planView, planPage+1));
+$('plans-page').addEventListener('change',e=>showPlans(planView, parseInt(e.target.value,10)));
+(function wireAddPages(){
+  const lab=$('plans-add'); if(!lab) return;
+  const inp=lab.querySelector('input');
+  inp.addEventListener('change',()=>{ if(inp.files&&inp.files.length) addPlanFiles(planView, inp.files); inp.value=''; });
+})();
 $('plans-close').addEventListener('click',hidePlans);
 (function wireRemovePlan(){
   const b=$('plans-remove'); if(!b) return;
@@ -39017,7 +39060,7 @@ $('plans-close').addEventListener('click',hidePlans);
 })();
 $('plans-scrim').addEventListener('click',hidePlans);
 document.querySelectorAll('.ptab').forEach(t=>t.addEventListener('click',
-  ()=>showPlans(t.dataset.view, t.dataset.view==='contract' ? planPage : null)));
+  ()=>showPlans(t.dataset.view, 0)));
 $('plans-zoom').addEventListener('click',()=>{
   const body=$('plans-body'), on=body.classList.toggle('full');
   $('plans-zoom').textContent = on ? 'Fit to width' : 'Full size';
@@ -45304,6 +45347,8 @@ window.__people={
     try{ await doc.destroy(); }catch(e){}
     return out;
   }
+  /* the floor plan viewer takes PDFs too (Jonna, 2026-10-29) */
+  window.__pdfPages = pagesFromPdf;
 
   /* ---------- what Claude is asked for ---------- */
   const SHAPE = `{
