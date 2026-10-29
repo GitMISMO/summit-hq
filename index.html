@@ -33660,10 +33660,14 @@ function fillsBox(s, p){
   let lk=null; try{ lk=lockedAt()[p.b+'|'+p.r]; }catch(e){ lk=null; }
   return !lk;
 }
+/* Jonna, 2026-10-28: only the groups a chair survey went out for need confirming,
+   so a card is marked "not confirmed" only once its survey has been sent. */
+function surveySent(id){ try{ const r=surveyView().rows[id]; return !!(r && r.status); }catch(e){ return false; } }
 function makeCard(s, flags, placed, bothSlots){
   const p = place()[s.id];
   const conf = p && p.confirmed;
-  const c = el('div','card'+(s.kind!=='wg'?' consultant':'')+(placed&&s.kind==='wg'&&!conf?' unconf':''));
+  const askConf = !conf && surveySent(s.id);
+  const c = el('div','card'+(s.kind!=='wg'?' consultant':'')+(placed&&s.kind==='wg'&&askConf?' unconf':''));
   c.style.setProperty('--h', hueOf(s.id));
   c.style.setProperty('--tn', toneOf(s.id));
   if(isSetPiece(s.id)) c.classList.add('setpiece');
@@ -33692,7 +33696,7 @@ function makeCard(s, flags, placed, bothSlots){
     const tag=el('div','dns unk','?'); tag.title='Not known yet whether it needs a session';
     c.appendChild(tag);
   }
-  if(placed && s.kind==='wg'){
+  if(placed && s.kind==='wg' && (conf || askConf)){
     const dot=el('div','st '+(conf?'yes':'no'));
     dot.title = conf ? 'Confirmed' : 'Not confirmed';
     c.appendChild(dot);
@@ -34300,11 +34304,14 @@ function render_(){
     return out;
   };
   const m=$('meters'); m.textContent='';
-  const confN=WGS.filter(x=>pl[x.id]&&pl[x.id].confirmed).length;
+  /* confirmed counts only the groups a chair survey went out for */
+  const surveyed=WGS.filter(x=>pl[x.id] && surveySent(x.id));
+  const confN=surveyed.filter(x=>pl[x.id].confirmed).length, sentN=surveyed.length;
   const placedNames = coreWG.filter(s=>pl[s.id]).map(s=>s.nm).sort();
-  const confNames = WGS.filter(x=>pl[x.id]&&pl[x.id].confirmed).map(x=>x.nm).sort();
+  const confNames = surveyed.filter(x=>pl[x.id].confirmed).map(x=>x.nm).sort();
+  const waitNames = surveyed.filter(x=>!pl[x.id].confirmed).map(x=>x.nm).sort();
   [[String(placedWG),'workgroups placed',placedWG<coreWG.length?'is-warn':'is-good'],
-   [confN+'/'+placedWG,'confirmed',confN===placedWG&&placedWG?'is-good':'is-warn'],
+   [confN+'/'+sentN,'confirmed',confN===sentN&&sentN?'is-good':'is-warn'],
    [badN,'conflicts',badN?'is-bad':'is-good'],
    [warnN,'warnings',warnN?'is-warn':''],
    [null,'daypick','']].forEach(([n,k,cls])=>{
@@ -34329,7 +34336,9 @@ function render_(){
       if(k==='workgroups placed')
         d.title = placedNames.length ? placedNames.join('\n') : 'Nothing on the grid yet';
       if(k==='confirmed')
-        d.title = confNames.length ? confNames.join('\n') : 'Nothing confirmed yet';
+        d.title = !sentN ? 'No chair surveys sent yet'
+          : (confNames.length ? 'Confirmed:\n'+confNames.join('\n') : 'Nothing confirmed yet')
+            + (waitNames.length ? '\n\nWaiting on:\n'+waitNames.join('\n') : '');
     }
     m.appendChild(d);
   });
@@ -34345,7 +34354,7 @@ function render_(){
 
   $('hint').textContent = selected
     ? 'Now click an open slot to place '+S[selected].nm+'.'
-    : 'Click a session to open its details. Drag one to move it — except a card marked “can’t move”, which is either confirmed with the hotel or held there by a staff request.';
+    : 'Click a session to open its details. Drag one to move it — except a card with a lock, which is either confirmed with the hotel or held there by a staff request.';
 
   const fp=$('fixed'); fp.textContent='';
   buildProgram().forEach(f=>{
