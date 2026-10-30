@@ -33905,7 +33905,7 @@ function showFatal(err){
   if(!bar){ bar=el('div'); bar.id='fatal'; bar.className='fatal';
     document.querySelector('.wrap').prepend(bar); }
   bar.textContent='Something went wrong drawing the page: '+(err&&err.message?err.message:String(err))
-    +' — tell Claude this message.';
+    +' — send this message to Jonna.';
   try{ console.error(err); }catch(e){}
 }
 /* ---- Jonna, 2026-10-07: the Sponsorship Portal fills the Sponsor boxes ---- */
@@ -41956,7 +41956,7 @@ startClock();
   if(!db){
     ready=true;renderAll();
     $("#taskList").textContent="";
-    $("#taskList").appendChild(blank("Can't reach the plan data","This board keeps its tasks in Claude. Reopen it from your artifact list while signed in."));
+    $("#taskList").appendChild(blank("Can't reach the plan data","Can't reach this board's tasks right now. Sign in again and reload the page."));
     const gb=$("#gapBody");
     if(gb){gb.textContent="";gb.appendChild(blank("Can't reach the plan data","Reopen this board while signed in."));}
     return;
@@ -43691,7 +43691,7 @@ startClock();
     }catch(e){
       const code=e && e.code;
       if(code==='cancelled'){ out('Stopped.'); }
-      else if(code==='not_granted') { out('This page has not been allowed to ask Claude on your account.'); SAMPLE=null; paint(); }
+      else if(code==='not_granted') { out('Arrangement suggestions aren\u2019t available on your account.'); SAMPLE=null; paint(); }
       else if(code==='rate_limited') out('Too many questions at once — give it a minute and ask again.');
       else if(code==='invalid_json') out('The answer came back unreadable. Try asking for one thing at a time.');
       else out('That did not work. Try saying it another way.');
@@ -45583,7 +45583,7 @@ window.__people={
 
   async function readContract(){
     if(ST.busy) return;
-    if(!ST.sample){ ST.err='This view cannot ask Claude, so the contract has to be typed in.'; draw(); return; }
+    if(!ST.sample){ ST.err='The contract reader isn\u2019t available here, so the terms have to be typed in.'; draw(); return; }
     ST.busy='read'; ST.err=''; ST.ctl=new AbortController(); draw();
     const per=Math.max(1, Math.min(ST.imgLimit||4, 8));
     const got=emptyTerms();
@@ -45614,9 +45614,9 @@ window.__people={
           if(d) ST.first=d; }catch(e){}
       }
     }catch(e){
-      ST.err = e && e.code==='rate_limited' ? 'Claude is busy — give it a minute and press Read again.'
-        : e && e.code==='not_granted' ? 'This view is not allowed to ask Claude.'
-        : e && e.code==='images_unavailable' ? 'This view cannot send pictures to Claude.'
+      ST.err = e && e.code==='rate_limited' ? 'The contract reader is busy \u2014 give it a minute and press Read again.'
+        : e && e.code==='not_granted' ? 'The contract reader isn\u2019t available on your account.'
+        : e && e.code==='images_unavailable' ? 'The contract reader can\u2019t take pictures here.'
         : 'The contract could not be read. Try again, or type the terms in below.';
       if(!ST.terms){ ST.terms=emptyTerms(); ST.rooms=[]; ST.missing=[]; }
     }
@@ -45763,7 +45763,7 @@ window.__people={
     two.body.appendChild(mk('div','ns-note', ST.pages.length
       ? ST.pages.length+' page'+(ST.pages.length===1?'':'s')+' ready. They are filed in the Contract viewer when the summit is built.'
       : 'A PDF, or the pages as pictures. A PDF is turned into pages here — nothing leaves the page until you press Read.'));
-    if(!ST.sample) two.body.appendChild(mk('div','ns-warn','This view cannot ask Claude, so the terms below have to be typed in.'));
+    if(!ST.sample) two.body.appendChild(mk('div','ns-warn','The contract reader isn\u2019t available here, so type the terms in below.'));
     if(ST.busy) two.body.appendChild(mk('div','ns-step', ST.step||'Working…'));
     if(ST.err) two.body.appendChild(mk('div','ns-warn', ST.err));
     box.appendChild(two.s);
