@@ -4514,6 +4514,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
 @media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
+#app-reg .ws-title.ws-edit{cursor:text}
+#app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
+#app-reg .ws-title-in{width:100%;min-width:120px;font:inherit;font-size:inherit;padding:2px 5px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
 /* speaker prospects */
 #app-people .pros-add{padding:12px 16px;border-bottom:1px solid var(--line)}
 #app-people .pros-add .addform::before{content:"\2026 or add somebody new \2014  they go on the prospect list and the master list"}
@@ -5833,13 +5836,17 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     try{ return window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ return null; }
   }
   const own=d=>{ try{ return JSON.parse(JSON.stringify(d||{})); }catch(e){ return {}; } };
-  const blank=()=>({weekly:[], current:null, prior:null, files:{}});
+  const blank=()=>({weekly:[], current:null, prior:null, files:{}, titles:{}});
+  /* Vanessa, 2026-10-30: a job title typed here is kept by person, so loading a new
+     registrant list does not lose it. The file's own title wins when it has one. */
+  const titleKey=r=>String((r&&(r.email||r.name))||'').trim().toLowerCase();
   function take(d){
     const o=own(d), b=blank();
     b.weekly=Array.isArray(o.weekly)? o.weekly.filter(r=>r&&typeof r==='object') : [];
     ['current','prior'].forEach(k=>{ const x=o[k];
       if(x && Array.isArray(x.rows)) b[k]={cols:Array.isArray(x.cols)?x.cols:COLS.slice(), rows:x.rows}; });
     b.files=(o.files && typeof o.files==='object')? o.files : {};
+    b.titles=(o.titles && typeof o.titles==='object')? o.titles : {};
     return b;
   }
   function doc(){ if(!ST.doc) ST.doc=blank(); return ST.doc; }
@@ -5975,7 +5982,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   function people(which){
     const x=doc()[which]; if(!x || !Array.isArray(x.rows)) return [];
     const cols=x.cols||COLS;
-    return x.rows.map(a=>{ const o={}; cols.forEach((c,i)=>{ o[c]=Array.isArray(a)? a[i] : (a||{})[c]; }); return o; });
+    const tt=doc().titles||{};
+    return x.rows.map(a=>{ const o={}; cols.forEach((c,i)=>{ o[c]=Array.isArray(a)? a[i] : (a||{})[c]; });
+      o.title=String(o.title||'').trim(); o.typedTitle='';
+      if(!o.title){ const t=tt[titleKey(o)]; if(t){ o.title=t; o.typedTitle=t; } }
+      return o; });
   }
   function newSince(rep){
     const rows=weekly(); if(!rep) return [];
@@ -6377,7 +6388,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const f=F[k]; d.appendChild(el('span','w', f? (f.file||'')+' · '+fmtShort(date10(f.at))+(f.by?' by '+f.by:'') : 'Not loaded'));
       have.appendChild(d); });
     c.appendChild(have);
-    note(c,'Load the three files from Vanessa’s registration dashboard (JSON or CSV): the weekly report history and the two registrant lists. Pick them together. A weekly file adds its weeks (a week already here is replaced); a registrant list replaces the list here for this summit. Registrant names and emails are kept in Summit HQ’s private storage only.');
+    note(c,'Load the three files from Vanessa’s registration dashboard (JSON or CSV): the weekly report history and the two registrant lists. Pick them together. A weekly file adds its weeks (a week already here is replaced); a registrant list replaces the list here for this summit. A registrant list should carry a Title (or Job Title) column \u2014 it shows in the list below and goes on the sponsors\u2019 weekly list. Registrant names and emails are kept in Summit HQ’s private storage only.');
     const inp=document.createElement('input'); inp.type='file'; inp.multiple=true; inp.accept='.json,.csv,application/json,text/csv'; inp.hidden=true;
     inp.addEventListener('change',async()=>{ const fl=[...(inp.files||[])]; if(!fl.length) return;
       ST.pick=await readFiles(fl); ST.pickErr=''; render(true); });
@@ -6520,7 +6531,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const b=el('button',null,t); b.type='button'; b.dataset.list=k; b.addEventListener('click',()=>{ ST.list=k; paint(); }); seg.appendChild(b); });
     const c=card('rg-list','Registrant Lists',[seg]);
     const r1=el('div','ws-row');
-    const q=document.createElement('input'); q.type='search'; q.className='ws-search'; q.placeholder='Search name, company or email'; q.value=ST.q;
+    const q=document.createElement('input'); q.type='search'; q.className='ws-search'; q.placeholder='Search name, title, company or email'; q.value=ST.q;
     q.setAttribute('aria-label','Search registrants');
     q.addEventListener('input',()=>{ ST.q=q.value; paint(); });
     r1.appendChild(q);
@@ -6535,7 +6546,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const cnt=el('span','ws-count grow'); r1.appendChild(cnt);
     c.appendChild(r1);
     const box=el('div','ws-tablebox'), t=el('table','ws-table'), th=el('thead'), hr=el('tr');
-    [['name','Name'],['company','Company'],['category','Category'],['email','Email'],['format','Format'],['order_date','Registered'],['reg_revenue','Revenue','n']].forEach(([k,h,cl])=>{
+    /* Kelly, 2026-10-30: job title sits beside the name */
+    [['name','Name'],['title','Title'],['company','Company'],['category','Category'],['email','Email'],['format','Format'],['order_date','Registered'],['reg_revenue','Revenue','n']].forEach(([k,h,cl])=>{
       const x=el('th',cl||null); const b=el('button','ws-th',h); b.type='button'; b.dataset.sort=k;
       b.addEventListener('click',()=>{ const [sk,sd]=ST.sort[ST.list];
         ST.sort[ST.list]=[k, sk===k? -sd : (k==='order_date'||k==='reg_revenue'? -1 : 1)]; paint(); });
@@ -6557,7 +6569,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       if(ST.category && ![...cs.options].some(o=>o.value===ST.category)) opt(ST.category, ST.category+' (0)');
       cs.value=ST.category||'';
       const catOk=r=>!ST.category || (ST.category==='~none'? !r.category : r.category===ST.category);
-      let rows=all.filter(r=>(!ST.format||r.format===ST.format) && catOk(r) && (!qq||[r.name,r.company,r.email].some(v=>String(v||'').toLowerCase().includes(qq))));
+      let rows=all.filter(r=>(!ST.format||r.format===ST.format) && catOk(r) && (!qq||[r.name,r.title,r.company,r.email].some(v=>String(v||'').toLowerCase().includes(qq))));
       const [k,d]=ST.sort[ST.list];
       rows=rows.slice().sort((a,b)=>{ const av=k==='reg_revenue'?(num(a[k])||0):String(a[k]||'').toLowerCase(), bv=k==='reg_revenue'?(num(b[k])||0):String(b[k]||'').toLowerCase();
         return av<bv?-d:av>bv?d:0; });
@@ -6565,11 +6577,32 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       tb.textContent='';
       rows.forEach(r=>{ const tr=el('tr'); const nm=el('td',null,r.name||'');
         if(ST.list==='current' && newIds.has(String(r.registration_id))) nm.appendChild(el('span','ws-chip new','New'));
-        tr.appendChild(nm); tr.appendChild(el('td',null,r.company||'')); tr.appendChild(el('td',r.category?'cat':'cat ws-muted',r.category||'\u2014')); tr.appendChild(el('td',null,r.email||''));
+        tr.appendChild(nm);
+        /* the title: from the file, or typed here \u2014 click to type or change one */
+        const ttd=el('td','ws-title'+(r.title?'':' ws-muted'), r.title||'\u2014');
+        const fromFile = r.title && !r.typedTitle;
+        if(!fromFile && canEdit()){
+          ttd.classList.add('ws-edit'); ttd.title='Click to type a job title';
+          ttd.addEventListener('click',()=>{
+            if(ttd.querySelector('input')) return;
+            const inp=document.createElement('input'); inp.type='text'; inp.value=r.typedTitle||''; inp.placeholder='Job title';
+            inp.className='ws-title-in'; ttd.textContent=''; ttd.appendChild(inp); inp.focus();
+            const done=commit=>{ if(!inp.isConnected) return;
+              const v=inp.value.trim(), k=titleKey(r);
+              if(commit && k && v!==(r.typedTitle||'')){
+                step('a job title'); const d=doc(); d.titles=Object.assign({}, d.titles||{});
+                if(v) d.titles[k]=v; else delete d.titles[k];
+                save(); }
+              paint(); };
+            inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); done(true); } else if(e.key==='Escape'){ done(false); } });
+            inp.addEventListener('blur',()=>done(true));
+          });
+        }
+        tr.appendChild(ttd); tr.appendChild(el('td',null,r.company||'')); tr.appendChild(el('td',r.category?'cat':'cat ws-muted',r.category||'\u2014')); tr.appendChild(el('td',null,r.email||''));
         const fm=el('td'); fm.appendChild(el('span','ws-chip '+(r.format==='Virtual'?'vr':'ip'), r.format||'')); tr.appendChild(fm);
         tr.appendChild(el('td',null,fmtShort(String(r.order_date||'').slice(0,10)))); tr.appendChild(el('td','n',fmt('money',num(r.reg_revenue))));
         tb.appendChild(tr); });
-      if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=7; tr.appendChild(td); tb.appendChild(tr); }
+      if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=8; tr.appendChild(td); tb.appendChild(tr); }
       cnt.textContent = rows.length===all.length? nf.format(all.length)+' registrations' : nf.format(rows.length)+' of '+nf.format(all.length)+' registrations';
     }
     paint();
@@ -46956,7 +46989,9 @@ function attach(){
       const seen={}, people=[];
       rows.forEach(r=>{
         const get=i=>i<0?'':(Array.isArray(r)?r[i]:(r||{})[cols[i]]);
-        const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||''), t=String(get(iT)||'').trim();
+        const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||'');
+        const em=String(get(cols.indexOf('email'))||'').trim();
+        const t=String(get(iT)||'').trim() || String(((d.titles||{})[(em||n).toLowerCase()])||'').trim();
         if(!n || /^MBA\/MISMO$/i.test(k)) return;
         const key=(c+'|'+n).toLowerCase(); if(seen[key]) return; seen[key]=1;
         people.push({company:c, name:n, title:t});
