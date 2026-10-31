@@ -4217,7 +4217,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-note{font-size:11.5px;color:var(--ink-3);line-height:1.45;padding:0 2px}
 @media(max-width:1180px){
   #ps-glance .psg-cols{grid-template-columns:minmax(0,1fr)}
-  #ps-glance .psg-rail{position:static;order:-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  #ps-glance .psg-rail{position:static;order:-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));align-items:start}
+  #ps-glance .psg-widgets{display:contents}
   #ps-glance .psg-rail .psg-rh,#ps-glance .psg-rail .psg-note{grid-column:1/-1}
   #app-specs .psg-rail .psg-cards{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 }
