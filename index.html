@@ -2442,6 +2442,8 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 #app-ros .postit textarea{flex:1;border:0;background:transparent;resize:none;font-family:var(--ui);font-size:13px;
   line-height:1.5;color:var(--note-ink,#2A2612);padding:0;width:100%}
 #app-ros .postit textarea:focus{outline:0}
+/* Jonna, 2026-10-31: a note grows to show everything in it — no scroll bar inside a sticky note */
+#app-ros .postit textarea{overflow:hidden;min-height:96px;field-sizing:content}
 #app-ros .postit textarea::placeholder{color:var(--note-dim,#8A8055)}
 #app-ros .postit .nf{display:flex;gap:5px;align-items:center;border-top:1px solid var(--note-rule,rgba(0,0,0,.11));padding-top:6px}
 #app-ros .postit .nt{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--note-dim,#7C7345);flex:1}
@@ -43140,7 +43142,7 @@ function buildNote(n){
     });
     db&&db.doc("notes/"+n.id).update({text:v}).then(()=>flash("Saved")).catch(()=>flash("Not saved"));
   };
-  ta.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(push,900);});
+  ta.addEventListener("input",()=>{fitNote(ta);clearTimeout(timer);timer=setTimeout(push,900);});
   ta.addEventListener("blur",()=>{clearTimeout(timer);push();});
   card.appendChild(ta);
 
@@ -43177,6 +43179,9 @@ function noteFoot(n, ta){
   }
   return f;
 }
+function fitNote(ta){ if(!ta||!ta.isConnected||!ta.offsetParent) return; ta.style.height="auto"; ta.style.height=Math.max(96, ta.scrollHeight+2)+"px"; }
+/* the notes are drawn while Run of Show may be out of sight; size them when they come into view */
+try{ const nb=document.getElementById("notes"); if(nb && window.IntersectionObserver) new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)) nb.querySelectorAll(".postit textarea").forEach(fitNote); }).observe(nb); }catch(e){}
 function renderNotes(){
   const box=$("#notes");
   const list=[...S.notes.values()].sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
@@ -43201,6 +43206,7 @@ function renderNotes(){
   list.forEach(n=>{
     const node=noteNodes.get(n.id);if(!node)return;
     if(document.activeElement!==node._ta&&node._ta.value!==(n.text||""))node._ta.value=n.text||"";
+    requestAnimationFrame(()=>fitNote(node._ta));
     node.classList.toggle("converted",!!n.taskId);
     /* The footer holds the stamp and the "→ Task" button, and it was never redrawn —
        so a note that had already become a task still offered to become one again, and
