@@ -34752,6 +34752,7 @@ function fitBoard(){
   document.body.classList.toggle('compact', window.innerHeight < 860);
   board.classList.remove('tight','tighter','tightest','micro');
   board.style.removeProperty('--rowh');
+  board.style.zoom='';
   /* Where the grid sits in the page, NOT where it happens to be on screen: a render
      while the page is scrolled down would otherwise think it had the whole window and
      size the week too tall, which is what put a scrollbar on it. */
@@ -34793,6 +34794,13 @@ function fitBoard(){
     /* a window this short only has space for the names \u2014 better than scrolling */
     board.classList.add('micro');
     squeeze(18);
+  }
+  /* Jonna, 2026-10-31: on a small screen the rows can only get so short before the
+     sessions in them stop them \u2014 so the whole week is scaled down to fit instead of
+     scrolling up and down */
+  if(board.scrollHeight > room){
+    const z=Math.max(0.4, Math.floor(room/board.scrollHeight*100)/100);
+    board.style.zoom=String(z);
   }
 }
 let fitT=null;
