@@ -4253,7 +4253,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-wn{margin-top:10px;background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:9px 12px;font-size:12.5px}
 .psg-wn ul{margin:5px 0 0;padding-left:18px}
 .psg-wn li span{color:var(--ink-3)}
-.psg-room.psg-flash{animation:psgPing 1.4s ease-out}
+.psg-room.psg-flash,.psg-sec.psg-flash,.psw.psg-flash,.gs-wrap.psg-flash{animation:psgPing 1.4s ease-out}
+#ps-glance .psg-sec,#ps-glance .psw,#ps-glance .gs-wrap{scroll-margin-top:84px}
 #app-specs .mast{position:relative}
 #app-specs .mast > .psg-contract{position:absolute;right:0;top:4px;display:inline-flex;align-items:center;gap:8px;width:auto;padding:9px 14px;
   background:var(--surface);border:1px solid var(--line-2);border-radius:7px;box-shadow:var(--shadow)}
@@ -6927,7 +6928,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     <div class="hp-in">
       <p>Everything the hotel sets up, room by room and day by day, read from the Schedule. Nothing here is typed twice: the same numbers and notes feed the Resume.</p>
       <h4>Ready for the Hotel</h4>
-      <p>The rings at the top count the headcounts that are in, the meals and breaks with a menu, and the questions for the hotel that are answered. Press a line to go to where it is filled in.</p>
+      <p>The ring at the top shows how ready the page is, with a bar for each part: headcounts in, meals and breaks with a menu, and questions for the hotel answered. Press a line and the page takes you to where it is filled in; <b>Menus Set</b> goes to the first day with a meal still missing its menu.</p>
       <h4>Pick a Day</h4>
       <p>Monday to Thursday, each with how many rooms are in use and the biggest crowd that day. Everything under it follows the day you pick.</p>
       <h4>Food &amp; Beverage</h4>
@@ -37717,6 +37718,21 @@ function glReady(){
   const pct=parts.length ? Math.round(parts.reduce((a,r)=>a+r.n/r.of,0)/parts.length*100) : 0;
   return {rings, pct, spon, rows:rows.length};
 }
+/* to the piece of this page a readiness line is about: the menus are the day's food and
+   beverage (to the first day with a meal still missing its menu), the headcounts and the
+   questions are in the column on the right */
+function glJump(k){
+  let t=null;
+  if(k==='menus'){
+    const need=DAYS.find(d=>sponsorRows().some(r=>r.day===d.label && !String(SERVING()[r.key]||'').trim()));
+    if(need && need.id!==GL_DAY){ GL_DAY=need.id; GL_ROOM=null; renderGlance(); }
+    t=document.querySelector('#ps-main .psg-sec');
+  } else if(k==='heads') t=document.querySelector('#gs-box') || document.querySelector('#ps-widgets .psw-heads');
+  else if(k==='asks') t=document.querySelector('#ps-widgets .psw-asks');
+  if(!t) return;
+  try{ t.scrollIntoView({block:'start',behavior:'smooth'}); }catch(e){}
+  t.classList.remove('psg-flash'); void t.offsetWidth; t.classList.add('psg-flash'); setTimeout(()=>t.classList.remove('psg-flash'),1500);
+}
 /* open the card the thing is typed on, and put the cursor in the very box */
 function glOpen(cardKey, focusKey){
   const sec=document.querySelector('[data-card="'+cardKey+'"]');
@@ -37779,7 +37795,9 @@ function renderGlance(){
     b.appendChild(el('span','n', g.of ? g.n+' of '+g.of : '—'));
     const bar=el('span','bar'); const fi=el('i'); fi.style.width=(g.of? Math.round(g.n/g.of*100) : 0)+'%'; fi.style.background=g.col; bar.appendChild(fi); b.appendChild(bar);
     b.title='Open where this is filled in';
-    b.addEventListener('click',()=>glOpen(g.card));
+    /* Jonna, 2026-10-31: each line takes you to its own piece of this page, not the old full list */
+    b.title='Show me where this is filled in';
+    b.addEventListener('click',()=>glJump(g.k));
     leg.appendChild(b);
   });
   leg.appendChild(el('div','psg-spon', rd.spon+' of '+rd.rows+' meals and breaks sponsored'));
