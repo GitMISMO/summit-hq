@@ -4146,6 +4146,39 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-gauge.close .gb i{background:#f2c46d}
 /* the three cards stacked in the rail */
 #app-specs .psg-rail .psg-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+.psm{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;padding:16px}
+.psm-scrim{position:absolute;inset:0;background:rgba(8,24,38,.5)}
+.psm-box{position:relative;width:460px;max-width:100%;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);color:var(--ink);
+  border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:var(--ui);animation:psgIn .25s both}
+.psm-hd{display:flex;align-items:flex-start;gap:10px;background:linear-gradient(160deg,#14476b,#0d314c);color:#fff;padding:14px 18px;border-radius:12px 12px 0 0}
+.psm-hd > div{flex:1;display:flex;flex-direction:column;gap:2px}
+.psm-eb{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:#a9d8f3}
+.psm-hd b{font:700 19px/1.2 var(--display)}
+.psm-x{background:transparent;border:0;color:#cfe9f8;font-size:22px;line-height:1;cursor:pointer;padding:0 2px}
+.psm-x:hover{color:#fff}
+.psm-bd{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.psm-spon{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px dashed var(--line-2);border-radius:9px;color:var(--ink-3)}
+.psm-spon.on{border:1px solid #74bfeb;background:var(--accent-soft);color:var(--ink)}
+.psm-ic{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--sunk);font:700 14px/1 var(--ui)}
+.psm-spon.on .psm-ic{background:#0d314c;color:#fff}
+.psm-spon > div{display:flex;flex-direction:column;gap:1px}
+.psm-spon b{font-size:14px}
+.psm-k{font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.psm-hc{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:9px;background:var(--paper)}
+.psm-n{display:flex;align-items:baseline;gap:6px}
+.psm-n b{font:700 30px/1 var(--display);color:#0d314c}
+:root[data-theme="dark"] .psm-n b{color:#a9d8f3}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .psm-n b{color:#a9d8f3} }
+.psm-n span{font-size:12.5px;color:var(--ink-3)}
+.psm-dots{display:flex;flex-wrap:wrap;gap:3px}
+.psm-dots i{width:9px;height:9px;border-radius:50%;background:#74bfeb;animation:psgIn .3s both}
+.psm-sub{font-size:11px;color:var(--ink-3)}
+.psm-tip{font-size:12px;color:var(--warn);font-weight:600}
+.psm-bd textarea{width:100%;font:inherit;font-size:13.5px;line-height:1.5;padding:10px 12px;border:1px solid var(--line-2);border-radius:8px;
+  background:var(--surface);color:var(--ink);resize:vertical;min-height:130px;margin-top:-6px}
+.psm-bd textarea:focus{outline:none;border-color:#74bfeb;box-shadow:0 0 0 3px rgba(116,191,235,.3)}
+.psm-said{font-size:11.5px;color:var(--good);margin-top:-6px}
+.psm-ft{display:flex;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line)}
 /* the rail's live pieces */
 #app-specs .psg-rail .psg-cards{display:none !important}
 .psg-widgets{display:flex;flex-direction:column;gap:10px}
@@ -4183,6 +4216,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psw-q.s-pending{border-left-color:#74bfeb}
 .psw-q.s-done,.psw-q.s-na{border-left-color:var(--good);opacity:.75}
 .psw-q.s-info{border-left-color:#2b6c8f}
+.psw-ok{border:1px solid var(--good);background:transparent;color:var(--good);border-radius:5px;padding:3px 9px;font:600 11px var(--ui);cursor:pointer}
+.psw-ok:hover{background:var(--good);color:#fff}
+.psw-ok.on{border-color:var(--line-2);color:var(--ink-3)}
+.ask-done{font-size:11.5px;padding:3px 9px;white-space:nowrap}
 .psw-qt{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .psw-qt b{font-size:12.5px;line-height:1.35;color:var(--ink);font-weight:600}
 .psw-qt span{font-size:11.5px;line-height:1.35;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -6726,10 +6763,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <h4>What You Do</h4>
         <ol class="hp-steps">
           <li><b>Open Hotel Specs and pick a day.</b> The rooms show how each is set, what is in it from morning to evening, and how full it gets. Press a room to see its week.</li>
-          <li><b>Check the food and beverage</b> for the day in the order it happens. Press a meal or break to type its sponsor or its menu. Lunch is only ever the Newcomer Orientation; everyone else is on their own.</li>
+          <li><b>Check the food and beverage</b> for the day in the order it happens. Press a meal or break to see its sponsor and headcount and paste in its menu; it goes straight onto the Resume. Lunch is only ever the Newcomer Orientation; everyone else is on their own.</li>
           <li><b>Type the headcounts</b> in the rail on the right: General Sessions at the top, then the Newcomer Orientation, the Board and the Joint Committee. A bar shows whether the room holds them.</li>
           <li><b>Work the Questions for the Hotel.</b> Move each one along with a press: <b>To Ask</b>, <b>Waiting</b>, <b>Answered</b> (or Not Needed). Add a new one at the bottom.</li>
-          <li><b>Read the set-up notes</b> under How the Rooms Are Set. A note that names a room shows on that room&rsquo;s tile; press the room name to find it.</li>
+          <li><b>Read the set-up notes</b> under How the Rooms Are Set. A note that names a room shows on that room&rsquo;s tile; press the room name to find it. Press <b>&#10003; Done</b> once it is handled.</li>
           <li><b>Fill in the Resume.</b> <b>Fill Next</b> takes you to the next detail still TBD. Open a function to see it exactly as it prints beside its fields.</li>
           <li><b>Fill in your travel form</b> when it arrives, so you are on the rooming list.</li>
         </ol>
@@ -6876,7 +6913,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <ul>
         <li>The day&rsquo;s breakfast, breaks, the Newcomer Orientation lunch and the receptions, in the order they happen, each with the expected crowd, the sponsor and whether the menu is set. A break with a big crowd says what it needs (food as well as coffee, or two stations).</li>
         <li>There is no lunch for anyone but the Newcomer Orientation; everyone else is on their own at midday.</li>
-        <li>Press one and the full list opens with the cursor in that very box, ready for the sponsor or the menu.</li>
+        <li>Press one and a small window opens for just that meal or break: whether it has a sponsor, how many are coming (each dot is about 10 people), and a box to paste the menu into. The menu saves as you paste and prints on the Resume under that function.</li>
         <li>Sponsors fill in from the Sponsorship Portal once a sponsorship is approved and has its day set; anything sold without a day is listed so it can be set there.</li>
       </ul>
       <h4>The Rooms</h4>
@@ -6890,7 +6927,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>General Sessions Headcount</b> drives Tuesday, the room check and most of the catering. Type it in the box; the bar shows the seats against the room.</li>
         <li><b>Headcounts</b> for the Newcomer Orientation, the Board and the Joint Committee are typed right there; last summit&rsquo;s number shows faintly until you do. The Board&rsquo;s comes in on its own from the In Person count on People.</li>
         <li><b>Questions for the Hotel</b>: move each one along with a press, <b>To Ask</b>, <b>Waiting</b>, <b>Answered</b>, or mark it <b>Not Needed</b>. Answered ones fold away underneath. Press the words to change them; add a new question at the bottom.</li>
-        <li><b>How the Rooms Are Set</b> holds Rosalyn&rsquo;s set-up notes. A note that names a room carries that room&rsquo;s name; press it to find the room. Add a new note at the bottom.</li>
+        <li><b>How the Rooms Are Set</b> holds Rosalyn&rsquo;s set-up notes. A note that names a room carries that room&rsquo;s name; press it to find the room. Press <b>&#10003; Done</b> when a note is taken care of; it folds away under Done, where <b>Reopen</b> puts it back. Add a new note at the bottom.</li>
         <li><b>Full List</b> on any of them opens everything in that list to edit, including the menus, notes for Rosalyn and which list a line belongs in.</li>
         <li><b>Contract, Floor Plan &amp; Capacities</b> opens the hotel contract and floor plans.</li>
       </ul>
@@ -37663,7 +37700,7 @@ function renderGlance(){
   const meals=glDayMeals(day);
   const fb=el('div','psg-sec');
   const fh=el('div','psg-h'); fh.appendChild(el('h3',null,day.label+'’s Food & Beverage'));
-  fh.appendChild(el('span','psg-hint','Tap one to fill in the sponsor or the menu'));
+  fh.appendChild(el('span','psg-hint','Tap one to see its sponsor and paste in its menu'));
   fb.appendChild(fh);
   const line=el('div','psg-meals');
   if(!meals.length) line.appendChild(el('div','psg-none','No meals or breaks on '+day.label+'.'));
@@ -37681,7 +37718,7 @@ function renderGlance(){
     if(m.menu) b.appendChild(el('div','mm',m.menu));
     else if(m.tip) b.appendChild(el('div','mm tip',m.tip));
     b.title='Open Headcount & What To Order at this line';
-    b.addEventListener('click',()=>glOpen('specs:heads', (m.menu && !m.spon ? 'spon:' : 'serve:')+m.r.key));
+    b.addEventListener('click',()=>glMealPop(m, day));
     line.appendChild(b);
   });
   fb.appendChild(line);
@@ -37836,6 +37873,12 @@ function glAskRow(a){
   if(askWhy(a)) tx.appendChild(el('span',null,askWhy(a)));
   tx.addEventListener('click',()=>{ ASK_OPEN.add(askKey(a)); glOpen(askWho(a)==='rosalyn'?'specs:rooms':'specs:ask'); });
   r.appendChild(tx);
+  if(!q){
+    const dn=el('button','psw-ok'+(st==='done'?' on':''), st==='done'? 'Reopen' : '\u2713 Done'); dn.type='button';
+    dn.title= st==='done'? 'Put it back on the list' : 'Mark this note done';
+    dn.addEventListener('click',()=>setAskStatus(a, st==='done'?'open':'done'));
+    const line=el('div','psw-ql'); line.appendChild(dn); r.appendChild(line);
+  }
   if(q){
     const seg=el('div','psw-seg'); seg.setAttribute('role','group'); seg.setAttribute('aria-label','Where it stands');
     GL_STEPS.forEach(([k,l])=>{ const b=el('button',st===k?'on':'',l); b.type='button';
@@ -37883,7 +37926,8 @@ function glNoteRooms(a){
 }
 function glNotes(){
   const list0=sortAsks(ROSALYN_ASKS||[]);
-  const live=list0.filter(a=>!(askIsQuestion(a) && ['done','na'].includes(askStatus(a))));
+  const isDone=a=>['done','na'].includes(askStatus(a));
+  const live=list0.filter(a=>!isDone(a)), doneN=list0.filter(isDone);
   const tied=new Set(); live.forEach(a=>glNoteRooms(a).forEach(r=>tied.add(r.id)));
   const w=glWidget('psw-notes','<path d="M4 20h4l10.5-10.5a2.1 2.1 0 00-3-3L5 17v3zM14 7l3 3"/>',
     'How the Rooms Are Set', live.length+' note'+(live.length===1?'':'s')+' for Rosalyn'+(tied.size? ' · '+tied.size+' room'+(tied.size===1?'':'s') : ''), 'specs:rooms');
@@ -37898,14 +37942,76 @@ function glNotes(){
       r.appendChild(chips); }
     list.appendChild(r);
   });
-  if(!live.length) list.appendChild(el('div','psw-none','No set-up notes yet. Add anything about how a room needs to be set.'));
+  if(!live.length) list.appendChild(el('div','psw-none', doneN.length? '\u2713 Every set-up note is done.' : 'No set-up notes yet. Add anything about how a room needs to be set.'));
+  if(doneN.length){ const d=el('details','psw-done'); d.appendChild(el('summary',null,doneN.length+' done'));
+    doneN.forEach(a=>d.appendChild(glAskRow(a))); list.appendChild(d); }
   w.appendChild(list);
   w.appendChild(glQuickAdd('rosalyn','A set-up note for Rosalyn…'));
   return w;
 }
 /* the notes that name a room, for its tile and its week */
 function glRoomNotes(rm){
-  return (ROSALYN_ASKS||[]).filter(a=>!(askIsQuestion(a) && ['done','na'].includes(askStatus(a))) && glNoteRooms(a).some(r=>r.id===rm.id));
+  return (ROSALYN_ASKS||[]).filter(a=>!['done','na'].includes(askStatus(a)) && glNoteRooms(a).some(r=>r.id===rm.id));
+}
+
+/* Jonna, 2026-10-31: a meal or break opens a small window of its own — is there a
+   sponsor, how many are coming, and a box to paste the menu into. The menu is the same
+   one the Resume prints for that function, so pasting it here updates the Resume. */
+function glMealPop(m, day){
+  const old=document.getElementById('psm'); if(old) old.remove();
+  const key=m.r.key, wrap=el('div','psm'); wrap.id='psm';
+  wrap.setAttribute('role','dialog'); wrap.setAttribute('aria-label',m.r.label+' on '+day.label);
+  const scrim=el('div','psm-scrim'); wrap.appendChild(scrim);
+  const box=el('div','psm-box');
+  const hd=el('div','psm-hd');
+  const ht=el('div'); ht.appendChild(el('span','psm-eb',day.label+(m.time?' · '+m.time:''))); ht.appendChild(el('b',null,m.r.label)); hd.appendChild(ht);
+  const x=el('button','psm-x','×'); x.type='button'; x.setAttribute('aria-label','Close'); hd.appendChild(x);
+  box.appendChild(hd);
+  const bd=el('div','psm-bd');
+  /* the sponsor, as the portal has it */
+  const sp=el('div','psm-spon'+(m.spon?' on':''));
+  sp.appendChild(el('span','psm-ic', m.spon? '✓' : '–'));
+  const st=el('div'); st.appendChild(el('span','psm-k','Sponsor')); st.appendChild(el('b',null, m.spon || 'No sponsor yet'));
+  sp.appendChild(st); bd.appendChild(sp);
+  /* how many */
+  const hc=el('div','psm-hc');
+  const big=el('div','psm-n'); big.appendChild(el('b',null, m.crowd!=null? '~'+m.crowd : '—'));
+  big.appendChild(el('span',null, m.crowd!=null? 'people' : 'no count yet')); hc.appendChild(big);
+  if(m.crowd!=null){
+    const dots=el('div','psm-dots'); const n=Math.min(50, Math.max(1, Math.round(m.crowd/10)));
+    for(let i=0;i<n;i++) dots.appendChild(el('i'));
+    hc.appendChild(dots);
+    hc.appendChild(el('div','psm-sub','Each dot is about 10 people'+(m.slot==='newcomer'? ' · the Newcomer Orientation headcount' : ' · everyone in meetings that half-day')));
+  }
+  if(m.tip) hc.appendChild(el('div','psm-tip',m.tip));
+  bd.appendChild(hc);
+  /* the menu */
+  const lab=el('label','psm-k','The Menu'); lab.setAttribute('for','psm-menu'); bd.appendChild(lab);
+  const ta=document.createElement('textarea'); ta.id='psm-menu';
+  ta.value=String(SERVING()[key]||''); ta.placeholder='Paste the menu here, one item a line';
+  ta.rows=Math.max(6, Math.min(16, ta.value.split('\n').length+2));
+  bd.appendChild(ta);
+  const said=el('div','psm-said', ta.value.trim()? '✓ On the Resume' : 'Prints on the Resume under this function');
+  bd.appendChild(said);
+  box.appendChild(bd);
+  const ft=el('div','psm-ft');
+  const done=el('button','btn tkp-primary psm-done','Done'); done.type='button'; ft.appendChild(done);
+  box.appendChild(ft);
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
+  const drawnOn=activeVenue;
+  let tmr=null, dirty=false;
+  const write=()=>{ clearTimeout(tmr); if(!dirty) return; dirty=false;
+    const live=SERVING(drawnOn), v=ta.value.replace(/\s+$/,'');
+    if(v.trim()) live[key]=v; else delete live[key];
+    save(); said.textContent= v.trim()? '✓ Saved — on the Resume' : 'Prints on the Resume under this function'; };
+  ta.addEventListener('input',()=>{ dirty=true; said.textContent='Saving…'; clearTimeout(tmr); tmr=setTimeout(write,500); });
+  const close=()=>{ write(); wrap.remove(); document.removeEventListener('keydown',onKey,true);
+    try{ render(); }catch(e){} try{ specsMetersNow(); }catch(e){} };
+  const onKey=e=>{ if(e.key==='Escape'){ e.preventDefault(); close(); } };
+  document.addEventListener('keydown',onKey,true);
+  scrim.addEventListener('click',close); x.addEventListener('click',close); done.addEventListener('click',close);
+  setTimeout(()=>ta.focus(),40);
 }
 
 /* one room, Monday to Thursday */
@@ -37950,7 +38056,8 @@ function renderRoomNotes(){
   const box=$('room-notes'); if(!box) return;
   box.textContent='';
   const list=sortAsks(ROSALYN_ASKS);
-  const settled = a => askIsQuestion(a) && ['done','na'].includes(askStatus(a));
+  /* Jonna, 2026-10-31: a set-up note can be marked done too, not only deleted */
+  const settled = a => ['done','na'].includes(askStatus(a));
   const live=list.filter(a=>!settled(a)), done=list.filter(settled);
   const w=el('div','catsum');
   const hd=el('div','catsum-hd static','How The Rooms Are Set');
@@ -38380,6 +38487,12 @@ function askRow(a, opts){
     if(now) d.appendChild(askEditor(a));
   });
   top.appendChild(t);
+  if(bare){
+    const dn=el('button','btn ghost ask-done', st==='done'?'Reopen':'\u2713 Done'); dn.type='button';
+    dn.title= st==='done'? 'Put it back on the list' : 'Mark this done — it moves under Answered or not needed';
+    dn.addEventListener('click',()=>setAskStatus(a, st==='done'?'open':'done'));
+    top.appendChild(dn);
+  }
   if(!bare){
     const sel=document.createElement('select');
     sel.className='ask-st';
@@ -49443,6 +49556,8 @@ html body #app-resume .rz-docbody > .rz-waiting.rzc-alert{grid-column:1/-1;order
 /* Jonna, 2026-10-31: the older #app-resume .rz-fnb rule out-ranked this one and squeezed the
    preview and the fields into two narrow 260px columns with the rest of the row empty */
 #app-resume .rz-fnb.rz-two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+/* Jonna, 2026-10-31: the display:grid above out-ranked [hidden], so a function opened once never closed again */
+.rz-fnb.rz-two[hidden],#app-resume .rz-fnb[hidden]{display:none !important}
 @media(max-width:900px){#app-resume .rz-fnb.rz-two{grid-template-columns:minmax(0,1fr)}}
 #app-resume .rz-fnb.rz-two .rz-pv{max-height:calc(100vh - 24px);overflow:auto}
 .rz-fnb .rz-pv{position:sticky;top:8px;align-self:start;background:#0f314c;border-radius:10px;padding:12px;color:#fff}
