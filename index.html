@@ -5550,6 +5550,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     clearTimeout(saveTs[target]);
     saveTs[target]=setTimeout(async()=>{
       saveTs[target]=null;
+      if(!ST.ready || ST.readOk===false) return;      /* never over a list that was not read */
       const db=await store(); if(!db) return;
       try{
         if(target==='standing') await db.doc('trunk/standing').set(JSON.parse(JSON.stringify(standing())));
@@ -5571,12 +5572,16 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     const db=await store(); ST.db=db;
     ST.sid=sidNow();
     if(db){
-      try{ const a=await db.doc('trunk/standing').get();
+      /* Jonna, 2026-10-31: a read that failed is not an empty trunk — only a list that is
+         really not there yet gets Bernie's sheet put in, and nothing is written over a list
+         that could not be read */
+      let readA=false, readB=false;
+      try{ const a=await db.doc('trunk/standing').get(); readA=true;
         if(a && a.exists && a.data()) ST.standing=takeStanding(a.data()); }catch(e){}
-      try{ const b=await db.doc('trunk/'+ST.sid).get();
+      try{ const b=await db.doc('trunk/'+ST.sid).get(); readB=true;
         if(b && b.exists && b.data()) ST.summit=takeSummit(b.data()); }catch(e){}
-      /* first time through, put Bernie's sheet in so the page is not empty */
-      if(!ST.standing){ standing(); save('standing'); }
+      ST.readOk = readA && readB;
+      if(!ST.standing && readA){ standing(); save('standing'); }
     }
     ST.ready=true;
     render();
@@ -37316,6 +37321,7 @@ const NC_ITEMS = [
    food for the right count. Same path as typing it in the box below. */
 window.__boardHeadcount = vid => { try{ const c=CATER(vid||activeVenue); return c && c.board ? c.board.count : null; }catch(e){ return null; } };
 window.__setBoardHeadcount = function(vid, n){
+  if(!window.__scheduleLoaded) return false;           /* not before the real Schedule is in */
   const c=CATER(vid||activeVenue); if(!c) return false;
   if(!c.board) c.board={count:null};
   if(c.board.count===n) return false;
@@ -41512,6 +41518,10 @@ function mark(state, e){
 function save(){
   markUndo();
   if(!dbRef){ mark('local'); return; }
+  /* Jonna, 2026-10-31: a save that came in while the Schedule was still loading wrote the
+     page's empty starting state over the real Schedule. Nothing is written until the real
+     Schedule has arrived. */
+  if(!window.__scheduleLoaded){ return; }
   mark('pending');
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
@@ -41675,7 +41685,15 @@ prevState = snapState();
     const db=await claude.use('db'); if(!db) return;
     planDb=db;
     dbRef=db.doc('schedule/summits');
-    const snap=await dbRef.get();
+    /* a slow or failed read is not "there is no Schedule": try again before ever falling
+       back, and never treat a failed read as an empty Schedule */
+    let snap=null;
+    for(let i=0;i<4;i++){
+      try{ snap=await dbRef.get(); }catch(e){ snap=null; }
+      if(snap && snap.exists && snap.data()) break;
+      await new Promise(r=>setTimeout(r, 1500*(i+1)));
+    }
+    if(!snap){ $('savestate').textContent='\u00b7 could not load \u2014 reload the page'; return; }
     if(snap.exists && snap.data()){
       const d=snap.data();
       if(Array.isArray(d.removedVenues)) removedVenues=clone(d.removedVenues);
