@@ -3381,6 +3381,13 @@ body.sheeton .hqsheet{display:flex}
 .hqsheet > header h3{flex:1 1 auto;min-width:0;font-family:var(--display);font-size:14.5px;
   font-weight:700;margin:0;overflow-wrap:anywhere}
 .hqsheet > .pane-body{flex:1 1 auto;min-height:0;overflow:auto;padding:14px 16px 40px}
+/* the Save bar at the foot of the right-hand panel and of a card opened over a page */
+.pane-save{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:12px;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--sunk)}
+.pane-save[hidden]{display:none}
+.pane-save .ps-msg{flex:1 1 auto;font-size:12.5px;color:var(--ink-3)}
+.pane-save .btn{white-space:nowrap;min-width:max-content}
+
 /* the card that is open reads as open while its contents are up on the sheet */
 #hq-pane .ascard.cardon{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
 #hq-pane .plan-grid,#hq-pane .pp-cards,#hq-pane .cardgrid{align-items:start}
@@ -5575,6 +5582,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>The Road to the Summit</b> places every dated task on one line from the start of the cycle to three weeks after the Summit, colored by status, with milestones as diamonds and a marker for today. Hover a dot to see the task; click it to open it.</li>
         <li>The figures under it (Overdue, Due Next 14 Days, To Discuss, In Progress, Complete) each open the list behind them.</li>
       </ul>
+      <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel.</p>
       <h4>The Plan</h4>
       <ul>
         <li>A <b>calendar</b> of every task by due date. Drag a task to another day to move it; click it to open it.</li>
@@ -6839,6 +6847,47 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   "use strict";
   let openKey=null, home=null;
 
+  /* ── Jonna, 2026-10-31 (team feedback): a Save button wherever the panel holds something
+     to type into. Everything still saves as it is entered; Save makes sure the field she is
+     in is written, says so, and closes the panel. A panel with nothing to type (a list of
+     cards, a tally of ticks) shows no button. ── */
+  const TYPING='input:not([type=search]):not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]),textarea,select';
+  function saveBar(which){
+    const f=document.createElement('footer'); f.className='pane-save'; f.id='hq-'+which+'-save'; f.hidden=true;
+    const m=document.createElement('span'); m.className='ps-msg';
+    const b=document.createElement('button'); b.type='button'; b.className='btn'; b.textContent='Save';
+    b.addEventListener('click',e=>{ e.stopPropagation(); doSave(which, b, m); });
+    f.appendChild(m); f.appendChild(b);
+    return f;
+  }
+  function typingIn(body, which){
+    return [...body.querySelectorAll(TYPING)].some(n=>!n.disabled && !n.readOnly && n.getClientRects().length
+      && (which==='sheet' || !n.closest('#hq-sheet')) && !n.closest('[data-nosave]'));
+  }
+  function paintBar(which){
+    const body=document.getElementById(which==='pane'?'hq-pane-body':'hq-sheet-body');
+    const f=document.getElementById('hq-'+which+'-save'); if(!body||!f) return;
+    f.hidden=!typingIn(body, which);
+  }
+  function watchBar(body, which){
+    let t=0; const go=()=>{ cancelAnimationFrame(t); t=requestAnimationFrame(()=>paintBar(which)); };
+    try{ new MutationObserver(go).observe(body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','class','open']}); }catch(e){}
+    body.addEventListener('focusin',go); body.addEventListener('click',go);
+  }
+  function doSave(which, btn, msg){
+    const box=document.getElementById(which==='pane'?'hq-pane':'hq-sheet');
+    const a=document.activeElement;
+    /* leaving the field is what writes it */
+    if(a && box && box.contains(a) && a.matches && a.matches(TYPING)){ try{ a.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} a.blur(); }
+    try{ window.dispatchEvent(new Event('hq:save')); }catch(e){}
+    btn.disabled=true; btn.textContent='\u2713 Saved'; msg.textContent='';
+    setTimeout(()=>{
+      btn.disabled=false; btn.textContent='Save';
+      if(which==='sheet') closeSheet();
+      else if(!page) close();
+    },650);
+  }
+
   function shell(){
     let p=document.getElementById('hq-pane');
     if(p) return p;
@@ -6864,8 +6913,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     hd.appendChild(t); hd.appendChild(x);
     const body=document.createElement('div');
     body.className='pane-body'; body.id='hq-pane-body';
-    p.appendChild(hd); p.appendChild(body);
+    p.appendChild(hd); p.appendChild(body); p.appendChild(saveBar('pane'));
     document.body.appendChild(p);
+    watchBar(body,'pane');
     return p;
   }
 
@@ -7113,7 +7163,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     hd.appendChild(t); hd.appendChild(x);
     const body=document.createElement('div');
     body.className='pane-body'; body.id='hq-sheet-body';
-    sh.appendChild(hd); sh.appendChild(body);
+    sh.appendChild(hd); sh.appendChild(body); sh.appendChild(saveBar('sheet'));
+    watchBar(body,'sheet');
     host.appendChild(sc); host.appendChild(sh);
     return sh;
   }
@@ -41906,10 +41957,26 @@ function openDrawer(id){
     });
     ft.appendChild(del);
   }
-  ft.appendChild(el("span","hint",canWrite===false?"You have view-only access.":"Changes save as you make them."));
+  if(canWrite===false) ft.appendChild(el("span","hint","You have view-only access."));
+  else ft.appendChild(drawerSave(dr));
   dr.appendChild(ft);
 
   host.appendChild(scrim);host.appendChild(dr);
+}
+/* Jonna, 2026-10-31 (team feedback): an explicit Save on the task and agenda-item panels.
+   Each field still writes as it is left; Save writes the one she is in and closes. */
+function drawerSave(dr){
+  const b=el("button","btn","Save");b.type="button";b.style.marginLeft="auto";
+  b.addEventListener("click",()=>{
+    /* a note typed on an agenda item but not added yet goes on with the Save */
+    const nt=dr.querySelector("#dd-note");
+    if(nt&&nt.value.trim()){ const ab=nt.parentNode&&[...nt.parentNode.querySelectorAll("button")].find(x=>/Add note/.test(x.textContent)); if(ab) ab.click(); }
+    const a=document.activeElement;
+    if(a&&dr.contains(a)&&a.id!=="dd-note"&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){ try{a.dispatchEvent(new Event("change",{bubbles:true}));}catch(e){} a.blur(); }
+    b.disabled=true;b.textContent="\u2713 Saved";flash("Saved");
+    setTimeout(closeDrawer,550);
+  });
+  return b;
 }
 function closeDrawer(){S.open=null;S.openDisc=null;$("#rs-drawer-host").textContent="";}
 
@@ -42088,7 +42155,8 @@ function openDiscDrawer(id){
     });
     ft.appendChild(del);
   }
-  ft.appendChild(el("span","hint",canWrite===false?"You have view-only access.":"Changes save as you make them."));
+  if(canWrite===false) ft.appendChild(el("span","hint","You have view-only access."));
+  else ft.appendChild(drawerSave(dr));
   dr.appendChild(ft);
 
   host.appendChild(scrim);host.appendChild(dr);
@@ -43413,6 +43481,8 @@ startClock();
     }catch(e){}
     const f=feed(); if(f) watch(f.summit.id);
     window.addEventListener('hq:schedule',()=>{ const ff=feed(); if(ff && ff.summit.id!==ST.venue) watch(ff.summit.id); rerenderSoon(); checkSoon(); });
+    /* the panel's Save: write anything still waiting now */
+    window.addEventListener('hq:save',()=>{ try{ if(saveT){ flushSave(); flash('Saved'); } }catch(e){} });
     /* the MISMO Team card's dates show in the guest rooms */
     window.addEventListener('hq:team-travel',()=>rerenderSoon());
     rerenderSoon();
