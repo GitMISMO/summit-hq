@@ -43205,10 +43205,14 @@ startClock();
   function fillFn_(bd, f){
     const ov=fnOv(f.key); cleanOv(f.key);
     const g=f.gen;
+    /* Jonna, 2026-10-31: the plus-up \u2014 the fields on the right, and on the left the
+       function exactly as it will print, redrawn as she types */
+    const host=bd; host.classList.add('rz-two'); host.textContent='';
+    const pv=mk('div','rz-pv'); bd=mk('div','rz-fx');
     /* a one-line part: blank means "what the Schedule says" */
     const line=(l,k)=>{
       const w=mk('div','rz-f'); w.appendChild(mk('label',null,l));
-      const i=document.createElement('input'); i.value=ov[k]||g[k]||''; i.placeholder=g[k]||'';
+      const i=document.createElement('input'); i.value=ov[k]||g[k]||''; i.placeholder=g[k]||''; i.dataset.k=k;
       if(ST.canWrite===false) i.readOnly=true;
       /* matching the Schedule, or cleared, means "follow the Schedule" */
       i.addEventListener('input',()=>{ const o=fnOv(f.key); const v=i.value;
@@ -43219,10 +43223,21 @@ startClock();
     bd.appendChild(line('Time','time')); bd.appendChild(line('Name','name'));
     bd.appendChild(line('Room','room')); bd.appendChild(line('Post as','post'));
     /* a multi-line part: prefilled with what will print; an edit remembers what it replaced */
+    const ICON={'sec:SET':'<path d="M4 10h16M6 10v8M18 10v8M8 6h8v4H8z"/>','sec:CATERING':'<path d="M5 11h12a0 0 0 010 0 6 6 0 01-12 0zM17 12h1.5a2.5 2.5 0 010 5H16M8 3v4M12 3v4"/>',
+      'sec:AV':'<rect x="3" y="4" width="18" height="12" rx="1"/><path d="M8 20h8M12 16v4"/>','sec:INTERNET':'<path d="M2 9a15 15 0 0120 0M5 12.5a10 10 0 0114 0M8.5 16a5 5 0 017 0"/><circle cx="12" cy="19" r="1"/>',
+      'sec:ELECTRIC':'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>','side':'<path d="M4 5h16M4 10h10M4 15h16M4 20h8"/>','menu':'<path d="M7 3v18M4 3v6a3 3 0 006 0V3M17 3c-2 2-3 5-3 8h3v10"/>'};
+    /* what the other functions say in this part \u2014 one tap to add a line she uses a lot */
+    const usual=k=>{ if(!/^sec:/.test(k)) return []; const h=k.slice(4), seen=new Map();
+      try{ (model()||{days:[]}).days.forEach(d=>(d.fns||[]).forEach(fn=>(fn.secs||[]).forEach(([hh,ls])=>{ if(String(hh).toUpperCase()!==h) return;
+        (ls||[]).forEach(x=>{ x=String(x||'').trim(); if(x && x.length<80) seen.set(x,(seen.get(x)||0)+1); }); }))); }catch(e){}
+      return [...seen.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0]); };
     const area=(l,k,genText)=>{
-      const w=mk('div','rz-f');
-      const lab=mk('label',null,l); w.appendChild(lab);
-      const t=document.createElement('textarea');
+      const w=mk('div','rz-f rz-card2'+(ov[k]?' is-edit':''));
+      const lab=mk('label',null,''); w.appendChild(lab);
+      if(ICON[k]){ const ic=mk('span','rz-ic'); ic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+ICON[k]+'</svg>'; lab.appendChild(ic); }
+      lab.appendChild(document.createTextNode(l));
+      lab.appendChild(mk('span','rz-srcchip '+(ov[k]?'edit':'sched'), ov[k]? 'Edited' : genText? 'From the Schedule' : 'Empty'));
+      const t=document.createElement('textarea'); t.dataset.k=k;
       const cur=ov[k];
       t.value = cur ? cur.text : (genText||'');
       t.placeholder = genText ? '' : 'Nothing — type to add';
@@ -43247,7 +43262,17 @@ startClock();
       const fit=()=>{ t.style.height='auto'; t.style.height=(t.scrollHeight+2)+'px'; };
       t.addEventListener('input',fit); requestAnimationFrame(fit); setTimeout(fit,60);
       t.addEventListener('change',rerenderSoon);
-      w.appendChild(t); return w;
+      w.appendChild(t);
+      const sug=usual(k);
+      if(sug.length && ST.canWrite!==false){
+        const row=mk('div','rz-sugs');
+        const draw=()=>{ row.textContent=''; const have=new Set(t.value.split('\n').map(x=>x.trim()));
+          sug.filter(x=>!have.has(x)).slice(0,4).forEach(x=>{ const c=mk('button','rz-sug','+ '+x); c.type='button'; c.title='Add this line';
+            c.addEventListener('click',()=>{ t.value=(t.value.trim()? t.value.replace(/\s+$/,'')+'\n' : '')+x; t.dispatchEvent(new Event('input',{bubbles:true})); t.dispatchEvent(new Event('change')); draw(); });
+            row.appendChild(c); }); };
+        draw(); t.addEventListener('input',draw); w.appendChild(row);
+      }
+      return w;
     };
     /* the parts Hotel Specs owns: one value, edited from either place */
     const lk=f.link||{};
@@ -43309,6 +43334,28 @@ startClock();
     reset.addEventListener('click',()=>{ delete ST.doc.fn[f.key]; queueSave(); rerenderSoon(); });
     const ar=mk('div','rz-acts'); ar.appendChild(hide); ar.appendChild(reset); acts.appendChild(ar);
     bd.appendChild(acts);
+    /* the live page */
+    const val=k=>{ const n=bd.querySelector('[data-k="'+k+'"]'); return n? n.value : ''; };
+    const paint=()=>{
+      pv.textContent='';
+      pv.appendChild(mk('div','rz-pvh','As It Prints'));
+      const pg=mk('div','rz-pvp');
+      const L=mk('div','rz-pvl');
+      L.appendChild(mk('b',null,val('time')||g.time||''));
+      val('side').split('\n').filter(x=>x.trim()).forEach(x=>L.appendChild(mk('small',null,x)));
+      const M=mk('div','rz-pvm');
+      M.appendChild(mk('div','rz-pvn',String(val('name')||g.name||'').toUpperCase()));
+      SECS.forEach(h=>{ const ls=val('sec:'+h).split('\n').filter(x=>x.trim()); if(!ls.length) return;
+        const sc=mk('div','rz-pvs'); sc.appendChild(mk('span','rz-pvk',h+':')); const ul=mk('div'); ls.forEach(x=>ul.appendChild(mk('div',null,x))); sc.appendChild(ul); M.appendChild(sc); });
+      const ml=val('menu').split('\n').filter(x=>x.trim());
+      if(ml.length){ const sc=mk('div','rz-pvs'); sc.appendChild(mk('span','rz-pvk','MENU:')); const ul=mk('div'); ml.forEach(x=>ul.appendChild(mk('div',null,x))); sc.appendChild(ul); M.appendChild(sc); }
+      const po=mk('div','rz-pvpost'); po.appendChild(mk('span','rz-pvk','Post as: ')); po.appendChild(mk('b',null,val('post')||g.post||'')); M.appendChild(po);
+      const Rr=mk('div','rz-pvr',val('room')||g.room||'');
+      pg.appendChild(L); pg.appendChild(M); pg.appendChild(Rr); pv.appendChild(pg);
+      pv.appendChild(mk('div','rz-pvnote','Updates as you type. Gold boxes on the right are your edits; the rest follow the Schedule.'));
+    };
+    bd.addEventListener('input',paint); paint();
+    host.appendChild(pv); host.appendChild(bd);
   }
   function hiddenList(){
     const keys=Object.entries(ST.doc.fn||{}).filter(([,o])=>o&&o.hidden).map(([k])=>k);
@@ -47543,6 +47590,42 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 #app-grid .gfind:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 #app-grid #grid-findn{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap}
 @media(max-width:700px){#app-grid .gfind input{width:110px}}
+
+/* ── the Resume's function editor: the live page beside the fields (Jonna, 2026-10-31) ── */
+.rz-fnb.rz-two{display:grid!important;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:18px;padding:14px 14px 16px;border-top:1px dashed var(--line)}
+@media(max-width:900px){.rz-fnb.rz-two{grid-template-columns:minmax(0,1fr)}}
+.rz-fnb .rz-pv{position:sticky;top:8px;align-self:start;background:#0f314c;border-radius:10px;padding:12px;color:#fff}
+.rz-fnb .rz-pvh{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#9fd2f2;margin-bottom:8px}
+.rz-fnb .rz-pvp{display:grid;grid-template-columns:86px minmax(0,1fr) 80px;gap:8px;background:#fbfdff;color:#0d314c;border-radius:6px;padding:10px;font-size:11.5px;line-height:1.35;box-shadow:0 14px 30px -16px rgba(0,0,0,.6)}
+.rz-fnb .rz-pvl b{display:block;color:#0d314c;font-size:11.5px}
+.rz-fnb .rz-pvl small{display:block;color:#55657a;font-size:10.5px;margin-top:3px}
+.rz-fnb .rz-pvn{font-weight:700;letter-spacing:.02em;margin-bottom:6px}
+.rz-fnb .rz-pvs{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px;margin-bottom:5px}
+.rz-fnb .rz-pvk{font-weight:700;font-size:10px;letter-spacing:.04em;color:#14486e}
+.rz-fnb .rz-pvpost{margin-top:6px;padding-top:5px;border-top:1px solid #e3e8ee}
+.rz-fnb .rz-pvpost b{color:#3987e5}
+.rz-fnb .rz-pvr{font-weight:700;text-align:right;font-size:11px}
+.rz-fnb .rz-pvnote{font-size:11px;color:rgba(255,255,255,.62);margin-top:8px}
+.rz-fnb .rz-fx{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;min-width:0}
+.rz-fnb .rz-fx .rz-f.span{grid-column:1 / -1}
+.rz-fnb input,.rz-fnb textarea,.rz-fnb select{font:inherit!important;font-family:var(--sans,'IBM Plex Sans',Arial,sans-serif)!important;font-size:13px!important;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line-2);border-radius:5px;padding:7px 9px;width:100%;min-width:0;box-sizing:border-box}
+.rz-fnb textarea{line-height:1.45;resize:vertical;min-height:60px}
+.rz-fnb input:focus,.rz-fnb textarea:focus{outline:2px solid var(--sky,#74bfeb);outline-offset:0;border-color:var(--accent)}
+.rz-fnb .rz-f > label{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);font-weight:700;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rz-fnb .rz-card2{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:10px;transition:box-shadow .15s,border-color .15s}
+.rz-fnb .rz-card2:focus-within{box-shadow:0 8px 20px -14px rgba(13,49,76,.55);border-color:var(--accent)}
+.rz-fnb .rz-card2.is-edit{border-left-color:#e0a83c;background:var(--warn-soft)}
+.rz-fnb .rz-ic{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:5px;background:var(--accent-soft);color:var(--accent)}
+.rz-fnb .rz-ic svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rz-fnb .rz-srcchip{margin-left:auto;font-size:10px;letter-spacing:.04em;font-weight:700;padding:1px 6px;border-radius:3px;border:1px solid var(--line-2);color:var(--ink-3);text-transform:none}
+.rz-fnb .rz-srcchip.sched{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.rz-fnb .rz-srcchip.edit{color:var(--warn-ink);border-color:var(--warn);background:var(--surface)}
+.rz-fnb .rz-sugs{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.rz-fnb .rz-sug{all:unset;cursor:pointer;font-size:11px;font-weight:600;color:var(--accent);border:1px dashed var(--accent);border-radius:4px;padding:2px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .15s}
+.rz-fnb .rz-sug:hover,.rz-fnb .rz-sug:focus-visible{background:var(--accent-soft)}
+.rz-fnb .rz-reset{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;letter-spacing:0;text-transform:none;font-weight:500}
+.rz-fnb .rz-acts{display:flex;gap:8px;flex-wrap:wrap}
 /* the figure that leads a card's line */
 .ascard .hc-w .hc-n{font-size:19px;font-weight:700;line-height:1;color:var(--accent);margin-right:5px;font-variant-numeric:tabular-nums;vertical-align:-1px}
 .ascard.is-warn .hc-w .hc-n{color:var(--warn-ink,#9a6a12)}
