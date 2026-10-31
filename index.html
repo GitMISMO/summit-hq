@@ -4117,6 +4117,126 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
 </div>
 
+<style>
+/* ============ THE HOTEL AT A GLANCE (Hotel Specs) ============ */
+#ps-glance{display:grid;gap:14px;margin:0 0 16px}
+#ps-glance:empty{display:none}
+.psg-hero{display:grid;grid-template-columns:auto minmax(190px,260px) minmax(0,1fr);gap:20px;align-items:center;
+  padding:18px 20px;border-radius:10px;color:#fff;
+  background:radial-gradient(120% 140% at 0% 0%,#1a5a86 0%,#0f314c 55%,#0a2539 100%);
+  box-shadow:0 10px 26px rgba(13,49,76,.22)}
+.psg-ring{position:relative;width:112px;height:112px;flex:0 0 auto}
+.psg-ring svg{width:112px;height:112px;display:block}
+.psg-arc{transition:stroke-dashoffset 1s cubic-bezier(.3,1,.4,1);animation:psgArc 1.1s cubic-bezier(.3,1,.4,1) both}
+@keyframes psgArc{from{stroke-dashoffset:var(--c)}}
+.psg-pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.psg-pct b{font:700 22px/1 var(--display)}
+.psg-pct span{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#a9d8f3;margin-top:3px;font-weight:700}
+.psg-leg{display:flex;flex-direction:column;gap:3px;min-width:0}
+.psg-eb{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#a9d8f3;font-weight:700;margin:0 0 4px}
+.psg-li{display:flex;align-items:center;gap:8px;background:transparent;border:0;color:#fff;padding:4px 6px;margin:0 -6px;
+  border-radius:5px;font:600 13px/1.2 var(--ui);cursor:pointer;text-align:left}
+.psg-li:hover{background:rgba(255,255,255,.08)}
+.psg-li i{width:10px;height:10px;border-radius:2px;flex:0 0 auto}
+.psg-li .t{flex:1 1 auto}
+.psg-li .n{color:#a9d8f3;font-weight:600;white-space:nowrap}
+.psg-spon{font-size:11.5px;color:#a9d8f3;margin-top:4px}
+.psg-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.psg-day{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 12px;border-radius:7px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#fff;font-family:var(--ui);text-align:left;
+  transition:background .15s,border-color .15s,transform .15s}
+.psg-day:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+.psg-day.on{background:#fff;color:#0d314c;border-color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.psg-day .dn{font:700 15px/1.1 var(--display)}
+.psg-day .dm{font-size:11.5px;opacity:.8}
+.psg-day.on .dm{color:#3d5468;opacity:1}
+.psg-sec{background:var(--surface);border:1px solid var(--line-2);border-radius:9px;padding:14px 16px 16px;box-shadow:var(--shadow)}
+.psg-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.psg-h h3{margin:0;font:700 16px/1.2 var(--display);color:var(--ink)}
+.psg-hint{font-size:12px;color:var(--ink-3)}
+.psg-h .psg-hint{margin-left:auto}
+.psg-none{color:var(--ink-3);font-size:13px;padding:8px 0}
+/* the meals, left to right in the order they happen */
+.psg-meals{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;position:relative}
+.psg-meal{position:relative;display:flex;flex-direction:column;gap:4px;text-align:left;cursor:pointer;
+  padding:11px 13px 12px;border-radius:7px;border:1px solid var(--line-2);border-top:4px solid var(--line-2);
+  background:var(--surface);color:var(--ink);font-family:var(--ui);transition:transform .15s,box-shadow .15s,border-color .15s}
+.psg-meal:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(13,49,76,.13)}
+.psg-meal.spon{border-top-color:#74bfeb}
+.psg-meal.fed{border-top-color:var(--good)}
+.psg-meal .mt{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:var(--ink-3);font-weight:600}
+.psg-meal .st{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--warn)}
+.psg-meal.fed .st{color:var(--good)}
+.psg-meal .ml{font:700 14px/1.25 var(--display)}
+.psg-meal .mc{display:flex;align-items:baseline;gap:5px}
+.psg-meal .mc b{font:700 24px/1 var(--display);color:#0d314c}
+:root[data-theme="dark"] .psg-meal .mc b{color:#a9d8f3}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .psg-meal .mc b{color:#a9d8f3} }
+.psg-meal .mc span{font-size:11.5px;color:var(--ink-3)}
+.psg-meal .ms{font-size:12px;color:var(--ink-2);font-weight:600}
+.psg-meal:not(.spon) .ms{color:var(--ink-3);font-weight:400;font-style:italic}
+.psg-meal .mm{font-size:11.5px;color:var(--ink-3);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.psg-meal .mm.tip{color:var(--warn)}
+/* the rooms */
+.psg-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.psg-room{display:flex;flex-direction:column;gap:7px;text-align:left;cursor:pointer;padding:12px 13px;border-radius:8px;
+  border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-family:var(--ui);
+  transition:transform .15s,box-shadow .15s,border-color .15s;animation:psgIn .4s both}
+.psg-room.big{grid-column:span 2}
+.psg-room:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(13,49,76,.13);border-color:#74bfeb}
+.psg-room.open{border-color:#0d314c;box-shadow:0 0 0 2px #74bfeb}
+.psg-room.idle{background:transparent;border-style:dashed;opacity:.72}
+.psg-room .rh{display:flex;align-items:flex-start;gap:10px}
+.psg-room .rn{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.psg-room .rn b{font:700 14px/1.2 var(--display)}
+.psg-room .rn span{font-size:11.5px;color:var(--ink-3)}
+.ra{flex:0 0 auto;width:44px;height:32px;color:#0d314c;opacity:.85}
+:root[data-theme="dark"] .ra{color:#a9d8f3}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .ra{color:#a9d8f3} }
+.ra svg{width:44px;height:32px;display:block}
+.psg-room.idle .ra{opacity:.35}
+.rp{display:flex;flex-direction:column;gap:3px}
+.rpl{display:flex;gap:8px;font-size:12px;line-height:1.3}
+.rpl .k{flex:0 0 76px;color:var(--ink-3);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;padding-top:1px}
+.rpl .v{flex:1 1 auto;min-width:0;color:var(--ink);font-weight:600}
+.rb{height:7px;border-radius:2px;background:var(--sunk);overflow:hidden;margin-top:2px}
+.rb i{display:block;height:100%;background:#74bfeb;transition:width .8s cubic-bezier(.3,1,.4,1)}
+.rb.good i{background:var(--good)} .rb.warn i{background:#d99a2b} .rb.bad i{background:var(--bad)}
+.rf{font-size:11.5px;color:var(--ink-3)}
+.rv{font-size:11.5px;color:var(--ink-2)}
+.rfree{font-size:12px;color:var(--ink-3);font-style:italic}
+@keyframes psgIn{from{opacity:0;transform:translateY(6px)}}
+/* one room's week, opened under its tile */
+.psg-week{grid-column:1/-1;border:1px solid #0d314c;border-radius:9px;padding:13px 14px;background:var(--accent-soft);animation:psgIn .3s both}
+.psg-wh{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 10px}
+.psg-wh h4{margin:0;font:700 15px/1.2 var(--display);color:var(--ink)}
+.psg-wa{margin-left:auto;display:flex;gap:6px}
+.psg-wc{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.psg-wd{background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:10px 11px;display:flex;flex-direction:column;gap:5px}
+.psg-wd.on{border-color:#0d314c;box-shadow:inset 0 3px 0 #74bfeb}
+.psg-wd.idle{opacity:.65}
+.psg-wd .wdh{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.psg-wd .wdh b{font:700 13px/1.2 var(--display)}
+.psg-wd .wds{font-size:11.5px;color:var(--ink-3)}
+.psg-wd .rpl .k{flex-basis:70px}
+.psg-ping{animation:psgPing 1.6s ease-out}
+@keyframes psgPing{0%{box-shadow:0 0 0 0 rgba(116,191,235,.9)}100%{box-shadow:0 0 0 12px rgba(116,191,235,0)}}
+@media(max-width:980px){
+  .psg-hero{grid-template-columns:auto minmax(0,1fr)}
+  .psg-days{grid-column:1/-1}
+}
+@media(max-width:700px){
+  .psg-days{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .psg-room.big{grid-column:auto}
+  .psg-wc{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .psg-h .psg-hint{margin-left:0}
+  .psg-hero{padding:14px;gap:14px}
+  .psg-ring,.psg-ring svg{width:88px;height:88px}
+  .psg-pct b{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){ .psg-arc,.psg-room,.psg-week,.rb i{animation:none !important;transition:none !important} }
+</style>
+
 <div id="app-specs" hidden>
   <div class="wrap">
     <!-- The same header the other three tabs carry: the tool, the summit, the hotel
@@ -4129,6 +4249,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       </div>
       <div class="meters" id="ps-meters"></div>
     </header>
+
+    <!-- Jonna, 2026-10-31: the hotel at a glance — how ready, the day's meals, every room -->
+    <section class="psg" id="ps-glance" aria-label="The Hotel at a Glance"></section>
 
     <div class="bar">
       <button class="btn ghost" id="contract-btn" type="button">Contract, floor plan &amp; capacities</button>
@@ -5421,7 +5544,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   }
   function tkpTag(it, inTrunk){
     const b=el('button','tkp-tag'); b.type='button'; b.dataset.s=it.sec; b.dataset.k=it.r.k;
-    const nm=String(it.r.t||'').trim(), q=String(it.r.q||'').trim(), note=String(it.r.n||'').trim();
+    let nm=String(it.r.t||'').trim(), note=String(it.r.n||'').trim(); const q=String(it.r.q||'').trim();
+    if(!nm && note){ nm=note; note=''; }   /* a line typed only in Note reads by its note */
     if(q) b.appendChild(el('span','q',q));
     b.appendChild(el('span','nm', nm||'New item'));
     if(!nm) b.classList.add('is-blank');
@@ -5950,6 +6074,13 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <p>Every task, to sort and filter. <b>+ New Task</b> adds one. A task has an owner, people who assist, a due date, a status (Not Started, In Progress, Need to Discuss, Being Discussed, Complete), a description and notes. Tasks marked <b>All Summits</b> come back every cycle; <b>This Summit Only</b> tasks do not.</p>
       <h4>Hotel Specs</h4>
       <p>What the hotel sets up, room by room and day by day, built from the Schedule. Sponsor boxes for breakfasts, breaks and receptions fill in from the Sponsorship Portal once a sponsorship is approved and has its day set. Anything sold in the portal without a day is listed in a note so it can be set there. Type over a box to keep your own wording.</p>
+      <ul>
+        <li><b>Ready for the Hotel</b> (the rings at the top) shows how many headcounts are in, how many meals and breaks have a menu, and how many questions for the hotel are answered. Press a line to open the card where it is filled in.</li>
+        <li><b>Pick a day</b> (Monday to Thursday). Each day shows how many rooms are in use and the biggest crowd that day.</li>
+        <li><b>Food &amp; Beverage</b> lists that day&rsquo;s meals and breaks in the order they happen, with the expected crowd, the sponsor and whether the menu is set. Press one and Headcount &amp; What to Order opens with the cursor in that very box.</li>
+        <li><b>The Rooms</b> shows every meeting room as a tile: its set-up drawn from above, what is in it morning to evening, and a bar for how full it gets (green fits, amber is close, red is over). Press a room to see its whole week; <b>Open the Schedule</b> to move things.</li>
+        <li>Nothing here is typed twice: it all reads from the Schedule and the cards below it.</li>
+      </ul>
       <h4>People</h4>
       <p>Every speaker, sponsor and board member, and where each stands. See <b>Speakers and Sponsors, Start to Finish</b>.</p>
       <h4>The Trunk</h4>
@@ -34917,6 +35048,7 @@ function render_(){
   /* the ones that are really set-up instructions live in Rosalyn's panel */
   ROSALYN_ASKS = asks.filter(a=>askWho(a)==='rosalyn');
   renderRoomNotes();
+  GL_HOTEL=hotel;
   renderSpecsMeters(v, hotel);
 
   /* the meter counts the groups that need a slot: an optional one only counts
@@ -36524,6 +36656,286 @@ function renderSpecsMeters(v, hotelAsks){
     d.appendChild(el('div','n',n)); d.appendChild(el('div','k',k));
     m.appendChild(d);
   });
+  try{ renderGlance(); }catch(e){ try{ console.warn('glance',e); }catch(_){} }
+}
+
+/* ============ THE HOTEL AT A GLANCE ============
+   Jonna, 2026-10-31: "reimagine how the hotel specs page looks and functions — make it
+   interactive, dynamic and easy to understand, use visuals". Everything here is read
+   from what the page already keeps (the Schedule's rooms and set-ups, the headcounts,
+   the meals and breaks, the asks), so it is never a second place to type. Pick a day:
+   the meals run across the top in the order they happen, and every room is a tile with
+   its set-up drawn, what is in it and how full it gets. A tile opens that room's week.
+   Anything that needs filling in opens the card where it is typed. */
+var GL_DAY=null, GL_ROOM=null, GL_HOTEL=[];
+var GL_SVG='http://www.w3.org/2000/svg';
+function glSvg(w,h,inner){
+  const s=document.createElementNS(GL_SVG,'svg');
+  s.setAttribute('viewBox','0 0 '+w+' '+h); s.setAttribute('aria-hidden','true');
+  s.innerHTML=inner; return s;
+}
+/* each set-up drawn the way the hotel's chart draws it: tables and chairs from above */
+function glSetupArt(setup){
+  const t='fill="currentColor"', c='fill="currentColor" opacity=".55"';
+  const dots=(xs,ys,r)=>xs.map(x=>ys.map(y=>'<circle cx="'+x+'" cy="'+y+'" r="'+(r||1.6)+'" '+c+'/>').join('')).join('');
+  switch(setup){
+    case 'clsrm': return glSvg(44,32,[6,14,22].map(y=>'<rect x="6" y="'+y+'" width="14" height="3" rx="1" '+t+'/><rect x="24" y="'+y+'" width="14" height="3" rx="1" '+t+'/>'
+      +dots([9,13,17,27,31,35],[y+5.5],1.3)).join('')+'<rect x="15" y="1" width="14" height="2.5" rx="1" '+c+'/>');
+    case 'thtr': return glSvg(44,32,'<rect x="15" y="1" width="14" height="2.5" rx="1" '+c+'/>'+dots([7,12,17,27,32,37],[9,15,21,27],1.7));
+    case 'banq': return glSvg(44,32,[[11,10],[33,10],[22,22],[9,26],[35,26]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="4.6" '+t+'/>'
+      +[0,60,120,180,240,300].map(a=>'<circle cx="'+(x+7*Math.cos(a*Math.PI/180)).toFixed(1)+'" cy="'+(y+7*Math.sin(a*Math.PI/180)).toFixed(1)+'" r="1.1" '+c+'/>').join('')).join(''));
+    case 'cres': return glSvg(44,32,[[11,12],[33,12],[22,25]].map(([x,y])=>'<path d="M'+(x-6)+' '+y+' a6 6 0 0 0 12 0 z" '+t+'/>'
+      +[30,90,150].map(a=>'<circle cx="'+(x+8.5*Math.cos(a*Math.PI/180)).toFixed(1)+'" cy="'+(y+8.5*Math.sin(a*Math.PI/180)).toFixed(1)+'" r="1.2" '+c+'/>').join('')).join(''));
+    case 'board': return glSvg(44,32,'<rect x="10" y="11" width="24" height="10" rx="2" '+t+'/>'+dots([14,19,24,29],[7,25],1.5)+dots([6,38],[16],1.5));
+    case 'hollow': return glSvg(44,32,'<path d="M8 5h28v22H8z M13 10v12h18V10z" fill-rule="evenodd" '+t+'/>'+dots([12,18,24,30],[2],1.3)+dots([12,18,24,30],[30],1.3));
+    case 'dblu': return glSvg(44,32,'<path d="M5 4h4v20h26V4h4v24H5z" '+t+'/><path d="M13 4h3v13h12V4h3v16H13z" '+t+'/>'+'<rect x="15" y="0" width="14" height="2" '+c+'/>');
+    default: return glSvg(44,32,'<path d="M8 6h4v18h20V6h4v22H8z" '+t+'/>'+dots([5],[9,15,21],1.4)+dots([39],[9,15,21],1.4)+dots([16,22,28],[31],1.4)
+      +'<rect x="16" y="2" width="12" height="2.5" rx="1" '+c+'/>');
+  }
+}
+/* what is in a room on a day, in the order it happens */
+var GL_PARTS=[['am','Morning'],['lunch','Lunch'],['pm','Afternoon'],['eve','Evening']];
+function glPartOf(b){ return !b ? '' : b.lunch ? 'lunch' : b.eve ? 'eve' : (b.half==='PM' ? 'pm' : 'am'); }
+function glRoomDay(rm, dayId){
+  const pl=place(), LK=lockedAt(), cat=CATER()||{};
+  const out={am:[], lunch:[], pm:[], eve:[]}, seen=new Set();
+  let peak=null;
+  const add=(part, id, nm, att)=>{
+    if(!out[part] || seen.has(part+'|'+id)) return; seen.add(part+'|'+id);
+    out[part].push(nm);
+    if(att!=null && (peak==null || att>peak)) peak=att;
+  };
+  Object.keys(pl).forEach(id=>{
+    const p=pl[id], b=p&&BLOCK[p.b], x=S[id];
+    if(!x || !b || p.r!==rm.id || b.day!==dayId) return;
+    add(glPartOf(b), id, x.nm||x.full||id, x.att);
+  });
+  Object.keys(LK).forEach(k=>{
+    const i=k.indexOf('|'), b=BLOCK[k.slice(0,i)];
+    if(!b || b.day!==dayId || k.slice(i+1)!==rm.id) return;
+    const sid=LK[k].sid, x=S[sid]; if(!x) return;
+    if(sid==='breakfast' && glPartOf(b)!=='am') return;   /* breakfast holds its room all day, but is only served in the morning */
+    const att = (sid==='general-sessions' && cat.gs && cat.gs.count!=null) ? cat.gs.count : x.att;
+    add(glPartOf(b), sid, x.nm||sid, att);
+  });
+  try{ const d=DAYS.find(y=>y.id===dayId), l=d && lunchAt(d, rm);
+    if(l && !out.lunch.length){ out.lunch.push(l.nm);
+      if(l.nm==='Newcomer Orientation' && cat.newcomer && cat.newcomer.count!=null && (peak==null||cat.newcomer.count>peak)) peak=cat.newcomer.count; } }catch(e){}
+  const setup=roomSetupOn(rm, dayId), cap=capOf(rm, setup);
+  const used=GL_PARTS.some(([k])=>out[k].length);
+  return {parts:out, peak, setup, cap, used, av:roomAvOn(rm, dayId)};
+}
+/* how ready the page is to go to the hotel: covers counted, menus on the table,
+   questions answered */
+function glReady(){
+  const live=NC_ITEMS.filter(it=>S[it.sid]);
+  const counted=live.filter(it=>(CATER()[it.ck]||{}).count!=null).length;
+  const rows=sponsorRows(), sv=SERVING(), sp=SPONSORS();
+  const fed=rows.filter(r=>(sv[r.key]||'').trim()).length;
+  const spon=rows.filter(r=>(sp[r.key]||'').trim()).length;
+  const qs=(GL_HOTEL||[]).concat(ROSALYN_ASKS||[]).filter(a=>askIsQuestion(a));
+  const settled=qs.filter(a=>['done','na'].includes(askStatus(a))).length;
+  const rings=[
+    {k:'heads', lbl:'Headcounts', n:counted, of:live.length, card:'specs:heads', col:'#74bfeb'},
+    {k:'menus', lbl:'Menus Set',  n:fed,     of:rows.length, card:'specs:heads', col:'#7fd1a8'},
+    {k:'asks',  lbl:'Questions Answered', n:settled, of:qs.length, card:'specs:ask', col:'#f2c46d'}
+  ];
+  const parts=rings.filter(r=>r.of);
+  const pct=parts.length ? Math.round(parts.reduce((a,r)=>a+r.n/r.of,0)/parts.length*100) : 0;
+  return {rings, pct, spon, rows:rows.length};
+}
+/* open the card the thing is typed on, and put the cursor in the very box */
+function glOpen(cardKey, focusKey){
+  const sec=document.querySelector('[data-card="'+cardKey+'"]');
+  try{ if(window.__pane && sec) window.__pane.open(cardKey); }catch(e){}
+  if(!focusKey) return;
+  setTimeout(()=>{
+    const f=[...document.querySelectorAll('[data-keepfocus]')].find(i=>i.dataset.keepfocus===focusKey);
+    if(!f) return;
+    try{ f.scrollIntoView({block:'center'}); }catch(e){}
+    f.focus({preventScroll:true});
+    const cell=f.closest('.nm-f')||f; cell.classList.add('psg-ping');
+    setTimeout(()=>cell.classList.remove('psg-ping'),1600);
+  },120);
+}
+var GL_SLOT_TIME={breakfast:'7:30', am:'10:20', newcomer:'12:00', pm:'2:50', reception:'5:00'};
+var GL_SLOT_ORDER={breakfast:0, am:1, newcomer:2, pm:3, reception:4};
+function glDayMeals(day){
+  return sponsorRows().filter(r=>r.day===day.label).map(r=>{
+    const slot=r.extra ? 'x' : r.key.split('|')[1];
+    let crowd=null, tip='';
+    try{
+      if(slot==='breakfast'||slot==='am'||slot==='pm'){
+        const c=halfDayCrowd(day.id, slot==='pm'?'pm':'am');
+        if(c && c.known){ crowd=c.heads; const a=breakAdvice(c); if(a && slot!=='breakfast') tip=a.t; }
+      } else if(slot==='newcomer'){ const n=(CATER().newcomer||{}).count; if(n!=null) crowd=n; }
+    }catch(e){}
+    return {r, slot, time:GL_SLOT_TIME[slot]||'', ord:GL_SLOT_ORDER[slot]!=null?GL_SLOT_ORDER[slot]:5,
+      spon:(SPONSORS()[r.key]||'').trim(), menu:flatServe(SERVING()[r.key]||''), crowd, tip};
+  }).sort((a,b)=>a.ord-b.ord);
+}
+function renderGlance(){
+  const host=$('ps-glance'); if(!host) return;
+  const v=V(); if(!v) return;
+  if(!GL_DAY || !DAYS.some(d=>d.id===GL_DAY)) GL_DAY=DAYS[0].id;
+  const day=DAYS.find(d=>d.id===GL_DAY);
+  const rooms=(v.rooms||[]).filter(r=>r.role!=='office');
+  host.textContent='';
+
+  /* ---- the hero: how ready, and which day ---- */
+  const hero=el('div','psg-hero');
+  const rd=glReady();
+  const ring=el('div','psg-ring');
+  const R=[46,36,26];
+  let svg='';
+  rd.rings.forEach((g,i)=>{
+    const r=R[i], C=2*Math.PI*r, f=g.of? g.n/g.of : 0;
+    svg+='<circle cx="56" cy="56" r="'+r+'" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="8"/>'
+      +'<circle class="psg-arc" cx="56" cy="56" r="'+r+'" fill="none" stroke="'+g.col+'" stroke-width="8" stroke-linecap="round"'
+      +' stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-f)).toFixed(1)+'" style="--c:'+C.toFixed(1)+'" transform="rotate(-90 56 56)"/>';
+  });
+  ring.appendChild(glSvg(112,112,svg));
+  const mid=el('div','psg-pct'); mid.appendChild(el('b',null,rd.pct+'%')); mid.appendChild(el('span',null,'Ready'));
+  ring.appendChild(mid);
+  hero.appendChild(ring);
+  const leg=el('div','psg-leg');
+  leg.appendChild(el('div','psg-eb','Ready for the Hotel'));
+  rd.rings.forEach(g=>{
+    const b=el('button','psg-li'); b.type='button';
+    const sw=el('i'); sw.style.background=g.col; b.appendChild(sw);
+    b.appendChild(el('span','t',g.lbl));
+    b.appendChild(el('span','n', g.of ? g.n+' of '+g.of : '—'));
+    b.title='Open where this is filled in';
+    b.addEventListener('click',()=>glOpen(g.card));
+    leg.appendChild(b);
+  });
+  leg.appendChild(el('div','psg-spon', rd.spon+' of '+rd.rows+' meals and breaks sponsored'));
+  hero.appendChild(leg);
+
+  const tabs=el('div','psg-days'); tabs.setAttribute('role','tablist');
+  DAYS.forEach(d=>{
+    const t=el('button','psg-day'+(d.id===GL_DAY?' on':'')); t.type='button';
+    t.setAttribute('role','tab'); t.setAttribute('aria-selected', d.id===GL_DAY?'true':'false');
+    const inUse=rooms.filter(r=>glRoomDay(r,d.id).used).length;
+    let peak=0;
+    try{ ['am','pm'].forEach(h=>{ const c=halfDayCrowd(d.id,h); if(c && c.heads>peak) peak=c.heads; }); }catch(e){}
+    t.appendChild(el('span','dn',d.label));
+    t.appendChild(el('span','dm', inUse+' room'+(inUse===1?'':'s')+(peak? ' · ~'+peak+' people' : '')));
+    t.addEventListener('click',()=>{ GL_DAY=d.id; GL_ROOM=null; renderGlance(); });
+    tabs.appendChild(t);
+  });
+  hero.appendChild(tabs);
+  host.appendChild(hero);
+
+  /* ---- the day's food and drink, in the order it happens ---- */
+  const meals=glDayMeals(day);
+  const fb=el('div','psg-sec');
+  const fh=el('div','psg-h'); fh.appendChild(el('h3',null,day.label+'’s Food & Beverage'));
+  fh.appendChild(el('span','psg-hint','Tap one to fill in the sponsor or the menu'));
+  fb.appendChild(fh);
+  const line=el('div','psg-meals');
+  if(!meals.length) line.appendChild(el('div','psg-none','No meals or breaks on '+day.label+'.'));
+  meals.forEach(m=>{
+    const b=el('button','psg-meal'+(m.menu?' fed':'')+(m.spon?' spon':'')); b.type='button';
+    const top=el('div','mt'); top.appendChild(el('span','tm',m.time||' '));
+    top.appendChild(el('span','st', m.menu ? '✓ Menu set' : 'No menu yet'));
+    b.appendChild(top);
+    b.appendChild(el('div','ml',m.r.label));
+    const big=el('div','mc');
+    big.appendChild(el('b',null, m.crowd!=null ? '~'+m.crowd : '—'));
+    big.appendChild(el('span',null, m.crowd!=null ? 'people' : 'no count yet'));
+    b.appendChild(big);
+    b.appendChild(el('div','ms', m.spon ? 'Sponsored by '+m.spon : 'Open to sponsor'));
+    if(m.menu) b.appendChild(el('div','mm',m.menu));
+    else if(m.tip) b.appendChild(el('div','mm tip',m.tip));
+    b.title='Open Headcount & What To Order at this line';
+    b.addEventListener('click',()=>glOpen('specs:heads', (m.menu && !m.spon ? 'spon:' : 'serve:')+m.r.key));
+    line.appendChild(b);
+  });
+  fb.appendChild(line);
+  host.appendChild(fb);
+
+  /* ---- the rooms ---- */
+  const rs=el('div','psg-sec');
+  const rh=el('div','psg-h');
+  const used=rooms.filter(r=>glRoomDay(r,day.id).used).length;
+  rh.appendChild(el('h3',null,'The Rooms on '+day.label));
+  rh.appendChild(el('span','psg-hint',used+' of '+rooms.length+' in use · tap a room for its week'));
+  rs.appendChild(rh);
+  const map=el('div','psg-map');
+  const ordered=rooms.slice().sort((a,b)=>{
+    const A=glRoomDay(a,day.id), B=glRoomDay(b,day.id);
+    if(A.used!==B.used) return A.used? -1 : 1;
+    return (B.cap||0)-(A.cap||0);
+  });
+  ordered.forEach(rm=>{
+    const d=glRoomDay(rm, day.id);
+    const pct = d.peak!=null && d.cap ? d.peak/d.cap : null;
+    const tone = pct==null ? '' : pct>1 ? 'bad' : pct>.88 ? 'warn' : 'good';
+    const t=el('button','psg-room'+(d.used?'':' idle')+(d.cap>=150?' big':'')+(GL_ROOM===rm.id?' open':'')); t.type='button';
+    t.dataset.room=rm.id;
+    const hd=el('div','rh');
+    const nm=el('div','rn'); nm.appendChild(el('b',null,rm.nm));
+    nm.appendChild(el('span',null,(SETUPS[d.setup]||'Set-up not set')+(d.cap? ' · seats '+d.cap : '')));
+    hd.appendChild(nm);
+    const art=el('span','ra'); art.appendChild(glSetupArt(d.setup)); hd.appendChild(art);
+    t.appendChild(hd);
+    if(d.used){
+      const ul=el('div','rp');
+      GL_PARTS.forEach(([k,lbl])=>{ if(!d.parts[k].length) return;
+        const li=el('div','rpl'); li.appendChild(el('span','k',lbl));
+        li.appendChild(el('span','v',d.parts[k].join(', '))); ul.appendChild(li); });
+      t.appendChild(ul);
+      const bar=el('div','rb'+(tone?' '+tone:''));
+      const fill=el('i'); fill.style.width=Math.min(100, Math.round((pct||0)*100))+'%'; bar.appendChild(fill);
+      t.appendChild(bar);
+      t.appendChild(el('div','rf', d.peak!=null && d.cap ? (d.peak>d.cap ? d.peak+' expected — over by '+(d.peak-d.cap) : d.peak+' expected of '+d.cap)
+        : d.peak!=null ? d.peak+' expected' : 'No headcount yet'));
+      if(d.av && d.av!==AV_NONE) t.appendChild(el('div','rv','AV: '+avLabel(d.av)));
+    } else {
+      t.appendChild(el('div','rfree','Free on '+day.label));
+    }
+    t.setAttribute('aria-expanded', GL_ROOM===rm.id?'true':'false');
+    t.addEventListener('click',()=>{ GL_ROOM = GL_ROOM===rm.id ? null : rm.id; renderGlance();
+      const o=document.querySelector('#ps-glance .psg-week'); if(o){ try{ o.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){} } });
+    map.appendChild(t);
+    if(GL_ROOM===rm.id) map.appendChild(glWeek(rm));
+  });
+  rs.appendChild(map);
+  host.appendChild(rs);
+}
+/* one room, Monday to Thursday */
+function glWeek(rm){
+  const w=el('div','psg-week');
+  const h=el('div','psg-wh');
+  h.appendChild(el('h4',null,rm.nm+' — The Week'));
+  const caps=[['u','U'],['clsrm','Classroom'],['thtr','Theater'],['banq','Rounds']].filter(([k])=>capOf(rm,k))
+    .map(([k,l])=>l+' '+capOf(rm,k)).join(' · ');
+  if(caps) h.appendChild(el('span','psg-hint','Holds: '+caps));
+  const go=el('button','btn ghost','Open the Schedule'); go.type='button';
+  go.addEventListener('click',()=>{ try{ window.__hqGo && window.__hqGo('grid'); }catch(e){} });
+  const x=el('button','btn ghost','Close'); x.type='button';
+  x.addEventListener('click',()=>{ GL_ROOM=null; renderGlance(); });
+  const acts=el('span','psg-wa'); acts.appendChild(go); acts.appendChild(x); h.appendChild(acts);
+  w.appendChild(h);
+  const cols=el('div','psg-wc');
+  DAYS.forEach(d=>{
+    const r=glRoomDay(rm, d.id);
+    const c=el('div','psg-wd'+(r.used?'':' idle')+(d.id===GL_DAY?' on':''));
+    const top=el('div','wdh'); top.appendChild(el('b',null,d.label));
+    const art=el('span','ra'); art.appendChild(glSetupArt(r.setup)); top.appendChild(art);
+    c.appendChild(top);
+    c.appendChild(el('div','wds',(SETUPS[r.setup]||'')+(r.cap?' · '+r.cap:'')));
+    if(r.used){
+      GL_PARTS.forEach(([k,lbl])=>{ if(!r.parts[k].length) return;
+        const li=el('div','rpl'); li.appendChild(el('span','k',lbl)); li.appendChild(el('span','v',r.parts[k].join(', ')));
+        c.appendChild(li); });
+      if(r.av && r.av!==AV_NONE) c.appendChild(el('div','rv','AV: '+avLabel(r.av)));
+    } else c.appendChild(el('div','rfree','Free'));
+    cols.appendChild(c);
+  });
+  w.appendChild(cols);
+  return w;
 }
 /* Room set-up notes — the asks tagged for Rosalyn rather than the hotel. */
 function renderRoomNotes(){
