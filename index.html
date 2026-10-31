@@ -7386,7 +7386,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 
   async function watch(sid){
     if(ST.unsub){ try{ ST.unsub(); }catch(e){} ST.unsub=null; }
-    ST.sid=sid; ST.doc=null; ST.ready=false; ST.openWeek=null; ST.tool=null; ST.pick=null;
+    ST.sid=sid; ST.doc=null; ST.ready=false; ST.readOk=false; ST.openWeek=null; ST.tool=null; ST.pick=null;
     render();
     const db=await store();
     if(!db){ ST.ready=true; render(); return; }
@@ -7394,7 +7394,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     const got=s=>{ if(sid!==ST.sid) return;
       /* our own save comes back a moment later — do not let an older copy overwrite it */
       if(ST.ready && ST.writeSid===sid && Date.now()-ST.lastWrite<4000) return;
-      ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; render(); };
+      ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; ST.readOk=true; render(); };
     if(typeof ref.onSnapshot==='function'){
       try{ ST.unsub=ref.onSnapshot(got, ()=>{ if(sid===ST.sid){ ST.ready=true; render(); } }); return; }catch(e){}
     }
@@ -7402,6 +7402,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   }
   let saveT=null;
   function save(){
+    /* Jonna, 2026-10-31: nothing is written over numbers that could not be read */
+    if(!ST.readOk){ flash('Still loading the registration numbers \u2014 try again in a moment.'); return; }
     ST.lastWrite=Date.now(); ST.writeSid=ST.sid;
     const sid=ST.sid, data=own(doc());
     data.savedAt=new Date().toISOString();
@@ -41005,11 +41007,14 @@ async function loadPlanDocs(vid){
   try{
     const snap=await planDb.doc('schedule/plans-'+vid).get();
     planDocs[vid] = (snap.exists && snap.data()) ? snap.data() : {};
-  }catch(e){ planDocs[vid]={}; }
+    planRead[vid]=true;
+  }catch(e){ planDocs[vid]=undefined; setTimeout(()=>loadPlanDocs(vid), 4000); return; }   /* a failed read is not an empty folder */
   render();
 }
+const planRead={};
 async function savePlanDocs(vid){
   if(!planDb) return;
+  if(!planRead[vid]){ notice('Still loading the floor plans \u2014 try again in a moment.'); return; }
   try{ await planDb.doc('schedule/plans-'+vid).set(planDocs[vid]||{}); }
   catch(e){ notice('That could not be saved \u2014 the file may be too large. Try a smaller image.'); }
 }
@@ -41501,6 +41506,7 @@ function doUndo(){
 function flushSave(){
   clearTimeout(saveTimer);
   if(!dbRef){ mark('local'); return; }
+  if(!window.__scheduleLoaded) return;          /* never before the real Schedule is in */
   dbRef.set({venues, activeVenue, schedules, extraRules, heldRules, staffAsks, asksSeeded, sessionEdits, customSessions,
     removedVenues, updatedAt:new Date().toISOString()})
     .then(()=>mark('saved')).catch(e=>mark('error', e));
@@ -44584,6 +44590,8 @@ startClock();
     if(!pending) flash._t=setTimeout(()=>{ n.textContent=''; },1800); }
   function queueSave(){
     if(!ST.db || ST.canWrite===false){ if(ST.canWrite===false) flash('View only'); return; }
+    /* Jonna, 2026-10-31: nothing is written until this summit's resume has been read */
+    if(!ST.loaded){ flash('Still loading \u2014 try again in a moment'); return; }
     /* store the step back before the change goes out — unless this IS the step back */
     if(queueSave._skip) queueSave._skip=false; else rzMark();
     flash('Saving…',true);
@@ -44608,7 +44616,7 @@ startClock();
   function flushSave(){
     if(!saveT) return;
     clearTimeout(saveT); saveT=null;
-    if(!ST.db || ST.canWrite===false) return;
+    if(!ST.db || ST.canWrite===false || !ST.loaded) return;
     const forVenue=ST.venue, body={details:ST.doc.details||{}, fn:ST.doc.fn||{},
       accepted:ST.doc.accepted||null, ignored:ST.doc.ignored||{}, updatedAt:new Date().toISOString()};
     ST.lastWrite=Date.now();
@@ -46587,6 +46595,7 @@ function rec(id,label){
 }
 const pend=new Map();
 function write(id,doc){
+  if(ST.db && ST.collsRead && !ST.collsRead.has('people')){ try{ window.__hqFlash && window.__hqFlash('Still loading \u2014 try that again in a moment'); }catch(e){} return; }
   GONE.delete(id);
   ST.docs.set(id,doc);
   if(!ST.db) return;
@@ -47723,6 +47732,9 @@ function sponOnAgenda(r){
   return (who && onSummit(who) && stepDone(who,'agenda')) || '';
 }
 function saveColl(coll,map,fields,label){
+  /* Jonna, 2026-10-31: never written before its list has been read — a card changed while
+     the page was still loading would otherwise write over what is really there */
+  if(ST.collsRead && !ST.collsRead.has(coll)){ try{ window.__hqFlash && window.__hqFlash('Still loading \u2014 try that again in a moment'); }catch(e){} return; }
   const v=venueNow(), prev=map.get(v)||null;
   undoStack.push({coll,v,prev:prev?JSON.parse(JSON.stringify(prev)):null}); if(undoStack.length>80) undoStack.shift();
   try{ if(window.__hqUndo) window.__hqUndo.record('people',label||''); }catch(e){}
@@ -47879,7 +47891,7 @@ function seSave(fields,label){ saveColl('speaker-email',ST.semail,fields,label||
 async function seQueue(req){
   if(!ST.db) throw new Error('not signed in');
   const ref=ST.db.doc('feeds/speaker-email');
-  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ cur={}; }
+  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ throw e; }   /* a failed read must not wipe emails still waiting to go */
   const cut=Date.now()-60*60*1000;            /* the flow sends within minutes; an hour is plenty */
   const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
   list.push(req);
@@ -48211,7 +48223,7 @@ function ttLink(p,tok){
 async function ttQueue(reqs){
   if(!ST.db) throw new Error('not signed in');
   const ref=ST.db.doc('feeds/speaker-email');
-  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ cur={}; }
+  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ throw e; }   /* a failed read must not wipe emails still waiting to go */
   const cut=Date.now()-60*60*1000;
   const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
   reqs.forEach(r=>list.push(r));
@@ -48721,6 +48733,7 @@ function init(){
     try{ db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ db=null; }
     ST.db=db; ST.ready=true;
     if(!db){ render(); return; }
+    ST.collsRead=new Set();
     try{
       db.collection('sponsors').onSnapshot(s=>{
         s.docChanges().forEach(c=>{
@@ -48732,17 +48745,20 @@ function init(){
       },()=>{});
       [['board',ST.board],['sponsor-agenda',ST.sag],['speaker-email',ST.semail]].forEach(([coll,map])=>{
         db.collection(coll).onSnapshot(s=>{
+          ST.collsRead.add(coll);
           s.docChanges().forEach(c=>{ if(c.type==='removed') map.delete(c.doc.id); else map.set(c.doc.id,Object.assign({},c.doc.data())); });
           render();
         },()=>{});
       });
       db.collection('team-travel').onSnapshot(s=>{
+        ST.collsRead.add('team-travel');
         s.docChanges().forEach(c=>{ if(c.type==='removed') ST.travel.delete(c.doc.id); else ST.travel.set(c.doc.id,Object.assign({},c.doc.data())); });
         ST.travelLoaded=true; ttSeed(); ttApply(); render();
         try{ window.dispatchEvent(new Event('hq:team-travel')); }catch(e){}
       },()=>{});
       db.doc('feeds/team-travel-answers').onSnapshot(s=>{ ST.travelAnswers=s.exists?(s.data()||null):null; if(ST.travelLoaded) ttApply(); },()=>{});
       db.collection('people').onSnapshot(s=>{
+        ST.collsRead.add('people');
         s.docChanges().forEach(c=>{
           if(c.type==='removed') ST.docs.delete(c.doc.id);
           else if(!(GONE.has(c.doc.id) && Date.now()-GONE.get(c.doc.id)<120000))
@@ -49989,8 +50005,10 @@ function touch(){
   clearTimeout(saveT); saveT=setTimeout(save,600);
   paintSaved('Saving…');
 }
+let gsRead=false;
 async function save(){
   if(!db||!doc) return;
+  if(!gsRead){ paintSaved('Not saved \u2014 still loading, try again in a moment'); return; }   /* Jonna, 2026-10-31 */
   try{ await db.doc('schedule/gs-'+vid).set(JSON.parse(JSON.stringify(doc))); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
   catch(e){ paintSaved('Not saved — '+((e&&e.message)||'try again')); }
 }
@@ -50445,8 +50463,9 @@ function attach(){
   if(!db || !id || id===vid) return;
   if(dirty) save();
   if(unsub){ try{ unsub(); }catch(e){} unsub=null; }
-  vid=id; doc=null; finding=null; newFor=null; render(); loadLenders();
+  vid=id; doc=null; gsRead=false; finding=null; newFor=null; render(); loadLenders();
   unsub=db.doc('schedule/gs-'+vid).onSnapshot(s=>{
+    gsRead=true;
     const d=s.exists? s.data() : null;
     const busy=HOST.contains(document.activeElement) || dirty || dragId;
     if(busy && doc) return;               /* never pull the page out from under the person typing */
