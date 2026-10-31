@@ -2669,6 +2669,9 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 
 /* drawer */
 #app-ros .scrim{position:fixed;inset:0;background:rgba(10,14,18,.45);z-index:80}
+/* a task opened from another page: only its drawer shows, over that page */
+body.ros-peek #app-ros{display:block !important}
+body.ros-peek #app-ros > :not(#rs-drawer-host){display:none !important}
 #app-ros .drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);
   border-left:1px solid var(--line-2);z-index:81;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.18)}
 #app-ros .drawer header{padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;border-bottom:1px solid var(--line);
@@ -42516,12 +42519,19 @@ window.__ros={get cfg(){return S.cfg;},get summits(){return S.summits;},active:(
   /* Jonna, 2026-09-23: opened from the Trunk this used to take her to All Tasks with
      no way back. This opens the task's detail over whatever is on screen and leaves
      the page where it is; closing it puts her back where she was. */
-  openHere:id=>{ if(!S.tasks.has(id)) return false; openDrawer(id); return true; },
+  /* Jonna, 2026-10-31: a task pressed on another page (the Trunk's road) opened its drawer inside
+     the hidden Run of Show, so nothing appeared. The drawer now comes up over whatever page you are on. */
+  openHere:id=>{ if(!S.tasks.has(id)) return false;
+    const ros=document.getElementById("app-ros");
+    if(ros && ros.hidden) document.body.classList.add("ros-peek");
+    openDrawer(id); return true; },
   open:id=>{ if(!S.tasks.has(id)) return false; go("tasks"); openDrawer(id);
     setTimeout(()=>{ const n=document.querySelector('#v-tasks .tcard[data-id="'+id+'"]');
       if(n){ try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
         n.classList.add('justadded'); setTimeout(()=>n.classList.remove('justadded'),2200); } },260);
     return true; }};
+/* going to Run of Show itself ends the peek, so the page shows whole */
+try{ const R=document.getElementById("app-ros"); if(R) new MutationObserver(()=>{ if(!R.hidden) document.body.classList.remove("ros-peek"); }).observe(R,{attributes:true,attributeFilter:["hidden"]}); }catch(e){}
 async function activateSummit(){
   const su=pickedSummit();
   if(!su.start){flash("Set the first day first");return;}
@@ -43954,7 +43964,7 @@ function drawerSave(dr){
   });
   return b;
 }
-function closeDrawer(){S.open=null;S.openDisc=null;$("#rs-drawer-host").textContent="";}
+function closeDrawer(){S.open=null;S.openDisc=null;$("#rs-drawer-host").textContent="";document.body.classList.remove("ros-peek");}
 
 /* dated running notes on an agenda item — MM/DD, matching the plan's own notes */
 function stampMD(){const d=new Date();return String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0");}
