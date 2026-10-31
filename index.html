@@ -2793,13 +2793,77 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 #app-ros > .wrap > .planhero{margin:0 0 14px}
 #app-ros .viewbar{margin:0 0 14px;padding:10px 0;border-top:0}
 #app-ros .planhero .ph-line{font-size:18px;margin:6px 0 14px;max-width:none}
-#app-ros .planhero .ph-tiles{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
-@media(max-width:1300px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#app-ros .planhero .ph-tiles{grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-rows:1fr;gap:10px}
+@media(max-width:860px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:620px){#app-ros .planhero .ph-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #app-ros .planhero .ph-tile{padding:12px 16px 13px;gap:1px;min-width:0}
 #app-ros .planhero .ph-tile .n{font-size:26px}
 #app-ros .planhero .ph-tile .k{font-size:12.5px;margin-top:5px}
 #app-ros .planhero .ph-tile .d{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Jonna, 2026-10-31: the plus-up — a live countdown, the plan as a ring, and the road
+   to the Summit with every dated task on it (the MISMO Media summit hero, for the whole plan) */
+#app-ros .planhero .ph-eyebrow,#app-ros .planhero .ph-line{display:none}
+.phs{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;margin:2px 0 16px}
+@media(max-width:760px){.phs{grid-template-columns:minmax(0,1fr)}}
+.phs-pill{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#fff;
+  padding:3px 9px;border-radius:4px;border:1px solid rgba(224,168,60,.65);background:rgba(224,168,60,.2)}
+.phs-pill i{width:8px;height:8px;border-radius:50%;background:#e0a83c;animation:phsAir 1.4s ease-in-out infinite}
+.phs-pill.live{border-color:rgba(79,199,155,.7);background:rgba(79,199,155,.2)} .phs-pill.live i{background:#4fc79b}
+@keyframes phsAir{50%{opacity:.25}}
+.phs-clock{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.phs-u{min-width:82px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:8px 12px 7px;text-align:left}
+.phs-u b{display:block;font-size:44px;line-height:1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#fff}
+.phs-u span{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#9fd2f2;margin-top:5px}
+.phs-u.big{min-width:120px;background:rgba(116,191,235,.16);border-color:rgba(116,191,235,.55)}
+.phs-u.big b{font-size:56px}
+.phs-when{font-size:14.5px;font-weight:600;margin-top:12px;color:rgba(255,255,255,.86)}
+.phs-next{all:unset;box-sizing:border-box;cursor:pointer;margin-top:14px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 12px;align-items:baseline;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-left:3px solid #74bfeb;border-radius:6px;padding:10px 14px;max-width:560px;width:100%;transition:background .15s,transform .15s}
+.phs-next:hover,.phs-next:focus-visible{background:rgba(255,255,255,.13);transform:translateY(-1px)}
+.phs-next:focus-visible{outline:2px solid #74bfeb;outline-offset:2px}
+.phs-next span{grid-row:span 2;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#74bfeb;white-space:nowrap}
+.phs-next b{font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phs-next em{font-style:normal;font-size:12.5px;color:#9fd2f2;font-weight:600}
+.phs-next.bad{border-left-color:#ff8a7a} .phs-next.bad span,.phs-next.bad em{color:#ffa69c}
+.phs-ring{position:relative;width:176px;height:176px;margin:0 6px}
+.phs-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.phs-ring circle{fill:none;stroke-width:14}
+.phs-ring .bg{stroke:rgba(255,255,255,.12)}
+.phs-ring .fg{stroke:#74bfeb;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.phs-ring .lt{stroke:#ff8a7a;stroke-linecap:butt}
+.phs-ring .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.phs-ring .rc b{font-size:36px;line-height:1;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.phs-ring .rc span{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2;font-weight:700;margin-top:5px}
+.phs-ring .rc small{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:2px}
+/* the road */
+.phs-road{margin:0 0 18px}
+.phs-rh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.phs-rh b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
+.phs-rh small{font-size:12px;color:rgba(255,255,255,.62)}
+.phs-track{position:relative;height:58px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+.phs-track::before{content:"";position:absolute;left:10px;right:10px;top:50%;height:2px;background:rgba(255,255,255,.18)}
+.phs-done{position:absolute;left:10px;top:50%;height:2px;background:linear-gradient(90deg,#74bfeb,#4fc79b);margin-top:0}
+.phs-ev{position:absolute;top:6px;bottom:6px;border-radius:6px;background:rgba(224,168,60,.28);border:1px solid rgba(224,168,60,.8);display:flex;align-items:flex-start;justify-content:center;min-width:16px}
+.phs-ev span{position:absolute;top:-22px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:#f3c87a;white-space:nowrap}
+.phs-now{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+.phs-now span{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:#fff;white-space:nowrap}
+.phs-m{all:unset;position:absolute;width:10px;height:10px;margin-left:-5px;border-radius:50%;cursor:pointer;background:#8aa3b7;box-shadow:0 0 0 2px #0f314c;transition:transform .15s}
+.phs-m:hover,.phs-m:focus-visible{transform:scale(1.6);z-index:2}
+.phs-m:focus-visible{outline:2px solid #fff}
+.phs-m.prog{background:#e0a83c}.phs-m.disc{background:#74bfeb}.phs-m.ok{background:#4fc79b}
+.phs-m.late{background:#ff6b5b;animation:phsLate 1.6s ease-in-out infinite}
+.phs-m.flag{width:12px;height:12px;margin-left:-6px;border-radius:2px;transform:rotate(45deg)}
+.phs-m.flag:hover,.phs-m.flag:focus-visible{transform:rotate(45deg) scale(1.5)}
+@keyframes phsLate{50%{box-shadow:0 0 0 2px #0f314c,0 0 0 6px rgba(255,107,91,.35)}}
+.phs-mo{position:relative;height:16px;margin-top:5px}
+.phs-mo span{position:absolute;transform:translateX(-50%);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.55);font-weight:700;white-space:nowrap}
+.phs-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:11.5px;color:rgba(255,255,255,.72)}
+.phs-key span{display:inline-flex;align-items:center;gap:6px}
+.phs-key i{width:9px;height:9px;border-radius:50%;background:#8aa3b7;display:inline-block}
+.phs-key i.prog{background:#e0a83c}.phs-key i.disc{background:#74bfeb}.phs-key i.ok{background:#4fc79b}.phs-key i.late{background:#ff6b5b}
+.phs-key i.flag{border-radius:2px;transform:rotate(45deg);background:#fff}
+@media (prefers-reduced-motion:reduce){.phs-pill i,.phs-m.late{animation:none}.phs-ring .fg{transition:none}}
 /* + New Task at the right end of the Run of Show strip */
 .viewbar .vb-grow{flex:1}
 .viewbar #addTask{white-space:nowrap}
@@ -4091,6 +4155,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   <section class="planhero" id="planHero" aria-label="Where the Plan Stands">
     <div class="ph-eyebrow" id="phToday"></div>
     <p class="ph-line" id="phLine"></p>
+    <div class="phs-host" id="phStage"></div>
     <div class="ph-tiles" id="rollup"></div>
   </section>
   <div class="viewbar" id="viewbar" hidden>
@@ -40478,6 +40543,100 @@ function renderMeters(){
     box.appendChild(b);
   });
 }
+
+/* ---------- the plus-up: countdown, ring and the road to the Summit (Jonna, 2026-10-31) ---------- */
+let PHS_TICK=null;
+function phsClock(su){
+  const start=su.start?parseD(su.start):null, end=su.end?parseD(su.end):null;
+  if(!start) return {mode:"none"};
+  const go=new Date(start); go.setHours(8,0,0,0);
+  const fin=new Date(end||start); fin.setHours(18,0,0,0);
+  const now=new Date();
+  if(now>fin) return {mode:"after"};
+  if(now>=go) return {mode:"live"};
+  let ms=go-now; const d=Math.floor(ms/864e5); ms-=d*864e5; const h=Math.floor(ms/36e5); ms-=h*36e5; const m=Math.floor(ms/6e4); ms-=m*6e4; const sec=Math.floor(ms/1e3);
+  return {mode:"count",d,h,m,s:sec};
+}
+function phsClockHtml(c){
+  const pad=n=>String(n).padStart(2,"0");
+  if(c.mode==="none") return '<div class="phs-u big"><b>—</b><span>No first day yet</span></div>';
+  if(c.mode==="live") return '<div class="phs-u big"><b>Live</b><span>The Summit is on</span></div>';
+  if(c.mode==="after") return '<div class="phs-u big"><b>Wrapped</b><span>On to the next one</span></div>';
+  return '<div class="phs-u big"><b>'+c.d+'</b><span>'+(c.d===1?"Day":"Days")+'</span></div>'
+    +'<div class="phs-u"><b>'+pad(c.h)+'</b><span>Hours</span></div>'
+    +'<div class="phs-u"><b>'+pad(c.m)+'</b><span>Minutes</span></div>'
+    +'<div class="phs-u"><b>'+pad(c.s)+'</b><span>Seconds</span></div>';
+}
+function renderStage(su,sv,list,open,pct,done){
+  const host=$("#phStage"); if(!host) return;
+  const esc=x=>String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  const fmt=(s,o)=>{ const d=parseD(s); return d? d.toLocaleDateString("en-US",o||{weekday:"short",month:"short",day:"numeric"}) : ""; };
+  const name=(sv&&sv.name)||su.name||"The Summit";
+  const city=(sv&&sv.city)||"";
+  const clock=phsClock(su);
+  /* what is next: the earliest open task with a date (overdue first) */
+  const dated=open.filter(t=>t.dueKind==="date"&&t.due).sort((a,b)=>String(a.due).localeCompare(String(b.due)));
+  const nx=dated[0]||open.find(t=>t.dueKind==="now")||null;
+  let nextHtml="";
+  if(nx){
+    const n=nx.dueKind==="date"? dayDiff(nx.due) : null;
+    const when= nx.dueKind!=="date"? "Active now" : n<0? Math.abs(n)+" day"+(Math.abs(n)===1?"":"s")+" overdue" : n===0? "Due today" : n===1? "Due tomorrow" : "Due "+fmt(nx.due)+" · in "+n+" days";
+    nextHtml='<button type="button" class="phs-next'+(n!==null&&n<0?" bad":"")+'" data-open="'+esc(nx.id)+'"><span>'+(n!==null&&n<0?"Overdue":"Next Up")+'</span><b>'+esc(nx.task||"Untitled task")+'</b><em>'+esc(when+(nx.owner?" · "+nx.owner:""))+'</em></button>';
+  }
+  /* the ring: done, plus overdue as a red slice */
+  const late=open.filter(t=>bucketOf(t)==="late").length;
+  const R=70, C=2*Math.PI*R, tot=Math.max(1,list.length);
+  const fDone=done/tot, fLate=late/tot;
+  const ring='<div class="phs-ring" role="img" aria-label="'+pct+'% of the plan complete">'
+    +'<svg viewBox="0 0 176 176"><circle class="bg" cx="88" cy="88" r="'+R+'"/>'
+    +(fLate?'<circle class="lt" cx="88" cy="88" r="'+R+'" stroke-dasharray="'+(fLate*C).toFixed(1)+' '+C.toFixed(1)+'" stroke-dashoffset="'+(-(fDone*C)).toFixed(1)+'"/>':'')
+    +'<circle class="fg" cx="88" cy="88" r="'+R+'" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+C.toFixed(1)+'" data-to="'+((1-fDone)*C).toFixed(1)+'"/></svg>'
+    +'<div class="rc"><b>'+pct+'%</b><span>Plan Complete</span><small>'+done+' of '+list.length+' tasks</small></div></div>';
+  /* the road: from the earliest dated task (or four months out) to three weeks after */
+  const start=su.start||"", end=su.end||su.start||"";
+  const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const addD=(s,n)=>{ const d=parseD(s); d.setDate(d.getDate()+n); return iso(d); };
+  let road="";
+  if(start){
+    const allDated=list.filter(t=>t.dueKind==="date"&&t.due);
+    let first=addD(start,-120), last=addD(end,21);
+    allDated.forEach(t=>{ if(t.due<first) first=t.due; if(t.due>last) last=t.due; });
+    const span=Math.max(1,(parseD(last)-parseD(first))/864e5);
+    const pos=s=>Math.min(100,Math.max(0,(parseD(s)-parseD(first))/864e5/span*100));
+    const lane=p=>"calc(10px + (100% - 20px) * "+(p/100).toFixed(4)+")";
+    const perDay={};
+    const marks=allDated.sort((a,b)=>String(a.due).localeCompare(String(b.due))).map(t=>{
+      const k=t.due, i=(perDay[k]=(perDay[k]||0)+1)-1;
+      const st=t.status==="Complete"?"ok":bucketOf(t)==="late"?"late":t.status==="In Progress"?"prog":(t.status==="Need to Discuss"||t.status==="Being Discussed")?"disc":"";
+      const top=29-5+((i%4)-1.5)*11;
+      return '<button type="button" class="phs-m '+st+(t.flagged?" flag":"")+'" style="left:'+lane(pos(t.due))+';top:'+top.toFixed(0)+'px" data-open="'+esc(t.id)+'" title="'+esc(fmt(t.due)+" · "+(t.task||"")+(t.owner?" · "+t.owner:"")+" · "+(t.status||"Not Started"))+'" aria-label="'+esc((t.task||"Task")+", "+fmt(t.due))+'"></button>';
+    }).join("");
+    const t0=iso(new Date());
+    const months=[]; { const m=parseD(first); m.setDate(1); m.setMonth(m.getMonth()+1); while(iso(m)<=last){ months.push('<span style="left:'+lane(pos(iso(m)))+'">'+m.toLocaleDateString("en-US",{month:"short"})+'</span>'); m.setMonth(m.getMonth()+1); } }
+    const nowP=pos(t0);
+    road='<div class="phs-road"><div class="phs-rh"><b>The Road to the Summit</b><small>Every dated task · click one to open it</small></div>'
+      +'<div class="phs-track">'
+      +'<div class="phs-done" style="width:calc((100% - 20px) * '+(Math.min(nowP,100)/100).toFixed(4)+')"></div>'
+      +'<div class="phs-ev" style="left:'+lane(pos(start))+';width:calc((100% - 20px) * '+(Math.max(0.6,pos(end)-pos(start))/100).toFixed(4)+')"><span>'+esc(fmt(start,{month:"short",day:"numeric"}))+' · Summit</span></div>'
+      +(t0>=first&&t0<=last?'<div class="phs-now" style="left:'+lane(nowP)+'"><span>Today</span></div>':'')
+      +marks+'</div>'
+      +'<div class="phs-mo">'+months.join("")+'</div>'
+      +'<div class="phs-key"><span><i></i>Not Started</span><span><i class="prog"></i>In Progress</span><span><i class="disc"></i>To Discuss</span><span><i class="ok"></i>Complete</span><span><i class="late"></i>Overdue</span><span><i class="flag"></i>Milestone</span></div>'
+      +'</div>';
+  }
+  const where=[start?fmt(start)+(end&&end!==start?" – "+fmt(end,{weekday:"short",month:"short",day:"numeric",year:"numeric"}):""):"", su.venue||""].filter(Boolean).join(" · ");
+  host.innerHTML='<div class="phs"><div class="phs-l">'
+    +'<span class="phs-pill'+(clock.mode==="live"?" live":"")+'"><i></i>'+esc(clock.mode==="live"?"Live":clock.mode==="after"?"Wrapped":"Countdown")+' · '+esc(name)+(city?" · "+esc(city):"")+'</span>'
+    +'<div class="phs-clock" id="phsClock">'+phsClockHtml(clock)+'</div>'
+    +'<div class="phs-when">'+esc(where)+'</div>'+nextHtml+'</div>'+ring+'</div>'+road;
+  host.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openDrawer(b.dataset.open)));
+  /* the ring fills in */
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ const fg=host.querySelector(".phs-ring .fg"); if(fg) fg.setAttribute("stroke-dashoffset",fg.dataset.to); }));
+  if(PHS_TICK) clearInterval(PHS_TICK);
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  PHS_TICK=setInterval(()=>{ const c=document.getElementById("phsClock"); if(!c){ clearInterval(PHS_TICK); PHS_TICK=null; return; }
+    if(!c.getClientRects().length) return; c.innerHTML=phsClockHtml(phsClock(activeSummit())); },1000);
+}
 function renderRollup(){
   /* Jonna, 2026-09-27: the plan at a glance as one navy panel — today's date, a sentence
      that says where things stand, and six figures that each open the list behind them. */
@@ -40523,11 +40682,12 @@ function renderRollup(){
   const tasksWith=status=>()=>{ S.f={q:"",owner:"",status:status||"",phase:"",cycleOnly:true}; syncFilters(); go("tasks"); };
   const prog=list.filter(t=>t.status==="In Progress").length;
   const pct=list.length?Math.round(done/list.length*100):0;
+  try{ renderStage(su,sv,list,open,pct,done); }catch(e){ console.warn("stage",e); }
   /* 2026-09-27: the masthead's tiles folded in here (In Progress, the % complete). Due Now came
      off — every task in it is already in Due Next 14 Days — and so did Marked to Automate (it has
      its own card). Order: time left, what needs action (late, coming, to decide), then progress. */
   [
-    {n:days===null?"\u2014":Math.max(days,0), k:"Until the Summit", d:"days \u00b7 "+startTxt, go:()=>{ const c=document.getElementById("calBody"); if(c) c.scrollIntoView({behavior:"smooth",block:"start"}); }},
+    /* 2026-10-31: the countdown above says the days now */
     {n:late, k:"Overdue", d:late?"past due":"all clear", cls:late?"bad":"", go:tasksWith("")},
     {n:due14, k:"Due Next 14 Days", d:plural(due14,"open task","open tasks"), go:tasksWith("")},
     {n:discuss, k:"To Discuss", d:"at the next meeting", go:()=>go("disc")},
