@@ -4146,6 +4146,72 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-gauge.close .gb i{background:#f2c46d}
 /* the three cards stacked in the rail */
 #app-specs .psg-rail .psg-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+/* the rail's live pieces */
+#app-specs .psg-rail .psg-cards{display:none !important}
+.psg-widgets{display:flex;flex-direction:column;gap:10px}
+.psw{background:var(--surface);border:1px solid var(--line-2);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.psw-h{display:flex;align-items:center;gap:10px;padding:11px 12px 9px;border-bottom:1px solid var(--line)}
+.psw-ic{flex:0 0 auto;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#14476b,#0d314c);color:#a9d8f3}
+.psw-ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.psw-asks .psw-ic{background:linear-gradient(160deg,#b7791f,#8a5200);color:#fff1d6}
+.psw-notes .psw-ic{background:linear-gradient(160deg,#2b6c8f,#14486e);color:#d6efff}
+.psw-t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:1px}
+.psw-t b{font:700 14px/1.2 var(--display);color:var(--ink)}
+.psw-t span{font-size:11.5px;color:var(--ink-3)}
+.psw-open{flex:0 0 auto;background:transparent;border:1px solid var(--line-2);border-radius:5px;padding:4px 8px;font:600 11px var(--ui);color:var(--ink-2);cursor:pointer}
+.psw-open:hover{border-color:#74bfeb;color:var(--ink)}
+.psw-ring{position:relative;width:38px;height:38px;flex:0 0 auto}
+.psw-ring svg{width:38px;height:38px;display:block}
+.psw-ring i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 12px/1 var(--ui);font-style:normal;color:var(--ink)}
+.psw-list{display:flex;flex-direction:column;padding:4px 0}
+.psw-none{font-size:12px;color:var(--ink-3);padding:8px 12px}
+.psw-hc{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:4px 10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+.psw-hc:last-child{border-bottom:0}
+.psw-hc .l b{display:block;font-size:13px;color:var(--ink)}
+.psw-hc .l span{font-size:11px;color:var(--ink-3)}
+.psw-num{width:64px;text-align:center;font:700 18px/1 var(--ui);padding:7px 4px;border:1px solid var(--line-2);border-radius:7px;background:var(--surface);color:var(--ink)}
+.psw-num:focus{outline:none;border-color:#74bfeb;box-shadow:0 0 0 3px rgba(116,191,235,.3)}
+.psw-hc.empty .psw-num{border-style:dashed;border-color:#d99a2b}
+.psw-num::placeholder{color:var(--ink-3);opacity:.45;font-weight:600}
+.psw-bar{grid-column:1/-1;height:6px;border-radius:2px;background:var(--sunk);overflow:hidden}
+.psw-bar i{display:block;height:100%;background:var(--good);transition:width .8s cubic-bezier(.3,1,.4,1)}
+.psw-bar.close i{background:#d99a2b} .psw-bar.over i{background:var(--bad)}
+.psw-cap{grid-column:1/-1;font-size:11px;color:var(--ink-3)}
+.psw-q{padding:8px 12px;border-bottom:1px solid var(--line);border-left:3px solid transparent;display:flex;flex-direction:column;gap:6px}
+.psw-q:last-child{border-bottom:0}
+.psw-q.s-open{border-left-color:#d99a2b}
+.psw-q.s-pending{border-left-color:#74bfeb}
+.psw-q.s-done,.psw-q.s-na{border-left-color:var(--good);opacity:.75}
+.psw-q.s-info{border-left-color:#2b6c8f}
+.psw-qt{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.psw-qt b{font-size:12.5px;line-height:1.35;color:var(--ink);font-weight:600}
+.psw-qt span{font-size:11.5px;line-height:1.35;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.psw-qt:hover b{color:#1d63b8}
+.psw-ql{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.psw-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+.psw-seg button{border:0;border-right:1px solid var(--line-2);background:var(--surface);color:var(--ink-3);font:600 11px var(--ui);padding:4px 8px;cursor:pointer}
+.psw-seg button:last-child{border-right:0}
+.psw-seg button:hover{background:var(--sunk);color:var(--ink)}
+.psw-q.s-open .psw-seg button.on{background:#d99a2b;color:#fff}
+.psw-q.s-pending .psw-seg button.on{background:#2f80c8;color:#fff}
+.psw-q.s-done .psw-seg button.on{background:var(--good);color:#fff}
+.psw-na{border:0;background:transparent;color:var(--ink-3);font:600 11px var(--ui);cursor:pointer;padding:4px 2px;text-decoration:underline;text-underline-offset:2px}
+.psw-na.on{color:var(--good)}
+.psw-done{border-top:1px solid var(--line)}
+.psw-done summary{cursor:pointer;font-size:11.5px;font-weight:600;color:var(--ink-3);padding:7px 12px}
+.psw-rooms{display:flex;gap:5px;flex-wrap:wrap}
+.psw-room{border:1px solid #74bfeb;background:var(--accent-soft);color:var(--ink);border-radius:4px;padding:2px 7px;font:600 11px var(--ui);cursor:pointer}
+.psw-room:hover{background:#74bfeb;color:#0d314c}
+.psw-add{display:flex;gap:6px;padding:8px 10px 10px;border-top:1px solid var(--line);background:var(--paper)}
+.psw-add input{flex:1 1 auto;min-width:0;font:inherit;font-size:12.5px;padding:6px 9px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink)}
+.psw-add .btn{padding:5px 11px;font-size:12px}
+.rnote{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#14486e;background:var(--accent-soft);border-radius:5px;padding:4px 7px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.rnote svg{flex:0 0 auto;width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2}
+.psg-wn{margin-top:10px;background:var(--surface);border:1px solid var(--line-2);border-radius:7px;padding:9px 12px;font-size:12.5px}
+.psg-wn ul{margin:5px 0 0;padding-left:18px}
+.psg-wn li span{color:var(--ink-3)}
+.psg-room.psg-flash{animation:psgPing 1.4s ease-out}
 #app-specs .psg-contract{display:flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:10px 12px}
 #app-specs .psg-contract svg{width:15px;height:15px}
 .psg-note{font-size:11.5px;color:var(--ink-3);line-height:1.45;padding:0 2px}
@@ -4294,8 +4360,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <div class="psg-rh">Numbers &amp; Notes for the Hotel</div>
           <!-- the number that drives Tuesday, the plenary room and most of the catering -->
           <div id="gs-box"></div>
-          <!-- the three cards; the two hosts are display:contents, so each section is the item -->
-          <div class="plan-grid psg-cards">
+          <!-- the headcounts, the questions for the hotel and Rosalyn's set-up notes, live -->
+          <div id="ps-widgets" class="psg-widgets"></div>
+          <!-- the three full editors; hidden here, they open in the panel from Full List -->
+          <div class="plan-grid psg-cards" aria-hidden="true">
             <div id="room-notes"></div>
             <section class="catsum sec-ask" data-cardkey="specs:ask">
               <div class="catsum-hd static">Ask The Hotel <span class="sec-cnt" id="ask-count">0</span></div>
@@ -6499,6 +6567,26 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 @media (max-width:640px){ #app-help .hp-panel{padding:2px 14px} #app-help .hp-in{padding-left:0}
   #app-help .hp-tbl td:first-child{width:auto} }
 #help-btn[aria-current]{color:#fff;background:rgba(116,191,235,.18)}
+/* Your Part, Person by Person (Jonna, 2026-10-31) */
+#app-help .hp-people{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
+#app-help .hp-people button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);
+  border-radius:7px;padding:5px 11px 5px 5px;font:600 12.5px var(--ui);cursor:pointer;transition:border-color .15s,background .15s}
+#app-help .hp-people button i{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--sunk);color:var(--ink-2);font:700 10px/1 var(--ui);font-style:normal}
+#app-help .hp-people button:hover{border-color:#74bfeb}
+#app-help .hp-people button[aria-selected="true"]{background:#0d314c;border-color:#0d314c;color:#fff}
+#app-help .hp-people button[aria-selected="true"] i{background:#74bfeb;color:#0d314c}
+#app-help .hp-who{border:1px solid var(--line-2);border-radius:10px;padding:14px 16px;background:var(--surface);animation:hpIn .25s ease-out}
+@keyframes hpIn{from{opacity:0;transform:translateY(4px)}}
+#app-help .hp-whohd{display:flex;flex-direction:column;gap:2px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+#app-help .hp-whohd b{font:800 16px/1.2 var(--display);color:var(--ink)}
+#app-help .hp-whohd span{font-size:13px;color:var(--ink-3)}
+#app-help .hp-go{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 6px}
+#app-help .hp-go span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3);margin-right:4px}
+#app-help .hp-go button{border:1px solid #74bfeb;background:var(--accent-soft);color:var(--ink);border-radius:5px;padding:3px 9px;font:600 12px var(--ui);cursor:pointer}
+#app-help .hp-go button:hover{background:#74bfeb;color:#0d314c}
+@media print{ #app-help .hp-people,#app-help .hp-go{display:none !important} #app-help .hp-who{display:block !important;break-inside:avoid;margin-bottom:12px} }
+
 </style>
 
 <div id="app-help" hidden>
@@ -6519,7 +6607,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   <div class="hp-body">
   <div class="hp-lede">
     <p><b>Summit HQ is the MISMO team&rsquo;s one place to plan each Summit.</b> It holds the task list and deadlines, the week&rsquo;s schedule room by room, what the hotel sets up, the hotel resume, every speaker and sponsor and where they are in the process, Tuesday&rsquo;s General Sessions, and the weekly registration numbers.</p>
-    <p>Open it at <b>resources.mismo.org/summit-hq</b> and sign in with your MISMO resources account. Everything saves on its own as you work, and anyone else who has it open sees your changes within about 30 seconds. There is no Save button anywhere.</p>
+    <p>Open it at <b>resources.mismo.org/summit-hq</b> and sign in with your MISMO resources account. Everything saves on its own as you work, and anyone else who has it open sees your changes within about 30 seconds. A panel that opens on the right has a <b>Save</b> button at the bottom too. New here? Start with <b>Your Part, Person by Person</b> below.</p>
   </div>
 
   <div class="hp-panel" id="hp-doc">
@@ -6539,8 +6627,148 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     </div>
   </details>
 
+  <details class="hp-sec" open id="hp-people-sec">
+    <summary><span class="hp-n">02</span>Your Part, Person by Person</summary>
+    <div class="hp-in">
+      <p>Pick your name to see the pages you work in, what you do in them step by step, and the emails Summit HQ sends you. It opens on your own name when you are signed in.</p>
+      <div class="hp-people" role="tablist" aria-label="Pick a person">
+        <button type="button" data-p="jonna"><i>JC</i>Jonna</button>
+        <button type="button" data-p="amy"><i>AM</i>Amy</button>
+        <button type="button" data-p="kelly"><i>KB</i>Kelly</button>
+        <button type="button" data-p="bernie"><i>BJ</i>Bernie</button>
+        <button type="button" data-p="rosalyn"><i>RM</i>Rosalyn</button>
+        <button type="button" data-p="vanessa"><i>VR</i>Vanessa</button>
+        <button type="button" data-p="perry"><i>PW</i>Perry</button>
+        <button type="button" data-p="banner"><i>&#9733;</i>Everyone Going</button>
+      </div>
+
+      <div class="hp-who" data-p="jonna">
+        <div class="hp-whohd"><b>Jonna Critchley</b><span>Director of Programs &amp; Operations. Owns Summit HQ, the schedule, the agenda, General Sessions and the automatic emails.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="ros">Run of Show</button><button type="button" data-go="grid">Schedule</button><button type="button" data-go="gs">General Sessions</button><button type="button" data-go="people">People</button><button type="button" data-go="specs">Hotel Specs</button><button type="button" data-go="resume">Resume</button></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Each week, start on Run of Show.</b> Next Up and anything in red come first; mark what needs talking through <b>Need to Discuss</b> so it lands in the Planning Meeting.</li>
+          <li><b>Build the week on the Schedule.</b> Drag sessions into rooms, use <b>Arrangement Options</b> for a clean week, and follow the Schedule Timeline for the Chair Survey and the finalized grid.</li>
+          <li><b>Build Tuesday on General Sessions</b>: the running order, who is on each segment and who sponsors it.</li>
+          <li><b>Add speakers on People.</b> Each one you add goes on Bernie&rsquo;s next morning list to register on its own.</li>
+          <li><b>Send the MISMO team their travel form</b> from <b>MISMO Team at the Summit</b> on People: mark who is going, press <b>Send the Travel Form</b>, and when the dates are in, <b>Send to Bernie to Register</b>.</li>
+          <li><b>Watch Ready for the Hotel</b> on Hotel Specs and the readiness on the Resume, and issue each new resume version from <b>Versions &amp; Changes</b>.</li>
+          <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
+          <li><b>Keep this Help page current</b> whenever the way of working changes.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>New Speakers to Register (copied) &middot; Board Members to Register (copied) &middot; Tasks Due This Week &middot; sponsorship paid notices and payment follow-ups &middot; The Trunk Is Ready for Review.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="amy" hidden>
+        <div class="hp-whohd"><b>Amy Moses</b><span>VP of Strategic Growth. Gets every speaker&rsquo;s bio and headshot in.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="gs">General Sessions</button><button type="button" data-go="trunk">The Trunk</button></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Open People.</b> The Confirmed Speakers wall shows every speaker ringed by how far along they are, with their next step under their name.</li>
+          <li><b>Ask for the bio and headshot.</b> Open the speaker and send the speaker email from there; then mark <b>Asked for a bio and headshot</b>.</li>
+          <li><b>Put the bio and headshot in</b> on the speaker&rsquo;s record. <b>Bio and headshot in hand</b> ticks itself once both are there.</li>
+          <li><b>Use Only What&rsquo;s Outstanding</b> to see just the speakers who still owe you something.</li>
+          <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>New Speakers to Register (copied) &middot; Tasks Due This Week &middot; sponsorship paid notices and payment follow-ups &middot; The Trunk Is Ready for Review.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="kelly" hidden>
+        <div class="hp-whohd"><b>Kelly Bradshaw</b><span>Director of Strategic Growth. Sponsors, marketing pieces and the awards ceremony.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="reg">Registration</button><button type="button" data-go="trunk">The Trunk</button></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Check sponsors on People.</b> Approved sponsors arrive from the Sponsorship Portal on their own, with their level, what they sponsor and their comp code. Once one is on the agenda, press <b>Mark on Agenda</b>.</li>
+          <li><b>Watch the numbers on Registration</b>: this week against last year, and who has registered.</li>
+          <li><b>The weekly registration list to sponsors</b> goes out on your behalf on Mondays from seven weeks out; nothing to press.</li>
+          <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>New Speakers to Register (copied) &middot; Tasks Due This Week &middot; sponsorship paid notices and payment follow-ups &middot; The Trunk Is Ready for Review.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="bernie" hidden>
+        <div class="hp-whohd"><b>Bernardo (Bernie) Jordan</b><span>Registers speakers, the Board and the MISMO team; sends sponsorship invoices; keeps the Trunk.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="trunk">The Trunk</button><button type="button" data-go="people">People</button></div>
+        <h4>Registering People</h4>
+        <ol class="hp-steps">
+          <li><b>Every weekday morning</b> the <b>New Speakers to Register</b> email lists the speakers added since the last one, with their sessions. Register each one.</li>
+          <li><b>Mark them registered</b> on People: open the speaker and tick <b>Registered for the event</b>. Anyone registered before the email goes drops off the next list.</li>
+          <li><b>The Board</b>: when someone presses Notify Bernie, the <b>Board Members to Register</b> email lists who is still to register. Register them, then press <b>Registered</b> on their row on the Board of Directors card.</li>
+          <li><b>The MISMO team</b>: the <b>MISMO Team to Register</b> email lists everyone going under the MISMO banner, with their arrival and departure dates and whether they need a room.</li>
+          <li><b>Sponsors are never registered by you</b>; they use their comp code. You get each sponsorship invoice to send when the portal approves it.</li>
+        </ol>
+        <h4>Packing the Trunk</h4>
+        <ol class="hp-steps">
+          <li><b>Open The Trunk.</b> The road across the top shows your Packing List task and its due date, the Team Review, and the day the trunk ships.</li>
+          <li><b>Update the list</b> on the left: the &minus; and + buttons change how many, and you can type over any name or note. Add anything new with <b>Add something to pack</b> at the bottom. For Sponsor Merch, press <b>Bring In This Summit&rsquo;s Sponsors</b>.</li>
+          <li><b>Pack</b> each line by dragging it into the trunk, or press its <b>Pack</b> button. On a phone, press and hold a line, then drag. To change or take out something already packed, press it in the trunk.</li>
+          <li><b>Send for Review</b> when you are ready. Pick who reviews it (Jonna, Amy and Kelly to start), add a note if you like, and send. The team gets an email with the list and a button straight to the trunk.</li>
+          <li><b>You get an email back</b> when someone presses Looks Good or Needs a Change. Make any change on the list and press <b>Send Again</b>.</li>
+          <li><b>Print the packing list</b> with <b>Packing List PDF</b>, or choose Save as PDF in the print window. It has a box to tick for every line and lines to sign.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>New Speakers to Register &middot; Board Members to Register &middot; MISMO Team to Register &middot; sponsorship invoices and payment follow-ups &middot; The Trunk Looks Good / Needs a Change &middot; Tasks Due This Week.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="rosalyn" hidden>
+        <div class="hp-whohd"><b>Rosalyn Milliken</b><span>Works with the hotel: the resume, room sets, furniture, food and beverage, and arrival and departure dates.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="specs">Hotel Specs</button><button type="button" data-go="resume">Resume</button><button type="button" data-go="grid">Schedule</button></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Open Hotel Specs and pick a day.</b> The rooms show how each is set, what is in it from morning to evening, and how full it gets. Press a room to see its week.</li>
+          <li><b>Check the food and beverage</b> for the day in the order it happens. Press a meal or break to type its sponsor or its menu. Lunch is only ever the Newcomer Orientation; everyone else is on their own.</li>
+          <li><b>Type the headcounts</b> in the rail on the right: General Sessions at the top, then the Newcomer Orientation, the Board and the Joint Committee. A bar shows whether the room holds them.</li>
+          <li><b>Work the Questions for the Hotel.</b> Move each one along with a press: <b>To Ask</b>, <b>Waiting</b>, <b>Answered</b> (or Not Needed). Add a new one at the bottom.</li>
+          <li><b>Read the set-up notes</b> under How the Rooms Are Set. A note that names a room shows on that room&rsquo;s tile; press the room name to find it.</li>
+          <li><b>Fill in the Resume.</b> <b>Fill Next</b> takes you to the next detail still TBD. Open a function to see it exactly as it prints beside its fields.</li>
+          <li><b>Fill in your travel form</b> when it arrives, so you are on the rooming list.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>New Summit Sponsor &middot; Tasks Due This Week &middot; the MISMO team travel form.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="vanessa" hidden>
+        <div class="hp-whohd"><b>Vanessa Rios</b><span>Builds the event app, keeps the registration dashboard, and receives sponsor logos.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="reg">Registration</button></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Download the event app files</b> from People: <b>Speakers file</b> and <b>Sessions file</b> are laid out column for column for the upload.</li>
+          <li><b>Tick each speaker&rsquo;s bio and headshot</b> once they are on the event app.</li>
+          <li><b>Load the registration numbers</b> on Registration from your dashboard&rsquo;s export.</li>
+          <li><b>Collect sponsor logos</b> when the portal&rsquo;s logo request comes in.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>Sponsor logo requests &middot; Tasks Due This Week.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="perry" hidden>
+        <div class="hp-whohd"><b>Perry Williams</b><span>Resources accounts and access, and the save relay behind Summit HQ, the Sponsorship Portal and Member 360.</span></div>
+        <h4>What You Do</h4>
+        <ol class="hp-steps">
+          <li><b>Give access</b> to anyone new: a MISMO resources account with Summit HQ (and the Sponsorship Portal if they need it).</li>
+          <li><b>Keep the save relay running.</b> If pages stop saving for everyone, see <b>When Something Goes Wrong</b>.</li>
+        </ol>
+        <h4>Emails You Get</h4>
+        <ul><li>Tasks Due This Week.</li></ul>
+      </div>
+
+      <div class="hp-who" data-p="banner" hidden>
+        <div class="hp-whohd"><b>Everyone Going Under the MISMO Banner</b><span>MISMO staff, the facilitators, the architect, and guests when there is room.</span></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="grid">Schedule</button><button type="button" data-go="ros">Run of Show</button></div>
+        <ol class="hp-steps">
+          <li><b>Fill in the travel form</b> when the email arrives: when you arrive and leave, whether you need a room, and parking when the hotel includes it. Use the same link again if anything changes.</li>
+          <li><b>Facilitators</b>: the Schedule shows each of your workgroups in its room and time, colored by facilitator.</li>
+          <li><b>Your tasks</b> are on Run of Show, and the Monday email lists what is due that week.</li>
+        </ol>
+      </div>
+    </div>
+  </details>
+
   <details class="hp-sec">
-    <summary><span class="hp-n">02</span>Where Everything Lives</summary>
+    <summary><span class="hp-n">03</span>Where Everything Lives</summary>
     <div class="hp-in">
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>What</th><th>Where</th><th>Good to Know</th></tr></thead>
@@ -6562,11 +6790,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">03</span>The Left Menu</summary>
+    <summary><span class="hp-n">04</span>The Left Menu</summary>
     <div class="hp-in">
       <ul>
         <li><b>Search</b> finds a session, a task or a person wherever it lives and takes you to it.</li>
-        <li><b>The tabs</b>: Run of Show, Schedule, General Sessions, Resume and Registration. Each is described below.</li>
+        <li><b>The pages</b>, in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). Each has its own section below.</li>
         <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
         <li><b>Undo</b> steps back the last change, on any tab. Ctrl+Z (Cmd+Z on a Mac) does the same.</li>
         <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
@@ -6578,7 +6806,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">04</span>Run of Show: The Work and the Deadlines</summary>
+    <summary><span class="hp-n">05</span>Run of Show: The Work and the Deadlines</summary>
     <div class="hp-in">
       <p>Run of Show is the task list for the whole Summit cycle. The strip across the top switches between its views.</p>
       <h4>The Countdown at the Top</h4>
@@ -6610,33 +6838,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <p>Every task marked <b>Need to Discuss</b>, ready to walk through in the team planning meeting. Mark it <b>Being Discussed</b> during the meeting and record what was decided in its notes.</p>
       <h4>All Tasks</h4>
       <p>Every task, to sort and filter. <b>+ New Task</b> adds one. A task has an owner, people who assist, a due date, a status (Not Started, In Progress, Need to Discuss, Being Discussed, Complete), a description and notes. Tasks marked <b>All Summits</b> come back every cycle; <b>This Summit Only</b> tasks do not.</p>
-      <h4>Hotel Specs</h4>
-      <p>What the hotel sets up, room by room and day by day, built from the Schedule. Sponsor boxes for breakfasts, breaks and receptions fill in from the Sponsorship Portal once a sponsorship is approved and has its day set. Anything sold in the portal without a day is listed in a note so it can be set there. Type over a box to keep your own wording.</p>
-      <ul>
-        <li><b>Ready for the Hotel</b> (the rings at the top) shows how many headcounts are in, how many meals and breaks have a menu, and how many questions for the hotel are answered. Press a line to open the card where it is filled in.</li>
-        <li><b>Pick a day</b> (Monday to Thursday). Each day shows how many rooms are in use and the biggest crowd that day.</li>
-        <li><b>Food &amp; Beverage</b> lists that day&rsquo;s meals and breaks in the order they happen, with the expected crowd, the sponsor and whether the menu is set. Press one and Headcount &amp; What to Order opens with the cursor in that very box.</li>
-        <li><b>The Rooms</b> shows every meeting room as a tile: its set-up drawn from above, what is in it morning to evening, and a bar for how full it gets (green fits, amber is close, red is over). Press a room to see its whole week; <b>Open the Schedule</b> to move things.</li>
-        <li>Nothing here is typed twice: it all reads from the Schedule and the cards below it.</li>
-      </ul>
-      <h4>People</h4>
-      <p>Every speaker, sponsor and board member, and where each stands. See <b>Speakers and Sponsors, Start to Finish</b>.</p>
-      <h4>The Trunk</h4>
-      <p>Bernie&rsquo;s packing list and the trunk, side by side. The Standard Kit and the ribbons are the same every Summit; sponsor merch and what is packed are per Summit, so the trunk starts empty for the next one.</p>
-      <ul>
-        <li><b>The road</b> across the top shows the Packing List task (with how much is in the trunk), the Team Review, and the trunk shipping, each with its due date and how many days are left. Press a task to open it.</li>
-        <li><b>Pack a line</b> by dragging it into the trunk, or with its <b>Pack</b> button. On a phone, press and hold a line for a moment to pick it up. A tap never moves anything.</li>
-        <li><b>Amounts and names</b> are changed right on the packing list: the &minus; and + buttons set how many, and the item and note are typed straight in. <b>Add something to pack</b> at the foot of the list adds a new line to whichever list you pick. Sponsor Merch can bring in this Summit&rsquo;s sponsors in one press.</li>
-        <li><b>A packed line</b> is pressed to change it, take it out or delete it.</li>
-        <li><b>Send for Review</b> emails the team you pick (Jonna, Amy and Kelly to start) with the packing list and a button straight to the trunk. There they press <b>Looks Good</b> or <b>Needs a Change</b>, and Bernie is emailed either way. Change the list after it has gone out and it says so, with <b>Send Again</b>.</li>
-        <li><b>Packing List PDF</b> makes a branded, printable packing list with a box to tick for every line; choose Save as PDF in the print window to download it.</li>
-        <li>When the last line goes in, the lid comes down: <b>Packed and Ready to Ship</b>.</li>
-      </ul>
     </div>
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">05</span>Schedule: The Week Room by Room</summary>
+    <summary><span class="hp-n">06</span>Schedule: The Week Room by Room</summary>
     <div class="hp-in">
       <p>The Schedule (the color grid) places every workgroup meeting, session, meal and reception in a room and a time for each day of the Summit. Everything else reads from it: Hotel Specs, the resume, the event app&rsquo;s sessions file and the printed schedule.</p>
       <ul>
@@ -6652,7 +6858,40 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">06</span>General Sessions: Tuesday&rsquo;s Running Order</summary>
+    <summary><span class="hp-n">07</span>Hotel Specs: What the Hotel Sets Up</summary>
+    <div class="hp-in">
+      <p>Everything the hotel sets up, room by room and day by day, read from the Schedule. Nothing here is typed twice: the same numbers and notes feed the Resume.</p>
+      <h4>Ready for the Hotel</h4>
+      <p>The rings at the top count the headcounts that are in, the meals and breaks with a menu, and the questions for the hotel that are answered. Press a line to go to where it is filled in.</p>
+      <h4>Pick a Day</h4>
+      <p>Monday to Thursday, each with how many rooms are in use and the biggest crowd that day. Everything under it follows the day you pick.</p>
+      <h4>Food &amp; Beverage</h4>
+      <ul>
+        <li>The day&rsquo;s breakfast, breaks, the Newcomer Orientation lunch and the receptions, in the order they happen, each with the expected crowd, the sponsor and whether the menu is set. A break with a big crowd says what it needs (food as well as coffee, or two stations).</li>
+        <li>There is no lunch for anyone but the Newcomer Orientation; everyone else is on their own at midday.</li>
+        <li>Press one and the full list opens with the cursor in that very box, ready for the sponsor or the menu.</li>
+        <li>Sponsors fill in from the Sponsorship Portal once a sponsorship is approved and has its day set; anything sold without a day is listed so it can be set there.</li>
+      </ul>
+      <h4>The Rooms</h4>
+      <ul>
+        <li>Every meeting room is a tile: its set-up drawn from above (U, classroom, theater, rounds and so on), what is in it morning to evening, and a bar for how full it gets (green fits, amber is close, red is over).</li>
+        <li>A set-up note that names the room shows on its tile.</li>
+        <li>Press a room to see its whole week and its set-up notes; <b>Open the Schedule</b> to move things.</li>
+      </ul>
+      <h4>Numbers &amp; Notes for the Hotel (the column on the right)</h4>
+      <ul>
+        <li><b>General Sessions Headcount</b> drives Tuesday, the room check and most of the catering. Type it in the box; the bar shows the seats against the room.</li>
+        <li><b>Headcounts</b> for the Newcomer Orientation, the Board and the Joint Committee are typed right there; last summit&rsquo;s number shows faintly until you do. The Board&rsquo;s comes in on its own from the In Person count on People.</li>
+        <li><b>Questions for the Hotel</b>: move each one along with a press, <b>To Ask</b>, <b>Waiting</b>, <b>Answered</b>, or mark it <b>Not Needed</b>. Answered ones fold away underneath. Press the words to change them; add a new question at the bottom.</li>
+        <li><b>How the Rooms Are Set</b> holds Rosalyn&rsquo;s set-up notes. A note that names a room carries that room&rsquo;s name; press it to find the room. Add a new note at the bottom.</li>
+        <li><b>Full List</b> on any of them opens everything in that list to edit, including the menus, notes for Rosalyn and which list a line belongs in.</li>
+        <li><b>Contract, Floor Plan &amp; Capacities</b> opens the hotel contract and floor plans.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">08</span>General Sessions: Tuesday&rsquo;s Running Order</summary>
     <div class="hp-in">
       <p><b>The Day</b>, under the figures, draws the whole General Sessions as one ribbon from the start time to the end time: each segment is as wide as it runs, breaks and lunch are striped, sponsored segments carry a gold edge, and anything past the end time turns red. Click a segment to jump to it.</p>
       <p>Builds Tuesday&rsquo;s General Sessions segment by segment for the Summit picked in the left menu.</p>
@@ -6667,19 +6906,39 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">07</span>Resume: What the Hotel Receives</summary>
+    <summary><span class="hp-n">09</span>Resume: What the Hotel Receives</summary>
     <div class="hp-in">
       <p>The resume is the document the hotel works from. It is never edited in Word: everything in it comes from the Schedule, Hotel Specs, and the fields on this tab (rates, room block, cutoff, VIPs, staff, rooming).</p>
       <ul>
         <li><b>Issue a version</b> when it is ready to send. Each version is numbered and dated.</li>
         <li>The <b>Word document</b> shows every difference from the version before as a tracked change, so the hotel sees exactly what moved. The <b>Final PDF</b> is the clean copy for the hotel and for on-site.</li>
         <li><b>Versions &amp; Changes</b> lists every version issued and what is waiting to go into the next one.</li>
+        <li><b>The page at the top</b> shows how ready the resume is, every section as a tile (green complete, amber still TBD, blue changed since the last version) and each day&rsquo;s functions. <b>Fill Next</b> takes you to the next detail still TBD.</li>
+        <li><b>Every Section, in the Order It Prints</b>: each section is a card with its status. Open one to fill it in. Schedule changes not yet on the resume show as an amber banner above them.</li>
+        <li><b>A function</b>, opened under Functions, Day by Day, shows <b>As It Prints</b> beside its fields and redraws as you type. The suggestions under a part are lines the other functions use; press one to add it. A part you have typed over is marked Edited, with a link to go back to the Schedule&rsquo;s wording.</li>
       </ul>
     </div>
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">08</span>Registration: The Weekly Numbers</summary>
+    <summary><span class="hp-n">10</span>The Trunk: Packing and Review</summary>
+    <div class="hp-in">
+      <p>Bernie&rsquo;s packing list and the trunk, side by side. The Standard Kit and the ribbons are the same every Summit; sponsor merch and what is packed are per Summit, so the trunk starts empty for the next one.</p>
+      <ul>
+        <li><b>The road</b> across the top shows the Packing List task (with how much is in the trunk), the Team Review, and the trunk shipping, each with its due date and how many days are left. Press a task to open it.</li>
+        <li><b>Pack a line</b> by dragging it into the trunk, or with its <b>Pack</b> button. On a phone, press and hold a line for a moment to pick it up. A tap never moves anything.</li>
+        <li><b>Amounts and names</b> are changed right on the packing list: the &minus; and + buttons set how many, and the item and note are typed straight in. <b>Add something to pack</b> at the foot of the list adds a new line to whichever list you pick. Sponsor Merch can bring in this Summit&rsquo;s sponsors in one press.</li>
+        <li><b>A packed line</b> is pressed to change it, take it out or delete it.</li>
+        <li><b>Send for Review</b> emails the team you pick (Jonna, Amy and Kelly to start) with the packing list and a button straight to the trunk. There they press <b>Looks Good</b> or <b>Needs a Change</b>, and Bernie is emailed either way. Change the list after it has gone out and it says so, with <b>Send Again</b>.</li>
+        <li><b>Packing List PDF</b> makes a branded, printable packing list with a box to tick for every line; choose Save as PDF in the print window to download it.</li>
+        <li>When the last line goes in, the lid comes down: <b>Packed and Ready to Ship</b>.</li>
+      </ul>
+      <p>Bernie&rsquo;s steps, one by one, are under <b>Your Part, Person by Person</b>.</p>
+    </div>
+  </details>
+
+  <details class="hp-sec">
+    <summary><span class="hp-n">11</span>Registration: The Weekly Numbers</summary>
     <div class="hp-in">
       <p>The weekly registration report for the Summit picked, compared with last year at the same week. Week 0 is the Friday before the Summit opens.</p>
       <ul>
@@ -6692,7 +6951,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">09</span>Speakers, Sponsors and the Board, Start to Finish</summary>
+    <summary><span class="hp-n">12</span>Speakers, Sponsors and the Board, Start to Finish</summary>
     <div class="hp-in">
       <h4>A Speaker</h4>
       <ol class="hp-steps">
@@ -6702,7 +6961,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
         <li><b>Registered for the event</b> (Bernie).</li>
       </ol>
-      <p>To send Bernie the &ldquo;Speaker to Register&rdquo; email, add the speaker to the <b>Summit HQ People</b> list in SharePoint with Role set to <b>Speaker</b> (fill in Title with their name, Company, PersonEmail, Summit and Sessions). Summit HQ does not add them to that list on its own.</p>
+      <p>Adding a speaker on People puts them on Bernie&rsquo;s next <b>New Speakers to Register</b> email on its own; he gets one list each weekday morning, not an email per speaker.</p>
       <h4>A Sponsor</h4>
       <ol class="hp-steps">
         <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
@@ -6725,7 +6984,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">10</span>How the Systems Connect</summary>
+    <summary><span class="hp-n">13</span>How the Systems Connect</summary>
     <div class="hp-in">
       <ul>
         <li><b>Sponsorship Portal &rarr; Summit HQ.</b> Every time the portal saves, the <b>Sponsorship Team Emails</b> flow in Power Automate wakes within seconds. It sends the portal&rsquo;s emails, updates the Sponsorship Requests list, and copies the portal&rsquo;s sponsorships into Summit HQ. That copy feeds People (paid sponsors, comp codes) and Hotel Specs (food and break sponsors). The stamp in the left menu shows whether the copy is current.</li>
@@ -6740,13 +6999,15 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">11</span>Emails That Send on Their Own</summary>
+    <summary><span class="hp-n">14</span>Emails That Send on Their Own</summary>
     <div class="hp-in">
       <p>All are Power Automate flows, branded with the standard MISMO internal email look. To change who gets one, open the flow, edit the Send an Email step&rsquo;s To and Cc, and save.</p>
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
         <tbody>
-          <tr><td>Speaker to Register</td><td>A person with Role = Speaker is added to the Summit HQ People list</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>MISMO Summit HQ - Heads Up for Bernie</td></tr>
+          <tr><td>New Speakers to Register</td><td>Every weekday morning: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
+          <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email on People, <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
+          <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
@@ -6760,7 +7021,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">12</span>Backups, Undo and History</summary>
+    <summary><span class="hp-n">15</span>Backups, Undo and History</summary>
     <div class="hp-in">
       <ul>
         <li><b>Undo</b> takes back the last change on any tab, one step at a time.</li>
@@ -6772,7 +7033,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">13</span>Changing the Page Itself</summary>
+    <summary><span class="hp-n">16</span>Changing the Page Itself</summary>
     <div class="hp-in">
       <p>Day-to-day work never needs this: tasks, sessions, people and the resume are all changed in the page. This is only for changing how Summit HQ itself works or looks.</p>
       <ol class="hp-steps">
@@ -6786,7 +7047,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">14</span>When Something Goes Wrong</summary>
+    <summary><span class="hp-n">17</span>When Something Goes Wrong</summary>
     <div class="hp-in">
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>What You See</th><th>What to Do</th></tr></thead>
@@ -6806,7 +7067,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">15</span>Limits and Known Gaps</summary>
+    <summary><span class="hp-n">18</span>Limits and Known Gaps</summary>
     <div class="hp-in">
       <div class="hp-note"><b>The flows and the Summit HQ People list belong to Jonna&rsquo;s account.</b> Until a co-owner is added and the list is moved, they would stop if that account were closed.</div>
       <ul>
@@ -6818,8 +7079,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   <details class="hp-sec">
-    <summary><span class="hp-n">16</span>Who Does What</summary>
+    <summary><span class="hp-n">19</span>Who Does What</summary>
     <div class="hp-in">
+      <p>Each person&rsquo;s steps are under <b>Your Part, Person by Person</b> at the top of this page.</p>
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>Person</th><th>Role in the Summits</th></tr></thead>
         <tbody>
@@ -6836,10 +7098,29 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed October 28, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed October 31, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
+
+
+<script>
+/* Help: pick a person, see their part; it opens on whoever is signed in */
+(function(){
+  const sec=document.getElementById('hp-people-sec'); if(!sec) return;
+  const btns=[...sec.querySelectorAll('.hp-people button')], panes=[...sec.querySelectorAll('.hp-who')];
+  const show=k=>{ btns.forEach(b=>b.setAttribute('aria-selected',String(b.dataset.p===k)));
+    panes.forEach(p=>{ p.hidden = p.dataset.p!==k; }); };
+  btns.forEach(b=>{ b.setAttribute('role','tab'); b.addEventListener('click',()=>show(b.dataset.p)); });
+  sec.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ try{ window.__hqGo && window.__hqGo(b.dataset.go); }catch(e){} }));
+  const BY={jcritchley:'jonna',amoses:'amy',kbradshaw:'kelly',bjordan:'bernie',rmilliken:'rosalyn',vrios:'vanessa',pwilliams:'perry'};
+  const mine=()=>{ try{ const s=window.ResourcesSession && window.ResourcesSession.current(); const u=String((s&&s.email)||'').toLowerCase().split('@')[0];
+    return BY[u] || (u? 'banner' : 'jonna'); }catch(e){ return 'jonna'; } };
+  show(mine());
+  let picked=false; btns.forEach(b=>b.addEventListener('click',()=>{ picked=true; }));
+  [1500,5000].forEach(t=>setTimeout(()=>{ if(!picked) show(mine()); },t));
+})();
+</script>
 
 <div id="app-reg" hidden>
 <div class="wrap">
@@ -34153,7 +34434,8 @@ function lunchAt(day, rm){
   const c = V().catering||{};
   if(day.id==='mon' && c.newcomer && rm.id===c.newcomer.room)
     return {nm:'Newcomer Orientation', sub:(c.newcomer.count!=null? String(c.newcomer.count) : 'count TBC')};
-  if(rm.role==='fnb') return {nm:'Lunch', sub:''};
+  /* Jonna, 2026-10-31: there is no lunch for anyone but the Newcomer Orientation — everyone
+     else is on their own at midday, so the food-and-beverage room holds nothing then */
   return null;
 }
 
@@ -37438,6 +37720,9 @@ function renderGlance(){
     } else {
       t.appendChild(el('div','rfree','Free on '+day.label));
     }
+    const rn=glRoomNotes(rm);
+    if(rn.length){ const nb=el('div','rnote'); nb.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 00-3-3L5 17v3z"/></svg>';
+      nb.appendChild(document.createTextNode(rn.length===1? askText(rn[0]) : rn.length+' set-up notes')); t.appendChild(nb); }
     t.setAttribute('aria-expanded', GL_ROOM===rm.id?'true':'false');
     t.addEventListener('click',()=>{ GL_ROOM = GL_ROOM===rm.id ? null : rm.id; renderGlance();
       const o=document.querySelector('#ps-glance .psg-week'); if(o){ try{ o.scrollIntoView({block:'nearest',behavior:'smooth'}); }catch(e){} } });
@@ -37446,7 +37731,176 @@ function renderGlance(){
   });
   rs.appendChild(map);
   mainH.appendChild(rs);
+  try{ glRail(); }catch(e){ try{ console.warn('rail',e); }catch(_){} }
 }
+/* ============ THE RAIL: HEADCOUNTS, QUESTIONS FOR THE HOTEL, SET-UP NOTES ============
+   Jonna, 2026-10-31: "blend these into this awesome page" — the three cards (How the
+   Rooms Are Set, Ask the Hotel, Headcount & What to Order) become live pieces of the
+   page. The numbers are typed here, a question moves along with one press, and a note
+   that names a room lights that room up in the map. The cards themselves stay, hidden,
+   as the full editors: Open the Full List brings each one up in the panel. */
+var GL_TYPING=false;
+document.addEventListener('focusout',e=>{ const h=document.getElementById('ps-widgets');
+  if(GL_TYPING && h && h.contains(e.target)) setTimeout(()=>{ try{ glRail(); }catch(_){} },120); }, true);
+function glRail(){
+  const host=$('ps-widgets'); if(!host) return;
+  const act=document.activeElement;
+  if(act && host.contains(act) && /INPUT|TEXTAREA|SELECT/.test(act.tagName)){ GL_TYPING=true; return; }
+  GL_TYPING=false;
+  host.textContent='';
+  host.appendChild(glHeads());
+  host.appendChild(glAsks());
+  host.appendChild(glNotes());
+}
+function glWidget(cls, icon, title, sub, card){
+  const w=el('section','psw '+cls);
+  const h=el('div','psw-h');
+  const ic=el('span','psw-ic'); ic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+icon+'</svg>'; h.appendChild(ic);
+  const t=el('div','psw-t'); t.appendChild(el('b',null,title)); if(sub) t.appendChild(el('span',null,sub)); h.appendChild(t);
+  if(card){ const o=el('button','psw-open','Full List'); o.type='button'; o.title='Open the full list to edit everything in it';
+    o.addEventListener('click',()=>glOpen(card)); h.appendChild(o); }
+  w.appendChild(h);
+  return w;
+}
+function glRing(n, of, col){
+  const r=15, C=2*Math.PI*r, f=of? n/of : 0;
+  const s=glSvg(38,38,'<circle cx="19" cy="19" r="'+r+'" fill="none" stroke="var(--sunk)" stroke-width="5"/>'
+    +'<circle cx="19" cy="19" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-f)).toFixed(1)+'" transform="rotate(-90 19 19)"/>');
+  const w=el('span','psw-ring'); w.appendChild(s); w.appendChild(el('i',null, of? String(of-n) : '0')); return w;
+}
+/* ---- headcounts: the set pieces other than General Sessions, typed right here ---- */
+function glHeadRoom(it){
+  const pl=place()[it.sid];
+  if(it.ck==='newcomer'){ const r=roomById((CATER().newcomer||{}).room); if(r) return r; }
+  let r=pl && roomById(pl.r);
+  if(!r){ try{ r=roomById(standingRoomFor(it.sid)); }catch(e){} }
+  return r||null;
+}
+function glHeads(){
+  const items=NC_ITEMS.filter(it=>S[it.sid] && it.ck!=='gs');
+  const done=items.filter(it=>(CATER()[it.ck]||{}).count!=null).length;
+  const w=glWidget('psw-heads','<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',
+    'Headcounts', done+' of '+items.length+' counted', 'specs:heads');
+  const list=el('div','psw-list');
+  items.forEach(it=>{
+    const cur=CATER()[it.ck]||{}, rm=glHeadRoom(it);
+    const day=dayOfItem(it.sid, place()[it.sid]);
+    const cap=rm ? capOf(rm, roomSetupOn(rm, day||'mon')) : 0;
+    const row=el('div','psw-hc'+(cur.count==null?' empty':''));
+    const L=el('div','l'); L.appendChild(el('b',null,it.label));
+    const dn=(DAYS.find(d=>d.id===day)||{}).label;
+    L.appendChild(el('span',null,[dn, rm? rm.nm : 'room not set'].filter(Boolean).join(' · ')));
+    row.appendChild(L);
+    const inp=document.createElement('input'); inp.type='text'; inp.inputMode='numeric'; inp.className='psw-num';
+    const last=lastSummitCount(it.ck);
+    inp.value=cur.count==null? '' : cur.count; inp.placeholder= last? String(last.n) : '—';
+    inp.title= last? 'Last summit: '+last.n : 'How many';
+    inp.setAttribute('aria-label',it.label+' headcount');
+    const commit=()=>{ const t=inp.value.replace(/[^0-9]/g,''); const n=t===''?null:parseInt(t,10);
+      const cc=CATER()[it.ck]; if(!cc || cc.count===n) return;
+      cc.count=n;
+      sessionEdits[it.sid]=Object.assign({}, sessionEdits[it.sid], {att:n});
+      rebuildSessions(); render(); save(); };
+    inp.addEventListener('change',commit);
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } });
+    row.appendChild(inp);
+    if(cur.count!=null && cap){
+      const pc=cur.count/cap, bar=el('div','psw-bar'+(pc>1?' over':pc>.88?' close':''));
+      const f=el('i'); f.style.width=Math.min(100,Math.round(pc*100))+'%'; bar.appendChild(f);
+      bar.title=cur.count+' against '+cap+' seats'+(pc>1?' — over by '+(cur.count-cap):'');
+      row.appendChild(bar);
+      row.appendChild(el('div','psw-cap', pc>1? 'Over by '+(cur.count-cap)+' — '+cap+' seats' : (cap-cur.count)+' seats to spare of '+cap));
+    } else if(cur.count==null){
+      row.appendChild(el('div','psw-cap', last? 'Last summit: '+last.n : 'Type the count'));
+    }
+    list.appendChild(row);
+  });
+  if(!items.length) list.appendChild(el('div','psw-none','Nothing to count for this summit.'));
+  w.appendChild(list);
+  return w;
+}
+/* ---- questions for the hotel: each one moves along with a press ---- */
+const GL_STEPS=[['open','To Ask'],['pending','Waiting'],['done','Answered']];
+function glAskRow(a){
+  const st=askStatus(a), q=askIsQuestion(a);
+  const r=el('div','psw-q s-'+(q?st:'info'));
+  const tx=el('button','psw-qt'); tx.type='button'; tx.title='Open it to change the wording or the detail';
+  tx.appendChild(el('b',null,askText(a)));
+  if(askWhy(a)) tx.appendChild(el('span',null,askWhy(a)));
+  tx.addEventListener('click',()=>{ ASK_OPEN.add(askKey(a)); glOpen(askWho(a)==='rosalyn'?'specs:rooms':'specs:ask'); });
+  r.appendChild(tx);
+  if(q){
+    const seg=el('div','psw-seg'); seg.setAttribute('role','group'); seg.setAttribute('aria-label','Where it stands');
+    GL_STEPS.forEach(([k,l])=>{ const b=el('button',st===k?'on':'',l); b.type='button';
+      b.setAttribute('aria-pressed',String(st===k));
+      b.addEventListener('click',()=>{ if(st!==k) setAskStatus(a,k); }); seg.appendChild(b); });
+    const na=el('button','psw-na'+(st==='na'?' on':''),'Not Needed'); na.type='button';
+    na.addEventListener('click',()=>setAskStatus(a, st==='na'?'open':'na'));
+    const line=el('div','psw-ql'); line.appendChild(seg); line.appendChild(na); r.appendChild(line);
+  }
+  return r;
+}
+function glQuickAdd(who, ph){
+  const f=el('form','psw-add'); f.setAttribute('autocomplete','off');
+  const t=document.createElement('input'); t.type='text'; t.placeholder=ph; t.setAttribute('aria-label',ph);
+  const b=el('button','btn ghost','Add'); b.type='submit';
+  f.addEventListener('submit',e=>{ e.preventDefault(); const txt=t.value.trim(); if(!txt){ t.focus(); return; }
+    const v=V(); const list=ASK_EXTRA().slice();
+    list.push({id:'a'+Date.now().toString(36), t:txt, why:'', who:who||null});
+    v.askExtras=list; t.value=''; t.blur(); render(); save(); });
+  f.appendChild(t); f.appendChild(b); return f;
+}
+function glAsks(){
+  const all=(GL_HOTEL||[]).filter(a=>askWho(a)!=='rosalyn');
+  const qs=all.filter(askIsQuestion);
+  const settled=qs.filter(a=>['done','na'].includes(askStatus(a)));
+  const toAsk=qs.filter(a=>askStatus(a)==='open').length, wait=qs.filter(a=>askStatus(a)==='pending').length;
+  const w=glWidget('psw-asks','<path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.5a2 2 0 113 1.7c-.6.4-1 .8-1 1.5M12 14.5v.01"/>',
+    'Questions for the Hotel', (toAsk? toAsk+' to ask' : 'Nothing to ask')+(wait? ' · '+wait+' waiting' : ''), 'specs:ask');
+  w.querySelector('.psw-h').insertBefore(glRing(settled.length, qs.length, '#f2c46d'), w.querySelector('.psw-open'));
+  const list=el('div','psw-list');
+  const live=sortAsks(all).filter(a=>!(askIsQuestion(a) && ['done','na'].includes(askStatus(a))));
+  live.forEach(a=>list.appendChild(glAskRow(a)));
+  if(!live.length) list.appendChild(el('div','psw-none','✓ Everything asked has an answer.'));
+  if(settled.length){ const d=el('details','psw-done');
+    d.appendChild(el('summary',null,settled.length+' answered or not needed'));
+    settled.forEach(a=>d.appendChild(glAskRow(a))); list.appendChild(d); }
+  w.appendChild(list);
+  w.appendChild(glQuickAdd('hotel','Something else to ask the hotel…'));
+  return w;
+}
+/* ---- set-up notes for Rosalyn: a note that names a room is tied to that room ---- */
+function glNoteRooms(a){
+  const tx=(askText(a)+' '+askWhy(a)).toLowerCase();
+  return ((V()||{}).rooms||[]).filter(r=>r.role!=='office' && r.nm && tx.indexOf(String(r.nm).toLowerCase())>=0);
+}
+function glNotes(){
+  const list0=sortAsks(ROSALYN_ASKS||[]);
+  const live=list0.filter(a=>!(askIsQuestion(a) && ['done','na'].includes(askStatus(a))));
+  const tied=new Set(); live.forEach(a=>glNoteRooms(a).forEach(r=>tied.add(r.id)));
+  const w=glWidget('psw-notes','<path d="M4 20h4l10.5-10.5a2.1 2.1 0 00-3-3L5 17v3zM14 7l3 3"/>',
+    'How the Rooms Are Set', live.length+' note'+(live.length===1?'':'s')+' for Rosalyn'+(tied.size? ' · '+tied.size+' room'+(tied.size===1?'':'s') : ''), 'specs:rooms');
+  const list=el('div','psw-list');
+  live.forEach(a=>{
+    const r=glAskRow(a); const rooms=glNoteRooms(a);
+    if(rooms.length){ const chips=el('div','psw-rooms');
+      rooms.forEach(rm=>{ const c=el('button','psw-room',rm.nm); c.type='button'; c.title='Show '+rm.nm+' in the room map';
+        c.addEventListener('click',()=>{ GL_ROOM=rm.id; renderGlance();
+          const t=document.querySelector('#ps-glance .psg-room[data-room="'+rm.id+'"]'); if(t){ try{ t.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){} t.classList.add('psg-flash'); setTimeout(()=>t.classList.remove('psg-flash'),1400); } });
+        chips.appendChild(c); });
+      r.appendChild(chips); }
+    list.appendChild(r);
+  });
+  if(!live.length) list.appendChild(el('div','psw-none','No set-up notes yet. Add anything about how a room needs to be set.'));
+  w.appendChild(list);
+  w.appendChild(glQuickAdd('rosalyn','A set-up note for Rosalyn…'));
+  return w;
+}
+/* the notes that name a room, for its tile and its week */
+function glRoomNotes(rm){
+  return (ROSALYN_ASKS||[]).filter(a=>!(askIsQuestion(a) && ['done','na'].includes(askStatus(a))) && glNoteRooms(a).some(r=>r.id===rm.id));
+}
+
 /* one room, Monday to Thursday */
 function glWeek(rm){
   const w=el('div','psg-week');
@@ -37478,6 +37932,10 @@ function glWeek(rm){
     cols.appendChild(c);
   });
   w.appendChild(cols);
+  const notes=glRoomNotes(rm);
+  if(notes.length){ const nb=el('div','psg-wn'); nb.appendChild(el('b',null,'Set-Up Notes for Rosalyn'));
+    const ul=el('ul'); notes.forEach(a=>{ const li=el('li',null,askText(a)); if(askWhy(a)) li.appendChild(el('span',null,' — '+askWhy(a))); ul.appendChild(li); });
+    nb.appendChild(ul); w.appendChild(nb); }
   return w;
 }
 /* Room set-up notes — the asks tagged for Rosalyn rather than the hotel. */
