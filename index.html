@@ -6621,7 +6621,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>Get access.</b> You need a MISMO resources account with Summit HQ and Sponsorship Portal access (Perry sets these up), and access to the GitMISMO organization on GitHub.</li>
         <li><b>Download a backup.</b> Press <b>Backup</b> at the foot of the left menu and choose Download. Save the file somewhere the team can reach, such as the MISMO Summits SharePoint site.</li>
         <li><b>Take over the automatic emails.</b> The Power Automate flows listed under <b>Emails That Send on Their Own</b> run under Jonna&rsquo;s Microsoft account. If that account is closed they stop. Ask IT to add you as a co-owner of each flow (or make you the primary owner), then check each one still runs.</li>
-        <li><b>Move the SharePoint list.</b> <b>Summit HQ People</b> (which sends Bernie his speaker email) lives in Jonna&rsquo;s OneDrive. Ask IT to move it to the MISMO Summits site before her account is removed, then point the Heads Up for Bernie flow at the new location.</li>
+        <li><b>Check the old speaker email is off.</b> Bernie now gets one <b>New Speakers to Register</b> list each weekday morning, straight from People. The older flow <b>MISMO Summit HQ - Heads Up for Bernie</b> emailed him one speaker at a time from the <b>Summit HQ People</b> list in Jonna&rsquo;s OneDrive; it is no longer needed and should be turned off, and that list is no longer used.</li>
         <li><b>Hand over Jonna&rsquo;s tasks.</b> Open <b>Run of Show</b>, then <b>All Tasks</b>, and give each of Jonna&rsquo;s open tasks a new owner.</li>
         <li><b>Check the Sponsorship Portal stamp</b> at the foot of the left menu. It should say <b>0 new changes</b>. If it has said there are changes waiting for more than a day, see <b>When Something Goes Wrong</b>.</li>
       </ol>
@@ -6782,7 +6782,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <tr><td>Sponsorship Prospectus</td><td>resources.mismo.org/Sponsorship-Prospectus</td><td>The public page where sponsors choose and apply. It reads what is sold from the Sponsorship Requests list.</td></tr>
           <tr><td>Member 360</td><td>resources.mismo.org/member-360</td><td>Member organizations. General Sessions uses it to tell which presenters work for lenders.</td></tr>
           <tr><td>Power Automate flows</td><td>make.powerautomate.com (MBA environment)</td><td>The automatic emails, the portal copy into Summit HQ and the weekly task email.</td></tr>
-          <tr><td>SharePoint lists</td><td><b>Summit HQ People</b> in Jonna&rsquo;s OneDrive; <b>Sponsorship Requests</b> on the MISMO Summits site</td><td>Summit HQ People should move to a team site (see step 4 above). The old Summit HQ Tasks list is no longer used.</td></tr>
+          <tr><td>SharePoint lists</td><td><b>Sponsorship Requests</b> on the MISMO Summits site</td><td>The old <b>Summit HQ People</b> and <b>Summit HQ Tasks</b> lists in Jonna&rsquo;s OneDrive are no longer used.</td></tr>
           <tr><td>Registration numbers</td><td>Aptify, the view <b>Event Attendance w/ Prompt</b></td><td>Vanessa&rsquo;s registration dashboard exports these; the Registration tab loads them.</td></tr>
           <tr><td>The event app</td><td>Vanessa builds it each Summit</td><td>Summit HQ gives her the speakers file and sessions file ready to upload.</td></tr>
         </tbody>
@@ -6993,7 +6993,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
         <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company and name (read by the Registration List to Sponsors email).</li>
-        <li><b>SharePoint &rarr; email.</b> The Summit HQ People list triggers Bernie&rsquo;s speaker email.</li>
+        <li><b>People &rarr; Bernie.</b> Each speaker added on People is written to a small ready-made list that the <b>New Speakers to Register</b> flow reads every weekday morning, so Bernie gets one email rather than one per speaker.</li>
         <li><b>Aptify &rarr; Registration.</b> Through the files from Vanessa&rsquo;s registration dashboard.</li>
       </ul>
     </div>
@@ -7057,7 +7057,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <tr><td>Your change does not show for someone else</td><td>Wait 30 seconds and have them reload. If the page says a save failed, reload and make the change again. If saves keep failing, the save relay may be down: tell Perry.</td></tr>
           <tr><td>The portal stamp says changes are not copied, for more than a day</td><td>Open the <b>Sponsorship Team Emails</b> flow in Power Automate and check its run history. Resubmit a failed run; if its connections show an error, sign them in again.</td></tr>
           <tr><td>A food or break sponsor is missing from Hotel Specs</td><td>In the Sponsorship Portal, check the sponsorship is approved and has its day set. Sponsorships with no day are listed in the note on Hotel Specs.</td></tr>
-          <tr><td>Bernie did not get a speaker email</td><td>Check the speaker is on the Summit HQ People list with Role exactly <b>Speaker</b>, then check the Heads Up for Bernie flow&rsquo;s run history.</td></tr>
+          <tr><td>A speaker was not on Bernie&rsquo;s morning list</td><td>Check the speaker is on this Summit in People and not already marked Registered (registered speakers drop off). Then open <b>Summit HQ - New Speakers to Register</b> in Power Automate and look at the morning&rsquo;s run. It only runs on weekdays.</td></tr>
           <tr><td>Bernie did not get the board email</td><td>It goes 5 to 20 minutes after <b>Notify Bernie</b> is pressed. If it still has not come, check the Summit HQ - Board Members to Register flow&rsquo;s run history.</td></tr>
           <tr><td>The Monday email is missing or looks wrong</td><td>Check the Summit HQ - Monday Task Email flow&rsquo;s run history. It reads Summit HQ&rsquo;s tasks as of the last change anyone made, so fixing a task in Run of Show fixes the next email.</td></tr>
           <tr><td>Something was deleted or changed by mistake</td><td>Press Undo. If it is too late for Undo, restore from the latest backup, or ask Perry to recover it from the saved history.</td></tr>
