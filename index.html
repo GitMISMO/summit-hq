@@ -7086,7 +7086,13 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     if(f.dataset.sig===sig) return;
     f.dataset.sig=sig;
     f.textContent='';
-    const w=document.createElement('div'); w.className='hc-w'; w.textContent=note;
+    const w=document.createElement('div'); w.className='hc-w';
+    /* Jonna, 2026-10-31: the plus-up \u2014 a card reads like a small dashboard: the number
+       that leads its line is set large, coloured by how it stands; an all-clear gets a tick */
+    const m=/^(\d[\d,]*(?:\s*\/\s*\d+|\s+of\s+\d+)?%?)(\s.*)?$/.exec(note);
+    if(m){ const n=document.createElement('b'); n.className='hc-n'; n.textContent=m[1]; w.appendChild(n); w.appendChild(document.createTextNode(m[2]||'')); }
+    else if(/^(all clear|nothing|none|every|everyone|no )/i.test(note)){ const k=document.createElement('b'); k.className='hc-ok'; k.textContent='\u2713'; w.appendChild(k); w.appendChild(document.createTextNode(' '+note)); }
+    else w.textContent=note;
     f.appendChild(w);
     ['is-bad','is-warn'].forEach(c=>sec.classList.remove(c));
     if(tone==='bad'||tone==='warn') sec.classList.add('is-'+tone);
@@ -41770,6 +41776,22 @@ function openDrawer(id){
   const ht=el("div");
   ht.appendChild(el("h3",null,t.task||"Untitled task"));
   ht.appendChild(el("div","sub",(t.owner||"Unassigned")+" · "+(SCOPE_SHORT[t.scope]||"No scope")+" · "+(t.phase||"Pre-Summit")));
+  /* Jonna, 2026-10-31: the plus-up \u2014 where it stands, at a glance */
+  {
+    const facts=el("div","dr-facts");
+    const st=t.status||"Not Started";
+    const sc=st==="Complete"?"ok":st==="In Progress"?"prog":(st==="Need to Discuss"||st==="Being Discussed")?"disc":"";
+    const f1=el("span",sc);f1.appendChild(el("i"));f1.appendChild(document.createTextNode(st));facts.appendChild(f1);
+    if(t.dueKind==="date"&&t.due){
+      const n=dayDiff(t.due), late=n!==null&&n<0&&st!=="Complete";
+      const when=parseD(t.due).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+      const f2=el("span",late?"late":"");f2.appendChild(el("i"));
+      f2.appendChild(document.createTextNode(st==="Complete"?"Due "+when:late?Math.abs(n)+" day"+(Math.abs(n)===1?"":"s")+" overdue \u00b7 "+when:n===0?"Due today":n===1?"Due tomorrow":"Due "+when+" \u00b7 in "+n+" days"));
+      facts.appendChild(f2);
+    } else if(t.dueKind==="now"){ const f2=el("span","prog");f2.appendChild(el("i"));f2.appendChild(document.createTextNode("Active now"));facts.appendChild(f2); }
+    if(t.flagged){ const f3=el("span");f3.appendChild(document.createTextNode("\u2691 Milestone"));facts.appendChild(f3); }
+    ht.appendChild(facts);
+  }
   hd.appendChild(ht);
   const cl=el("button","close","✕");cl.type="button";cl.setAttribute("aria-label","Close");
   cl.addEventListener("click",closeDrawer);hd.appendChild(cl);
@@ -47334,6 +47356,25 @@ html body #app-grid .meters .meter select option,html body #app-specs .meters .m
 #app-grid .boardwrap .card:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.55) inset,0 8px 18px -10px rgba(13,49,76,.55);z-index:3}
 #app-grid .boardwrap .card:active{cursor:grabbing}
 @media (prefers-reduced-motion:reduce){#app-grid .boardwrap .card,#app-grid .boardwrap .card:hover{transition:none;transform:none}}
+
+
+/* the task, agenda-item and session panels open on the same navy as the page heroes */
+html body .drawer > header{background:#0f314c;color:#fff;border-bottom:3px solid #74bfeb}
+html body .drawer > header h3{color:#fff;font-size:18px}
+html body .drawer > header .sub{color:#9fd2f2}
+html body .drawer > header .close{color:rgba(255,255,255,.75)}
+html body .drawer > header .close:hover{background:rgba(255,255,255,.12);color:#fff}
+.dr-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.dr-facts span{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.02em;color:#fff;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:4px;padding:3px 8px;white-space:nowrap}
+.dr-facts span i{width:8px;height:8px;border-radius:50%;background:#8aa3b7}
+.dr-facts span.prog i{background:#e0a83c}.dr-facts span.disc i{background:#74bfeb}.dr-facts span.ok i{background:#4fc79b}
+.dr-facts span.late{border-color:rgba(255,138,122,.7);background:rgba(255,107,91,.18)} .dr-facts span.late i{background:#ff6b5b}
+/* the figure that leads a card's line */
+.ascard .hc-w .hc-n{font-size:19px;font-weight:700;line-height:1;color:var(--accent);margin-right:5px;font-variant-numeric:tabular-nums;vertical-align:-1px}
+.ascard.is-warn .hc-w .hc-n{color:var(--warn-ink,#9a6a12)}
+.ascard.is-bad .hc-w .hc-n{color:var(--bad-ink,#b3402f)}
+.ascard .hc-w .hc-ok{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;background:var(--good-soft,#e2f4ec);color:var(--good,#1f8a5b);font-size:12px;margin-right:2px;vertical-align:-3px}
 /* ── the Resume at a glance: the page on the desk (Jonna, 2026-10-31) ── */
 #app-resume .rzp-hero{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:20px 22px;margin:0 0 16px;color:#fff;box-shadow:0 2px 10px rgba(6,32,47,.12)}
 :root[data-theme="dark"] #app-resume .rzp-hero{background:#14304A;border-color:#2E4F70}
