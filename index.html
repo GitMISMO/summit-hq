@@ -3915,6 +3915,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button class="btn ghost" id="add-session" type="button">+ New session</button>
     <button class="btn ghost" id="pdf-btn" type="button">Print / PDF</button>
     <button class="btn ghost" id="survey-btn" type="button" title="Email each workgroup's Chair(s) and Vice Chair the draft grid">Chair Survey</button>
+    <button class="btn ghost" id="grid-big" type="button" aria-pressed="false" title="Open the week full screen, as large as it fits (Esc closes)"><svg viewBox="0 0 16 16" aria-hidden="true" width="13" height="13" style="vertical-align:-2px;margin-right:6px"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>Enlarge</button>
     <span class="spacer"></span>
     <label class="gfind"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
       <input type="search" id="grid-find" placeholder="Find on the grid" aria-label="Find a session, workgroup or room on the grid" autocomplete="off"><span id="grid-findn"></span></label>
@@ -6888,7 +6889,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
         <li>The menu on the left reads in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). People, Hotel Specs and The Trunk are pages of their own.</li>
         <li><b>People</b> opens on the Confirmed Speakers face by face, each ringed by how far along they are, with the next step under their name and the five steps as bars underneath. Click a face to open that speaker.</li>
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
-        <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down.</li>
+        <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down. <b>Enlarge</b> opens the week full screen with taller rows; drag and click work the same, and <b>Close</b> or Esc puts it back.</li>
       </ul>
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Plan</h4>
@@ -36206,14 +36207,17 @@ function fitBoard(){
   const hqH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||64;
   const barEl=document.querySelector('#app-grid .bar');
   const barH=barEl? barEl.offsetHeight+6 : 0;
-  const avail=Math.max(220, Math.round(window.innerHeight - hqH - barH - 20 - lgH));
+  /* Enlarge: the week has the whole window under its own header */
+  const big=document.body.classList.contains('grid-big');
+  const avail= big ? Math.max(220, window.innerHeight - 52 - 18)
+                   : Math.max(220, Math.round(window.innerHeight - hqH - barH - 20 - lgH));
   const hd1=(board.querySelector('.hd-day')||{offsetHeight:31}).offsetHeight;
   const hd2=(board.querySelector('.hd-time')||{offsetHeight:24}).offsetHeight;
   /* how thick this browser's scrollbars actually are \u2014 15 on a Mac, 17 on Windows,
      0 where they overlay. Guessing wrong is worth a stray scrollbar, so measure it. */
   const bar=board.scrollWidth>wrap.clientWidth ? scrollbarSize()+2 : 0;
   const per=Math.floor((avail - hd1 - hd2 - bar - 4)/rows) - 1;
-  const rowH=Math.max(34, Math.min(74, per));
+  const rowH=Math.max(34, Math.min(big? 120 : 74, per));
   board.style.setProperty('--rowh', rowH+'px');
   wrap.style.setProperty('--boardh', avail+'px');
   /* the rows are as short as the cards in them allow, so step the type down a
@@ -36245,6 +36249,15 @@ function fitBoard(){
     let guard=12;
     while(wrap.scrollHeight > wrap.clientHeight+1 && z>0.4 && guard-- > 0){ z=Math.round((z-0.02)*100)/100; board.style.zoom=String(z); }
   }
+  /* Enlarge, with room to spare: scale the week up to fill the window */
+  else if(big){
+    let z=Math.min(1.8, Math.floor(Math.min((wrap.clientWidth-20)/board.scrollWidth, room/board.scrollHeight)*100)/100);
+    if(z>1.02){
+      board.style.zoom=String(z);
+      let guard=30;
+      while((wrap.scrollHeight > wrap.clientHeight+1 || wrap.scrollWidth > wrap.clientWidth+1) && z>1 && guard-- > 0){ z=Math.round((z-0.02)*100)/100; board.style.zoom=String(z); }
+    }
+  }
 }
 let fitT=null;
 window.addEventListener('resize',()=>{ clearTimeout(fitT); fitT=setTimeout(fitBoard,120); });
@@ -36260,6 +36273,41 @@ function ensureFits(){
   fitBoard();
 }
 const nudgeFit = ()=>{ clearTimeout(refitT); refitT=setTimeout(ensureFits, 90); };
+/* Jonna, 2026-10-31: an Enlarge button, the way MISMO Money has one — the week full screen,
+   scaled up to fill it, with everything still working: drag, click to open, Find. Close or
+   Esc puts it back. */
+(function(){
+  const btn=document.getElementById('grid-big'); if(!btn) return;
+  let hd=null;
+  const isOn=()=>document.body.classList.contains('grid-big');
+  function on(){
+    document.body.classList.add('grid-big');
+    hd=document.createElement('div'); hd.id='gbig';
+    const t=document.createElement('div');
+    const e=document.createElement('span'); e.textContent='Schedule';
+    const b=document.createElement('b'); b.textContent=(document.getElementById('title')||{}).textContent||'The Week';
+    t.appendChild(e); t.appendChild(b); hd.appendChild(t);
+    const h=document.createElement('span'); h.className='gbig-hint'; h.textContent='Drag a session to move it · click to open it · Esc to close'; hd.appendChild(h);
+    const x=document.createElement('button'); x.type='button'; x.className='btn'; x.textContent='Close'; x.addEventListener('click',off); hd.appendChild(x);
+    document.body.appendChild(hd);
+    btn.setAttribute('aria-pressed','true');
+    setTimeout(()=>{ refit=0; fitBoard(); },30);
+  }
+  function off(){
+    document.body.classList.remove('grid-big');
+    if(hd){ hd.remove(); hd=null; }
+    btn.setAttribute('aria-pressed','false');
+    setTimeout(()=>{ refit=0; fitBoard(); },30);
+  }
+  btn.addEventListener('click',()=>{ if(isOn()) off(); else on(); });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape' || !isOn()) return;
+    if(document.querySelector('#drawer-host .drawer, .hq-replace, .hqg') || document.body.classList.contains('paneon')) return;
+    off();
+  });
+  const app=document.getElementById('app-grid');
+  if(app) new MutationObserver(()=>{ if(app.hidden && isOn()) off(); }).observe(app,{attributes:true,attributeFilter:['hidden']});
+})();
 if(window.ResizeObserver){
   const ro=new ResizeObserver(nudgeFit);
   const bd=$('board'); if(bd) ro.observe(bd);
@@ -49648,6 +49696,25 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 #app-grid .gfind input{border:0;outline:0;background:transparent;font:inherit;font-size:13px;color:var(--ink);width:170px}
 #app-grid .gfind:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 #app-grid #grid-findn{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+/* Enlarge (Jonna, 2026-10-31) */
+#gbig{position:fixed;top:0;left:0;right:0;height:52px;z-index:146;display:flex;align-items:center;gap:14px;padding:0 16px;
+  background:linear-gradient(160deg,#14476b,#0d314c);color:#fff;font-family:var(--ui);box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#gbig > div{display:flex;flex-direction:column;gap:1px}
+#gbig > div span{font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:#a9d8f3;font-weight:700}
+#gbig > div b{font:700 16px/1.1 var(--display)}
+#gbig .gbig-hint{margin-left:auto;font-size:12px;color:#cfe9f8}
+#gbig .btn{background:#fff;color:#0d314c;border-color:#fff}
+body.grid-big{overflow:hidden}
+body.grid-big #app-grid .boardwrap{position:fixed;top:52px;left:0;right:0;bottom:0;z-index:145;max-height:none !important;
+  border:0;border-radius:0;background:var(--paper);padding:8px 10px}
+body.grid-big #app-grid .legend{display:none}
+body.grid-big #app-grid .scrim{z-index:150}
+body.grid-big #app-grid .drawer{z-index:151;top:0}
+body.grid-big .pane-scrim{z-index:152} body.grid-big .hqpane{z-index:153;top:0}
+body.grid-big .hq-replace{z-index:160}
+#grid-big[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media(max-width:700px){ #gbig .gbig-hint{display:none} }
+
 @media(max-width:700px){#app-grid .gfind input{width:110px}}
 
 /* ── the Resume's sections, in the colours of the page at the top (Jonna, 2026-10-31) ── */
