@@ -4120,7 +4120,41 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 <style>
 /* ============ THE HOTEL AT A GLANCE (Hotel Specs) ============ */
 #ps-glance{display:grid;gap:14px;margin:0 0 16px}
-#ps-glance:empty{display:none}
+#ps-glance .psg-cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+#ps-glance .psg-main{display:grid;gap:14px;min-width:0}
+#ps-glance .psg-rail{display:flex;flex-direction:column;gap:10px;position:sticky;top:12px;min-width:0}
+.psg-rh{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-3);padding:2px 2px 0}
+/* the General Sessions headcount, as a tile */
+#app-specs .psg-rail .gs-wrap{margin:0;border:0;border-radius:9px;overflow:hidden;background:linear-gradient(160deg,#14476b,#0d314c);color:#fff;box-shadow:0 8px 20px rgba(13,49,76,.22)}
+#app-specs .psg-rail .gsbox{padding:13px 14px 10px;gap:10px;align-items:center;flex-wrap:nowrap}
+#app-specs .psg-rail .gs-l{flex:1 1 auto}
+#app-specs .psg-rail .gs-lab{color:#fff;font:700 14px/1.2 var(--display)}
+#app-specs .psg-rail .gs-sub{color:#a9d8f3;font-size:11.5px;line-height:1.35;margin-top:3px}
+#app-specs .psg-rail .gs-last{color:#a9d8f3;font-size:11px;margin-top:4px}
+#app-specs .psg-rail .gs-f label{color:#a9d8f3}
+#app-specs .psg-rail .gs-num{width:84px;font-size:24px;font-weight:700;background:#fff;color:#0d314c;border-radius:6px;border:0}
+#app-specs .psg-rail .gs-fit{margin:0 10px 10px;font-size:11.5px;line-height:1.4;border-radius:6px}
+#app-specs .psg-rail .gs-fit{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#cfe9f8}
+#app-specs .psg-rail .gs-fit .hd{font-size:12.5px;color:#fff}
+#app-specs .psg-rail .gs-fit.no{border-color:#ff9d8a}
+.psg-gauge{margin:0 14px 12px}
+.psg-gauge .gt{display:flex;justify-content:space-between;font-size:11px;color:#a9d8f3;margin-bottom:4px}
+.psg-gauge .gt b{color:#fff}
+.psg-gauge .gb{position:relative;height:9px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden}
+.psg-gauge .gb i{position:absolute;left:0;top:0;bottom:0;background:#7fd1a8;transition:width .8s cubic-bezier(.3,1,.4,1)}
+.psg-gauge.over .gb i{background:#ff9d8a}
+.psg-gauge.close .gb i{background:#f2c46d}
+/* the three cards stacked in the rail */
+#app-specs .psg-rail .psg-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+#app-specs .psg-contract{display:flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:10px 12px}
+#app-specs .psg-contract svg{width:15px;height:15px}
+.psg-note{font-size:11.5px;color:var(--ink-3);line-height:1.45;padding:0 2px}
+@media(max-width:1180px){
+  #ps-glance .psg-cols{grid-template-columns:minmax(0,1fr)}
+  #ps-glance .psg-rail{position:static;order:-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  #ps-glance .psg-rail .psg-rh,#ps-glance .psg-rail .psg-note{grid-column:1/-1}
+  #app-specs .psg-rail .psg-cards{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+}
 .psg-hero{display:grid;grid-template-columns:auto minmax(190px,260px) minmax(0,1fr);gap:20px;align-items:center;
   padding:18px 20px;border-radius:10px;color:#fff;
   background:radial-gradient(120% 140% at 0% 0%,#1a5a86 0%,#0f314c 55%,#0a2539 100%);
@@ -4250,34 +4284,30 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <div class="meters" id="ps-meters"></div>
     </header>
 
-    <!-- Jonna, 2026-10-31: the hotel at a glance — how ready, the day's meals, every room -->
-    <section class="psg" id="ps-glance" aria-label="The Hotel at a Glance"></section>
-
-    <div class="bar">
-      <button class="btn ghost" id="contract-btn" type="button">Contract, floor plan &amp; capacities</button>
-      <span class="spacer"></span>
-    </div>
-
-    <div class="hint barhint" id="ps-note">
-      Everything here is kept in step with the Schedule &mdash; change a room or a time on the
-      Schedule tab and these pages follow. Type straight into any box; it saves itself.
-    </div>
-
-    <!-- The number that drives Tuesday, the plenary room and most of the catering,
-         so it is the first box on the page rather than a line inside a section. -->
-    <div id="gs-box"></div>
-
-    <!-- The three of them are cards, so they sit beside each other rather than running
-         the width of the page. The two hosts are display:contents, so the section inside
-         each one is the grid item, not the host. -->
-    <div class="plan-grid">
-      <div id="room-notes"></div>
-      <section class="catsum sec-ask" data-cardkey="specs:ask">
-        <div class="catsum-hd static">Ask The Hotel <span class="sec-cnt" id="ask-count">0</span></div>
-        <div class="sec-body" id="asks"></div>
-      </section>
-      <div id="nc-body"></div>
-    </div>
+    <!-- Jonna, 2026-10-31: the hotel at a glance — how ready, the day's meals, every room —
+         with the numbers and notes for the hotel in a rail beside it, not left underneath -->
+    <section class="psg" id="ps-glance" aria-label="The Hotel at a Glance">
+      <div id="ps-hero"></div>
+      <div class="psg-cols">
+        <div class="psg-main" id="ps-main"></div>
+        <aside class="psg-rail" aria-label="Numbers and Notes for the Hotel">
+          <div class="psg-rh">Numbers &amp; Notes for the Hotel</div>
+          <!-- the number that drives Tuesday, the plenary room and most of the catering -->
+          <div id="gs-box"></div>
+          <!-- the three cards; the two hosts are display:contents, so each section is the item -->
+          <div class="plan-grid psg-cards">
+            <div id="room-notes"></div>
+            <section class="catsum sec-ask" data-cardkey="specs:ask">
+              <div class="catsum-hd static">Ask The Hotel <span class="sec-cnt" id="ask-count">0</span></div>
+              <div class="sec-body" id="asks"></div>
+            </section>
+            <div id="nc-body"></div>
+          </div>
+          <button class="btn ghost psg-contract" id="contract-btn" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3 1h7l3 3v11H3zm6 1v3h3M5 8h6v1H5zm0 2h6v1H5zm0 2h4v1H5z"/></svg>Contract, Floor Plan &amp; Capacities</button>
+          <div class="psg-note" id="ps-note">Everything here follows the Schedule &mdash; change a room or a time there and this page follows. Type straight into any box; it saves itself.</div>
+        </aside>
+      </div>
+    </section>
     </div>
   </div>
 
@@ -4500,6 +4530,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
   <!-- THE RESUME — every part of the document, editable where the Schedule doesn't already say it -->
   <section id="rz-doc">
+    <div class="rzc-head"><h3>Every Section, in the Order It Prints</h3><span>Open one to fill it in. Green is complete, amber still has something TBD, blue changed since the last version.</span></div>
     <div class="rz-docgrid">
       <nav class="rz-toc" id="rz-toc" aria-label="Resume sections"></nav>
       <div class="rz-docbody" id="rz-docbody"></div>
@@ -4965,58 +4996,142 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   #app-trunk .tk-row .tk-note,#app-trunk .tk-head .h-note{display:none}
 }
 
-/* ---------- Pack the Trunk ----------
-   Jonna, 2026-10-31: every line on the lists sits on the floor until it is dragged
-   (or tapped) into the trunk. The tags are not scoped to #app-trunk because the one
-   being carried rides on <body>. */
-#app-trunk .tkp{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);
-  gap:16px;margin:0 0 16px;align-items:start}
-.tkp-floor{position:relative;background-color:var(--surface);border:1px solid var(--line-2);
-  border-radius:8px;box-shadow:var(--shadow);padding:14px 16px 16px;min-height:250px;
-  background-image:repeating-linear-gradient(180deg,transparent 0 43px,var(--line) 43px 44px);
-  transition:border-color .2s,box-shadow .2s}
-.tkp-floor.is-over{border-color:var(--pc-trunk);box-shadow:0 0 0 3px var(--pc-trunk-soft),var(--shadow)}
-.tkp.from-trunk .tkp-floor{border-style:dashed;border-color:var(--pc-trunk)}
-.tkp-hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+/* ---------- The Trunk, made to be packed ----------
+   Jonna, 2026-10-31 (second pass): the road to the trunk across the top, the packing
+   list and the trunk side by side at the same height, amounts and new lines edited
+   right on the list, a review the team is emailed about, and a branded packing list
+   to print or save as a PDF. The cards with the lists are gone. The chip being carried
+   rides on <body>, so the chip rules are not scoped to #app-trunk. */
+#app-trunk .tk-tasks,#app-trunk #tk-grid,#app-trunk .barhint{display:none !important}
+
+/* the road: the packing list, the review, the trunk shipping */
+.tkr{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:0;margin:0 0 14px;position:relative}
+.tkr-step{position:relative;display:flex;flex-direction:column;gap:5px;padding:14px 16px 14px 16px;margin:0;text-align:left;
+  background:var(--surface);border:1px solid var(--line-2);font-family:var(--ui);color:var(--ink);cursor:default;min-width:0}
+.tkr-step:first-child{border-radius:9px 0 0 9px}
+.tkr-step:last-child{border-radius:0 9px 9px 0}
+.tkr-step+.tkr-step{border-left:0}
+.tkr-step.go{cursor:pointer}
+.tkr-step.go:hover{background:var(--pc-trunk-soft)}
+.tkr-step.now{background:linear-gradient(180deg,#0f3a5a,#0d314c);border-color:#0d314c;color:#fff;box-shadow:0 8px 20px rgba(13,49,76,.25);z-index:1}
+.tkr-step.now.go:hover{background:linear-gradient(180deg,#14476b,#0f3a5a)}
+/* the arrow between steps */
+.tkr-step:not(:last-child)::after{content:"";position:absolute;right:-9px;top:50%;width:16px;height:16px;margin-top:-8px;
+  background:inherit;border-top:1px solid var(--line-2);border-right:1px solid var(--line-2);transform:rotate(45deg);z-index:2}
+.tkr-step.now:not(:last-child)::after{background:#0d314c;border-color:#0d314c}
+.tkr-top{display:flex;align-items:center;gap:9px}
+.tkr-dot{flex:0 0 auto;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font:700 12px/1 var(--ui);border:2px solid var(--line-2);color:var(--ink-3);background:var(--surface)}
+.tkr-step.done .tkr-dot{background:var(--good);border-color:var(--good);color:#fff}
+.tkr-step.now .tkr-dot{background:#74bfeb;border-color:#74bfeb;color:#0d314c}
+.tkr-t{font:700 14px/1.2 var(--display);min-width:0}
+.tkr-m{font-size:12px;color:var(--ink-3)}
+.tkr-step.now .tkr-m{color:#a9d8f3}
+.tkr-when{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tkr-cd{font:700 13px/1 var(--ui)}
+.tkr-cd.late{color:var(--bad)}
+.tkr-step.now .tkr-cd{color:#fff}
+.tkr-step.now .tkr-cd.late{color:#ffb4a8}
+.tkr-st{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;border:1px solid var(--line-2);
+  border-radius:3px;padding:2px 6px;color:var(--ink-3);white-space:nowrap}
+.tkr-step.now .tkr-st{border-color:rgba(255,255,255,.35);color:#cfe9f8}
+.tkr-st.ok{border-color:var(--good);color:var(--good)}
+.tkr-bar{height:5px;border-radius:2px;background:var(--sunk);overflow:hidden;margin-top:2px}
+.tkr-step.now .tkr-bar{background:rgba(255,255,255,.16)}
+.tkr-bar i{display:block;height:100%;background:#74bfeb;transition:width .6s cubic-bezier(.3,1,.4,1)}
+.tkr-faces{display:flex;gap:4px;flex-wrap:wrap}
+.tkr-face{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 var(--ui);
+  background:var(--sunk);color:var(--ink-2);border:2px solid transparent}
+.tkr-step.now .tkr-face{background:rgba(255,255,255,.14);color:#fff}
+.tkr-face.ok{border-color:#7fd1a8}
+.tkr-face.ch{border-color:#f2c46d}
+
+/* the review, when there is one */
+.tkv{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:13px 16px;margin:0 0 14px;border-radius:9px;
+  border:1px solid #74bfeb;background:var(--accent-soft);color:var(--ink)}
+.tkv[hidden]{display:none}
+.tkv.ok{border-color:var(--good);background:var(--good-soft)}
+.tkv.ch{border-color:#d99a2b;background:var(--warn-soft)}
+.tkv-ic{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#0d314c;color:#fff;font:700 16px/1 var(--ui)}
+.tkv.ok .tkv-ic{background:var(--good)}
+.tkv.ch .tkv-ic{background:#d99a2b}
+.tkv-b{flex:1 1 300px;min-width:0}
+.tkv-b b{font:700 14.5px/1.3 var(--display)}
+.tkv-b p{margin:3px 0 0;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.tkv-notes{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+.tkv-notes li{font-size:12.5px;background:var(--surface);border:1px solid var(--line-2);border-radius:6px;padding:6px 9px}
+.tkv-notes li b{font-size:12.5px;font-family:var(--ui)}
+.tkv-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tkv-say{display:flex;gap:8px;flex-wrap:wrap;width:100%;margin-top:4px}
+.tkv-say textarea{flex:1 1 260px;min-height:56px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink)}
+
+/* the tool row above the two halves */
+.tkp-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.tkp-tools .grow{flex:1 1 auto}
+.tkp-tools .btn svg{width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+.btn.tkp-primary{background:#0d314c;color:#fff;border-color:#0d314c}
+.btn.tkp-primary:hover{background:#14476b}
+.tkp-tools .tkp-said{font-size:12px;color:var(--ink-3)}
+
+/* the two halves, the same height */
+#app-trunk .tkp{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,1fr);gap:16px;margin:0 0 16px;
+  height:clamp(470px,calc(100vh - 290px),680px)}
+.tkl{display:flex;flex-direction:column;min-height:0;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;
+  box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.tkl.is-over{border-color:var(--pc-trunk);box-shadow:0 0 0 3px var(--pc-trunk-soft),var(--shadow)}
+.tkp.from-trunk .tkl{border-style:dashed;border-color:var(--pc-trunk)}
+.tkl-hd{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.tkl-hd h3{margin:2px 0 0;font:700 17px/1.2 var(--display);color:var(--ink)}
+.tkl-hd h3 b{font-size:22px}
 .tkp-eb{font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
-.tkp-hd b{font:700 22px/1 var(--display);color:var(--ink)}
 .tkp-sub{margin-left:auto;font-size:12px;color:var(--ink-3)}
-.tkp-grp{margin:0 0 12px}
-.tkp-grp:last-child{margin-bottom:0}
-.tkp-gh{display:flex;align-items:center;gap:7px;margin:0 0 7px;font-size:10px;letter-spacing:.08em;
-  text-transform:uppercase;font-weight:700;color:var(--ink-2)}
-.tkp-gh i{width:9px;height:9px;border-radius:2px;background:var(--c,var(--pc-trunk))}
-.tkp-gh .n{color:var(--ink-3);font-weight:600}
-.tkp-grp[data-s=rib]{--c:#2f80c8}
-.tkp-grp[data-s=merch]{--c:var(--pc-people)}
-.tkp-tags{display:flex;flex-wrap:wrap;gap:7px}
-.tkp-clear{display:flex;align-items:center;justify-content:center;min-height:200px;
-  color:var(--ink-3);font-size:13px;text-align:center}
-.tkp-tag{--c:var(--pc-trunk);display:inline-flex;align-items:center;gap:7px;max-width:100%;
-  margin:0;padding:7px 11px 7px 9px;border:1px solid var(--line-2);border-left:4px solid var(--c);
-  border-radius:5px;background:var(--surface);color:var(--ink);font:600 12.5px/1.25 var(--ui);
-  text-align:left;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
-  touch-action:manipulation;box-shadow:0 1px 2px rgba(13,49,76,.08);
-  transition:transform .15s,box-shadow .15s,opacity .15s,border-color .15s}
-.tkp-tag[data-s=rib]{--c:#2f80c8}
-.tkp-tag[data-s=merch]{--c:var(--pc-people)}
-.tkp-tag:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(13,49,76,.15);border-color:var(--c)}
-.tkp-tag:focus-visible{outline:2px solid #74bfeb;outline-offset:2px}
-.tkp-tag .q{font-weight:700;color:var(--c);font-size:12px}
-.tkp-tag .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.tkp-tag .nt{font-weight:400;color:var(--ink-3);white-space:nowrap}
-.tkp-tag .ck{color:var(--good);font-weight:700}
-.tkp-tag.is-blank .nm{font-style:italic;color:var(--ink-3);font-weight:400}
-.tkp-tag.is-lifted{opacity:.22;transform:none;box-shadow:none}
-.tkp-tag.is-held{transform:scale(1.06);box-shadow:0 8px 18px rgba(13,49,76,.22)}
-.tkp-tag.is-new{animation:tkpPop .5s cubic-bezier(.2,1.5,.4,1)}
-.tkp-ghost{position:fixed !important;left:0;top:0;z-index:10050;pointer-events:none;cursor:grabbing;
-  transition:none !important;box-shadow:0 16px 32px rgba(13,49,76,.32) !important;opacity:1 !important}
-@keyframes tkpPop{0%{transform:translateY(-16px) scale(.5);opacity:0}100%{transform:none;opacity:1}}
+.tkl-body{flex:1 1 auto;min-height:0;overflow:auto;padding:4px 0 10px}
+.tkl-sec{padding:10px 16px 2px}
+.tkl-sh{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-2)}
+.tkl-sh i{width:10px;height:10px;border-radius:2px;background:var(--c)}
+.tkl-sh .n{color:var(--ink-3);font-weight:600;letter-spacing:.04em;text-transform:none}
+.tkl-sh .btn{margin-left:auto;font-size:11px;padding:3px 9px;text-transform:none;letter-spacing:0}
+.tkl-sec[data-s=kit],.tkp-chip[data-s=kit],.tkl-row[data-s=kit]{--c:var(--pc-trunk)}
+.tkl-sec[data-s=rib],.tkp-chip[data-s=rib],.tkl-row[data-s=rib]{--c:#2f80c8}
+.tkl-sec[data-s=merch],.tkp-chip[data-s=merch],.tkl-row[data-s=merch]{--c:var(--pc-people)}
+.tkl-all{font-size:12px;color:var(--good);font-weight:600;padding:2px 0 8px}
+.tkl-none{font-size:12px;color:var(--ink-3);font-style:italic;padding:2px 0 8px}
+.tkl-row{display:grid;grid-template-columns:14px auto minmax(0,2.2fr) minmax(0,1fr) auto 22px;gap:8px;align-items:center;
+  padding:5px 6px 5px 4px;margin:0 -6px 3px -4px;border-radius:7px;border-left:3px solid var(--c);background:var(--surface);
+  transition:background .15s,opacity .15s,transform .15s}
+.tkl-row:hover{background:var(--paper)}
+.tkl-row.is-lifted{opacity:.25}
+.tkl-row.is-held{transform:scale(1.02);box-shadow:0 8px 18px rgba(13,49,76,.2)}
+.tkl-row.is-new{animation:tkpPop .5s cubic-bezier(.2,1.5,.4,1)}
+.tkl-grip{cursor:grab;color:var(--ink-3);opacity:.6;display:flex;justify-content:center;touch-action:none;user-select:none}
+.tkl-grip svg{width:8px;height:14px}
+.tkl-row:hover .tkl-grip{opacity:1}
+.tkl-row input[type=text]{width:100%;min-width:0;border:1px solid transparent;background:transparent;border-radius:5px;
+  padding:5px 7px;font:600 13px/1.2 var(--ui);color:var(--ink)}
+.tkl-row input[type=text]:hover{border-color:var(--line-2)}
+.tkl-row input[type=text]:focus{border-color:#74bfeb;background:var(--surface);outline:none;box-shadow:0 0 0 2px rgba(116,191,235,.3)}
+.tkl-row input.tkl-nt{font-weight:400;color:var(--ink-3);font-size:12.5px}
+.tkq{display:inline-flex;align-items:center;border:1px solid var(--line-2);border-radius:6px;overflow:hidden;background:var(--surface)}
+.tkq button{width:24px;height:28px;border:0;background:transparent;color:var(--ink-2);font:700 15px/1 var(--ui);cursor:pointer;padding:0}
+.tkq button:hover{background:var(--sunk);color:var(--ink)}
+.tkq input{width:34px !important;text-align:center;border:0 !important;border-left:1px solid var(--line) !important;border-right:1px solid var(--line) !important;
+  border-radius:0 !important;padding:5px 2px !important;font:700 13px/1 var(--ui) !important;color:var(--c,var(--ink)) !important;background:transparent}
+.tkl-pack{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--c);color:var(--c);background:transparent;border-radius:6px;
+  padding:5px 10px;font:700 11.5px/1 var(--ui);cursor:pointer;white-space:nowrap}
+.tkl-pack:hover{background:var(--c);color:#fff}
+.tkl-pack svg{width:12px;height:12px}
+.tkl-del{width:22px;height:22px;border:0;background:transparent;color:var(--ink-3);font-size:16px;line-height:1;cursor:pointer;border-radius:4px;opacity:0}
+.tkl-row:hover .tkl-del,.tkl-del:focus{opacity:1}
+.tkl-del:hover{color:var(--bad);background:var(--bad-soft)}
+.tkl-add{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:11px 14px;
+  border-top:1px solid var(--line);background:var(--paper)}
+.tkl-add select,.tkl-add input{font:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0}
+.tkl-add #tkp-add-q{width:58px;text-align:center}
+
 /* the trunk */
-.tkp-side{display:flex;flex-direction:column;gap:8px}
-@media(min-width:861px){ .tkp-side{position:sticky;top:12px} }
-.tkp-trunk{position:relative;padding:58px 12px 0;perspective:900px}
+.tkp-side{display:flex;flex-direction:column;gap:8px;min-height:0}
+.tkp-trunk{position:relative;padding:58px 12px 0;perspective:900px;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
 .tkp-lid{position:absolute;left:calc(12px + 4%);right:calc(12px + 4%);top:0;height:66px;
   transform-origin:50% 100%;transform:rotateX(34deg);border-radius:12px 12px 4px 4px;
   background:linear-gradient(180deg,#15476b,#0a2840);border:2px solid #082236;
@@ -5024,34 +5139,47 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   transition:transform .6s cubic-bezier(.3,1.3,.5,1),opacity .35s}
 .tkp-lid span{color:#a9d8f3;font:700 11px/1 var(--ui);letter-spacing:.32em;padding:5px 8px 5px 12px;
   border:1px solid rgba(116,191,235,.55);border-radius:3px}
-.tkp-box{position:relative;padding:12px 12px 0;border-radius:6px 6px 12px 12px;
+.tkp-box{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:12px 12px 0;border-radius:6px 6px 12px 12px;
   background:linear-gradient(180deg,#123c5c,#0d314c 45%,#0a2a42);border:2px solid #082236;
   box-shadow:0 12px 26px rgba(13,49,76,.28);transition:transform .2s,box-shadow .2s}
-/* the handles */
 .tkp-box::before,.tkp-box::after{content:"";position:absolute;top:42%;width:9px;height:30px;background:#082236}
 .tkp-box::before{left:-11px;border-radius:5px 0 0 5px}
 .tkp-box::after{right:-11px;border-radius:0 5px 5px 0}
-.tkp-well{position:relative}
-.tkp-in{position:relative;min-height:180px;max-height:330px;overflow:auto;padding:12px;border-radius:4px;
-  display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;
+.tkp-well{position:relative;flex:1 1 auto;min-height:0;display:flex}
+.tkp-in{position:relative;flex:1 1 auto;min-height:150px;overflow:auto;padding:12px;border-radius:4px;
+  display:flex;flex-direction:column;gap:10px;
   background:linear-gradient(180deg,#e4ebf1,#f6f8fa);
   box-shadow:inset 0 10px 18px rgba(0,0,0,.28),inset 0 0 0 1px rgba(0,0,0,.15)}
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .tkp-in{background:linear-gradient(180deg,#081624,#0f2336)} }
 :root[data-theme="dark"] .tkp-in{background:linear-gradient(180deg,#081624,#0f2336)}
-.tkp-in .tkp-tag{font-size:11.5px;padding:5px 9px 5px 7px}
+.tkp-layer{display:flex;flex-wrap:wrap;gap:6px}
+.tkp-layer-h{width:100%;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:#6c899f;margin:0 0 1px}
 .tkp-empty{margin:auto;color:#6c899f;font-size:12.5px;text-align:center;padding:20px 8px}
+.tkp-chip{--c:var(--pc-trunk);display:inline-flex;align-items:center;gap:6px;max-width:100%;margin:0;padding:5px 9px 5px 7px;
+  border:1px solid var(--line-2);border-left:4px solid var(--c);border-radius:5px;background:var(--surface);color:var(--ink);
+  font:600 12px/1.25 var(--ui);text-align:left;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:none;box-shadow:0 1px 2px rgba(13,49,76,.1);transition:transform .15s,box-shadow .15s,opacity .15s}
+.tkp-chip:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(13,49,76,.16)}
+.tkp-chip:focus-visible{outline:2px solid #74bfeb;outline-offset:2px}
+.tkp-chip .q{font-weight:700;color:var(--c)}
+.tkp-chip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tkp-chip .nt{font-weight:400;color:var(--ink-3);white-space:nowrap}
+.tkp-chip .ck{color:var(--good);font-weight:700}
+.tkp-chip.is-lifted{opacity:.22;transform:none}
+.tkp-chip.is-held{transform:scale(1.06)}
+.tkp-chip.is-new{animation:tkpPop .5s cubic-bezier(.2,1.5,.4,1)}
+.tkp-ghost{position:fixed !important;left:0;top:0;z-index:10050;pointer-events:none;cursor:grabbing;margin:0 !important;
+  transition:none !important;box-shadow:0 16px 32px rgba(13,49,76,.32) !important;opacity:1 !important;
+  display:inline-flex !important;grid-template-columns:none !important}
+@keyframes tkpPop{0%{transform:translateY(-14px) scale(.6);opacity:0}100%{transform:none;opacity:1}}
 .tkp-front{display:flex;align-items:center;gap:12px;padding:13px 4px 14px;color:#fff}
-.tkp-latch{flex:0 0 auto;width:24px;height:17px;border-radius:3px;background:#0d314c;
-  box-shadow:inset 0 0 0 4px #74bfeb}
+.tkp-latch{flex:0 0 auto;width:24px;height:17px;border-radius:3px;background:#0d314c;box-shadow:inset 0 0 0 4px #74bfeb}
 .tkp-gauge{flex:1 1 auto;height:8px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
-.tkp-gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#74bfeb,#b7e4ff);
-  transition:width .55s cubic-bezier(.3,1.2,.5,1)}
+.tkp-gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#74bfeb,#b7e4ff);transition:width .55s cubic-bezier(.3,1.2,.5,1)}
 .tkp-cnt{white-space:nowrap;font:700 14px/1 var(--ui);color:#fff}
 .tkp-cnt small{font-size:12px;font-weight:600;color:#a9d8f3}
-/* while something is being carried, the trunk is waiting for it */
 .tkp.from-floor .tkp-box{animation:tkpWait 1.3s ease-in-out infinite}
-.tkp-trunk.is-over .tkp-box{animation:none;transform:scale(1.03);
-  box-shadow:0 0 0 3px #74bfeb,0 18px 36px rgba(13,49,76,.35)}
+.tkp-trunk.is-over .tkp-box{animation:none;transform:scale(1.02);box-shadow:0 0 0 3px #74bfeb,0 18px 36px rgba(13,49,76,.35)}
 .tkp-trunk.is-over .tkp-lid{transform:rotateX(16deg)}
 .tkp-trunk.is-over .tkp-in{outline:2px dashed #74bfeb;outline-offset:-7px}
 .tkp-trunk.is-thunk .tkp-box{animation:tkpThunk .45s ease-out}
@@ -5059,34 +5187,73 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 @keyframes tkpWait{0%,100%{box-shadow:0 12px 26px rgba(13,49,76,.28)}50%{box-shadow:0 0 0 3px rgba(116,191,235,.55),0 12px 26px rgba(13,49,76,.28)}}
 @keyframes tkpThunk{0%{transform:none}35%{transform:translateY(5px) scaleY(.98)}70%{transform:translateY(-2px)}100%{transform:none}}
 @keyframes tkpLid{0%{transform:rotateX(34deg)}40%{transform:rotateX(50deg)}100%{transform:rotateX(34deg)}}
-/* everything is in: the lid comes down */
 .tkp-cover{position:absolute;inset:0;border-radius:4px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:6px;padding:16px;text-align:center;color:#fff;cursor:pointer;
-  background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 12px,transparent 12px 24px),
-    linear-gradient(180deg,#15476b,#0d314c);border:2px solid #082236;
-  transform-origin:50% 0;transform:scaleY(0);opacity:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 12px,transparent 12px 24px),linear-gradient(180deg,#15476b,#0d314c);
+  border:2px solid #082236;transform-origin:50% 0;transform:scaleY(0);opacity:0;pointer-events:none;
   transition:transform .55s cubic-bezier(.3,1.25,.5,1),opacity .25s}
 .tkp-trunk.is-shut .tkp-cover{transform:none;opacity:1;pointer-events:auto}
 .tkp-trunk.is-shut .tkp-lid{transform:rotateX(90deg);opacity:0}
-.tkp-seal{width:46px;height:46px;border-radius:50%;background:#74bfeb;color:#0d314c;
-  font:800 23px/46px var(--ui);box-shadow:0 0 0 7px rgba(116,191,235,.22)}
+.tkp-seal{width:46px;height:46px;border-radius:50%;background:#74bfeb;color:#0d314c;font:800 23px/46px var(--ui);box-shadow:0 0 0 7px rgba(116,191,235,.22)}
 .tkp-trunk.is-shut .tkp-seal{animation:tkpSeal .6s .35s both cubic-bezier(.2,1.6,.4,1)}
 @keyframes tkpSeal{0%{transform:scale(0)}100%{transform:none}}
 .tkp-cover b{font:700 18px/1.2 var(--display);letter-spacing:-.01em}
 .tkp-cover span{font-size:12.5px;color:#a9d8f3}
-.tkp-open{margin-top:6px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);
-  border-radius:5px;padding:7px 14px;font:600 12.5px var(--ui);cursor:pointer}
+.tkp-open{margin-top:6px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:5px;padding:7px 14px;font:600 12.5px var(--ui);cursor:pointer}
 .tkp-open:hover{background:rgba(255,255,255,.1)}
-.tkp-acts{display:flex;align-items:center;gap:10px;padding:2px 12px 0;font-size:12px;color:var(--ink-3)}
+.tkp-acts{display:flex;align-items:center;gap:10px;padding:0 12px;font-size:12px;color:var(--ink-3)}
 .tkp-acts .btn{margin-left:auto;white-space:nowrap;flex:0 0 auto}
+
+/* a packed line, opened to change it */
+.tkp-pop{position:fixed;z-index:10040;width:300px;max-width:calc(100vw - 24px);background:var(--surface);color:var(--ink);
+  border:1px solid var(--line-2);border-top:4px solid var(--c,#0d314c);border-radius:9px;box-shadow:0 18px 40px rgba(13,49,76,.3);
+  padding:12px 14px 14px;display:flex;flex-direction:column;gap:9px;font-family:var(--ui);animation:tkpPop .25s ease-out}
+.tkp-pop label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3);display:block;margin:0 0 3px}
+.tkp-pop input[type=text]{width:100%;font:inherit;font-size:13.5px;padding:7px 9px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink)}
+.tkp-pop .row2{display:flex;gap:10px;align-items:flex-end}
+.tkp-pop .acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+.tkp-pop .acts .del{margin-left:auto;color:var(--bad)}
+
+/* send for review */
+.tkm{position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;padding:16px}
+.tkm-scrim{position:absolute;inset:0;background:rgba(8,24,38,.55)}
+.tkm-box{position:relative;width:520px;max-width:100%;max-height:calc(100vh - 32px);overflow:auto;background:var(--surface);color:var(--ink);
+  border-radius:10px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:var(--ui)}
+.tkm-hd{background:#0d314c;color:#fff;padding:14px 18px;border-radius:10px 10px 0 0;font:700 16px/1.2 var(--display)}
+.tkm-bd{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.tkm-bd p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5}
+.tkm-who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.tkm-who label{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 8px;border:1px solid var(--line-2);border-radius:6px;cursor:pointer}
+.tkm-who label:has(input:checked){border-color:#0d314c;background:var(--accent-soft)}
+.tkm-bd textarea{width:100%;min-height:70px;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink)}
+.tkm-lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.tkm-ft{display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid var(--line)}
+.tkm-warn{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:8px 10px}
+
+@media(max-width:980px){
+  .tkr{grid-template-columns:1fr}
+  .tkr-step,.tkr-step:first-child,.tkr-step:last-child{border-radius:0}
+  .tkr-step:first-child{border-radius:9px 9px 0 0}
+  .tkr-step:last-child{border-radius:0 0 9px 9px}
+  .tkr-step+.tkr-step{border-left:1px solid var(--line-2);border-top:0}
+  .tkr-step:not(:last-child)::after{display:none}
+}
 @media(max-width:860px){
-  #app-trunk .tkp{grid-template-columns:1fr}
+  #app-trunk .tkp{grid-template-columns:1fr;height:auto}
   .tkp-side{order:-1}
-  .tkp-in{max-height:230px;min-height:140px}
+  .tkp-in{max-height:260px;min-height:140px}
+  .tkl-body{max-height:none}
+  .tkl-row{grid-template-columns:14px auto minmax(0,1fr) auto 22px}
+  .tkl-row .tkl-nt{display:none}
+  .tkl-add{grid-template-columns:1fr 64px;}
+  .tkl-add #tkp-add-t{grid-column:1/-1}
+  .tkm-who{grid-template-columns:1fr}
+  .tkl-del{opacity:.6}
 }
 @media (prefers-reduced-motion:reduce){
-  .tkp-tag,.tkp-box,.tkp-lid,.tkp-cover,.tkp-gauge i{transition:none !important;animation:none !important}
+  .tkp-chip,.tkl-row,.tkp-box,.tkp-lid,.tkp-cover,.tkp-gauge i{transition:none !important;animation:none !important}
 }
+
 </style>
 
 <div id="app-trunk" hidden>
@@ -5096,10 +5263,32 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <div class="meters" id="tk-meters"></div>
   </header>
   <div class="tk-tasks" id="tk-tasks" hidden></div>
+  <!-- the road to the trunk: the list, the team's review, the trunk shipping -->
+  <div class="tkr" id="tk-road" aria-label="The Road to the Trunk"></div>
+  <div class="tkv" id="tk-review" hidden></div>
+  <div class="tkp-tools">
+    <span class="tkp-said" id="tkp-said"></span>
+    <span class="grow"></span>
+    <button type="button" class="btn ghost" id="tkp-print"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M4 1h8v4H4zM2 6h12a1 1 0 0 1 1 1v5h-3v3H4v-3H1V7a1 1 0 0 1 1-1zm3 5v3h6v-3zm8-3.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5z"/></svg>Packing List PDF</button>
+    <button type="button" class="btn tkp-primary" id="tkp-send"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M1 7.5 15 1l-4.5 14-2.6-5.4zM7.4 8.9l1.7 3.5L12.3 3z"/></svg>Send for Review</button>
+  </div>
   <section class="tkp" id="tk-pack" aria-label="Pack the Trunk">
-    <div class="tkp-floor tkp-zone" data-zone="floor">
-      <div class="tkp-hd"><span class="tkp-eb">Still on the Floor</span><b id="tkp-left">0</b><span class="tkp-sub">Drag a line into the trunk, or tap it</span></div>
-      <div id="tkp-floor"></div>
+    <div class="tkl tkp-zone" data-zone="floor">
+      <div class="tkl-hd">
+        <div><span class="tkp-eb">The Packing List</span><h3><b id="tkp-left">0</b> still to pack</h3></div>
+        <span class="tkp-sub">Drag a line into the trunk, or press Pack</span>
+      </div>
+      <div class="tkl-body" id="tkp-floor"></div>
+      <form class="tkl-add" id="tkp-add" autocomplete="off">
+        <select id="tkp-add-sec" aria-label="Which list">
+          <option value="kit">The Standard Kit</option>
+          <option value="rib">Ribbons &amp; Pins</option>
+          <option value="merch">Sponsor Merch</option>
+        </select>
+        <input type="text" id="tkp-add-q" inputmode="numeric" placeholder="How many" aria-label="How many">
+        <input type="text" id="tkp-add-t" placeholder="Add something to pack&hellip;" aria-label="What it is">
+        <button type="submit" class="btn">+ Add</button>
+      </form>
     </div>
     <div class="tkp-side">
       <div class="tkp-trunk tkp-zone" data-zone="trunk" id="tkp-trunk">
@@ -5117,15 +5306,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           <div class="tkp-front"><span class="tkp-latch" aria-hidden="true"></span><div class="tkp-gauge"><i id="tkp-fill"></i></div><span class="tkp-cnt" id="tkp-cnt"></span></div>
         </div>
       </div>
-      <div class="tkp-acts"><span>Drag a line back out to unpack it.</span><button type="button" class="btn ghost" id="tkp-empty-btn" hidden>Empty the Trunk</button></div>
+      <div class="tkp-acts"><span>Press a packed line to change it or take it out.</span><button type="button" class="btn ghost" id="tkp-empty-btn" hidden>Empty the Trunk</button></div>
     </div>
   </section>
-  <div class="hint barhint">
-    The Standard kit is the same trunk every summit &mdash; edit it once and it carries.
-    The ribbons and this summit&rsquo;s sponsor merch are just for this summit. Ticks are
-    per summit too, so everything comes back unticked for the next one.
-  </div>
-  <div class="plan-grid" id="tk-grid"></div>
+  <div class="plan-grid" id="tk-grid" hidden></div>
 </div>
 </div>
 
@@ -5191,12 +5375,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   function takeStanding(d){
     const o=own(d);
     return {kit:list(Array.isArray(o.kit)?o.kit:SEED_KIT),
-            rib:list(Array.isArray(o.rib)?o.rib:SEED_RIB)};
+            rib:list(Array.isArray(o.rib)?o.rib:SEED_RIB),
+            reviewers:Array.isArray(o.reviewers)?o.reviewers.map(String):[]};
   }
   function takeSummit(d){
     const o=own(d);
     return {merch:list(Array.isArray(o.merch)?o.merch:[]),
-            packed:(o.packed && typeof o.packed==='object')?o.packed:{}};
+            packed:(o.packed && typeof o.packed==='object')?o.packed:{},
+            review:(o.review && typeof o.review==='object')?o.review:null};
   }
   function standing(){
     if(!ST.standing) ST.standing=takeStanding(null);
@@ -5244,7 +5430,13 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const db=await store(); if(!db) return;
       try{
         if(target==='standing') await db.doc('trunk/standing').set(JSON.parse(JSON.stringify(standing())));
-        else await db.doc('trunk/'+ST.sid).set(JSON.parse(JSON.stringify(summit())));
+        else {
+          /* the review is written by the team from their own screens — never write an older
+             copy of it over theirs */
+          try{ const cur=await db.doc('trunk/'+ST.sid).get(); const rr=cur && cur.exists && cur.data() && cur.data().review;
+            const lr=summit().review; if(rr && (!lr || (rr.v||0)>(lr.v||0))) summit().review=own(rr); }catch(e){}
+          await db.doc('trunk/'+ST.sid).set(JSON.parse(JSON.stringify(summit())));
+        }
       }catch(e){}
     },300);
   }
@@ -5287,40 +5479,6 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     try{ all=(window.__ros && window.__ros.tasks && window.__ros.tasks())||[]; }catch(e){ all=[]; }
     return all.filter(t=>TASKY.test(saidAs(t)))
       .sort((a,b)=>String(a.due||'9999').localeCompare(String(b.due||'9999')));
-  }
-  function taskRow(){
-    const host=$('#tk-tasks'); if(!host) return;
-    const list=findTasks(); ST.tasks=list;
-    host.textContent='';
-    host.hidden=false;
-    if(!list.length){
-      const box=el('div','tk-task none');
-      box.appendChild(el('span','tk-lbl','The tasks'));
-      box.appendChild(el('span','tk-nm','No task on this cycle mentions the trunk yet'));
-      box.appendChild(el('span','tk-m','Add one on the Run of Show and it shows up here.'));
-      host.appendChild(box);
-      return;
-    }
-    list.forEach((t,i)=>{
-      const box=el('div','tk-task');
-      box.appendChild(el('span','tk-lbl', i===0? (list.length>1?'The tasks':'The task') : ''));
-      box.appendChild(el('span','tk-nm', saidAs(t)||'The trunk'));
-      const bits=[t.owner, t.due? prettyDue(t.due) : ''].filter(Boolean).join(' · ');
-      if(bits) box.appendChild(el('span','tk-m',bits));
-      if(t.status) box.appendChild(el('span','tk-st',String(t.status)));
-      box.setAttribute('role','button'); box.tabIndex=0;
-      box.title='Open this task on the Run of Show';
-      const go=()=>{
-        /* stay on the Trunk — the task's detail comes up over it, and closing it
-           leaves the list exactly where it was */
-        try{ if(window.__ros && window.__ros.openHere && window.__ros.openHere(t.id)) return; }catch(e){}
-        try{ if(window.__pane) window.__pane.closePage(); }catch(e){}
-        try{ window.__ros && window.__ros.open && window.__ros.open(t.id); }catch(e){}
-      };
-      box.onclick=go;
-      box.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
-      host.appendChild(box);
-    });
   }
   function prettyDue(d){
     const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d)); if(!m) return String(d);
@@ -5464,37 +5622,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 
   /* ---------- the page ---------- */
   function render(force){
-    const grid=$('#tk-grid'); if(!grid) return;
     /* do not pull the box out from under someone who is typing in it */
     const act=document.activeElement;
-    if(!force && act && (grid.contains(act) || (document.getElementById('hq-sheet-body')||{contains:()=>false}).contains(act))
-       && /INPUT|TEXTAREA/.test(act.tagName) && act.type!=='checkbox'){ render._later=true; return; }
-    const s=standing(), v=summit();
-    const put=c=>{ if(c.parentNode!==grid && !c.closest('#hq-pane-body #tk-grid')
-      && !document.getElementById('hq-sheet-body')) grid.appendChild(c);
-      else if(c.parentNode!==grid) grid.appendChild(c); };
-    put(section('tk-kit','The Standard Kit','standing', s.kit, {
-      say:'The same trunk every summit — edit it once and it carries to the next one. The ticks are just for this summit.',
-      blank:'Nothing in the standard kit yet.'}));
-    put(section('tk-rib','Ribbons & Pins','standing', s.rib, {
-      say:'One line a ribbon. Say how many of each in How Many.',
-      blank:'No ribbons on the list yet.'}));
-    put(section('tk-merch','Sponsor Merch','summit', v.merch, {
-      say:'This summit’s sponsors only — it starts empty for the next one.',
-      blank:'No sponsor merch yet. Bring in this summit’s sponsors, or add a line.',
-      pull:{label:'Bring in this summit’s sponsors',
-        title:'Adds a line for every sponsor on this summit that is not already on the list',
-        run:rows=>{
-          const have=new Set(rows.map(r=>String(r.t).trim().toLowerCase()));
-          let n=0;
-          sponsorNames().forEach(nm=>{ const k=nm.trim().toLowerCase();
-            if(k && !have.has(k)){ rows.push(clean({q:'', t:nm})); have.add(k); n++; } });
-          if(!n){ try{ window.__hqFlash && window.__hqFlash('Every sponsor is already on the list'); }catch(e){} }
-        }}}));
+    if(!force && act && HOST.contains(act) && /INPUT|TEXTAREA|SELECT/.test(act.tagName) && act.type!=='checkbox'
+       && !(act.closest && act.closest('#tkp-add'))){ render._later=true; return; }
     meters();
     stage();
     taskRow();
-    try{ if(window.__pane){ window.__pane.refresh(); window.__pane.sheetRefresh(); } }catch(e){}
+    reviewBar();
     paintCounts();
   }
 
@@ -5522,42 +5657,348 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     m(String(st.left),'Still to pack','', st.left?'is-warn':'');
   }
 
-  /* ---------- Pack the Trunk ----------
+  /* ---------- The Trunk, made to be packed ----------
      Jonna, 2026-10-31: "an interactive trunk with the things on the list that can be
-     dragged and dropped in". Every line on the three lists sits on the floor until it
-     goes in. Dropping it in is the same tick as the Packed box on its row (the same
-     summit().packed), so the trunk and the lists below always agree, and it starts empty
-     again for the next summit. A tap does it too. On a phone a press-and-hold picks a
-     line up, so a quick swipe still scrolls the page. */
+     dragged and dropped in", then: balance it, make the amounts and new lines easy, make
+     the tasks visual, let Bernie send it to the team for review, drop the cards, and give
+     him a branded packing list to print or save as a PDF.
+     • Every line sits on the packing list until it goes in the trunk. Packing it is the
+       same summit().packed tick as always, so it starts empty again next summit.
+     • Lines go in by dragging, or by their Pack button. A tap on a line never moves it.
+     • A packed line is pressed to change it or take it out.
+     • The review lives on this summit's trunk document, beside the ticks. */
   const TKP_SECS=[['kit','The Standard Kit'],['rib','Ribbons & Pins'],['merch','Sponsor Merch']];
-  const TKP={drag:null, later:false, peek:false, fresh:'', thunk:false, holding:false, flying:false};
+  const TKP={drag:null, later:false, peek:false, fresh:'', thunk:false, holding:false, flying:false, pop:null};
+  const REVIEW_URL='https://resources.mismo.org/summit-hq/#trunk';
+  const BERNIE={name:'Bernardo Jordan', email:'bjordan@mba.org'};
+  const REVIEW_DEFAULT=['jcritchley@mismo.org','amoses@mismo.org','kbradshaw@mismo.org'];
+  const ICON_IN='<svg viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M1 5h6.6L5.3 2.7 6.4 1.6 10.8 6l-4.4 4.4-1.1-1.1L7.6 7H1z"/></svg>';
+  const ICON_GRIP='<svg viewBox="0 0 8 14" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="2" r="1.3"/><circle cx="6" cy="2" r="1.3"/><circle cx="2" cy="7" r="1.3"/><circle cx="6" cy="7" r="1.3"/><circle cx="2" cy="12" r="1.3"/><circle cx="6" cy="12" r="1.3"/></g></svg>';
+
+  const me=()=>{ try{ const s=window.ResourcesSession && window.ResourcesSession.current();
+    return {name:String((s&&s.name)||'').trim(), email:String((s&&s.email)||'').trim().toLowerCase()}; }catch(e){ return {name:'',email:''}; } };
+  const MAIL=()=>window.__hqMail||null;
+  const flashMsg=t=>{ try{ window.__hqFlash && window.__hqFlash(t); }catch(e){} };
+  const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const rowsOf=sec=>{ const s=standing(), v=summit(); return sec==='kit'? s.kit : sec==='rib'? s.rib : v.merch; };
+  const storeOf=sec=>sec==='merch'?'summit':'standing';
+  const niceDay=iso=>{ const d=new Date(iso); return isNaN(d)? '' : d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
+  const initials=n=>String(n||'?').split(/[\s@.]+/).filter(Boolean).slice(0,2).map(x=>x.charAt(0).toUpperCase()).join('');
+
   function tkpItems(){
-    const s=standing(), v=summit(), p=v.packed||{}, out=[];
-    [['kit',s.kit],['rib',s.rib],['merch',v.merch]].forEach(([sec,rows])=>
-      rows.forEach(r=>out.push({r:r, sec:sec, on:!!p[r.k]})));
+    const p=summit().packed||{}, out=[];
+    TKP_SECS.forEach(([sec])=>rowsOf(sec).forEach(r=>out.push({r:r, sec:sec, on:!!p[r.k]})));
     return out;
   }
+  const tkName=it=>String(it.r.t||'').trim() || String(it.r.n||'').trim() || 'New item';
+  const tkNote=it=>String(it.r.t||'').trim() ? String(it.r.n||'').trim() : '';
+
+  /* the team: everyone on the MISMO team list who has an email, Bernie aside */
+  function teamList(){
+    let l=[]; try{ l=(MAIL() && MAIL().team && MAIL().team())||[]; }catch(e){ l=[]; }
+    const out=[], seen=new Set();
+    l.forEach(p=>{ const e=String(p.e||'').trim().toLowerCase(); if(!/@/.test(e) || seen.has(e)) return;
+      if(p.role==='guest') return; seen.add(e); out.push({name:p.n||e, email:e}); });
+    [['Jonna Critchley','jcritchley@mismo.org'],['Amy Moses','amoses@mismo.org'],['Kelly Bradshaw','kbradshaw@mismo.org']]
+      .forEach(([n,e])=>{ if(!seen.has(e)){ seen.add(e); out.push({name:n,email:e}); } });
+    return out;
+  }
+  function bernie(){
+    const t=teamList().find(p=>/bernardo|bernie/i.test(p.name));
+    return t ? {name:t.name, email:t.email} : BERNIE;
+  }
+  const nameFor=email=>{ const t=teamList().find(p=>p.email===String(email||'').toLowerCase()); return t? t.name : (email||''); };
+
+  /* ---------- the review ---------- */
+  function review(){ const v=summit(); return v.review && typeof v.review==='object' ? v.review : null; }
+  function setReview(rv){ rv.v=((review()||{}).v||0)+1; summit().review=rv; save('summit'); }
+  /* a line added, renamed, re-counted or taken off after it went to the team */
+  let changedT=null;
+  function changed(){
+    const rv=review(); if(!rv || !rv.state || rv.changed) return;
+    clearTimeout(changedT);
+    changedT=setTimeout(()=>{ const r=review(); if(!r || r.changed) return;
+      setReview(Object.assign({}, r, {changed:new Date().toISOString()})); taskRow(); reviewBar(); },900);
+  }
+  async function queue(reqs){ const M=MAIL(); if(!M || !M.queue) throw new Error('mail'); await M.queue(reqs); }
+  function mailHtml(subject, paras, button, sign){ const M=MAIL(); return M && M.html ? M.html(subject, paras, button, sign) : ''; }
+  function summitName(){ try{ const v=MAIL() && MAIL().venue(); if(v && v.name) return v.name; }catch(e){}
+    const o=document.querySelector('#venue-pick option:checked'); return o? o.textContent.trim() : 'the Summit'; }
+  function listTable(){
+    const p=summit().packed||{};
+    const td='padding:7px 8px;border-bottom:1px solid #e3e8ee;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;color:#1b2733;vertical-align:top';
+    let h='';
+    TKP_SECS.forEach(([sec,label])=>{ const rows=rowsOf(sec); if(!rows.length) return;
+      h+='<tr><td colspan="3" style="padding:14px 8px 6px;border-bottom:2px solid #74bfeb;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#0d314c">'+esc(label)+'</td></tr>';
+      rows.forEach(r=>{ const it={r:r}; h+='<tr><td style="'+td+';width:44px;font-weight:700;color:#0d314c">'+esc(r.q||'')+'</td><td style="'+td+'"><b>'+esc(tkName(it))+'</b>'
+        +(tkNote(it)?' <span style="color:#6c899f">'+esc(tkNote(it))+'</span>':'')+'</td><td style="'+td+';width:70px;text-align:right;color:'+(p[r.k]?'#175e43':'#8a5200')+'">'+(p[r.k]?'&#10003; In':'Not in')+'</td></tr>'; });
+    });
+    return '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:4px 0 18px"><tbody>'+h+'</tbody></table>';
+  }
+  /* Bernie: the trunk to the team */
+  function openSend(){
+    const rv=review()||{}, st=stats(), team=teamList().filter(p=>p.email!==bernie().email);
+    const pick=new Set((standing().reviewers&&standing().reviewers.length? standing().reviewers : REVIEW_DEFAULT).map(x=>String(x).toLowerCase()));
+    const m=el('div','tkm'); m.setAttribute('role','dialog'); m.setAttribute('aria-label','Send the trunk for review');
+    const close=()=>{ m.remove(); document.removeEventListener('keydown',onKey,true); };
+    const onKey=e=>{ if(e.key==='Escape'){ e.preventDefault(); close(); } };
+    document.addEventListener('keydown',onKey,true);
+    const scrim=el('div','tkm-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+    const box=el('div','tkm-box');
+    box.appendChild(el('div','tkm-hd', rv.state? 'Send the Trunk for Review Again' : 'Send the Trunk for Review'));
+    const bd=el('div','tkm-bd');
+    bd.appendChild(el('p',null,'The team gets an email with the packing list and a button straight to this page, where they can mark it Looks Good or ask for a change. You hear back by email either way.'));
+    if(st.left) bd.appendChild(el('div','tkm-warn', st.left+' of '+st.total+' still on the packing list, not in the trunk. You can send it now and pack the rest later.'));
+    bd.appendChild(el('div','tkm-lbl','Who Reviews It'));
+    const who=el('div','tkm-who');
+    team.forEach(p=>{ const l=el('label'); const c=document.createElement('input'); c.type='checkbox'; c.value=p.email; c.checked=pick.has(p.email);
+      l.appendChild(c); l.appendChild(document.createTextNode(p.name)); who.appendChild(l); });
+    bd.appendChild(who);
+    bd.appendChild(el('div','tkm-lbl','A Note to the Team (Optional)'));
+    const ta=document.createElement('textarea'); ta.placeholder='Anything they should look at in particular'; ta.maxLength=600; bd.appendChild(ta);
+    box.appendChild(bd);
+    const ft=el('div','tkm-ft');
+    const cancel=el('button','btn ghost','Cancel'); cancel.type='button'; cancel.addEventListener('click',close);
+    const go=el('button','btn tkp-primary','Send for Review'); go.type='button';
+    go.addEventListener('click',async()=>{
+      const to=[...who.querySelectorAll('input:checked')].map(c=>c.value);
+      if(!to.length){ flashMsg('Pick at least one person to review it'); return; }
+      go.disabled=true; go.textContent='Sending…';
+      try{ await sendReview(to, ta.value.trim()); close(); }
+      catch(e){ go.disabled=false; go.textContent='Send for Review'; flashMsg('That did not go — check you are signed in and try again'); }
+    });
+    ft.appendChild(cancel); ft.appendChild(go); box.appendChild(ft);
+    m.appendChild(box); document.body.appendChild(m);
+    setTimeout(()=>go.focus(),30);
+  }
+  async function sendReview(to, note){
+    const who=me(), st=stats(), nm=summitName(), now=new Date().toISOString();
+    const by=who.name || nameFor(who.email) || bernie().name;
+    const subject='The Trunk Is Ready for Review — '+nm;
+    const paras=['Hi team,',
+      by+' has the trunk for the '+nm+' ready for you to look over: '+st.total+' item'+(st.total===1?'':'s')+' on the packing list, '+st.packed+' in the trunk.'];
+    if(note) paras.push('“'+note+'”');
+    paras.push('Open the trunk to mark it Looks Good or ask for a change.');
+    paras.push({html:listTable()});
+    const html=mailHtml(subject, paras, {url:REVIEW_URL, label:'Review the Trunk'}, {name:by, title:'', email:who.email||bernie().email});
+    await queue([{id:'tkr-'+Date.now().toString(36), requestedAt:now, requestedBy:by, to:to.join(';'), cc:who.email||bernie().email,
+      replyTo:who.email||bernie().email, subject, html, person:'', summit:ST.sid, graphic:''}]);
+    standing().reviewers=to.slice(); save('standing');
+    const old=review()||{};
+    setReview({state:'sent', sentAt:now, sentBy:by, sentByEmail:who.email, to:to.slice(), note:note||'', marks:{}, changed:'',
+      log:(old.log||[]).concat([{at:now, who:by, t:'Sent for review'}]).slice(-30)});
+    taskRow(); reviewBar();
+    flashMsg('The trunk is on its way to '+to.length+' '+(to.length===1?'person':'people')+' — it goes out within a couple of minutes.');
+  }
+  /* the team: it looks good, or it needs something */
+  async function mark(ok, note){
+    const rv=review(); if(!rv) return;
+    const who=me(), key=who.email||('anon'+Date.now()), nm=who.name||nameFor(who.email)||'Someone', now=new Date().toISOString();
+    const marks=Object.assign({}, rv.marks||{}); marks[key]={who:nm, at:now, ok:!!ok, note:note||''};
+    const anyChange=Object.values(marks).some(x=>!x.ok);
+    const next=Object.assign({}, rv, {marks, state: anyChange? 'changes' : 'approved',
+      log:(rv.log||[]).concat([{at:now, who:nm, t: ok? 'Looks good' : 'Needs a change: '+note}]).slice(-30)});
+    setReview(next); taskRow(); reviewBar();
+    const b=bernie(), nmS=summitName();
+    const subject= ok ? 'The Trunk Looks Good — '+nmS : 'The Trunk Needs a Change — '+nmS;
+    const paras= ok ? ['Hi '+b.name.split(' ')[0]+',', nm+' looked over the trunk for the '+nmS+' and it looks good.']
+      : ['Hi '+b.name.split(' ')[0]+',', nm+' looked over the trunk for the '+nmS+' and asked for a change:', '“'+note+'”', 'Make the change on the packing list, then send it for review again.'];
+    try{ await queue([{id:'tkm-'+Date.now().toString(36), requestedAt:now, requestedBy:nm, to:b.email, cc:who.email||'',
+      replyTo:who.email||b.email, subject, html:mailHtml(subject, paras, {url:REVIEW_URL, label:'Open the Trunk'}, {name:nm, title:'', email:who.email}),
+      person:'', summit:ST.sid, graphic:''}]); }catch(e){}
+    flashMsg(ok? 'Marked Looks Good — Bernie hears within a couple of minutes.' : 'Your note is on its way to Bernie.');
+  }
+  function reviewBar(){
+    const host=$('#tk-review'); if(!host) return;
+    const rv=review(); host.textContent=''; host.className='tkv';
+    if(!rv || !rv.state){ host.hidden=true; return; }
+    host.hidden=false;
+    const mine=me().email, sender = mine && mine===String(rv.sentByEmail||'').toLowerCase();
+    const marks=Object.values(rv.marks||{}), oks=marks.filter(x=>x.ok), chs=marks.filter(x=>!x.ok);
+    const ic=el('div','tkv-ic'), b=el('div','tkv-b'), acts=el('div','tkv-acts');
+    const sentTo=(rv.to||[]).map(nameFor).join(', ');
+    if(rv.state==='approved'){
+      host.classList.add('ok'); ic.textContent='✓';
+      b.appendChild(el('b',null,'Reviewed: the trunk looks good'));
+      b.appendChild(el('p',null,oks.map(x=>x.who+' ('+niceDay(x.at)+')').join(', ')+(rv.changed?' · The list has changed since it was reviewed.':'')));
+    } else if(rv.state==='changes'){
+      host.classList.add('ch'); ic.textContent='!';
+      b.appendChild(el('b',null,'The team asked for a change'));
+      b.appendChild(el('p',null,'Make the change on the packing list, then send it for review again.'));
+    } else {
+      ic.textContent='✉';
+      b.appendChild(el('b',null, sender? 'With the team for review' : (rv.sentBy||'Bernie')+' sent the trunk for review'));
+      b.appendChild(el('p',null,'Sent '+niceDay(rv.sentAt)+(sentTo? ' to '+sentTo : '')+'.'+(oks.length? ' Looks good to '+oks.map(x=>x.who).join(', ')+'.' : '')
+        +(rv.changed? ' The list has changed since it was sent.' : '')));
+      if(rv.note) b.appendChild(el('p',null,'“'+rv.note+'”'));
+    }
+    if(chs.length){ const ul=el('ul','tkv-notes');
+      chs.forEach(x=>{ const li=el('li'); li.appendChild(el('b',null,x.who+': ')); li.appendChild(document.createTextNode(x.note||'')); ul.appendChild(li); });
+      b.appendChild(ul); }
+    if(!sender && rv.state!=='approved'){
+      const ok=el('button','btn tkp-primary','✓ Looks Good'); ok.type='button'; ok.addEventListener('click',()=>mark(true,''));
+      const ch=el('button','btn ghost','Needs a Change'); ch.type='button';
+      ch.addEventListener('click',()=>{
+        if(host.querySelector('.tkv-say')) return;
+        const say=el('div','tkv-say'); const ta=document.createElement('textarea'); ta.placeholder='What needs to change?'; ta.maxLength=500;
+        const sendB=el('button','btn tkp-primary','Send to Bernie'); sendB.type='button';
+        sendB.addEventListener('click',()=>{ const t=ta.value.trim(); if(!t){ ta.focus(); return; } mark(false,t); });
+        say.appendChild(ta); say.appendChild(sendB); b.appendChild(say); ta.focus();
+      });
+      acts.appendChild(ok); acts.appendChild(ch);
+    }
+    if(sender || rv.state==='changes' || rv.changed){
+      const again=el('button','btn ghost','Send Again'); again.type='button'; again.addEventListener('click',openSend); acts.appendChild(again);
+    }
+    host.appendChild(ic); host.appendChild(b); if(acts.children.length) host.appendChild(acts);
+    const sb=$('#tkp-send'); if(sb){ sb.lastChild.textContent = rv.state? 'Send Again' : 'Send for Review'; }
+  }
+
+  /* ---------- the road: the packing list, the review, the trunk shipping ---------- */
+  function daysTo(iso){ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); if(!m) return null;
+    const d=new Date(+m[1],+m[2]-1,+m[3]), t=new Date(); t.setHours(0,0,0,0); return Math.round((d-t)/864e5); }
+  const countdown=n=> n==null? '' : n===0? 'Due today' : n>0? (n===1?'Tomorrow':'In '+n+' days') : (-n)+' day'+(n===-1?'':'s')+' late';
+  const doneStatus=t=>/complete|done/i.test(String((t&&t.status)||''));
+  function taskRow(){
+    const host=$('#tk-road'); if(!host) return;
+    const list=findTasks(); ST.tasks=list;
+    const pl=list.find(t=>/packing list/i.test(saidAs(t))) || null;
+    const ship=list.find(t=>t!==pl) || null;
+    const rest=list.filter(t=>t!==pl && t!==ship);
+    const st=stats(), rv=review()||{};
+    const steps=[];
+    const reviewed=rv.state==='approved';
+    steps.push({t:pl? saidAs(pl) : 'Packing List', task:pl, done: doneStatus(pl) || reviewed,
+      meta:[pl&&pl.owner || bernie().name].filter(Boolean).join(''), due:pl&&pl.due, status:pl&&pl.status,
+      bar: st.total? st.packed/st.total : 0, barLbl: st.packed+' of '+st.total+' in the trunk'});
+    steps.push({t:'Team Review', done:reviewed, review:true,
+      meta: rv.state==='approved' ? 'Looks good' : rv.state==='changes' ? 'Asked for a change' : rv.state==='sent' ? 'Sent '+niceDay(rv.sentAt) : 'Not sent yet',
+      status: rv.state==='approved'? 'Approved' : rv.state==='changes'? 'Changes' : rv.state==='sent'? 'In Review' : ''});
+    steps.push({t:ship? saidAs(ship) : 'The Trunk Ships', task:ship, done:doneStatus(ship),
+      meta:(ship&&ship.owner)||'', due:ship&&ship.due, status:ship&&ship.status});
+    rest.forEach(t=>steps.push({t:saidAs(t), task:t, done:doneStatus(t), meta:t.owner||'', due:t.due, status:t.status}));
+    const cur=steps.findIndex(s=>!s.done);
+    host.textContent=''; host.style.setProperty('--n', steps.length);
+    steps.forEach((s,i)=>{
+      const b=el(s.task? 'button':'div','tkr-step'+(s.done?' done':'')+(i===cur?' now':'')+(s.task?' go':''));
+      if(s.task){ b.type='button'; b.title='Open this task'; b.addEventListener('click',()=>openTask(s.task)); }
+      const top=el('div','tkr-top'); top.appendChild(el('span','tkr-dot', s.done? '✓' : String(i+1)));
+      top.appendChild(el('span','tkr-t',s.t)); b.appendChild(top);
+      if(s.meta) b.appendChild(el('div','tkr-m',s.meta));
+      const when=el('div','tkr-when');
+      if(s.due){ const n=daysTo(s.due); when.appendChild(el('span','tkr-cd'+(n!=null&&n<0&&!s.done?' late':''), prettyDue(s.due)+(s.done||n==null?'':' · '+countdown(n)))); }
+      if(s.status) when.appendChild(el('span','tkr-st'+(s.done?' ok':''), String(s.status)));
+      if(when.children.length) b.appendChild(when);
+      if(s.bar!=null){ const bar=el('div','tkr-bar'); const f=el('i'); f.style.width=Math.round(s.bar*100)+'%'; bar.appendChild(f); b.appendChild(bar);
+        b.appendChild(el('div','tkr-m',s.barLbl)); }
+      if(s.review && (rv.to||[]).length){ const fc=el('div','tkr-faces'); const mk=rv.marks||{};
+        (rv.to||[]).forEach(e=>{ const m=Object.entries(mk).find(([k])=>k===e); const x=m&&m[1];
+          const f=el('span','tkr-face'+(x? (x.ok?' ok':' ch') : ''), initials(nameFor(e))); f.title=nameFor(e)+(x? (x.ok?' — looks good':' — asked for a change') : ' — not yet'); fc.appendChild(f); });
+        Object.entries(mk).forEach(([k,x])=>{ if((rv.to||[]).includes(k)) return;
+          const f=el('span','tkr-face'+(x.ok?' ok':' ch'), initials(x.who)); f.title=x.who; fc.appendChild(f); });
+        b.appendChild(fc); }
+      host.appendChild(b);
+    });
+  }
+  function openTask(t){
+    try{ if(window.__ros && window.__ros.openHere && window.__ros.openHere(t.id)) return; }catch(e){}
+    try{ if(window.__pane) window.__pane.closePage(); }catch(e){}
+    try{ window.__ros && window.__ros.open && window.__ros.open(t.id); }catch(e){}
+  }
+
+  /* ---------- the lines ---------- */
   function tkpSet(k,on){
     const p=summit().packed; if(on) p[k]=1; else delete p[k];
     TKP.fresh=k; TKP.thunk=!!on;
     save('summit'); render(true);
   }
-  function tkpTag(it, inTrunk){
-    const b=el('button','tkp-tag'); b.type='button'; b.dataset.s=it.sec; b.dataset.k=it.r.k;
-    let nm=String(it.r.t||'').trim(), note=String(it.r.n||'').trim(); const q=String(it.r.q||'').trim();
-    if(!nm && note){ nm=note; note=''; }   /* a line typed only in Note reads by its note */
-    if(q) b.appendChild(el('span','q',q));
-    b.appendChild(el('span','nm', nm||'New item'));
-    if(!nm) b.classList.add('is-blank');
-    if(note) b.appendChild(el('span','nt',note));
-    if(inTrunk) b.appendChild(el('span','ck','✓'));
-    const said=(q?q+' ':'')+(nm||'new item')+(note?' ('+note+')':'');
-    b.setAttribute('aria-label', inTrunk? 'Take '+said+' out of the trunk' : 'Pack '+said);
-    b.title = inTrunk? 'Drag it out, or tap, to take it out of the trunk' : 'Drag it into the trunk, or tap to pack it';
+  function setQty(it, q, input){
+    it.r.q=String(q); if(input && input.value!==it.r.q) input.value=it.r.q;
+    save(storeOf(it.sec)); changed(); meters(); taskRow();
+  }
+  function stepper(it){
+    const w=el('div','tkq');
+    const minus=el('button',null,'−'); minus.type='button'; minus.setAttribute('aria-label','One fewer');
+    const inp=document.createElement('input'); inp.type='text'; inp.inputMode='numeric'; inp.value=it.r.q||''; inp.placeholder='–';
+    inp.setAttribute('aria-label','How many');
+    const plus=el('button',null,'+'); plus.type='button'; plus.setAttribute('aria-label','One more');
+    const num=()=>{ const n=parseInt(it.r.q,10); return isNaN(n)? 0 : n; };
+    minus.addEventListener('click',()=>{ const n=num(); setQty(it, n>1? n-1 : '', inp); });
+    plus.addEventListener('click',()=>setQty(it, num()+1, inp));
+    inp.addEventListener('input',()=>{ it.r.q=inp.value; save(storeOf(it.sec)); changed(); });
+    w.appendChild(minus); w.appendChild(inp); w.appendChild(plus);
+    return w;
+  }
+  function removeLine(it){
+    const rows=rowsOf(it.sec), i=rows.indexOf(it.r); if(i<0) return;
+    if(!window.confirm('Take “'+tkName(it)+'” off the packing list?')) return;
+    rows.splice(i,1); delete summit().packed[it.r.k];
+    save(storeOf(it.sec)); save('summit'); changed(); render(true);
+  }
+  function floorRow(it){
+    const d=el('div','tkl-row'); d.dataset.k=it.r.k; d.dataset.s=it.sec;
+    if(TKP.fresh===it.r.k) d.classList.add('is-new');
+    const g=el('span','tkl-grip'); g.innerHTML=ICON_GRIP; g.title='Drag into the trunk'; d.appendChild(g);
+    d.appendChild(stepper(it));
+    const nm=document.createElement('input'); nm.type='text'; nm.className='tkl-nm'; nm.value=String(it.r.t||'');
+    nm.placeholder=String(it.r.n||'').trim() || 'What it is'; nm.setAttribute('aria-label','Item');
+    nm.addEventListener('input',()=>{ it.r.t=nm.value; save(storeOf(it.sec)); changed(); });
+    d.appendChild(nm);
+    const nt=document.createElement('input'); nt.type='text'; nt.className='tkl-nt'; nt.value=String(it.r.n||''); nt.placeholder='Note';
+    nt.setAttribute('aria-label','Note');
+    nt.addEventListener('input',()=>{ it.r.n=nt.value; save(storeOf(it.sec)); changed(); });
+    d.appendChild(nt);
+    const pk=el('button','tkl-pack'); pk.type='button'; pk.innerHTML='Pack '+ICON_IN; pk.setAttribute('aria-label','Pack '+tkName(it));
+    pk.addEventListener('click',()=>tkpFly(d,it));
+    d.appendChild(pk);
+    const del=el('button','tkl-del','×'); del.type='button'; del.title='Take this off the list'; del.setAttribute('aria-label','Take '+tkName(it)+' off the list');
+    del.addEventListener('click',()=>removeLine(it));
+    d.appendChild(del);
+    tkpBind(d, it);
+    return d;
+  }
+  function chip(it){
+    const b=el('button','tkp-chip'); b.type='button'; b.dataset.s=it.sec; b.dataset.k=it.r.k;
+    if(it.r.q) b.appendChild(el('span','q',String(it.r.q)));
+    b.appendChild(el('span','nm',tkName(it)));
+    if(tkNote(it)) b.appendChild(el('span','nt',tkNote(it)));
+    if(it.on) b.appendChild(el('span','ck','✓'));
     if(TKP.fresh===it.r.k) b.classList.add('is-new');
-    tkpBind(b, it);
+    b.setAttribute('aria-label',(it.r.q?it.r.q+' ':'')+tkName(it)+(it.on?', in the trunk — press to change it or take it out':''));
     return b;
   }
+  /* a packed line, pressed: change it, or take it out */
+  function closePop(){ if(TKP.pop){ TKP.pop.remove(); TKP.pop=null; document.removeEventListener('pointerdown',popAway,true); document.removeEventListener('keydown',popKey,true); render(true); } }
+  function popAway(e){ if(TKP.pop && !TKP.pop.contains(e.target)) closePop(); }
+  function popKey(e){ if(e.key==='Escape'){ e.preventDefault(); closePop(); } }
+  function openPop(b,it){
+    if(TKP.pop){ TKP.pop.remove(); TKP.pop=null; }
+    const p=el('div','tkp-pop'); p.style.setProperty('--c', getComputedStyle(b).getPropertyValue('--c')||'#0d314c');
+    p.setAttribute('role','dialog'); p.setAttribute('aria-label','Change '+tkName(it));
+    const f1=el('div'); f1.appendChild(el('label',null,'Item'));
+    const nm=document.createElement('input'); nm.type='text'; nm.value=String(it.r.t||''); nm.placeholder=String(it.r.n||'')||'What it is';
+    nm.addEventListener('input',()=>{ it.r.t=nm.value; save(storeOf(it.sec)); changed(); }); f1.appendChild(nm); p.appendChild(f1);
+    const row=el('div','row2');
+    const f2=el('div'); f2.appendChild(el('label',null,'How Many')); f2.appendChild(stepper(it)); row.appendChild(f2);
+    const f3=el('div'); f3.style.flex='1'; f3.appendChild(el('label',null,'Note'));
+    const nt=document.createElement('input'); nt.type='text'; nt.value=String(it.r.n||'');
+    nt.addEventListener('input',()=>{ it.r.n=nt.value; save(storeOf(it.sec)); changed(); }); f3.appendChild(nt); row.appendChild(f3);
+    p.appendChild(row);
+    const acts=el('div','acts');
+    const out=el('button','btn ghost','← Take It Out'); out.type='button';
+    out.addEventListener('click',()=>{ p.remove(); TKP.pop=null; document.removeEventListener('pointerdown',popAway,true); document.removeEventListener('keydown',popKey,true); tkpSet(it.r.k,false); });
+    const done=el('button','btn tkp-primary','Done'); done.type='button'; done.addEventListener('click',closePop);
+    const del=el('button','btn ghost del','Delete'); del.type='button';
+    del.addEventListener('click',()=>{ p.remove(); TKP.pop=null; document.removeEventListener('pointerdown',popAway,true); document.removeEventListener('keydown',popKey,true); removeLine(it); });
+    acts.appendChild(done); acts.appendChild(out); acts.appendChild(del); p.appendChild(acts);
+    document.body.appendChild(p); TKP.pop=p;
+    const r=b.getBoundingClientRect(), w=Math.min(300, window.innerWidth-24);
+    let left=Math.max(12, Math.min(r.left, window.innerWidth-w-12)), top=r.bottom+8;
+    if(top+p.offsetHeight>window.innerHeight-12) top=Math.max(12, r.top-p.offsetHeight-8);
+    p.style.left=left+'px'; p.style.top=top+'px';
+    setTimeout(()=>{ document.addEventListener('pointerdown',popAway,true); document.addEventListener('keydown',popKey,true); nm.focus(); },0);
+  }
+
   function tkpScroller(n){
     for(let p=n.parentElement; p && p!==document.body; p=p.parentElement){
       const s=getComputedStyle(p).overflowY;
@@ -5565,35 +6006,36 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     }
     return window;
   }
-  function tkpGhost(b,r){
-    const g=b.cloneNode(true); g.classList.remove('is-held','is-new','is-lifted');
-    g.classList.add('tkp-ghost'); g.style.width=r.width+'px'; g.setAttribute('aria-hidden','true');
-    document.body.appendChild(g); return g;
+  /* what rides under the pointer is always the small chip, whatever was picked up */
+  function tkpGhost(it){
+    const g=chip(it); g.classList.remove('is-new'); g.classList.add('tkp-ghost'); g.setAttribute('aria-hidden','true');
+    g.tabIndex=-1; document.body.appendChild(g); return g;
   }
-  /* a tap: the line flies across, then the tick is made */
-  function tkpFly(b,it){
+  /* the Pack button: the line flies across, then it is packed */
+  function tkpFly(src,it){
     if(TKP.flying || TKP.drag) return;
-    const to = it.on ? $('#tkp-floor') : $('#tkp-in');
+    const to=$('#tkp-in');
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce || !b.animate || !to){ tkpSet(it.r.k,!it.on); return; }
-    const r=b.getBoundingClientRect(), t=to.getBoundingClientRect();
-    const g=tkpGhost(b,r); b.classList.add('is-lifted'); TKP.flying=true;
-    const tx=t.left+t.width/2-r.width/2, ty=t.top+Math.min(t.height/2,70)-r.height/2;
+    const g=tkpGhost(it);
+    if(reduce || !g.animate || !to){ g.remove(); tkpSet(it.r.k,!it.on); return; }
+    const r=src.getBoundingClientRect(), t=to.getBoundingClientRect(), gw=g.offsetWidth, gh=g.offsetHeight;
+    const sx=r.left+Math.min(40, r.width/4), sy=r.top+(r.height-gh)/2;
+    const tx=t.left+t.width/2-gw/2, ty=t.top+Math.min(t.height/2,90)-gh/2;
+    src.classList.add('is-lifted'); TKP.flying=true;
     const a=g.animate([
-      {transform:'translate('+r.left+'px,'+r.top+'px)'},
-      {transform:'translate('+((r.left+tx)/2)+'px,'+(Math.min(r.top,ty)-50)+'px) rotate(-4deg) scale(1.06)', offset:.5},
-      {transform:'translate('+tx+'px,'+ty+'px) scale(.85)', opacity:.55}
-    ],{duration:430, easing:'cubic-bezier(.4,0,.2,1)'});
+      {transform:'translate('+sx+'px,'+sy+'px)'},
+      {transform:'translate('+((sx+tx)/2)+'px,'+(Math.min(sy,ty)-60)+'px) rotate(-4deg) scale(1.08)', offset:.5},
+      {transform:'translate('+tx+'px,'+ty+'px) scale(.9)', opacity:.6}
+    ],{duration:480, easing:'cubic-bezier(.4,0,.2,1)'});
     let ended=false;
     const done=()=>{ if(ended) return; ended=true; g.remove(); TKP.flying=false; tkpSet(it.r.k,!it.on); };
     a.onfinish=done; a.oncancel=done;
   }
-  /* a drag: the line rides under the pointer and goes wherever it is let go */
-  function tkpLift(b,it,ev){
+  function tkpLift(src,it,ev){
     const host=$('#tk-pack');
-    const r=b.getBoundingClientRect(), g=tkpGhost(b,r);
-    const ox=ev.clientX-r.left, oy=ev.clientY-r.top;
-    b.classList.add('is-lifted');
+    const g=tkpGhost(it), gw=g.offsetWidth, gh=g.offsetHeight;
+    const ox=Math.min(24,gw/2), oy=gh/2;
+    src.classList.add('is-lifted');
     host.classList.add('is-dragging', it.on?'from-trunk':'from-floor');
     let over=null, x=ev.clientX, y=ev.clientY, raf=0;
     const sc=tkpScroller(host);
@@ -5603,19 +6045,18 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       const z=n && n.closest ? n.closest('#tk-pack .tkp-zone') : null;
       if(z!==over){ if(over) over.classList.remove('is-over'); over=z; if(z) z.classList.add('is-over'); }
     };
-    /* near the top or bottom of the window, the page scrolls to meet it */
     const edge=()=>{
       raf=0; const h=window.innerHeight, m=70; let dy=0;
       if(y<m) dy=-Math.ceil((m-y)/5); else if(y>h-m) dy=Math.ceil((y-(h-m))/5);
       if(dy){ try{ sc.scrollBy(0,dy); }catch(e){} hit(); raf=requestAnimationFrame(edge); }
     };
-    const esc=e=>{ if(e.key==='Escape'){ e.preventDefault(); d.drop(null); } };
-    document.addEventListener('keydown',esc,true);
+    const escK=e=>{ if(e.key==='Escape'){ e.preventDefault(); d.drop(null); } };
+    document.addEventListener('keydown',escK,true);
     const d={
       move(e){ x=e.clientX; y=e.clientY; place(); hit(); if(!raf) raf=requestAnimationFrame(edge); },
       drop(e){
         if(TKP.drag!==d) return;
-        document.removeEventListener('keydown',esc,true); cancelAnimationFrame(raf);
+        document.removeEventListener('keydown',escK,true); cancelAnimationFrame(raf);
         if(e){ x=e.clientX; y=e.clientY; hit(); }
         const z=e? over : null;
         if(over) over.classList.remove('is-over');
@@ -5623,68 +6064,81 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         g.remove(); TKP.drag=null;
         const want = z ? z.dataset.zone==='trunk' : it.on;
         if(want!==it.on) tkpSet(it.r.k, want);
-        else { b.classList.remove('is-lifted'); if(TKP.later) stage(); }
+        else { src.classList.remove('is-lifted'); if(TKP.later) stage(); }
       }
     };
     TKP.drag=d; place(); hit();
     return d;
   }
-  function tkpBind(b,it){
-    b.addEventListener('click',()=>{
-      if(b._noClick){ b._noClick=false; return; }
-      tkpFly(b,it);
-    });
-    b.addEventListener('pointerdown',e=>{
+  /* pick up with the mouse at once, or with a finger after a short hold; a plain press
+     on a packed chip opens it; nothing moves on a tap */
+  function tkpBind(src,it){
+    if(it.on) src.addEventListener('click',()=>{ if(src._noClick){ src._noClick=false; return; } openPop(src,it); });
+    src.addEventListener('pointerdown',e=>{
       if(e.button!==0 || TKP.drag || TKP.flying) return;
+      if(e.target.closest('input,button:not(.tkp-chip),select,textarea')) return;
       const touch=e.pointerType==='touch';
       const sx=e.clientX, sy=e.clientY; let held=!touch, d=null;
-      const hold = touch ? setTimeout(()=>{ held=true; TKP.holding=true; b.classList.add('is-held');
-        try{ navigator.vibrate && navigator.vibrate(10); }catch(_){} },220) : 0;
-      const stop=()=>{ clearTimeout(hold); TKP.holding=false; b.classList.remove('is-held');
+      const hold = touch ? setTimeout(()=>{ held=true; TKP.holding=true; src.classList.add('is-held');
+        try{ navigator.vibrate && navigator.vibrate(10); }catch(_){} },200) : 0;
+      const stop=()=>{ clearTimeout(hold); TKP.holding=false; src.classList.remove('is-held');
         window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up);
         window.removeEventListener('pointercancel',cancel); };
       const mv=ev=>{
         if(!d){
           if(Math.hypot(ev.clientX-sx, ev.clientY-sy)<6) return;
-          if(!held){ stop(); return; }          /* a finger moving straight away is a scroll */
-          d=tkpLift(b,it,ev);
+          if(!held){ stop(); return; }
+          d=tkpLift(src,it,ev);
         }
         d.move(ev);
       };
       const up=ev=>{ const was=d; stop();
-        if(was){ b._noClick=true; setTimeout(()=>{ b._noClick=false; },400); was.drop(ev); } };
+        if(was){ src._noClick=true; setTimeout(()=>{ src._noClick=false; },400); was.drop(ev); } };
       const cancel=()=>{ const was=d; stop(); if(was) was.drop(null); };
       window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up);
       window.addEventListener('pointercancel',cancel);
     });
   }
+  function bringSponsors(){
+    const rows=summit().merch, have=new Set(rows.map(r=>String(r.t).trim().toLowerCase())); let n=0;
+    sponsorNames().forEach(nm=>{ const k=nm.trim().toLowerCase();
+      if(k && !have.has(k)){ const r=clean({q:'', t:nm}); rows.push(r); have.add(k); n++; } });
+    if(!n){ flashMsg('Every sponsor is already on the list'); return; }
+    save('summit'); changed(); render(true); flashMsg(n+' sponsor'+(n===1?'':'s')+' added to Sponsor Merch');
+  }
   function stage(){
     const host=$('#tk-pack'); if(!host) return;
-    if(TKP.drag || TKP.flying){ TKP.later=true; return; }
+    if(TKP.drag || TKP.flying || TKP.pop){ TKP.later=true; return; }
     TKP.later=false;
     const items=tkpItems(), total=items.length, on=items.filter(i=>i.on), off=items.filter(i=>!i.on);
     const full = total>0 && on.length===total;
     if(!full) TKP.peek=false;
 
-    const floor=$('#tkp-floor'); floor.textContent='';
+    const floor=$('#tkp-floor'), keepF=floor.scrollTop; floor.textContent='';
     $('#tkp-left').textContent=String(off.length);
-    if(!off.length) floor.appendChild(el('div','tkp-clear', total
-      ? '✓  Everything is in the trunk.' : 'Nothing on the lists yet. Add items below.'));
     TKP_SECS.forEach(([sec,label])=>{
-      const g=off.filter(i=>i.sec===sec); if(!g.length) return;
-      const box=el('div','tkp-grp'); box.dataset.s=sec;
-      const h=el('div','tkp-gh'); h.appendChild(el('i'));
-      h.appendChild(document.createTextNode(label)); h.appendChild(el('span','n',String(g.length)));
+      const all=items.filter(i=>i.sec===sec), g=all.filter(i=>!i.on);
+      const box=el('div','tkl-sec'); box.dataset.s=sec;
+      const h=el('div','tkl-sh'); h.appendChild(el('i'));
+      h.appendChild(document.createTextNode(label));
+      h.appendChild(el('span','n', all.length? (g.length? g.length+' to pack' : '')+(g.length && all.length>g.length? ' · ' : '')+(all.length>g.length? (all.length-g.length)+' in' : '') : ''));
+      if(sec==='merch'){ const pb=el('button','btn ghost','Bring In This Summit’s Sponsors'); pb.type='button';
+        pb.title='Adds a line for every sponsor on this summit that is not already on the list'; pb.addEventListener('click',bringSponsors); h.appendChild(pb); }
       box.appendChild(h);
-      const tags=el('div','tkp-tags'); g.forEach(i=>tags.appendChild(tkpTag(i,false)));
-      box.appendChild(tags); floor.appendChild(box);
+      if(!all.length) box.appendChild(el('div','tkl-none', sec==='merch'? 'No sponsor merch yet — bring in the sponsors, or add a line below.' : 'Nothing on this list yet — add a line below.'));
+      else if(!g.length) box.appendChild(el('div','tkl-all','✓ All packed'));
+      g.forEach(i=>box.appendChild(floorRow(i)));
+      floor.appendChild(box);
     });
+    floor.scrollTop=keepF;
 
     const inn=$('#tkp-in'), keep=inn.scrollTop; inn.textContent='';
-    if(!on.length) inn.appendChild(el('div','tkp-empty','Empty. Drag something in, or tap it.'));
-    TKP_SECS.forEach(([sec])=>on.filter(i=>i.sec===sec).forEach(i=>inn.appendChild(tkpTag(i,true))));
+    if(!on.length) inn.appendChild(el('div','tkp-empty','The trunk is empty. Drag a line in from the packing list, or press its Pack button.'));
+    TKP_SECS.forEach(([sec,label])=>{ const g=on.filter(i=>i.sec===sec); if(!g.length) return;
+      const layer=el('div','tkp-layer'); layer.appendChild(el('div','tkp-layer-h',label));
+      g.forEach(i=>{ const c=chip(i); tkpBind(c,i); layer.appendChild(c); }); inn.appendChild(layer); });
     inn.scrollTop=keep;
-    const nw=TKP.fresh && inn.querySelector('.tkp-tag.is-new');
+    const nw=TKP.fresh && inn.querySelector('.tkp-chip.is-new');
     if(nw) inn.scrollTop=Math.max(0, nw.offsetTop-inn.clientHeight/2);
 
     $('#tkp-fill').style.width=(total? Math.round(on.length/total*100) : 0)+'%';
@@ -5692,11 +6146,64 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     cnt.appendChild(el('b',null,String(on.length))); cnt.appendChild(el('small',null,' of '+total+' in'));
     $('#tkp-done-sub').textContent='All '+total+(total===1?' item is':' items are')+' in the trunk.';
     $('#tkp-empty-btn').hidden=!on.length;
+    const said=$('#tkp-said'); if(said) said.textContent = total? (full? 'Everything is in the trunk.' : off.length+' of '+total+' still to pack.') : '';
     const tr=$('#tkp-trunk');
     tr.classList.toggle('is-shut', full && !TKP.peek);
     if(TKP.thunk){ TKP.thunk=false; tr.classList.remove('is-thunk'); void tr.offsetWidth; tr.classList.add('is-thunk'); }
     if(TKP.fresh){ const k=TKP.fresh; setTimeout(()=>{ if(TKP.fresh===k) TKP.fresh=''; },700); }
   }
+
+  /* ---------- the packing list, branded, to print or save as a PDF ---------- */
+  function printList(){
+    const M=MAIL(); let v={}, dates='';
+    try{ v=(M && M.venue())||{}; dates=(M && M.dates())||v.dates||''; }catch(e){}
+    const nm=v.name||summitName(), p=summit().packed||{}, st=stats(), rv=review()||{};
+    const ship=(ST.tasks||[]).find(t=>!/packing list/i.test(saidAs(t)));
+    const oks=Object.values(rv.marks||{}).filter(x=>x.ok);
+    const meta=[st.total+' items', st.packed+' packed', 'Prepared by '+bernie().name,
+      oks.length? 'Reviewed by '+oks.map(x=>x.who).join(', ') : '', ship&&ship.due? 'Ships '+prettyDue(ship.due) : ''].filter(Boolean);
+    let body='';
+    TKP_SECS.forEach(([sec,label])=>{ const rows=rowsOf(sec); if(!rows.length) return;
+      body+='<h2><i class="s-'+sec+'"></i>'+esc(label)+'<span>'+rows.length+'</span></h2><table><thead><tr><th class="c">Packed</th><th class="q">Qty</th><th>Item</th><th>Note</th></tr></thead><tbody>';
+      rows.forEach(r=>{ const it={r:r}; body+='<tr><td class="c"><span class="box'+(p[r.k]?' on':'')+'">'+(p[r.k]?'&#10003;':'')+'</span></td><td class="q">'+esc(r.q||'')+'</td><td class="it">'+esc(tkName(it))+'</td><td class="nt">'+esc(tkNote(it))+'</td></tr>'; });
+      body+='</tbody></table>'; });
+    const html='<!doctype html><html><head><meta charset="utf-8"><title>Trunk Packing List — '+esc(nm)+'</title><style>'
+      +'@page{size:letter;margin:.5in .55in}*{box-sizing:border-box}html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+      +'body{margin:0;font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;color:#0d314c;font-size:12px}'
+      +'.hd{background:#0d314c;color:#fff;border-radius:8px 8px 0 0;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}'
+      +'.logo{background:#fff;border-radius:5px;padding:7px 11px;display:inline-flex}.logo img{display:block;width:120px;height:18px}'
+      +'.hd span{color:#a9d8f3;font-size:12px;font-weight:600}.bar{height:3px;background:#74bfeb;margin-bottom:16px}'
+      +'h1{font-size:24px;margin:0 0 2px;letter-spacing:-.01em}.sub{color:#6c899f;font-size:13px;margin:0 0 10px}'
+      +'.meta{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11.5px;color:#3d5468;padding:8px 0 4px;border-top:1px solid #d5e2ed;margin-bottom:6px}'
+      +'h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 4px;display:flex;align-items:center;gap:8px}'
+      +'h2 i{width:10px;height:10px;border-radius:2px;display:inline-block}.s-kit{background:#0F7B5C}.s-rib{background:#2f80c8}.s-merch{background:#6B4A9E}'
+      +'h2 span{color:#6c899f;font-weight:600;letter-spacing:0}'
+      +'table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}'
+      +'th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#6c899f;text-align:left;padding:5px 8px;border-bottom:2px solid #74bfeb}'
+      +'td{padding:7px 8px;border-bottom:1px solid #e3e8ee;vertical-align:middle;font-size:12.5px}'
+      +'.c{width:58px;text-align:center}.q{width:46px;font-weight:700}.it{font-weight:600}.nt{color:#6c899f}'
+      +'.box{display:inline-block;width:15px;height:15px;border:1.5px solid #0d314c;border-radius:3px;line-height:13px;font-size:11px;text-align:center;color:#fff}'
+      +'.box.on{background:#175e43;border-color:#175e43}'
+      +'.sign{display:flex;gap:30px;margin-top:26px;font-size:11px;color:#3d5468}.sign div{flex:1;border-top:1px solid #0d314c;padding-top:4px}'
+      +'.ft{margin-top:22px;background:#0d314c;color:#a9d8f3;font-size:10.5px;padding:10px 20px;border-radius:0 0 8px 8px}'
+      +'</style></head><body>'
+      +'<div class="hd"><div class="logo"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO"></div><span>MISMO Summit</span></div><div class="bar"></div>'
+      +'<h1>Trunk Packing List</h1><p class="sub">'+esc([nm, dates, v.city].filter(Boolean).join(' · '))+'</p>'
+      +'<div class="meta">'+meta.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>'
+      +body
+      +'<div class="sign"><div>Packed by</div><div>Checked by</div><div>Date</div></div>'
+      +'<div class="ft">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</div>'
+      +'</body></html>';
+    const old=document.getElementById('tkp-print-frame'); if(old) old.remove();
+    const f=document.createElement('iframe'); f.id='tkp-print-frame'; f.setAttribute('aria-hidden','true');
+    f.style.cssText='position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
+    document.body.appendChild(f);
+    const d=f.contentDocument; d.open(); d.write(html); d.close();
+    let printed=false;
+    const go=()=>{ if(printed) return; printed=true; try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ flashMsg('The print window did not open — try again'); } };
+    const img=d.querySelector('img'); if(img && !img.complete){ img.onload=go; img.onerror=go; setTimeout(go,1500); } else setTimeout(go,150);
+  }
+
   (function wireStage(){
     const h=$('#tk-pack'); if(!h) return;
     /* once a line is picked up on a phone, the page holds still under it */
@@ -5707,9 +6214,32 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     $('#tkp-trunk').addEventListener('animationend',e=>{
       if(e.animationName==='tkpThunk') $('#tkp-trunk').classList.remove('is-thunk'); });
     $('#tkp-empty-btn').addEventListener('click',()=>{
-      if(!window.confirm('Take everything back out of the trunk? The Packed ticks on the lists below clear too.')) return;
+      if(!window.confirm('Take everything back out of the trunk?')) return;
       summit().packed={}; save('summit'); render(true);
     });
+    $('#tkp-print').addEventListener('click',printList);
+    $('#tkp-send').addEventListener('click',openSend);
+    $('#tkp-add').addEventListener('submit',e=>{
+      e.preventDefault();
+      const t=$('#tkp-add-t'), q=$('#tkp-add-q'), sec=$('#tkp-add-sec').value;
+      const name=t.value.trim(); if(!name){ t.focus(); return; }
+      const r=clean({q:q.value.trim(), t:name}); rowsOf(sec).push(r);
+      save(storeOf(sec)); changed(); TKP.fresh=r.k; t.value=''; q.value='';
+      render(true);
+      setTimeout(()=>{ const row=document.querySelector('#tkp-floor .tkl-row[data-k="'+r.k+'"]'); if(row){ try{ row.scrollIntoView({block:'nearest'}); }catch(_){} } t.focus(); },50);
+    });
+  })();
+
+  /* a link straight to the trunk (the review email): summit-hq/#trunk */
+  (function route(){
+    if(String(location.hash).toLowerCase()!=='#trunk') return;
+    let stopAt=Date.now()+20000;
+    const go=()=>{ if(Date.now()>stopAt) return; try{ if(window.__hqGo && HOST.hidden) window.__hqGo('trunk'); }catch(e){} };
+    const H=document.documentElement;
+    try{ new MutationObserver(()=>{ if(H.classList.contains('hq-ready')){ setTimeout(go,0); setTimeout(go,600); stopAt=Math.min(stopAt, Date.now()+2500); } })
+      .observe(H,{attributes:true, attributeFilter:['class']}); }catch(e){}
+    window.addEventListener('load',()=>setTimeout(go,300));
+    setTimeout(go,1200);
   })();
 
   /* someone typing when a redraw came in: catch up once they stop */
@@ -5733,6 +6263,14 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const was=(ST.tasks||[]).map(t=>[t.id,t.status,t.due].join('~')).join('|');
     if(was!==now){ taskRow(); paintCounts(); }
   }, 2500);
+  /* the team's review from their own screens */
+  setInterval(async()=>{
+    if(!ST.ready || HOST.hidden) return;
+    const db=await store(); if(!db) return;
+    try{ const cur=await db.doc('trunk/'+ST.sid).get(); const rr=cur && cur.exists && cur.data() && cur.data().review;
+      const lr=summit().review;
+      if(rr && (!lr || (rr.v||0)>(lr.v||0))){ summit().review=own(rr); taskRow(); reviewBar(); } }catch(e){}
+  }, 20000);
 
   window.__trunkRender=render;
   load();
@@ -6084,11 +6622,15 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <h4>People</h4>
       <p>Every speaker, sponsor and board member, and where each stands. See <b>Speakers and Sponsors, Start to Finish</b>.</p>
       <h4>The Trunk</h4>
-      <p>Bernie&rsquo;s packing list. The Standard kit is the same every Summit; ribbons and sponsor merchandise are per Summit, and ticks reset for the next one.</p>
+      <p>Bernie&rsquo;s packing list and the trunk, side by side. The Standard Kit and the ribbons are the same every Summit; sponsor merch and what is packed are per Summit, so the trunk starts empty for the next one.</p>
       <ul>
-        <li><b>Pack the Trunk:</b> every line on the lists sits on the floor at the top of the page. Drag it into the trunk, or just tap it, to pack it; drag it (or tap it) back out to unpack. On a phone, press and hold a line for a moment to pick it up.</li>
-        <li>Packing a line in the trunk is the same as ticking <b>Packed</b> on its row below, so the two always agree.</li>
-        <li>When the last line goes in, the lid comes down: <b>Packed and Ready to Ship</b>. <b>Open It Back Up</b> to look inside. <b>Empty the Trunk</b> takes everything back out.</li>
+        <li><b>The road</b> across the top shows the Packing List task (with how much is in the trunk), the Team Review, and the trunk shipping, each with its due date and how many days are left. Press a task to open it.</li>
+        <li><b>Pack a line</b> by dragging it into the trunk, or with its <b>Pack</b> button. On a phone, press and hold a line for a moment to pick it up. A tap never moves anything.</li>
+        <li><b>Amounts and names</b> are changed right on the packing list: the &minus; and + buttons set how many, and the item and note are typed straight in. <b>Add something to pack</b> at the foot of the list adds a new line to whichever list you pick. Sponsor Merch can bring in this Summit&rsquo;s sponsors in one press.</li>
+        <li><b>A packed line</b> is pressed to change it, take it out or delete it.</li>
+        <li><b>Send for Review</b> emails the team you pick (Jonna, Amy and Kelly to start) with the packing list and a button straight to the trunk. There they press <b>Looks Good</b> or <b>Needs a Change</b>, and Bernie is emailed either way. Change the list after it has gone out and it says so, with <b>Send Again</b>.</li>
+        <li><b>Packing List PDF</b> makes a branded, printable packing list with a box to tick for every line; choose Save as PDF in the print window to download it.</li>
+        <li>When the last line goes in, the lid comes down: <b>Packed and Ready to Ship</b>.</li>
       </ul>
     </div>
   </details>
@@ -36780,7 +37322,8 @@ function renderGlance(){
   if(!GL_DAY || !DAYS.some(d=>d.id===GL_DAY)) GL_DAY=DAYS[0].id;
   const day=DAYS.find(d=>d.id===GL_DAY);
   const rooms=(v.rooms||[]).filter(r=>r.role!=='office');
-  host.textContent='';
+  const heroH=$('ps-hero'), mainH=$('ps-main'); if(!heroH || !mainH) return;
+  heroH.textContent=''; mainH.textContent='';
 
   /* ---- the hero: how ready, and which day ---- */
   const hero=el('div','psg-hero');
@@ -36825,7 +37368,7 @@ function renderGlance(){
     tabs.appendChild(t);
   });
   hero.appendChild(tabs);
-  host.appendChild(hero);
+  heroH.appendChild(hero);
 
   /* ---- the day's food and drink, in the order it happens ---- */
   const meals=glDayMeals(day);
@@ -36853,7 +37396,7 @@ function renderGlance(){
     line.appendChild(b);
   });
   fb.appendChild(line);
-  host.appendChild(fb);
+  mainH.appendChild(fb);
 
   /* ---- the rooms ---- */
   const rs=el('div','psg-sec');
@@ -36902,7 +37445,7 @@ function renderGlance(){
     if(GL_ROOM===rm.id) map.appendChild(glWeek(rm));
   });
   rs.appendChild(map);
-  host.appendChild(rs);
+  mainH.appendChild(rs);
 }
 /* one room, Monday to Thursday */
 function glWeek(rm){
@@ -37089,6 +37632,17 @@ function renderNewcomer(){
     gsBox.appendChild(card);
     /* the room check belongs with the number it is about, not buried under Tuesday.
        It reads the room and the set-up off the Schedule, so it follows a change there. */
+    /* Jonna, 2026-10-31: the room check drawn as a bar — the seats it needs against the room */
+    try{
+      const plen=roomById(standingRoomFor('general-sessions')), need=gs.count;
+      if(plen && plen.clsrm && need){
+        const pc=need/plen.clsrm, gw=el('div','psg-gauge'+(pc>1?' over':pc>.9?' close':''));
+        const gt=el('div','gt'); const l=el('span'); l.appendChild(el('b',null,String(need))); l.appendChild(document.createTextNode(' seats'));
+        gt.appendChild(l); gt.appendChild(el('span',null,plen.nm+' holds '+plen.clsrm+' classroom'));
+        gw.appendChild(gt); const gb=el('div','gb'); const gi=el('i'); gi.style.width=Math.min(100,Math.round(pc*100))+'%'; gb.appendChild(gi); gw.appendChild(gb);
+        gsBox.appendChild(gw);
+      }
+    }catch(e){}
     const gsFit=fitFor({ck:'gs', sid:'general-sessions'});
     if(gsFit){ gsFit.classList.add('gs-fit'); gsBox.appendChild(gsFit); }
     gsBox.className='gs-wrap';
@@ -43593,6 +44147,7 @@ startClock();
         +(days? '<div class="rzp-dh">Functions, Day by Day</div><div class="rzp-grid days">'+days+'</div>' : '')
       +'</div></div>'
     +'</div>';
+    ST.rzChanged=changed; try{ rzDecorate(); }catch(e){}
     host.querySelectorAll('[data-sec]').forEach(b=>b.addEventListener('click',()=>jump('rz-sec-'+b.dataset.sec)));
     host.querySelectorAll('[data-day]').forEach(b=>b.addEventListener('click',()=>jump('rz-day-'+b.dataset.day)));
   }
@@ -43601,7 +44156,36 @@ startClock();
   const SECTIONS=[['summit','Event details'],['staff','MISMO Meeting Staff On-Site'],['contacts','Hotel contacts'],
     ['acc','Accommodations'],['billing','Billing and accounting'],['overview','Overview'],
     ['rooming','Guestroom and rate assignments'],['fns','Functions, day by day']];
+  /* Jonna, 2026-10-31: the section cards wear the same colours as the page at the top —
+     an icon, a status they can read at a glance, and the lines of a page along the foot */
+  const RZ_ICON={summit:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9h16M9 4v5"/>',
+    staff:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M15 14.5c3 0 6 2 6 5.5"/>',
+    contacts:'<rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.8-2 2.3-3 4-3s3.2 1 4 3"/>',
+    acc:'<path d="M3 19V7M3 15h18v4M21 15v-3a3 3 0 00-3-3h-7v6"/><circle cx="7" cy="12" r="1.6"/>',
+    billing:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h4"/>',
+    overview:'<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>',
+    rooming:'<path d="M4 21V5a2 2 0 012-2h12a2 2 0 012 2v16M9 21v-5h6v5M8 7h2M14 7h2M8 11h2M14 11h2"/>',
+    fns:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M7 13h4M7 17h7"/>'};
+  function rzDecorate(){
+    const body=$('#rz-docbody'); if(!body) return;
+    let g=[]; try{ g=gaps(); }catch(e){}
+    const ch=ST.rzChanged||new Set();
+    body.querySelectorAll(':scope > section[id^="rz-sec-"]').forEach(sec=>{
+      const id=sec.id.slice(7), h=sec.querySelector(':scope > h2'); if(!h) return;
+      const t=g.filter(x=>x.sec===id).length, c=ch.has(id);
+      const st= t? 'tbd' : c? 'chg' : 'ok';
+      sec.dataset.state=st; sec.classList.add('rzc');
+      let ic=h.querySelector('.rzc-ic');
+      if(!ic){ ic=mk('span','rzc-ic'); ic.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+(RZ_ICON[id]||RZ_ICON.overview)+'</svg>'; h.insertBefore(ic, h.firstChild); }
+      const sn=h.querySelector('.stepno'); ic.dataset.n=sn? sn.textContent : '';
+      let chip=h.querySelector('.rzc-chip'); if(!chip){ chip=mk('span','rzc-chip'); h.appendChild(chip); }
+      chip.textContent= t? t+' TBD' : c? 'Changed' : '\u2713 Complete'; chip.className='rzc-chip '+st;
+      if(!sec.querySelector(':scope > .rzc-lines')){ const l=mk('div','rzc-lines'); l.innerHTML='<i></i><i></i><i></i>'; sec.appendChild(l); }
+    });
+    const w=body.querySelector(':scope > .rz-waiting'); if(w) w.classList.add('rzc-alert');
+  }
   function renderToc(){
+    try{ rzDecorate(); }catch(e){}
     const t=$('#rz-toc'); if(!t) return; t.textContent='';
     const g=gaps(); const count=id=>g.filter(x=>x.sec===id).length;
     t.appendChild(mk('div','grp','In the order it prints'));
@@ -46819,7 +47403,8 @@ function ttStat(){
     waiting:l.filter(p=>p.sentAt && !p.respAt).length, missing:go.filter(p=>!p.arr||!p.dep).length};
 }
 /* the branded note, from Jonna */
-function ttHtml(subject, paras, button){
+function ttHtml(subject, paras, button, sign){
+  const SG=sign||TT_JONNA;
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const F='font-family:Arial,Helvetica,sans-serif', v=venueInfo();
   /* the button is the Member 360 email button (Jonna, 2026-10-31): the color and padding sit on the cell, so
@@ -46832,7 +47417,7 @@ function ttHtml(subject, paras, button){
    +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">'+e(subject)+'</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+e((v.name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
    +'<tr><td style="padding:16px 32px 8px;'+F+';font-size:15px;line-height:1.6;color:#0d314c">'
    +paras.map(p=>p.html? p.html : '<p style="margin:0 0 12px">'+e(p)+'</p>').join('')+btn+'</td></tr>'
-   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(TT_JONNA.name)+'</b><br><span style="color:#55657a">'+e(TT_JONNA.title)+'</span><br><a href="mailto:'+TT_JONNA.email+'" style="color:#0f6fa8">'+TT_JONNA.email+'</a></td></tr>'
+   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(SG.name)+'</b>'+(SG.title?'<br><span style="color:#55657a">'+e(SG.title)+'</span>':'')+(SG.email?'<br><a href="mailto:'+e(SG.email)+'" style="color:#0f6fa8">'+e(SG.email)+'</a>':'')+'</td></tr>'
    +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
    +'</tbody></table></td></tr></tbody></table>';
 }
@@ -46918,6 +47503,8 @@ function ttApply(){
   render();
 }
 /* the Resume reads this for its guest rooms */
+/* the Trunk sends its review emails through the same queue and the same branded note */
+window.__hqMail={html:(s,p,b,sg)=>ttHtml(s,p,b,sg), queue:r=>ttQueue(r), venue:()=>venueInfo(), dates:()=>seDates(), team:()=>ttList()};
 window.__teamTravel={
   list:v=>{ const d=ST.travel.get(v||venueNow())||{}; const ppl=d.ppl||{}; return Object.keys(ppl).map(k=>Object.assign({id:k},ppl[k])); },
   stay:(name,v)=>{ const d=ST.travel.get(v||venueNow())||{}; const ppl=d.ppl||{}; const k=Object.keys(ppl).find(x=>ttKey(ppl[x].n)===ttKey(name));
@@ -48348,9 +48935,51 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 #app-grid #grid-findn{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap}
 @media(max-width:700px){#app-grid .gfind input{width:110px}}
 
+/* ── the Resume's sections, in the colours of the page at the top (Jonna, 2026-10-31) ── */
+#app-resume .rz-toc{display:none !important}
+@media(min-width:1000px){#app-resume .rz-docgrid{grid-template-columns:minmax(0,1fr)}}
+#app-resume .rzc-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:6px 0 12px;max-width:1500px}
+#app-resume .rzc-head h3{margin:0;font:700 17px/1.2 var(--display);color:var(--ink)}
+#app-resume .rzc-head span{font-size:12.5px;color:var(--ink-3)}
+#app-resume #rz-vers:not([hidden]) ~ .rzc-head{display:none}
+html body #app-resume .rz-docbody{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+html body #app-resume .rz-docbody > section.rzc{--pc:#4fc79b;position:relative;border:1px solid var(--line-2);border-top:5px solid var(--pc);
+  border-left-width:1px;border-radius:10px;padding-bottom:34px;overflow:hidden;background:var(--surface);transition:transform .15s,box-shadow .15s}
+html body #app-resume .rz-docbody > section.rzc:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(13,49,76,.16)}
+html body #app-resume .rz-docbody > section.rzc[data-state=tbd]{--pc:#e0a83c}
+html body #app-resume .rz-docbody > section.rzc[data-state=chg]{--pc:#3987e5}
+html body #app-resume .rz-docbody > section.rzc > h2{display:grid !important;grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:"ic . chip" "t t t" "h h h";gap:6px 10px;align-items:center;padding:16px 16px 2px;margin:0}
+#app-resume .rzc > h2 .stepno{display:none !important}
+#app-resume .rzc > h2 .rzc-ic{grid-area:ic;position:relative;width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#14476b,#0d314c);color:#a9d8f3}
+#app-resume .rzc > h2 .rzc-ic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#app-resume .rzc > h2 .rzc-ic::after{content:attr(data-n);position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;border-radius:9px;
+  background:#74bfeb;color:#0d314c;font:700 10.5px/18px var(--ui);text-align:center;box-shadow:0 0 0 2px var(--surface)}
+#app-resume .rzc > h2 .rzc-ic[data-n=""]::after{display:none}
+#app-resume .rzc > h2 .rz-t{grid-area:t;margin-left:0 !important;padding:0 !important;font:700 15px/1.25 var(--display);margin-top:6px}
+#app-resume .rzc > h2 .hint{grid-area:h;margin:0 !important;padding:0 !important;font-size:12px;line-height:1.4;color:var(--ink-3);font-weight:400;margin:0}
+#app-resume .rzc-chip{grid-area:chip;font:700 10px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:4px;
+  color:#175e43;background:#e2f4ec;white-space:nowrap}
+#app-resume .rzc-chip.tbd{color:#8a5200;background:#fbf0dc}
+#app-resume .rzc-chip.chg{color:#1d63b8;background:#e3effc}
+#app-resume .rzc > .rzc-lines{display:flex !important;position:absolute;left:16px;right:16px;bottom:13px;display:flex;flex-direction:column;gap:4px;pointer-events:none}
+#app-resume .rzc-lines i{display:block;height:3px;border-radius:2px;background:var(--pc);opacity:.35}
+#app-resume .rzc-lines i:nth-child(2){width:78%}
+#app-resume .rzc-lines i:nth-child(3){width:52%}
+#app-resume .rzc[data-state=tbd] .rzc-lines i{background:repeating-linear-gradient(90deg,#e0a83c 0 6px,transparent 6px 10px);opacity:.75}
+#app-resume .rzc > .cardface{padding:2px 16px 0}
+html body #app-resume .rz-docbody > .rz-waiting.rzc-alert{grid-column:1/-1;order:-1;border:1px solid #e0a83c;border-left:5px solid #e0a83c;
+  background:linear-gradient(90deg,#fff6e6,var(--surface));border-radius:10px}
+
 /* ── the Resume's function editor: the live page beside the fields (Jonna, 2026-10-31) ── */
 .rz-fnb.rz-two{display:grid!important;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:18px;padding:14px 14px 16px;border-top:1px dashed var(--line)}
 @media(max-width:900px){.rz-fnb.rz-two{grid-template-columns:minmax(0,1fr)}}
+/* Jonna, 2026-10-31: the older #app-resume .rz-fnb rule out-ranked this one and squeezed the
+   preview and the fields into two narrow 260px columns with the rest of the row empty */
+#app-resume .rz-fnb.rz-two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+@media(max-width:900px){#app-resume .rz-fnb.rz-two{grid-template-columns:minmax(0,1fr)}}
+#app-resume .rz-fnb.rz-two .rz-pv{max-height:calc(100vh - 24px);overflow:auto}
 .rz-fnb .rz-pv{position:sticky;top:8px;align-self:start;background:#0f314c;border-radius:10px;padding:12px;color:#fff}
 .rz-fnb .rz-pvh{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#9fd2f2;margin-bottom:8px}
 .rz-fnb .rz-pvp{display:grid;grid-template-columns:86px minmax(0,1fr) 80px;gap:8px;background:#fbfdff;color:#0d314c;border-radius:6px;padding:10px;font-size:11.5px;line-height:1.35;box-shadow:0 14px 30px -16px rgba(0,0,0,.6)}
