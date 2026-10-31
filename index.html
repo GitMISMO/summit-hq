@@ -3687,7 +3687,7 @@ body.sheeton .hqsheet{display:flex}
 .rp-gbill{grid-template-columns:1fr 100px 100px;border-top:1px solid #D5E2ED}
 .rp-go{grid-template-columns:150px 1fr}
 .rp-h+.rp-go{border-top:1px solid #D5E2ED}
-.rp-gr{grid-template-columns:220px 180px 1fr 80px}
+.rp-gr{grid-template-columns:180px 150px 1fr 150px 64px}
 .rp-gd{grid-template-columns:130px 1fr 140px}
 .rp-th{border-top:1px solid #D5E2ED}
 .rp-th>.rp-c,.rp-thc{background:#E9F1F8;border-bottom:1.5px solid #0f314c !important}
@@ -4514,6 +4514,27 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
 @media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
+#app-people .tt-nights{padding:10px 16px;border-bottom:1px solid var(--line)}
+#app-people .tt-nh{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+#app-people .tt-ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;margin-bottom:6px}
+#app-people .tt-n{border:1px solid var(--line);border-radius:5px;padding:5px 8px;background:var(--surface)}
+#app-people .tt-n span{display:block;font-size:11px;color:var(--ink-3)}
+#app-people .tt-n b{font-family:var(--mono);font-size:16px;color:var(--ink-3)}
+#app-people .tt-n.on{border-color:var(--accent)} #app-people .tt-n.on b{color:var(--accent)}
+#app-people .tt-park{display:flex;gap:8px;align-items:center;padding:10px 16px;font-size:12.5px;border-bottom:1px solid var(--line);cursor:pointer}
+#app-people .tt-acts .btn{padding:6px 12px;font-size:12.5px}
+#app-people .tt-grp{display:flex;align-items:center;gap:6px}
+#app-people .tt-row{align-items:flex-start}
+#app-people .tt-ck{margin-top:4px;flex:0 0 auto}
+#app-people .tt-em{display:block;width:100%;max-width:260px;margin-top:3px;font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink-2)}
+#app-people .tt-ok{color:var(--accent);font-weight:600}
+#app-people .tt-note{font-style:italic}
+#app-people .tt-dates{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 100%;padding-left:24px}
+#app-people .tt-d{display:flex;flex-direction:column;gap:2px;font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+#app-people .tt-d input,#app-people .tt-d select{font:inherit;font-family:var(--sans,inherit);text-transform:none;letter-spacing:0;font-size:12.5px;padding:4px 6px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);color:var(--ink)}
+#app-people .tt-x{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:13px;padding:2px 6px}
+#app-people .tt-x:hover{color:#b4541a}
+#app-people .tt-add{padding:12px 16px}
 #app-people .se-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .se-modal{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center}
 .se-scrim{position:absolute;inset:0;background:rgba(16,19,23,.55)}
@@ -5584,6 +5605,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
+        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
@@ -31208,7 +31230,7 @@ window.ResumeModel = (function(){
         const rateNote = p => (p.billing||'')+(p.rate==='group'?' (group rate)':p.rate==='perdiem'?' (gov per diem)':'');
         const RATE={staff:'Staff rate', suite:'Suite upgrade at group rate', group:'Group rate', perdiem:'Gov per diem'};
         return {
-          people: ppl.map(p=>({name:p.name.trim(), rate:RATE[p.rate]||'Staff rate', billing:p.billing||'', vip:!!p.vip})),
+          people: ppl.map(p=>({name:p.name.trim(), rate:RATE[p.rate]||'Staff rate', billing:p.billing||'', vip:!!p.vip, stay:ttStayOf(p.name)})),
           assign: ppl.filter(p=>p.rate!=='suite').map(p=>Object.assign(splitPerson(p.name), {note:rateNote(p)})),
           vip: ppl.filter(p=>p.vip).map(p=>p.name.trim()),
           suites: ppl.filter(p=>p.rate==='suite').map(p=>Object.assign(splitPerson(p.name), {note:p.billing||''}))
@@ -31216,6 +31238,12 @@ window.ResumeModel = (function(){
       })(),
       days
     };
+  }
+  /* Jonna, 2026-10-31: arrival and departure come from the MISMO Team card in People */
+  function ttStayOf(name){
+    try{ const T=window.__teamTravel, t=T&&T.stay(name);
+      if(t && t.go!=='no' && (t.arr||t.dep)) return (t.arr?T.nice(t.arr):'?')+' \u2013 '+(t.dep?T.nice(t.dep):'?'); }catch(e){}
+    return '';
   }
   function splitPerson(l){
     const [who,note]=l.split('|').map(x=>(x||'').trim());
@@ -31606,7 +31634,7 @@ window.ResumeDocx = (function(){
 
     /* guest rooms — one row per person */
     body.push(heading('Guestroom and rate assignments'));
-    const wr=[3400, 2900, CONTENT-3400-2900-1300, 1300];
+    const wr=[2700, 2300, CONTENT-2700-2300-2300-1100, 2300, 1100];
     const ppl=(cur.rooming.people||[]);
     const pnames=new Set(ppl.map(p=>p.name));
     const gonePeople = (tk.track && prev && prev.rooming && prev.rooming.people) ? prev.rooming.people.filter(p=>!pnames.has(p.name)) : [];
@@ -31618,10 +31646,11 @@ window.ResumeDocx = (function(){
         cell([P(gone?tk.gone(p.name,Object.assign({bold:true},small)):fresh?[tk.run(p.name,Object.assign({bold:true},small),'+')]:[tk.run(p.name,Object.assign({bold:true},small))],sp(0,0))],wr[0]),
         cell([P(tx(k+'rate',p.rate,small),sp(0,0))],wr[1]),
         cell([P(tx(k+'billing',p.billing,small),sp(0,0))],wr[2]),
-        cell([P(tx(k+'vip',p.vip?'VIP':'',Object.assign({bold:true,color:MID},small)),{alignment:d.AlignmentType.CENTER,spacing:{after:0}})],wr[3])
+        cell([P([tk.run(p.stay||'',small)],sp(0,0))],wr[3]),
+        cell([P(tx(k+'vip',p.vip?'VIP':'',Object.assign({bold:true,color:MID},small)),{alignment:d.AlignmentType.CENTER,spacing:{after:0}})],wr[4])
       ];
     };
-    body.push(table(wr,[headRow(['Name','Rate assignment','Billing','Do not walk'],wr)]
+    body.push(table(wr,[headRow(['Name','Rate assignment','Billing','Arrives \u2013 Departs','Do not walk'],wr)]
       .concat(ppl.map(p=>prow(p,false)), gonePeople.map(p=>prow(p,true))),{header:true}));
 
     /* ---------- the days ---------- */
@@ -31899,12 +31928,12 @@ window.ResumePdf = (function(){
 
     /* guest rooms */
     head('Guestroom and Rate Assignments');
-    const gh=mk('div','rp-grid rp-gr rp-th'); ['Name','Rate assignment','Billing','Do not walk'].forEach((t,i)=>{ const c=mk('div','rp-c'+(i===3?' rp-ctr':'')); c.appendChild(lab(t)); gh.appendChild(c); });
+    const gh=mk('div','rp-grid rp-gr rp-th'); ['Name','Rate assignment','Billing','Arrives \u2013 Departs','Do not walk'].forEach((t,i)=>{ const c=mk('div','rp-c'+(i===4?' rp-ctr':'')); c.appendChild(lab(t)); gh.appendChild(c); });
     add(gh,{keepNext:true});
     ((cur.rooming&&cur.rooming.people)||[]).forEach(p=>{
       const r=mk('div','rp-grid rp-gr');
       r.appendChild(mk('div','rp-c rp-b',p.name)); r.appendChild(mk('div','rp-c',p.rate||''));
-      r.appendChild(mk('div','rp-c',p.billing||'')); r.appendChild(mk('div','rp-c rp-ctr rp-b rp-mid',p.vip?'VIP':''));
+      r.appendChild(mk('div','rp-c',p.billing||'')); r.appendChild(mk('div','rp-c',p.stay||'')); r.appendChild(mk('div','rp-c rp-ctr rp-b rp-mid',p.vip?'VIP':''));
       add(r);
     });
 
@@ -42616,8 +42645,25 @@ startClock();
         [nm,rs,bs].forEach(n=>{ if(ST.canWrite===false) n.disabled=true; });
         r.appendChild(nm); r.appendChild(rs); r.appendChild(bs); r.appendChild(vw); r.appendChild(x);
         tbl.appendChild(r);
+        const stay=(()=>{ try{ const T=window.__teamTravel, t=T&&T.stay(p.name); if(!t) return '';
+          if(t.go==='no') return 'MISMO Team card: not going';
+          return t.arr||t.dep? 'Arrives '+(t.arr?T.nice(t.arr):'?')+' \u00b7 departs '+(t.dep?T.nice(t.dep):'?')+(t.room==='no'?' \u00b7 no room needed':'') : 'MISMO Team card: no dates yet'; }catch(e){ return ''; } })();
+        if(stay){ const sn=mk('div','note',stay); sn.style.margin='-2px 0 6px'; tbl.appendChild(sn); }
       });
       s.inn.appendChild(tbl);
+      /* the MISMO Team card: anyone going who needs a room and has no row here yet */
+      try{
+        const T=window.__teamTravel, nk=x=>String(x||'').toLowerCase().replace(/[^a-z]+/g,' ').trim();
+        const have=new Set((d.people||[]).map(p=>nk(p.name)));
+        const need=(T? T.list() : []).filter(t=>t.go==='yes' && t.room!=='no' && !have.has(nk(t.n)));
+        if(need.length){
+          const w=mk('div','note'); w.style.marginTop='10px';
+          w.appendChild(document.createTextNode('Going and needing a room on the MISMO Team card in People, not listed here yet: '+need.map(t=>t.n).join(', ')+'. '));
+          const ab=mk('button','rz-btn ghost small','Add Them'); ab.type='button';
+          ab.addEventListener('click',()=>{ const l=list(); need.forEach(t=>l.push({name:t.n, rate:t.role==='guest'?'group':'staff', billing:'R&T to Master', vip:false})); setDetail('people', l); renderDoc(); });
+          w.appendChild(ab); s.inn.appendChild(w);
+        }
+      }catch(e){}
       const add=mk('button','rz-btn ghost small','+ Add a person'); add.type='button';
       add.addEventListener('click',()=>{ const l=list(); l.push({name:'', rate:'staff', billing:'R&T to Master', vip:false});
         setDetail('people', l); renderDoc();
@@ -43198,6 +43244,8 @@ startClock();
     }catch(e){}
     const f=feed(); if(f) watch(f.summit.id);
     window.addEventListener('hq:schedule',()=>{ const ff=feed(); if(ff && ff.summit.id!==ST.venue) watch(ff.summit.id); rerenderSoon(); checkSoon(); });
+    /* the MISMO Team card's dates show in the guest rooms */
+    window.addEventListener('hq:team-travel',()=>rerenderSoon());
     rerenderSoon();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
@@ -43901,7 +43949,7 @@ const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25
    where a sponsorship is worked, this is where it turns into somebody to register. */
 const EVENT_VENUE={'winter 2027':['nola'],'spring 2027':['slc'],'fall 2027':['bethesda'],
   '2027 series':['nola','slc','bethesda']};
-const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), semail:new Map(), venue:'', ready:false,
+const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), semail:new Map(), travel:new Map(), travelLoaded:false, travelAnswers:null, venue:'', ready:false,
   open:new Set(), q:'', role:'', left:false, step:'', elseOpen:false, addOpen:false};
 const undoStack=[];
 const GONE=new Map();   /* people just removed: id -> when */
@@ -44243,6 +44291,7 @@ const PP_SAY={
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
   prosOpen: n=>n? n+' prospect'+(n===1?'':'s') : 'No prospects yet',
   boardOpen:n=>n? n+' still to register' : 'Everyone is registered',
+  ttOpen:   n=>n? n+' going under the MISMO banner' : 'Nobody marked going yet',
   fOpen:    n=>n? n+' still outstanding' : 'Everyone has what they need'
 };
 function section(title,note,count,key,openDefault,build,tone){
@@ -44845,6 +44894,8 @@ function render(){
   /* Jonna, 2026-10-29: Speaker Prospects sits beside On This Summit */
   if(boardSec.parentNode===left) left.insertBefore(prosSec, boardSec); else left.appendChild(prosSec);
   if(sponSec) right.appendChild(sponSec);
+  /* Jonna, 2026-10-31: the MISMO team going under the MISMO banner */
+  right.appendChild(ttSection());
   right.appendChild(elseSec);
   cols.appendChild(left); cols.appendChild(right);
   /* an open block is rebuilt on the page; the pane takes the new one */
@@ -45458,6 +45509,335 @@ function prospectAdd(){
   return wrap;
 }
 /* ============================================================
+   MISMO TEAM AT THE SUMMIT (Jonna, 2026-10-31)
+   Everyone going under the MISMO banner — staff, Ros and Bernie, the facilitators, the
+   architect, and guests added if there is room. Each is ticked Going or not; Send the
+   Travel Form emails the ones she selects a branded note with their own link to
+   resources.mismo.org/summit-hq/travel.html, where they put their arrival and departure,
+   whether they need a room and (when the hotel includes it) parking. Their answer comes
+   back through the "Summit HQ - Team Travel Answers" flow into feeds/team-travel-answers
+   and lands on their row. The dates feed the Resume's guest rooms, the nights tally is
+   what to tell the hotel, and Send to Bernie emails him the team to register — they are
+   never on his speaker list.
+   ============================================================ */
+const TT_ROLES=[['staff','MISMO Staff'],['meetings','Meetings Team'],['facilitator','Facilitator'],['architect','Architect'],['guest','Guest']];
+const TT_ROLE=Object.fromEntries(TT_ROLES);
+const TT_SEED=[
+  ['Brian Vieaux','bvieaux@mismo.org','staff'],['Jonathan Kearns','jkearns@mismo.org','staff'],
+  ['Amy Moses','amoses@mismo.org','staff'],['Kelly Bradshaw','kbradshaw@mismo.org','staff'],
+  ['Perry Williams','pwilliams@mismo.org','staff'],['Jonna Critchley','jcritchley@mismo.org','staff'],
+  ['Vanessa Rios','vrios@mismo.org','staff'],
+  ['Rosalyn Milliken','rmilliken@mba.org','meetings'],['Bernardo Jordan','bjordan@mba.org','meetings'],
+  ['Kathryn Williams','kwilliams@mismo.org','facilitator'],['Leeann Walker','lwalker@mismo.org','facilitator'],
+  ['Erin Bittenbender','ebittenbender@mismo.org','facilitator'],['Kellie Stoll','kstoll@mismo.org','facilitator'],
+  ['Meghan Tidgewell','mtidgewell@mismo.org','facilitator'],
+  ['Mark Kleingers','mkleingers@mismo.org','architect']];
+const TT_FORM='https://resources.mismo.org/summit-hq/travel.html';
+const TT_JONNA={name:'Jonna Critchley', title:'Director of Programs & Operations, MISMO', email:'jcritchley@mismo.org'};
+const ttDoc=()=>ST.travel.get(venueNow())||{};
+const ttKey=n=>String(n||'').toLowerCase().replace(/[^a-z]+/g,' ').trim();
+function ttList(){
+  const d=ttDoc(), ppl=d.ppl||{};
+  const ord=(d.order||[]).filter(k=>ppl[k]);
+  Object.keys(ppl).forEach(k=>{ if(ord.indexOf(k)<0) ord.push(k); });
+  return ord.map(k=>Object.assign({id:k},ppl[k]));
+}
+function ttSave(fields,label){ saveColl('team-travel',ST.travel,fields,label); }
+function ttSet(id,fields,label){
+  const ppl=Object.assign({},ttDoc().ppl||{}); ppl[id]=Object.assign({},ppl[id]||{},fields);
+  ttSave({ppl},label||'the MISMO team'); render();
+}
+function ttTok(){ const a=new Uint8Array(9); crypto.getRandomValues(a); return [...a].map(x=>x.toString(36).padStart(2,'0')).join('').slice(0,14); }
+const ttISO=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function ttDay(n){ const d=seFirstDay(); if(!d) return ''; d.setDate(d.getDate()+n); return ttISO(d); }
+const ttNice=iso=>{ if(!iso) return ''; const [y,m,d]=String(iso).split('-').map(Number); const t=new Date(y,m-1,d);
+  return isNaN(t)? iso : WDAYS[t.getDay()].slice(0,3)+', '+MONTHS[t.getMonth()].slice(0,3)+' '+t.getDate(); };
+/* the first open of a summit starts from the usual team */
+function ttSeed(){
+  if(ST.travelSeeding || !ST.db || !ST.travelLoaded || ttList().length) return;
+  ST.travelSeeding=true;
+  const ppl={}, order=[];
+  /* every summit starts from the last one's team (names, emails, groups — not guests,
+     dates or answers); the very first starts from the usual team */
+  let from=null;
+  try{
+    const vs=(window.__scheduleVenues? window.__scheduleVenues() : []).map(v=>v.id);
+    const here=vs.indexOf(venueNow());
+    const cands=[...ST.travel.keys()].filter(k=>k!==venueNow() && Object.keys((ST.travel.get(k)||{}).ppl||{}).length);
+    cands.sort((a,b)=>{ const ia=vs.indexOf(a), ib=vs.indexOf(b);
+      const da=here>=0&&ia>=0? (here-ia+vs.length)%vs.length : 99, db=here>=0&&ib>=0? (here-ib+vs.length)%vs.length : 99; return da-db; });
+    from=cands[0]? ST.travel.get(cands[0]) : null;
+  }catch(e){ from=null; }
+  if(from){
+    const fp=from.ppl||{}, ford=(from.order||Object.keys(fp)).filter(k=>fp[k]);
+    Object.keys(fp).forEach(k=>{ if(ford.indexOf(k)<0) ford.push(k); });
+    ford.forEach(k=>{ const x=fp[k]; if(!x || x.role==='guest') return; ppl[k]={n:x.n, e:x.e||'', role:x.role||'staff', go:''}; order.push(k); });
+  }
+  if(!order.length) TT_SEED.forEach(([n,e,role])=>{ const id=ttSlug(n).slice(0,30); ppl[id]={n,e,role,go:''}; order.push(id); });
+  saveColl('team-travel',ST.travel,{ppl,order,park:false},'the MISMO team list');
+  ST.travelSeeding=false;
+}
+function ttSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+/* nights at the hotel: everyone going who needs a room, night by night */
+function ttNights(){
+  const out=[]; for(let i=-3;i<=4;i++) out.push({iso:ttDay(i), n:0, who:[]});
+  ttList().filter(p=>p.go==='yes' && p.room!=='no' && p.arr && p.dep).forEach(p=>{
+    out.forEach(x=>{ if(x.iso>=p.arr && x.iso<p.dep){ x.n++; x.who.push(p.n); } });
+  });
+  return out.filter(x=>x.n || (x.iso>=ttDay(-1) && x.iso<=ttDay(3)));
+}
+function ttStat(){
+  const l=ttList(), go=l.filter(p=>p.go==='yes');
+  return {total:l.length, go:go.length, no:l.filter(p=>p.go==='no').length, open:l.filter(p=>!p.go).length,
+    rooms:go.filter(p=>p.room==='yes').length, park:go.filter(p=>p.park==='yes').length,
+    waiting:l.filter(p=>p.sentAt && !p.respAt).length, missing:go.filter(p=>!p.arr||!p.dep).length};
+}
+/* the branded note, from Jonna */
+function ttHtml(subject, paras, button){
+  const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const F='font-family:Arial,Helvetica,sans-serif', v=venueInfo();
+  const btn= button? '<table cellpadding="0" cellspacing="0" style="margin:6px 0 18px"><tbody><tr><td style="background:#0d314c;border-radius:6px"><a href="'+e(button.url)+'" style="display:inline-block;padding:13px 26px;'+F+';font-size:15px;font-weight:700;color:#ffffff;text-decoration:none">'+e(button.label)+'</a></td></tr></tbody></table>' : '';
+  return '<table cellpadding="0" cellspacing="0" style="width:100%;background:#f1f6fa"><tbody><tr><td style="padding:24px 12px;text-align:center">'
+   +'<table cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;margin:0 auto;text-align:left;background:#ffffff;border:1px solid #d5e2ed;border-radius:8px"><tbody>'
+   +'<tr><td style="background:#0d314c;padding:16px 32px;border-radius:7px 7px 0 0"><table cellpadding="0" cellspacing="0" style="width:100%"><tbody><tr><td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tbody><tr><td style="background:#ffffff;border-radius:5px;padding:8px 12px"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO" width="132" height="20" border="0" style="display:block;border:0;outline:none;width:132px;height:20px"></td></tr></tbody></table></td><td style="vertical-align:middle;text-align:right;'+F+';font-size:13px;font-weight:600;color:#a9d8f3">MISMO Summit</td></tr></tbody></table></td></tr>'
+   +'<tr><td style="height:3px;line-height:3px;font-size:0;background:#74bfeb">&nbsp;</td></tr>'
+   +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">'+e(subject)+'</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+e((v.name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
+   +'<tr><td style="padding:16px 32px 8px;'+F+';font-size:15px;line-height:1.6;color:#0d314c">'
+   +paras.map(p=>p.html? p.html : '<p style="margin:0 0 12px">'+e(p)+'</p>').join('')+btn+'</td></tr>'
+   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(TT_JONNA.name)+'</b><br><span style="color:#55657a">'+e(TT_JONNA.title)+'</span><br><a href="mailto:'+TT_JONNA.email+'" style="color:#0f6fa8">'+TT_JONNA.email+'</a></td></tr>'
+   +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
+   +'</tbody></table></td></tr></tbody></table>';
+}
+function ttLink(p,tok){
+  const v=venueInfo(), q=new URLSearchParams({t:tok, v:venueNow(), n:String(p.n||'').split(/\s+/)[0]||'', s:v.name||'Summit',
+    d:seDates()||'', c:v.city||'', a:ttDay(-1), z:ttDay(3), lo:ttDay(-3), hi:ttDay(5), p:ttDoc().park?'1':'0', g:p.role==='guest'?'1':'0'});
+  return TT_FORM+'?'+q.toString();
+}
+/* queue one email through the "Summit HQ - Speaker Emails" flow (every minute) */
+async function ttQueue(reqs){
+  if(!ST.db) throw new Error('not signed in');
+  const ref=ST.db.doc('feeds/speaker-email');
+  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ cur={}; }
+  const cut=Date.now()-60*60*1000;
+  const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
+  reqs.forEach(r=>list.push(r));
+  await ref.set({updatedAt:new Date().toISOString(), requests:list});
+}
+const ttWho=()=>{ try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); return (s&&(s.name||s.email))||''; }catch(e){ return ''; } };
+async function ttSendForms(ids){
+  const v=venueInfo(), now=new Date().toISOString(), who=ttWho();
+  const ppl=Object.assign({},ttDoc().ppl||{}), reqs=[];
+  ids.forEach((id,i)=>{
+    const p=Object.assign({id},ppl[id]||{}); if(!/@/.test(p.e||'')) return;
+    const tok=p.tok||ttTok();
+    const first=String(p.n||'').split(/\s+/)[0]||'there';
+    const subject='Your Travel Dates for the '+(v.name||'Summit');
+    const paras=['Hi '+first+',',
+      'You’re on the list to attend the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+(v.city?' in '+v.city:'')+' with the MISMO team.',
+      'So we can get you registered and give the hotel our rooming list, please tell us when you’re arriving and leaving'
+        +(ttDoc().park?', whether you need a room and whether you’ll need parking.':' and whether you need a room.')+' It takes about a minute.'];
+    if(p.role==='guest') paras.push('We’ll confirm your room once we know we have space in our block.');
+    reqs.push({id:'tt-'+Date.now().toString(36)+'-'+i, requestedAt:now, requestedBy:who, to:p.e, cc:'', replyTo:TT_JONNA.email,
+      subject, html:ttHtml(subject, paras, {url:ttLink(p,tok), label:'Enter My Travel Dates'}), person:'', summit:venueNow(), graphic:''});
+    ppl[id]=Object.assign({},ppl[id],{tok, sentAt:now});
+  });
+  if(!reqs.length) return 0;
+  await ttQueue(reqs);
+  ttSave({ppl},'the travel form sent');
+  render();
+  return reqs.length;
+}
+/* the team to Bernie for registration — staff are registered separately from speakers */
+async function ttSendBernie(){
+  const v=venueInfo(), go=ttList().filter(p=>p.go==='yes');
+  if(!go.length) return 0;
+  const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const td='padding:10px 8px;border-bottom:1px solid #e3e8ee;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.4;color:#1b2733;vertical-align:top';
+  const th='padding:8px;border-bottom:2px solid #74bfeb;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#0d314c;text-align:left';
+  const rows=go.map(p=>'<tr><td style="'+td+'"><b style="color:#0d314c">'+e(p.n)+'</b><br><span style="color:#55657a;font-size:12.5px">'+e(TT_ROLE[p.role]||'')+'</span>'
+    +(p.e?'<br><a href="mailto:'+e(p.e)+'" style="color:#0f6fa8;font-size:12.5px">'+e(p.e)+'</a>':'')+'</td>'
+    +'<td style="'+td+'">'+e(ttNice(p.arr)||'Not given yet')+'</td><td style="'+td+'">'+e(ttNice(p.dep)||'Not given yet')+'</td>'
+    +'<td style="'+td+'">'+(p.room==='yes'?'Yes':p.room==='no'?'No':'—')+(ttDoc().park?'<br><span style="color:#55657a;font-size:12px">Parking: '+(p.park==='yes'?'Yes':p.park==='no'?'No':'—')+'</span>':'')+'</td></tr>').join('');
+  const table='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:6px 0 16px"><tbody><tr><td style="'+th+'">Name</td><td style="'+th+'">Arrives</td><td style="'+th+'">Departs</td><td style="'+th+'">Room</td></tr>'+rows+'</tbody></table>';
+  const subject='MISMO Team to Register — '+(v.name||'Summit')+' ('+go.length+')';
+  const html=ttHtml('MISMO Team to Register',['Hi Bernie,',
+    'Here is the MISMO team going to the '+(v.name||'Summit')+' under the MISMO banner. Please register them. Their arrival and departure dates are below for the rooming list.',
+    {html:table}]);
+  await ttQueue([{id:'ttb-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:ttWho(),
+    to:'bjordan@mba.org', cc:TT_JONNA.email, replyTo:TT_JONNA.email, subject, html, person:'', summit:venueNow(), graphic:''}]);
+  ttSave({bernie:{at:new Date().toISOString(), n:go.length}},'the MISMO team sent to Bernie');
+  render(); return go.length;
+}
+/* answers from the travel form */
+function ttApply(){
+  const f=ST.travelAnswers; if(!f || !Array.isArray(f.answers) || !ST.db) return;
+  const byVenue={};
+  f.answers.forEach(a=>{ if(a && a.t && a.v) (byVenue[a.v]=byVenue[a.v]||[]).push(a); });
+  Object.keys(byVenue).forEach(v=>{
+    const d=ST.travel.get(v); if(!d || !d.ppl) return;
+    const ppl=Object.assign({},d.ppl); let changed=false;
+    byVenue[v].sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))).forEach(a=>{
+      const id=Object.keys(ppl).find(k=>ppl[k].tok && ppl[k].tok===a.t); if(!id) return;
+      const p=ppl[id]; if(p.respAt && String(p.respAt)>=String(a.at||'')) return;
+      const yn=x=>x==='yes'||x==='no'? x : '';
+      const ok=x=>/^\d{4}-\d{2}-\d{2}$/.test(String(x||''))? String(x) : '';
+      ppl[id]=Object.assign({},p,{go:yn(a.going)||p.go, arr:ok(a.arr), dep:ok(a.dep), room:yn(a.room), park:yn(a.park),
+        notes:String(a.notes||'').slice(0,500), respAt:a.at||new Date().toISOString()});
+      changed=true;
+    });
+    if(changed){ const nd=Object.assign({},d,{ppl}); ST.travel.set(v,nd); try{ ST.db.doc('team-travel/'+v).set(JSON.parse(JSON.stringify(nd))); }catch(e){} }
+  });
+  render();
+}
+/* the Resume reads this for its guest rooms */
+window.__teamTravel={
+  list:v=>{ const d=ST.travel.get(v||venueNow())||{}; const ppl=d.ppl||{}; return Object.keys(ppl).map(k=>Object.assign({id:k},ppl[k])); },
+  stay:(name,v)=>{ const d=ST.travel.get(v||venueNow())||{}; const ppl=d.ppl||{}; const k=Object.keys(ppl).find(x=>ttKey(ppl[x].n)===ttKey(name));
+    return k? ppl[k] : null; },
+  nice:ttNice
+};
+const ttIsTeam=p=>{ if(!p) return false;
+  if(/@(mismo|mba)\.org$/i.test(String(p.e||'').trim())) return true;
+  if(/^mismo$/i.test(String(p.c||'').trim())) return true;
+  return ttList().some(x=>ttKey(x.n)===ttKey(p.n));
+};
+
+/* the card */
+function ttSection(){
+  const s=ttStat(), l=ttList();
+  return section('MISMO Team at the Summit',
+    s.total? [s.go+' going', s.open&&s.open+' not decided', s.waiting&&s.waiting+' waiting on the form'].filter(Boolean).join(' · ')
+           : 'Staff, Ros and Bernie, facilitators, the architect and guests',
+    s.go,'ttOpen',false,box=>{
+    ST.ttSel=ST.ttSel||new Set();
+    if(!l.length){ if(ST.travelLoaded) setTimeout(ttSeed,0); box.appendChild(el('div','blank', ST.travelLoaded? 'Starting the list…' : 'Loading…')); return; }
+    /* the tally */
+    const tl=el('div','bd-tally');
+    [[s.go,'Going','in'],[s.open,'Not Decided','none'],[s.rooms,'Rooms','virt'],[ttDoc().park? s.park : s.waiting, ttDoc().park?'Parking':'Waiting on Form','reg']]
+      .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
+    box.appendChild(tl);
+    /* rooms night by night, for the hotel */
+    const nts=ttNights();
+    const nw=el('div','tt-nights');
+    nw.appendChild(el('div','tt-nh','Rooms by night — what to tell the hotel'));
+    const ng=el('div','tt-ngrid');
+    nts.forEach(x=>{ const c=el('div','tt-n'+(x.n?' on':'')); c.title=x.who.join(', ')||'Nobody yet';
+      c.appendChild(el('span',null,ttNice(x.iso))); c.appendChild(el('b',null,String(x.n))); ng.appendChild(c); });
+    nw.appendChild(ng);
+    nw.appendChild(el('div','pnote','Counts everyone going who needs a room, from the night they arrive to the night before they leave. The dates also fill in the Resume’s guest rooms.'));
+    box.appendChild(nw);
+    /* parking */
+    const pk=el('label','tt-park'); const pc=document.createElement('input'); pc.type='checkbox'; pc.checked=!!ttDoc().park;
+    pc.addEventListener('change',()=>{ ttSave({park:pc.checked},'parking on the travel form'); render(); });
+    pk.appendChild(pc); pk.appendChild(el('span',null,'Parking is included at this hotel — ask about it on the form'));
+    box.appendChild(pk);
+    /* the actions */
+    const top=el('div','bd-top tt-acts');
+    const sel=[...ST.ttSel].filter(id=>l.some(p=>p.id===id));
+    const sendable=sel.filter(id=>{ const p=l.find(x=>x.id===id); return p && /@/.test(p.e||''); });
+    const sb=el('button','btn','Send the Travel Form'+(sendable.length?' ('+sendable.length+')':'')); sb.type='button';
+    sb.disabled=!sendable.length;
+    sb.title=sendable.length? 'Emails the '+sendable.length+' selected their own link to enter their dates' : 'Tick the people to send it to';
+    let armed=false;
+    sb.addEventListener('click',async()=>{
+      if(!armed){ armed=true; sb.textContent='Click Again to Email '+sendable.length; sb.classList.add('armed'); return; }
+      sb.disabled=true; sb.textContent='Sending…';
+      try{ const n=await ttSendForms(sendable); ST.ttSel.clear(); render();
+        try{ window.__hqFlash && window.__hqFlash('The travel form is on its way to '+n+' — it goes out within a couple of minutes.'); }catch(e){} }
+      catch(e){ alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); render(); }
+    });
+    top.appendChild(sb);
+    const pickGo=el('button','btn ghost','Select Everyone Going Not Yet Sent'); pickGo.type='button';
+    pickGo.addEventListener('click',()=>{ l.filter(p=>p.go==='yes' && !p.sentAt).forEach(p=>ST.ttSel.add(p.id)); render(); });
+    top.appendChild(pickGo);
+    const bb=el('button','btn ghost','Send to Bernie to Register'+(s.go?' ('+s.go+')':'')); bb.type='button';
+    bb.disabled=!s.go; let bArmed=false;
+    bb.addEventListener('click',async()=>{
+      if(!bArmed){ bArmed=true; bb.textContent='Click Again to Email Bernie'; bb.classList.add('armed'); return; }
+      bb.disabled=true;
+      try{ const n=await ttSendBernie(); try{ window.__hqFlash && window.__hqFlash('Bernie gets the '+n+' to register within a couple of minutes.'); }catch(e){} }
+      catch(e){ alert('Summit HQ could not queue the email to Bernie. Try again.'); render(); }
+    });
+    top.appendChild(bb);
+    const bn=ttDoc().bernie;
+    top.appendChild(el('div','pnote', (bn&&bn.at? 'Bernie was sent '+bn.n+' to register on '+localDay(bn.at)+'. ' : '')
+      +(s.missing? s.missing+' going still without dates. ' : '')+'The form and Bernie’s list come from you; replies come to you.'));
+    box.appendChild(top);
+    /* the people, by group */
+    TT_ROLES.forEach(([rk,rl])=>{
+      const grp=l.filter(p=>(p.role||'staff')===rk); if(!grp.length) return;
+      const gh=el('div','bd-grp tt-grp');
+      const all=el('input'); all.type='checkbox'; all.title='Select all '+rl;
+      all.checked=grp.every(p=>ST.ttSel.has(p.id));
+      all.addEventListener('change',()=>{ grp.forEach(p=>all.checked? ST.ttSel.add(p.id) : ST.ttSel.delete(p.id)); render(); });
+      gh.appendChild(all); gh.appendChild(document.createTextNode(' '+rl+(rk==='guest'?' — added if we have room':'')));
+      box.appendChild(gh);
+      grp.forEach(p=>box.appendChild(ttRow(p)));
+    });
+    box.appendChild(ttAdd());
+  }, s.missing||s.open? 'warn':'');
+}
+function ttRow(p){
+  const row=el('div','bdrow tt-row'+(p.go==='no'?' done':''));
+  const ck=el('input'); ck.type='checkbox'; ck.className='tt-ck'; ck.checked=ST.ttSel.has(p.id);
+  ck.title='Select '+p.n; ck.addEventListener('change',()=>{ ck.checked? ST.ttSel.add(p.id) : ST.ttSel.delete(p.id); render(); });
+  row.appendChild(ck);
+  const L=el('div','bd-l');
+  L.appendChild(el('div','bd-n',p.n||''));
+  const em=el('input'); em.type='email'; em.className='tt-em'; em.value=p.e||''; em.placeholder='Email';
+  em.dataset.keep='tt-e:'+p.id;
+  em.addEventListener('change',()=>ttSet(p.id,{e:em.value.trim()},'an email on the MISMO team'));
+  L.appendChild(em);
+  const st=p.respAt? 'Answered '+localDay(p.respAt) : p.sentAt? 'Form sent '+localDay(p.sentAt)+' — waiting' : '';
+  if(st) L.appendChild(el('div','sp-me'+(p.respAt?' tt-ok':''),st));
+  if(p.notes) L.appendChild(el('div','sp-me tt-note','“'+p.notes+'”'));
+  row.appendChild(L);
+  /* going */
+  const seg=el('div','bd-seg');
+  [['yes','Going'],['no','Not Going']].forEach(([k,lab])=>{
+    const x=el('button','bd-opt'+(p.go===k?' on':''),lab); x.type='button';
+    x.addEventListener('click',()=>ttSet(p.id,{go:p.go===k?'':k},'who is going')); seg.appendChild(x); });
+  row.appendChild(seg);
+  /* dates and the room, which they fill in themselves and can be fixed here */
+  const dw=el('div','tt-dates');
+  const dt=(lab,k)=>{ const w=el('label','tt-d'); w.appendChild(el('span',null,lab));
+    const i=el('input'); i.type='date'; i.value=p[k]||''; i.min=ttDay(-5); i.max=ttDay(7); i.dataset.keep='tt-'+k+':'+p.id;
+    i.addEventListener('change',()=>ttSet(p.id,{[k]:i.value},'travel dates')); w.appendChild(i); return w; };
+  dw.appendChild(dt('Arrives','arr')); dw.appendChild(dt('Departs','dep'));
+  const rm=el('label','tt-d'); rm.appendChild(el('span',null,'Room'));
+  const rs=el('select'); [['','—'],['yes','Yes'],['no','No']].forEach(([v,t])=>rs.appendChild(new Option(t,v))); rs.value=p.room||'';
+  rs.addEventListener('change',()=>ttSet(p.id,{room:rs.value},'a room')); rm.appendChild(rs); dw.appendChild(rm);
+  if(ttDoc().park){ const pk=el('label','tt-d'); pk.appendChild(el('span',null,'Parking'));
+    const ps=el('select'); [['','—'],['yes','Yes'],['no','No']].forEach(([v,t])=>ps.appendChild(new Option(t,v))); ps.value=p.park||'';
+    ps.addEventListener('change',()=>ttSet(p.id,{park:ps.value},'parking')); pk.appendChild(ps); dw.appendChild(pk); }
+  row.appendChild(dw);
+  const x=el('button','tt-x','✕'); x.type='button'; x.title='Take '+p.n+' off this summit’s team list';
+  x.addEventListener('click',()=>{ if(!confirm('Take '+p.n+' off the team list for this summit?')) return;
+    const ppl=Object.assign({},ttDoc().ppl||{}); delete ppl[p.id]; ST.ttSel.delete(p.id); ttSave({ppl},'someone off the MISMO team'); render(); });
+  row.appendChild(x);
+  return row;
+}
+function ttAdd(){
+  const f=el('div','addform tt-add');
+  const mk=(lab,key,type)=>{ const i=el('input'); i.type=type||'text'; i.dataset.keep='tt-new:'+key;
+    const w=el('div','fldmini'); w.appendChild(el('label',null,lab)); w.appendChild(i); f.appendChild(w); return i; };
+  const n=mk('Name','n'), e=mk('Email','e','email');
+  const rw=el('div','fldmini'); rw.appendChild(el('label',null,'Group'));
+  const r=el('select'); TT_ROLES.forEach(([v,t])=>r.appendChild(new Option(t,v))); r.value='guest'; rw.appendChild(r); f.appendChild(rw);
+  const b=el('button','btn','Add to the Team List'); b.type='button';
+  b.addEventListener('click',()=>{
+    const nm=n.value.trim(); if(!nm){ n.focus(); return; }
+    const ppl=Object.assign({},ttDoc().ppl||{}); let id=ttSlug(nm).slice(0,30)||('p'+Date.now().toString(36));
+    if(ppl[id]) id=id+'-'+Date.now().toString(36).slice(-3);
+    ppl[id]={n:nm, e:e.value.trim(), role:r.value, go:''};
+    const order=(ttDoc().order||Object.keys(ttDoc().ppl||{})).concat([id]);
+    ttSave({ppl,order},'someone added to the MISMO team'); n.value=e.value=''; render();
+  });
+  f.appendChild(b);
+  return f;
+}
+
+/* ============================================================
    SPEAKERS FOR BERNIE TO REGISTER (Jonna, 2026-10-31)
    Bernie does the registrations. He does not get an email per speaker — every weekday
    morning the "Summit HQ - New Speakers to Register" flow emails him one list of the
@@ -45515,7 +45895,8 @@ function saUpdate(fn){
   }).catch(()=>{});
   return saBusy;
 }
-const saStill=(p,a)=>!!p && (stOf(p).on) && roleOf(p)==='speaker' && !stepDone(p,'reg');
+/* MISMO staff and the rest of the team are registered from the MISMO Team card instead */
+const saStill=(p,a)=>!!p && (stOf(p).on) && roleOf(p)==='speaker' && !stepDone(p,'reg') && !ttIsTeam(p);
 function speakerAdded(id,opt){
   opt=opt||{};
   return saUpdate(adds=>{
@@ -45722,7 +46103,7 @@ function init(){
   if(window.__hqUndo) window.__hqUndo.register('people',async()=>{
     const e=undoStack.pop(); if(!e) return;
     if(e.coll){
-      const map=e.coll==='board'?ST.board:e.coll==='speaker-email'?ST.semail:ST.sag;
+      const map=e.coll==='board'?ST.board:e.coll==='speaker-email'?ST.semail:e.coll==='team-travel'?ST.travel:ST.sag;
       if(e.prev) map.set(e.v,e.prev); else map.delete(e.v);
       if(ST.db){ try{ ST.db.doc(e.coll+'/'+e.v).set(e.prev||{}); }catch(x){} }
       if(e.coll==='board') pushBoardHeadcount();
@@ -45759,6 +46140,12 @@ function init(){
           render();
         },()=>{});
       });
+      db.collection('team-travel').onSnapshot(s=>{
+        s.docChanges().forEach(c=>{ if(c.type==='removed') ST.travel.delete(c.doc.id); else ST.travel.set(c.doc.id,Object.assign({},c.doc.data())); });
+        ST.travelLoaded=true; ttSeed(); ttApply(); render();
+        try{ window.dispatchEvent(new Event('hq:team-travel')); }catch(e){}
+      },()=>{});
+      db.doc('feeds/team-travel-answers').onSnapshot(s=>{ ST.travelAnswers=s.exists?(s.data()||null):null; if(ST.travelLoaded) ttApply(); },()=>{});
       db.collection('people').onSnapshot(s=>{
         s.docChanges().forEach(c=>{
           if(c.type==='removed') ST.docs.delete(c.doc.id);

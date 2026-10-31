@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MISMO Summit Travel</title>
+<!--
+  MISMO Summit travel form (Jonna, 2026-10-31).
+  The MISMO Team card in Summit HQ (People) emails each person a link here with their own
+  code (t) and the summit (v). Their answer posts to the "Summit HQ - Team Travel Answers"
+  flow, which saves it to feeds/team-travel-answers; Summit HQ puts it on their row.
+  The page holds nothing private: the code only matches a row in Summit HQ.
+-->
+<style>
+  :root{--navy:#0d314c;--sky:#74bfeb;--ink:#0d314c;--ink2:#3d5468;--ink3:#6c899f;--line:#d5e2ed;--wash:#f1f6fa;--bg:#f1f6fa;--card:#ffffff;--err:#b4541a}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#e6eef5;--ink2:#b9cad8;--ink3:#8aa3b7;--line:#2c4357;--wash:#16283a;--bg:#0b1824;--card:#112233}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .hd{background:#0d314c;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo{background:#fff;border-radius:5px;padding:8px 12px;display:inline-flex}
+  .logo img{display:block;width:132px;height:20px}
+  .hd span{color:#a9d8f3;font-size:13px;font-weight:600}
+  .bar{height:3px;background:#74bfeb}
+  .bd{padding:24px}
+  h1{font-size:22px;line-height:1.25;margin:0 0 4px}
+  .sub{color:var(--ink3);font-size:13px;margin:0 0 18px}
+  p{margin:0 0 14px}
+  fieldset{border:0;padding:0;margin:0 0 18px}
+  legend,label.lab{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink);margin:0 0 8px}
+  .opts{display:flex;gap:10px;flex-wrap:wrap}
+  .opts label{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:10px 14px;cursor:pointer;background:var(--card);font-size:15px}
+  .opts input{accent-color:#0d314c;width:18px;height:18px;margin:0}
+  .opts label:has(input:checked){border-color:#0d314c;box-shadow:inset 0 0 0 1px #0d314c}
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+  .row > div{flex:1 1 200px}
+  input[type=date],textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+  textarea{min-height:84px;resize:vertical}
+  .hint{font-size:13px;color:var(--ink3);margin-top:4px}
+  button{background:#0d314c;color:#fff;border:0;border-radius:6px;padding:14px 26px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .msg{border-left:3px solid var(--sky);background:var(--wash);padding:12px 14px;border-radius:6px;margin:0 0 16px;font-size:15px}
+  .msg.err{border-color:var(--err)}
+  .ft{background:#0d314c;color:#a9d8f3;font-size:12px;padding:14px 24px}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hd"><div class="logo"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO"></div><span>MISMO Summit</span></div>
+    <div class="bar"></div>
+    <div class="bd">
+      <h1 id="title">Your Travel Dates</h1>
+      <div class="sub" id="sub"></div>
+      <div id="bad" class="msg err" hidden>This link is missing its code. Please use the link in your email from MISMO.</div>
+      <form id="f" hidden novalidate>
+        <p id="hi"></p>
+        <fieldset>
+          <legend>Are you going?</legend>
+          <div class="opts">
+            <label><input type="radio" name="going" value="yes" checked> Yes, I&rsquo;m going</label>
+            <label><input type="radio" name="going" value="no"> No, not this time</label>
+          </div>
+        </fieldset>
+        <div id="trip">
+          <div class="row">
+            <div><label class="lab" for="arr">Arriving</label><input type="date" id="arr" required><div class="hint" id="arrNice"></div></div>
+            <div><label class="lab" for="dep">Departing</label><input type="date" id="dep" required><div class="hint" id="depNice"></div></div>
+          </div>
+          <fieldset>
+            <legend>Do you need a hotel room?</legend>
+            <div class="opts">
+              <label><input type="radio" name="room" value="yes" checked> Yes</label>
+              <label><input type="radio" name="room" value="no"> No</label>
+            </div>
+            <div class="hint" id="guestNote" hidden>We&rsquo;ll confirm your room once we know we have space in our block.</div>
+          </fieldset>
+          <fieldset id="parkSet" hidden>
+            <legend>Will you need parking?</legend>
+            <div class="opts">
+              <label><input type="radio" name="park" value="yes"> Yes</label>
+              <label><input type="radio" name="park" value="no" checked> No</label>
+            </div>
+          </fieldset>
+        </div>
+        <label class="lab" for="notes">Anything we should know? (optional)</label>
+        <textarea id="notes" maxlength="500" placeholder="A late arrival, an early flight out, anything for the hotel"></textarea>
+        <div class="hint" style="margin-bottom:18px">&nbsp;</div>
+        <div id="err" class="msg err" hidden></div>
+        <button type="submit" id="go">Send My Travel Dates</button>
+      </form>
+      <div id="done" class="msg" hidden></div>
+    </div>
+    <div class="ft">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</div>
+  </div>
+</div>
+<script>
+(function(){
+  /* the "Summit HQ - Team Travel Answers" flow's address (When an HTTP request is received) */
+  var ENDPOINT = "";
+  var q = new URLSearchParams(location.search);
+  var get = function(k){ return (q.get(k) || "").trim(); };
+  var t=get("t"), v=get("v"), first=get("n"), summit=get("s")||"MISMO Summit", dates=get("d"), city=get("c");
+  var a=get("a"), z=get("z"), lo=get("lo"), hi=get("hi");
+  var $ = function(id){ return document.getElementById(id); };
+  var iso = function(x){ return /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : ""; };
+  var M=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var W=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  var nice = function(x){ if(!iso(x)) return ""; var p=x.split("-").map(Number), d=new Date(p[0],p[1]-1,p[2]); return W[d.getDay()]+", "+M[d.getMonth()]+" "+d.getDate(); };
+
+  $("title").textContent = "Your Travel Dates for the " + summit;
+  $("sub").textContent = [dates, city].filter(Boolean).join(" · ");
+  document.title = summit + " Travel";
+  if(!t || !v){ $("bad").hidden=false; return; }
+  $("f").hidden=false;
+  $("hi").textContent = (first? "Hi "+first+", p" : "P") + "lease let us know when you’re arriving and leaving so we can register you and give the hotel our rooming list.";
+  if(get("p")==="1") $("parkSet").hidden=false;
+  if(get("g")==="1") $("guestNote").hidden=false;
+
+  var arr=$("arr"), dep=$("dep");
+  [arr,dep].forEach(function(i){ if(iso(lo)) i.min=lo; if(iso(hi)) i.max=hi; });
+  arr.value=iso(a); dep.value=iso(z);
+  var paint=function(){ $("arrNice").textContent=nice(arr.value); $("depNice").textContent=nice(dep.value); };
+  arr.addEventListener("input",paint); dep.addEventListener("input",paint); paint();
+
+  var pick=function(n){ var x=document.querySelector('input[name="'+n+'"]:checked'); return x? x.value : ""; };
+  var going=function(){ return pick("going"); };
+  document.querySelectorAll('input[name="going"]').forEach(function(r){
+    r.addEventListener("change",function(){ $("trip").hidden = going()==="no"; });
+  });
+
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault();
+    var err=$("err"); err.hidden=true;
+    var g=going();
+    if(g==="yes"){
+      if(!arr.value || !dep.value){ err.textContent="Please pick both your arrival and departure dates."; err.hidden=false; return; }
+      if(dep.value<arr.value){ err.textContent="Your departure is before your arrival — please check the dates."; err.hidden=false; return; }
+    }
+    if(!ENDPOINT){ err.textContent="The form isn’t taking answers yet. Please reply to the email with your dates instead."; err.hidden=false; return; }
+    var payload={t:t, v:v, going:g, arr:g==="yes"?arr.value:"", dep:g==="yes"?dep.value:"",
+      room:g==="yes"?pick("room"):"", park:(g==="yes" && get("p")==="1")?pick("park"):"", notes:$("notes").value.slice(0,500)};
+    var btn=$("go"); btn.disabled=true; btn.textContent="Sending…";
+    /* a plain post the flow reads as JSON; the answer is not readable from here */
+    fetch(ENDPOINT,{method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(payload)})
+      .then(function(){
+        $("f").hidden=true;
+        var d=$("done"); d.hidden=false;
+        d.textContent = g==="yes"
+          ? "Thank you! We have you arriving "+nice(arr.value)+" and departing "+nice(dep.value)+". If anything changes, use this same link again."
+          : "Thank you for letting us know. If your plans change, use this same link again.";
+      })
+      .catch(function(){
+        btn.disabled=false; btn.textContent="Send My Travel Dates";
+        err.textContent="That didn’t go through. Please check your connection and try again, or reply to the email with your dates."; err.hidden=false;
+      });
+  });
+})();
+</script>
+</body>
+</html>
