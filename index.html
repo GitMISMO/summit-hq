@@ -2838,7 +2838,7 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 .phs-ring .rc small{font-size:11.5px;color:rgba(255,255,255,.65);margin-top:2px}
 /* the road */
 .phs-road{margin:0 0 18px}
-.phs-rh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.phs-rh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:26px}
 .phs-rh b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
 .phs-rh small{font-size:12px;color:rgba(255,255,255,.62)}
 .phs-track{position:relative;height:58px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
@@ -40626,7 +40626,7 @@ function renderStage(su,sv,list,open,pct,done){
   }
   const where=[start?fmt(start)+(end&&end!==start?" – "+fmt(end,{weekday:"short",month:"short",day:"numeric",year:"numeric"}):""):"", su.venue||""].filter(Boolean).join(" · ");
   host.innerHTML='<div class="phs"><div class="phs-l">'
-    +'<span class="phs-pill'+(clock.mode==="live"?" live":"")+'"><i></i>'+esc(clock.mode==="live"?"Live":clock.mode==="after"?"Wrapped":"Countdown")+' · '+esc(name)+(city?" · "+esc(city):"")+'</span>'
+    +'<span class="phs-pill'+(clock.mode==="live"?" live":"")+'"><i></i>'+esc(clock.mode==="live"?"Live":clock.mode==="after"?"Wrapped":"Countdown")+' · '+esc(name)+'</span>'
     +'<div class="phs-clock" id="phsClock">'+phsClockHtml(clock)+'</div>'
     +'<div class="phs-when">'+esc(where)+'</div>'+nextHtml+'</div>'+ring+'</div>'+road;
   host.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openDrawer(b.dataset.open)));
@@ -47117,6 +47117,60 @@ window.__people={
   #app-gs .gs-main{grid-column:1 / -1;margin-top:6px}
   #app-gs .gs-newp{grid-template-columns:1fr 1fr}
 }
+
+/* ── Jonna, 2026-10-31: the plus-up — every page leads with the same navy band as the Run of
+   Show and Registration (and MISMO Media): figures in translucent tiles, white numbers ── */
+html body #app-grid .meters,html body #app-specs .meters,html body #app-resume .rz-status,html body #app-gs .gs-strip{
+  background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:14px;gap:10px;align-items:stretch!important;
+  box-shadow:0 2px 10px rgba(6,32,47,.12);flex-wrap:wrap}
+:root[data-theme="dark"] body #app-grid .meters,:root[data-theme="dark"] body #app-specs .meters,:root[data-theme="dark"] body #app-resume .rz-status,:root[data-theme="dark"] body #app-gs .gs-strip{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #app-grid .meters,:root:not([data-theme="light"]) body #app-specs .meters,:root:not([data-theme="light"]) body #app-resume .rz-status,:root:not([data-theme="light"]) body #app-gs .gs-strip{background:#14304A;border-color:#2E4F70}}
+html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-resume .rz-status .rz-stat,html body #app-gs .gs-strip .gs-tile{
+  background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.16)!important;border-radius:8px!important;
+  padding:10px 14px!important;color:#fff;flex:1 1 150px;min-width:0;box-shadow:none;transition:background .15s,border-color .15s,transform .15s}
+html body #app-grid .meters .meter:hover,html body #app-specs .meters .meter:hover,html body #app-resume .rz-status .rz-stat:hover,html body #app-gs .gs-strip .gs-tile:hover{
+  background:rgba(255,255,255,.12)!important;border-color:#7fc6f0!important}
+html body #app-grid .meters .meter .n,html body #app-specs .meters .meter .n,html body #app-resume .rz-status .rz-stat .n,html body #app-gs .gs-strip .gs-tile b{
+  color:#fff!important;font-size:26px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
+html body #app-grid .meters .meter .k,html body #app-specs .meters .meter .k,html body #app-resume .rz-status .rz-stat .k,html body #app-gs .gs-strip .gs-tile span{
+  color:#9fd2f2!important;font-weight:700}
+html body #app-grid .meters .meter .d,html body #app-specs .meters .meter .d,html body #app-resume .rz-status .rz-stat .d,html body #app-gs .gs-strip .gs-tile small{color:rgba(255,255,255,.74)!important}
+html body #app-grid .meters .meter *,html body #app-specs .meters .meter *,html body #app-resume .rz-status .rz-stat *{border-color:rgba(255,255,255,.2)}
+html body #app-grid .meters .meter.is-good .n,html body #app-specs .meters .meter.is-good .n,html body #app-gs .gs-strip .gs-tile.ok b{color:#6fe0b5!important}
+html body #app-grid .meters .meter.is-warn .n,html body #app-specs .meters .meter.is-warn .n,html body #app-resume .rz-status .rz-stat.warn .n,html body #app-gs .gs-strip .gs-tile.warn b{color:#f3c87a!important}
+html body #app-grid .meters .meter.is-bad .n,html body #app-specs .meters .meter.is-bad .n,html body #app-gs .gs-strip .gs-tile.bad b{color:#ffa69c!important}
+html body #app-grid .meters .meter.is-warn,html body #app-specs .meters .meter.is-warn,html body #app-resume .rz-status .rz-stat.warn,html body #app-gs .gs-strip .gs-tile.warn{border-left:3px solid #e0a83c!important}
+html body #app-grid .meters .meter.is-bad,html body #app-specs .meters .meter.is-bad,html body #app-gs .gs-strip .gs-tile.bad{border-left:3px solid #ff8a7a!important}
+html body #app-gs .gs-strip .gs-tile input,html body #app-gs .gs-strip .gs-tile select{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;color-scheme:dark}
+html body #app-gs .gs-strip .gs-tile svg{color:#9fd2f2;stroke:currentColor}
+html body #app-grid .meters .meter.tapme{cursor:pointer}
+
+/* General Sessions: the day as one ribbon */
+html body #app-gs .gs-day{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:14px 16px 12px;margin:-4px 0 16px;color:#fff}
+:root[data-theme="dark"] body #app-gs .gs-day{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #app-gs .gs-day{background:#14304A;border-color:#2E4F70}}
+#app-gs .gs-dayh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+#app-gs .gs-dayh b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
+#app-gs .gs-dayh small{font-size:12px;color:rgba(255,255,255,.62)}
+#app-gs .gs-daybar{position:relative;height:46px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+#app-gs .gs-dseg{all:unset;box-sizing:border-box;position:absolute;top:5px;bottom:5px;border-radius:5px;background:linear-gradient(180deg,#5aaee0,#3b8fc6);
+  border:1px solid rgba(255,255,255,.35);cursor:pointer;overflow:hidden;padding:0 6px;display:flex;align-items:center;transition:transform .15s,filter .15s;margin-left:1px}
+#app-gs .gs-dseg:hover,#app-gs .gs-dseg:focus-visible{transform:translateY(-2px);filter:brightness(1.12);z-index:2}
+#app-gs .gs-dseg:focus-visible{outline:2px solid #fff;outline-offset:1px}
+#app-gs .gs-dseg span{font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-gs .gs-dseg.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 6px,rgba(255,255,255,.06) 6px 12px);border-color:rgba(255,255,255,.25)}
+#app-gs .gs-dseg.spon{box-shadow:inset 0 -4px 0 #e0a83c}
+#app-gs .gs-dseg.over{background:linear-gradient(180deg,#ff8a7a,#e0614f)}
+#app-gs .gs-dayt{position:relative;height:16px;margin-top:5px}
+#app-gs .gs-dayt span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:rgba(255,255,255,.55);font-weight:700;white-space:nowrap}
+#app-gs .gs-dayt span:first-child{transform:none}
+#app-gs .gs-dayk{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:11.5px;color:rgba(255,255,255,.72)}
+#app-gs .gs-dayk span{display:inline-flex;align-items:center;gap:6px}
+#app-gs .gs-dayk i{width:14px;height:9px;border-radius:2px;background:#4a9fd4;display:inline-block}
+#app-gs .gs-dayk i.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.4) 0 3px,rgba(255,255,255,.12) 3px 6px)}
+#app-gs .gs-dayk i.spon{background:#4a9fd4;box-shadow:inset 0 -3px 0 #e0a83c}
+#app-gs .gs-dayk i.over{background:#ff8a7a}
+#app-gs .gs-flash{box-shadow:0 0 0 3px #74bfeb!important;transition:box-shadow .3s}
 </style>
 <script>
 /* ============================================================
@@ -47334,6 +47388,9 @@ function render(){
   if(spk.size){ const t4=el('div','gs-tile '+(missing?'warn':'ok')); t4.appendChild(el('b',null,missing? String(missing) : '✓'));
     t4.appendChild(el('span',null, missing? 'Missing a Bio or Headshot':'Bios and Headshots In')); strip.appendChild(t4); }
   HOST.appendChild(strip);
+  /* Jonna, 2026-10-31: the plus-up \u2014 the whole day as one ribbon, each segment as wide as
+     it runs; click one to go to it */
+  try{ if(tl.length) HOST.appendChild(dayRibbon(tl, toM(doc.start)||9*60, Math.max(target,end))); }catch(e){}
 
   const list=el('div','gs-list');
   list.appendChild(insertLine(0));
@@ -47349,6 +47406,32 @@ function render(){
   foot.lastChild.id='gs-saved';
   foot.lastChild.textContent= doc.updatedAt ? 'Last changed '+new Date(doc.updatedAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+(doc.updatedBy?' by '+doc.updatedBy:'') : '';
   HOST.appendChild(foot);
+}
+function dayRibbon(tl,from,to){
+  const span=Math.max(30,to-from);
+  const w=el('div','gs-day');
+  const hd=el('div','gs-dayh'); hd.appendChild(el('b',null,'The Day')); hd.appendChild(el('small',null,clock(from)+' \u2013 '+clock(to)+' \u00b7 click a segment to go to it')); w.appendChild(hd);
+  const bar=el('div','gs-daybar');
+  tl.forEach(row=>{
+    const it=row.it, soft=SOFT.has(it.kind);
+    const seg=el('button','gs-dseg'+(soft?' soft':'')+(it.sponsor?' spon':'')+(row.e>to?' over':''));
+    seg.type='button';
+    seg.style.left=((row.s-from)/span*100).toFixed(2)+'%';
+    seg.style.width=Math.max(0.6,(row.e-row.s)/span*100).toFixed(2)+'%';
+    const who=(it.people||[]).length;
+    seg.title=clock(row.s)+'\u2013'+clock(row.e)+' \u00b7 '+(it.title||it.kind||'Segment')+(who?' \u00b7 '+who+' speaker'+(who===1?'':'s'):'')+(it.sponsor?' \u00b7 Sponsored by '+it.sponsor:'');
+    if((row.e-row.s)/span>0.06) seg.appendChild(el('span',null,it.title||it.kind||''));
+    seg.addEventListener('click',()=>{ const c=[...document.querySelectorAll('#app-gs .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } });
+    bar.appendChild(seg);
+  });
+  w.appendChild(bar);
+  const ticks=el('div','gs-dayt');
+  for(let m=Math.ceil(from/60)*60;m<=to;m+=60){ const t=el('span',null,clock(m)); t.style.left=((m-from)/span*100).toFixed(2)+'%'; ticks.appendChild(t); }
+  w.appendChild(ticks);
+  const key=el('div','gs-dayk');
+  [['','Session'],['soft','Break or Lunch'],['spon','Sponsored'],['over','Past the End Time']].forEach(([c,t])=>{ const k=el('span'); k.appendChild(el('i',c)); k.appendChild(document.createTextNode(t)); key.appendChild(k); });
+  w.appendChild(key);
+  return w;
 }
 function insertLine(at){
   const d=el('div','gs-ins'); const b=el('button',null,'+ Add here'); b.type='button';
