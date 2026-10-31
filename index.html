@@ -4358,6 +4358,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     </div>
     <div class="rz-status" id="rz-status"></div>
   </header>
+  <section class="rzp-hero" id="rz-paper" aria-label="The resume at a glance"></section>
 
   <div class="rz-bar" role="tablist">
     <button class="rz-tab" type="button" data-rz="doc" aria-selected="true">Resume</button>
@@ -42697,6 +42698,59 @@ startClock();
     stat(pn, 'Changes not yet issued', pc===null?'issue v1 when ready':(pc.length?'since v'+lv.n:'up to date'), pc&&pc.length?'warn':'');
     stat(String(g.length), 'Still TBD', g.length?'details the hotel will see blank':'nothing missing', g.length?'warn':'');
     const pend=$('#rz-pending'); pend.textContent = pc===null ? '' : (pc.length?String(pc.length):'');
+    try{ renderPaper(lv,pc,g); }catch(e){ console.warn('paper',e); }
+  }
+  /* ---------- Jonna, 2026-10-31: the plus-up \u2014 the resume as a page on the desk, the way
+     MISMO Matters shows its newsletter: every section a tile, green when it is complete, gold
+     with a count when the hotel would read TBD, blue when it changed since the last version.
+     Click a tile to open that section. ---------- */
+  function renderPaper(lv,pc,g){
+    const host=$('#rz-paper'); if(!host) return;
+    const d=details(), m=model();
+    const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const tbd=id=>g.filter(x=>x.sec===id);
+    const names=SECTIONS.reduce((o,[id,l])=>{ o[id]=TC(l); return o; },{});
+    const changed=new Set();
+    (pc||[]).forEach(c=>{ if(c.kind!=='edit'){ changed.add('fns'); return; }
+      SECTIONS.forEach(([id,l])=>{ if(String(c.text||'').toLowerCase().startsWith(String(l).toLowerCase().slice(0,12))) changed.add(id); }); });
+    /* how ready it is: every detail the hotel needs, filled */
+    const total=11+(d.contacts||[]).filter(c=>c.pos).length;
+    const pct=Math.max(0,Math.round((1-g.length/Math.max(total,1))*100));
+    const issued=lv? 'v'+lv.n+' issued '+fmtDate(lv.at) : 'Not issued yet';
+    const nChanged=pc===null? 0 : pc.length;
+    const pill= !lv? ['t-new','First Version to Issue'] : nChanged? ['t-chg','v'+(lv.n+1)+' Taking Shape'] : ['t-ok','Up to Date With v'+lv.n];
+    const next=g[0];
+    const tile=(id,title,cls,badge,lead)=>'<button type="button" class="rzp-b '+cls+(lead?' lead':'')+'" data-sec="'+esc(id)+'"><span class="rzp-h">'+esc(title)+'</span>'
+      +(badge?'<span class="rzp-k">'+esc(badge)+'</span>':'')+'<span class="rzp-l"><i></i><i></i></span></button>';
+    const tiles=SECTIONS.filter(([id])=>id!=='fns').map(([id],i)=>{
+      const t=tbd(id).length, ch=changed.has(id);
+      const cls=t? 't-tbd' : ch? 't-chg' : 't-ok';
+      return tile(id,names[id], cls, t? t+' TBD' : ch? 'Changed' : '\u2713', i===0);
+    }).join('');
+    const days=(m? m.days:[]).map(day=>{
+      const ch=changed.has('fns');
+      return '<button type="button" class="rzp-b rzp-day '+(ch?'t-chg':'t-ok')+'" data-day="'+esc(day.id)+'"><span class="rzp-h">'+esc(day.title)+'</span>'
+        +'<span class="rzp-k">'+((day.fns||[]).length)+' fn</span><span class="rzp-l"><i></i><i></i></span></button>';
+    }).join('');
+    const R=58, C=2*Math.PI*R;
+    host.innerHTML='<div class="rzp">'
+      +'<div class="rzp-l">'
+        +'<span class="rzp-pill '+pill[0]+'"><i></i>'+esc(pill[1])+'</span>'
+        +'<div class="rzp-big">'+pct+'%<small>ready for the hotel</small></div>'
+        +'<div class="rzp-line">'+esc(issued)+' \u00b7 '+(g.length? g.length+' detail'+(g.length===1?'':'s')+' still TBD' : 'nothing TBD')+(nChanged? ' \u00b7 '+nChanged+' change'+(nChanged===1?'':'s')+' since v'+lv.n : '')+'</div>'
+        +(next? '<button type="button" class="rzp-next" data-sec="'+esc(next.sec)+'"><span>Fill Next</span><b>'+esc(next.l)+'</b><em>in '+esc(names[next.sec]||'')+'</em></button>'
+              : '<div class="rzp-next done"><span>All Set</span><b>Every detail the hotel needs is filled</b><em>'+(nChanged? 'Issue the next version from Versions & Changes' : 'Nothing waiting')+'</em></div>')
+        +'<div class="rzp-key"><span><i class="ok"></i>Complete</span><span><i class="tbd"></i>Still TBD</span><span><i class="chg"></i>Changed Since Last Version</span></div>'
+      +'</div>'
+      +'<div class="rzp-deskwrap"><div class="rzp-paper"><div class="rzp-scan"></div>'
+        +'<div class="rzp-mast"><div><b>Event Resume</b><small>'+esc((feed()&&feed().summit.name)||'Summit')+(d.resumeNo?' \u00b7 No. '+esc(d.resumeNo):'')+'</small></div>'
+        +'<div class="rzp-ring"><svg viewBox="0 0 136 136"><circle cx="68" cy="68" r="'+R+'" class="bg"/><circle cx="68" cy="68" r="'+R+'" class="fg" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+((1-pct/100)*C).toFixed(1)+'"/></svg><span>'+pct+'%</span></div></div>'
+        +'<div class="rzp-grid">'+tiles+'</div>'
+        +(days? '<div class="rzp-dh">Functions, Day by Day</div><div class="rzp-grid days">'+days+'</div>' : '')
+      +'</div></div>'
+    +'</div>';
+    host.querySelectorAll('[data-sec]').forEach(b=>b.addEventListener('click',()=>jump('rz-sec-'+b.dataset.sec)));
+    host.querySelectorAll('[data-day]').forEach(b=>b.addEventListener('click',()=>jump('rz-day-'+b.dataset.day)));
   }
 
   /* ---------- table of contents ---------- */
@@ -47262,6 +47316,62 @@ html body #app-gs .gs-strip .gs-tile input{width:100%!important;max-width:150px;
 html body #app-grid .meters .meter select,html body #app-specs .meters .meter select,html body #app-people .meters .meter select{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;border-radius:4px;color-scheme:dark}
 html body #app-grid .meters .meter select option,html body #app-specs .meters .meter select option,html body #app-people .meters .meter select option{color:#0d314c;background:#fff}
 #app-gs .gs-dayt span:last-child{transform:translateX(-100%)}
+
+/* ── the Resume at a glance: the page on the desk (Jonna, 2026-10-31) ── */
+#app-resume .rzp-hero{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:20px 22px;margin:0 0 16px;color:#fff;box-shadow:0 2px 10px rgba(6,32,47,.12)}
+:root[data-theme="dark"] #app-resume .rzp-hero{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-resume .rzp-hero{background:#14304A;border-color:#2E4F70}}
+#app-resume .rzp-hero:empty{display:none}
+#app-resume .rzp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center}
+@media(max-width:900px){#app-resume .rzp{grid-template-columns:minmax(0,1fr)}}
+#app-resume .rzp-pill{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#fff;padding:3px 9px;border-radius:4px;border:1px solid;--hc:#74bfeb;background:color-mix(in srgb,var(--hc) 22%,transparent);border-color:color-mix(in srgb,var(--hc) 65%,transparent)}
+#app-resume .rzp-pill i{width:8px;height:8px;border-radius:50%;background:var(--hc);animation:phsAir 1.4s ease-in-out infinite}
+#app-resume .rzp-pill.t-ok{--hc:#4fc79b}#app-resume .rzp-pill.t-chg{--hc:#74bfeb}#app-resume .rzp-pill.t-new{--hc:#e0a83c}
+#app-resume .rzp-big{font-size:56px;font-weight:700;line-height:1;margin-top:12px;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+#app-resume .rzp-big small{font-size:16px;color:#74bfeb;font-weight:600;margin-left:10px;letter-spacing:0}
+#app-resume .rzp-line{font-size:14px;font-weight:600;margin-top:8px;color:rgba(255,255,255,.86)}
+#app-resume .rzp-next{all:unset;box-sizing:border-box;cursor:pointer;margin-top:16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1px 12px;align-items:baseline;width:100%;max-width:480px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-left:3px solid #e0a83c;border-radius:6px;padding:10px 14px;transition:background .15s,transform .15s}
+#app-resume button.rzp-next:hover,#app-resume button.rzp-next:focus-visible{background:rgba(255,255,255,.13);transform:translateY(-1px)}
+#app-resume .rzp-next span{grid-row:span 2;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#f3c87a;white-space:nowrap}
+#app-resume .rzp-next b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-resume .rzp-next em{font-style:normal;font-size:12.5px;color:#9fd2f2;font-weight:600}
+#app-resume .rzp-next.done{cursor:default;border-left-color:#4fc79b} #app-resume .rzp-next.done span{color:#6fe0b5}
+#app-resume .rzp-key{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-size:11.5px;color:rgba(255,255,255,.72)}
+#app-resume .rzp-key span{display:inline-flex;align-items:center;gap:6px}
+#app-resume .rzp-key i{width:10px;height:10px;border-radius:2px;display:inline-block}
+#app-resume .rzp-key i.ok{background:#4fc79b}#app-resume .rzp-key i.tbd{background:#e0a83c}#app-resume .rzp-key i.chg{background:#3987e5}
+#app-resume .rzp-deskwrap{display:flex;justify-content:center;padding:4px 0}
+#app-resume .rzp-paper{position:relative;width:100%;max-width:480px;background:#fbfdff;color:#0d314c;border-radius:6px;box-shadow:0 26px 50px -18px rgba(0,0,0,.65);transform:rotate(-1.4deg);padding:14px;overflow:hidden;transition:transform .35s ease}
+#app-resume .rzp-paper:hover{transform:rotate(0) translateY(-3px)}
+#app-resume .rzp-mast{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0d314c;color:#fff;border-radius:4px;padding:10px 12px;margin-bottom:10px}
+#app-resume .rzp-mast b{display:block;font-size:18px;line-height:1.15}
+#app-resume .rzp-mast small{font-size:10px;color:#a9d8f3;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+#app-resume .rzp-ring{position:relative;width:46px;height:46px;flex:0 0 auto}
+#app-resume .rzp-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+#app-resume .rzp-ring circle{fill:none;stroke-width:14}
+#app-resume .rzp-ring .bg{stroke:rgba(255,255,255,.18)} #app-resume .rzp-ring .fg{stroke:#74bfeb;stroke-linecap:round}
+#app-resume .rzp-ring span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+#app-resume .rzp-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#app-resume .rzp-grid.days{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+#app-resume .rzp-dh{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7794aa;margin:10px 2px 6px}
+#app-resume .rzp-b{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:5px;padding:7px 8px 8px;border-radius:4px;border:1px solid #dbe7f0;border-left:4px solid var(--pc);background:#fff;position:relative;min-width:0;transition:transform .15s,box-shadow .15s}
+#app-resume .rzp-b:hover,#app-resume .rzp-b:focus-visible{transform:translateY(-1px);box-shadow:0 6px 14px -8px rgba(13,49,76,.55)}
+#app-resume .rzp-b:focus-visible{outline:2px solid #1a8fe3;outline-offset:1px}
+#app-resume .rzp-b.lead{grid-column:1/-1}
+#app-resume .rzp-h{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0d314c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:52px}
+#app-resume .rzp-k{position:absolute;top:5px;right:7px;font-size:10.5px;font-weight:700;color:#0f7b5c}
+#app-resume .rzp-l{display:flex;flex-direction:column;gap:3px}
+#app-resume .rzp-l i{display:block;height:4px;border-radius:2px;background:var(--pc);opacity:.55}
+#app-resume .rzp-l i:last-child{width:58%}
+#app-resume .rzp-b.t-ok{--pc:#4fc79b}
+#app-resume .rzp-b.t-tbd{--pc:#e0a83c;border-left-style:dashed;background:#fffaf0}
+#app-resume .rzp-b.t-tbd .rzp-k{color:#a0661a}
+#app-resume .rzp-b.t-tbd .rzp-l i{background:repeating-linear-gradient(90deg,#e0a83c 0 6px,transparent 6px 10px);opacity:.8}
+#app-resume .rzp-b.t-chg{--pc:#3987e5} #app-resume .rzp-b.t-chg .rzp-k{color:#1d63b8}
+#app-resume .rzp-scan{position:absolute;left:0;right:0;height:70px;top:-70px;background:linear-gradient(180deg,transparent,rgba(116,191,235,.24),transparent);animation:rzpScan 5s ease-in-out infinite;pointer-events:none}
+@keyframes rzpScan{0%{top:-70px}55%,100%{top:100%}}
+@media (prefers-reduced-motion:reduce){#app-resume .rzp-scan,#app-resume .rzp-pill i{animation:none}#app-resume .rzp-paper{transform:none}}
 </style>
 <script>
 /* ============================================================
