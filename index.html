@@ -34799,8 +34799,11 @@ function fitBoard(){
      sessions in them stop them \u2014 so the whole week is scaled down to fit instead of
      scrolling up and down */
   if(board.scrollHeight > room){
-    const z=Math.max(0.4, Math.floor(room/board.scrollHeight*100)/100);
+    let z=Math.max(0.4, Math.floor(room/board.scrollHeight*100)/100);
     board.style.zoom=String(z);
+    /* the scrollbar under a scaled week takes a few pixels of its own \u2014 step down until it fits */
+    let guard=12;
+    while(wrap.scrollHeight > wrap.clientHeight+1 && z>0.4 && guard-- > 0){ z=Math.round((z-0.02)*100)/100; board.style.zoom=String(z); }
   }
 }
 let fitT=null;
