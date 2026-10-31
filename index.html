@@ -5600,8 +5600,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       </ol>
       <h4>The People Tab Tools</h4>
       <ul>
-        <li><b>On This Summit</b> lists this Summit&rsquo;s speakers.</li>
-        <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted puts them on this Summit as a speaker; Declined keeps them on the list for future Summits.</li>
+        <li><b>Confirmed Speakers</b> lists this Summit&rsquo;s speakers.</li>
+        <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits.</li>
         <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
@@ -44271,11 +44271,11 @@ function foundLine(){
   box.appendChild(el('span','flab','Found'));
   const link=(n,lab,which)=>{
     const b=el('button','flink',n+' '+lab); b.type='button';
-    b.title='Go to '+(n===1?'them':'the '+n)+' under '+(which==='on'?'On This Summit':'Master List of Speakers');
+    b.title='Go to '+(n===1?'them':'the '+n)+' under '+(which==='on'?'Confirmed Speakers':'Master List of Speakers');
     b.addEventListener('click',()=>goTo(which));
     box.appendChild(b);
   };
-  if(m.on.length) link(m.on.length, m.on.length===1?'speaker on this summit':'speakers on this summit', 'on');
+  if(m.on.length) link(m.on.length, m.on.length===1?'confirmed speaker':'confirmed speakers', 'on');
   if(m.off.length) link(m.off.length, 'on the master list', 'off');
   if(m.on.length===1) box.appendChild(el('span','fnone',m.on[0].n));
   else if(!m.on.length && m.off.length===1) box.appendChild(el('span','fnone',m.off[0].n));
@@ -44843,7 +44843,7 @@ function render(){
   const note=[ST.role?ROLE1[ST.role]+'s only':'', ST.left?'outstanding only':'',
     ST.step?('waiting on “'+(STEPS.find(x=>x.k===ST.step)||{}).t+'”'):''].filter(Boolean).join(' · ');
   left.appendChild(stillSec);
-  left.appendChild(section('On This Summit', note||'Speakers. Click a row to open it.',
+  left.appendChild(section('Confirmed Speakers', note||'Speakers. Click a row to open it.',
     list.length,'lOpen',true,box=>{
     if(ST.step){ stepView(box,list); return; }
     box.appendChild(addBlock());
@@ -44888,7 +44888,7 @@ function render(){
     if(!pros.length){ box.appendChild(el('div','blank','No prospects yet. Add someone above, or press + Prospect on anyone in the Master List of Speakers.')); return; }
     pros.slice().sort((a,b)=>(ORDER[inviteOf(a)]-ORDER[inviteOf(b)]) || String(a.n).localeCompare(String(b.n)))
       .forEach(p=>box.appendChild(prospectRow(p)));
-    box.appendChild(el('div','pnote pp-when','Accepted puts them on this summit as a speaker. Declined keeps them here for future summits.'));
+    box.appendChild(el('div','pnote pp-when','Accepted makes them a Confirmed Speaker. Declined keeps them here for future summits.'));
   });
   try{ if(window.__pane) window.__pane.face(prosSec,{note: pros.length? [pc['']&&pc['']+' to invite', pc.invited&&pc.invited+' invited', pc.accepted&&pc.accepted+' accepted', pc.declined&&pc.declined+' declined'].filter(Boolean).join(' \u00b7 ') : 'No prospects yet', tone: pc.invited? 'warn':''}); }catch(e){}
   /* Jonna, 2026-10-29: Speaker Prospects sits beside On This Summit */
@@ -45441,7 +45441,7 @@ function prospectRow(p){
   tx.appendChild(el('div','prow-n',p.n||'Unnamed'));
   const last=PAST.find(([k])=>(p.h||[]).indexOf(k)>=0);
   tx.appendChild(el('div','prow-s',[[p.t,p.c].filter(Boolean).join(' \u00b7 '), last? 'Last spoke '+last[1] : 'Not spoken before'].filter(Boolean).join(' \u2014 ')));
-  const note = v==='accepted' ? 'Accepted \u2014 on this summit as a speaker'
+  const note = v==='accepted' ? 'Accepted \u2014 a confirmed speaker'
     : v==='declined' ? 'Declined \u2014 kept as a prospect for future summits'
     : v==='invited' ? 'Invited '+pretty(stOf(p).inviteAt)
     : (stOf(p).prospect ? 'Not invited yet' : 'Prospect from an earlier summit \u2014 not invited yet');
@@ -47382,7 +47382,7 @@ function sidePanel(){
   const h=el('h3',null,'Presenters'); sd.appendChild(h);
   sd.appendChild(el('div','hint','Drag a name onto a session to add them. Speakers on this summit are listed first; sponsors and the board are left out unless they are speaking. Search finds anyone else on the People list.'));
   const seg=el('div','gs-seg');
-  [['speakers','On This Summit'],['unplaced','Not Placed Yet'],['lenders','Lenders'],['all','Everyone']].forEach(([k,lab])=>{
+  [['speakers','Confirmed Speakers'],['unplaced','Not Placed Yet'],['lenders','Lenders'],['all','Everyone']].forEach(([k,lab])=>{
     const b=el('button',null,lab); b.type='button'; b.setAttribute('aria-pressed',sideMode===k?'true':'false');
     b.addEventListener('click',()=>{ sideMode=k; render(); }); seg.appendChild(b); });
   sd.appendChild(seg);

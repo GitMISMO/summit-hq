@@ -140,12 +140,17 @@
       if(!arr.value || !dep.value){ err.textContent="Please pick both your arrival and departure dates."; err.hidden=false; return; }
       if(dep.value<arr.value){ err.textContent="Your departure is before your arrival — please check the dates."; err.hidden=false; return; }
     }
-    if(!ENDPOINT){ err.textContent="The form isn’t taking answers yet. Please reply to the email with your dates instead."; err.hidden=false; return; }
     var payload={t:t, v:v, going:g, arr:g==="yes"?arr.value:"", dep:g==="yes"?dep.value:"",
       room:g==="yes"?pick("room"):"", park:(g==="yes" && get("p")==="1")?pick("park"):"", notes:$("notes").value.slice(0,500)};
     var btn=$("go"); btn.disabled=true; btn.textContent="Sending…";
+    /* the flow's address is kept beside this page in travel-endpoint.txt */
+    var where = ENDPOINT ? Promise.resolve(ENDPOINT)
+      : fetch("travel-endpoint.txt",{cache:"no-store"}).then(function(r){ return r.ok? r.text() : ""; }).then(function(x){ return String(x||"").trim(); });
     /* a plain post the flow reads as JSON; the answer is not readable from here */
-    fetch(ENDPOINT,{method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(payload)})
+    where.then(function(url){
+      if(!/^https:\/\//.test(url)) throw new Error("no endpoint");
+      return fetch(url,{method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(payload)});
+    })
       .then(function(){
         $("f").hidden=true;
         var d=$("done"); d.hidden=false;
