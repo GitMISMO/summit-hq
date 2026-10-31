@@ -4841,6 +4841,129 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   #app-trunk .tk-row,#app-trunk .tk-head{grid-template-columns:54px minmax(0,1fr) auto auto}
   #app-trunk .tk-row .tk-note,#app-trunk .tk-head .h-note{display:none}
 }
+
+/* ---------- Pack the Trunk ----------
+   Jonna, 2026-10-31: every line on the lists sits on the floor until it is dragged
+   (or tapped) into the trunk. The tags are not scoped to #app-trunk because the one
+   being carried rides on <body>. */
+#app-trunk .tkp{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);
+  gap:16px;margin:0 0 16px;align-items:start}
+.tkp-floor{position:relative;background-color:var(--surface);border:1px solid var(--line-2);
+  border-radius:8px;box-shadow:var(--shadow);padding:14px 16px 16px;min-height:250px;
+  background-image:repeating-linear-gradient(180deg,transparent 0 43px,var(--line) 43px 44px);
+  transition:border-color .2s,box-shadow .2s}
+.tkp-floor.is-over{border-color:var(--pc-trunk);box-shadow:0 0 0 3px var(--pc-trunk-soft),var(--shadow)}
+.tkp.from-trunk .tkp-floor{border-style:dashed;border-color:var(--pc-trunk)}
+.tkp-hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.tkp-eb{font-size:10px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.tkp-hd b{font:700 22px/1 var(--display);color:var(--ink)}
+.tkp-sub{margin-left:auto;font-size:12px;color:var(--ink-3)}
+.tkp-grp{margin:0 0 12px}
+.tkp-grp:last-child{margin-bottom:0}
+.tkp-gh{display:flex;align-items:center;gap:7px;margin:0 0 7px;font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;font-weight:700;color:var(--ink-2)}
+.tkp-gh i{width:9px;height:9px;border-radius:2px;background:var(--c,var(--pc-trunk))}
+.tkp-gh .n{color:var(--ink-3);font-weight:600}
+.tkp-grp[data-s=rib]{--c:#2f80c8}
+.tkp-grp[data-s=merch]{--c:var(--pc-people)}
+.tkp-tags{display:flex;flex-wrap:wrap;gap:7px}
+.tkp-clear{display:flex;align-items:center;justify-content:center;min-height:200px;
+  color:var(--ink-3);font-size:13px;text-align:center}
+.tkp-tag{--c:var(--pc-trunk);display:inline-flex;align-items:center;gap:7px;max-width:100%;
+  margin:0;padding:7px 11px 7px 9px;border:1px solid var(--line-2);border-left:4px solid var(--c);
+  border-radius:5px;background:var(--surface);color:var(--ink);font:600 12.5px/1.25 var(--ui);
+  text-align:left;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:manipulation;box-shadow:0 1px 2px rgba(13,49,76,.08);
+  transition:transform .15s,box-shadow .15s,opacity .15s,border-color .15s}
+.tkp-tag[data-s=rib]{--c:#2f80c8}
+.tkp-tag[data-s=merch]{--c:var(--pc-people)}
+.tkp-tag:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(13,49,76,.15);border-color:var(--c)}
+.tkp-tag:focus-visible{outline:2px solid #74bfeb;outline-offset:2px}
+.tkp-tag .q{font-weight:700;color:var(--c);font-size:12px}
+.tkp-tag .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.tkp-tag .nt{font-weight:400;color:var(--ink-3);white-space:nowrap}
+.tkp-tag .ck{color:var(--good);font-weight:700}
+.tkp-tag.is-blank .nm{font-style:italic;color:var(--ink-3);font-weight:400}
+.tkp-tag.is-lifted{opacity:.22;transform:none;box-shadow:none}
+.tkp-tag.is-held{transform:scale(1.06);box-shadow:0 8px 18px rgba(13,49,76,.22)}
+.tkp-tag.is-new{animation:tkpPop .5s cubic-bezier(.2,1.5,.4,1)}
+.tkp-ghost{position:fixed !important;left:0;top:0;z-index:10050;pointer-events:none;cursor:grabbing;
+  transition:none !important;box-shadow:0 16px 32px rgba(13,49,76,.32) !important;opacity:1 !important}
+@keyframes tkpPop{0%{transform:translateY(-16px) scale(.5);opacity:0}100%{transform:none;opacity:1}}
+/* the trunk */
+.tkp-side{display:flex;flex-direction:column;gap:8px}
+@media(min-width:861px){ .tkp-side{position:sticky;top:12px} }
+.tkp-trunk{position:relative;padding:58px 12px 0;perspective:900px}
+.tkp-lid{position:absolute;left:calc(12px + 4%);right:calc(12px + 4%);top:0;height:66px;
+  transform-origin:50% 100%;transform:rotateX(34deg);border-radius:12px 12px 4px 4px;
+  background:linear-gradient(180deg,#15476b,#0a2840);border:2px solid #082236;
+  box-shadow:inset 0 -12px 20px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;
+  transition:transform .6s cubic-bezier(.3,1.3,.5,1),opacity .35s}
+.tkp-lid span{color:#a9d8f3;font:700 11px/1 var(--ui);letter-spacing:.32em;padding:5px 8px 5px 12px;
+  border:1px solid rgba(116,191,235,.55);border-radius:3px}
+.tkp-box{position:relative;padding:12px 12px 0;border-radius:6px 6px 12px 12px;
+  background:linear-gradient(180deg,#123c5c,#0d314c 45%,#0a2a42);border:2px solid #082236;
+  box-shadow:0 12px 26px rgba(13,49,76,.28);transition:transform .2s,box-shadow .2s}
+/* the handles */
+.tkp-box::before,.tkp-box::after{content:"";position:absolute;top:42%;width:9px;height:30px;background:#082236}
+.tkp-box::before{left:-11px;border-radius:5px 0 0 5px}
+.tkp-box::after{right:-11px;border-radius:0 5px 5px 0}
+.tkp-well{position:relative}
+.tkp-in{position:relative;min-height:180px;max-height:330px;overflow:auto;padding:12px;border-radius:4px;
+  display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;
+  background:linear-gradient(180deg,#e4ebf1,#f6f8fa);
+  box-shadow:inset 0 10px 18px rgba(0,0,0,.28),inset 0 0 0 1px rgba(0,0,0,.15)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .tkp-in{background:linear-gradient(180deg,#081624,#0f2336)} }
+:root[data-theme="dark"] .tkp-in{background:linear-gradient(180deg,#081624,#0f2336)}
+.tkp-in .tkp-tag{font-size:11.5px;padding:5px 9px 5px 7px}
+.tkp-empty{margin:auto;color:#6c899f;font-size:12.5px;text-align:center;padding:20px 8px}
+.tkp-front{display:flex;align-items:center;gap:12px;padding:13px 4px 14px;color:#fff}
+.tkp-latch{flex:0 0 auto;width:24px;height:17px;border-radius:3px;background:#0d314c;
+  box-shadow:inset 0 0 0 4px #74bfeb}
+.tkp-gauge{flex:1 1 auto;height:8px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
+.tkp-gauge i{display:block;height:100%;width:0;background:linear-gradient(90deg,#74bfeb,#b7e4ff);
+  transition:width .55s cubic-bezier(.3,1.2,.5,1)}
+.tkp-cnt{white-space:nowrap;font:700 14px/1 var(--ui);color:#fff}
+.tkp-cnt small{font-size:12px;font-weight:600;color:#a9d8f3}
+/* while something is being carried, the trunk is waiting for it */
+.tkp.from-floor .tkp-box{animation:tkpWait 1.3s ease-in-out infinite}
+.tkp-trunk.is-over .tkp-box{animation:none;transform:scale(1.03);
+  box-shadow:0 0 0 3px #74bfeb,0 18px 36px rgba(13,49,76,.35)}
+.tkp-trunk.is-over .tkp-lid{transform:rotateX(16deg)}
+.tkp-trunk.is-over .tkp-in{outline:2px dashed #74bfeb;outline-offset:-7px}
+.tkp-trunk.is-thunk .tkp-box{animation:tkpThunk .45s ease-out}
+.tkp-trunk.is-thunk .tkp-lid{animation:tkpLid .5s ease-out}
+@keyframes tkpWait{0%,100%{box-shadow:0 12px 26px rgba(13,49,76,.28)}50%{box-shadow:0 0 0 3px rgba(116,191,235,.55),0 12px 26px rgba(13,49,76,.28)}}
+@keyframes tkpThunk{0%{transform:none}35%{transform:translateY(5px) scaleY(.98)}70%{transform:translateY(-2px)}100%{transform:none}}
+@keyframes tkpLid{0%{transform:rotateX(34deg)}40%{transform:rotateX(50deg)}100%{transform:rotateX(34deg)}}
+/* everything is in: the lid comes down */
+.tkp-cover{position:absolute;inset:0;border-radius:4px;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:6px;padding:16px;text-align:center;color:#fff;cursor:pointer;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 12px,transparent 12px 24px),
+    linear-gradient(180deg,#15476b,#0d314c);border:2px solid #082236;
+  transform-origin:50% 0;transform:scaleY(0);opacity:0;pointer-events:none;
+  transition:transform .55s cubic-bezier(.3,1.25,.5,1),opacity .25s}
+.tkp-trunk.is-shut .tkp-cover{transform:none;opacity:1;pointer-events:auto}
+.tkp-trunk.is-shut .tkp-lid{transform:rotateX(90deg);opacity:0}
+.tkp-seal{width:46px;height:46px;border-radius:50%;background:#74bfeb;color:#0d314c;
+  font:800 23px/46px var(--ui);box-shadow:0 0 0 7px rgba(116,191,235,.22)}
+.tkp-trunk.is-shut .tkp-seal{animation:tkpSeal .6s .35s both cubic-bezier(.2,1.6,.4,1)}
+@keyframes tkpSeal{0%{transform:scale(0)}100%{transform:none}}
+.tkp-cover b{font:700 18px/1.2 var(--display);letter-spacing:-.01em}
+.tkp-cover span{font-size:12.5px;color:#a9d8f3}
+.tkp-open{margin-top:6px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);
+  border-radius:5px;padding:7px 14px;font:600 12.5px var(--ui);cursor:pointer}
+.tkp-open:hover{background:rgba(255,255,255,.1)}
+.tkp-acts{display:flex;align-items:center;gap:10px;padding:2px 12px 0;font-size:12px;color:var(--ink-3)}
+.tkp-acts .btn{margin-left:auto;white-space:nowrap;flex:0 0 auto}
+@media(max-width:860px){
+  #app-trunk .tkp{grid-template-columns:1fr}
+  .tkp-side{order:-1}
+  .tkp-in{max-height:230px;min-height:140px}
+}
+@media (prefers-reduced-motion:reduce){
+  .tkp-tag,.tkp-box,.tkp-lid,.tkp-cover,.tkp-gauge i{transition:none !important;animation:none !important}
+}
 </style>
 
 <div id="app-trunk" hidden>
@@ -4850,6 +4973,30 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <div class="meters" id="tk-meters"></div>
   </header>
   <div class="tk-tasks" id="tk-tasks" hidden></div>
+  <section class="tkp" id="tk-pack" aria-label="Pack the Trunk">
+    <div class="tkp-floor tkp-zone" data-zone="floor">
+      <div class="tkp-hd"><span class="tkp-eb">Still on the Floor</span><b id="tkp-left">0</b><span class="tkp-sub">Drag a line into the trunk, or tap it</span></div>
+      <div id="tkp-floor"></div>
+    </div>
+    <div class="tkp-side">
+      <div class="tkp-trunk tkp-zone" data-zone="trunk" id="tkp-trunk">
+        <div class="tkp-lid" aria-hidden="true"><span>MISMO</span></div>
+        <div class="tkp-box">
+          <div class="tkp-well">
+            <div class="tkp-in" id="tkp-in"></div>
+            <div class="tkp-cover" id="tkp-cover">
+              <div class="tkp-seal" aria-hidden="true">&#10003;</div>
+              <b>Packed and Ready to Ship</b>
+              <span id="tkp-done-sub"></span>
+              <button type="button" class="tkp-open" id="tkp-open">Open It Back Up</button>
+            </div>
+          </div>
+          <div class="tkp-front"><span class="tkp-latch" aria-hidden="true"></span><div class="tkp-gauge"><i id="tkp-fill"></i></div><span class="tkp-cnt" id="tkp-cnt"></span></div>
+        </div>
+      </div>
+      <div class="tkp-acts"><span>Drag a line back out to unpack it.</span><button type="button" class="btn ghost" id="tkp-empty-btn" hidden>Empty the Trunk</button></div>
+    </div>
+  </section>
   <div class="hint barhint">
     The Standard kit is the same trunk every summit &mdash; edit it once and it carries.
     The ribbons and this summit&rsquo;s sponsor merch are just for this summit. Ticks are
@@ -5222,6 +5369,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
           if(!n){ try{ window.__hqFlash && window.__hqFlash('Every sponsor is already on the list'); }catch(e){} }
         }}}));
     meters();
+    stage();
     taskRow();
     try{ if(window.__pane){ window.__pane.refresh(); window.__pane.sheetRefresh(); } }catch(e){}
     paintCounts();
@@ -5250,6 +5398,195 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     m(String(st.packed),'Packed','', st.total&&st.packed===st.total?'is-good':'');
     m(String(st.left),'Still to pack','', st.left?'is-warn':'');
   }
+
+  /* ---------- Pack the Trunk ----------
+     Jonna, 2026-10-31: "an interactive trunk with the things on the list that can be
+     dragged and dropped in". Every line on the three lists sits on the floor until it
+     goes in. Dropping it in is the same tick as the Packed box on its row (the same
+     summit().packed), so the trunk and the lists below always agree, and it starts empty
+     again for the next summit. A tap does it too. On a phone a press-and-hold picks a
+     line up, so a quick swipe still scrolls the page. */
+  const TKP_SECS=[['kit','The Standard Kit'],['rib','Ribbons & Pins'],['merch','Sponsor Merch']];
+  const TKP={drag:null, later:false, peek:false, fresh:'', thunk:false, holding:false, flying:false};
+  function tkpItems(){
+    const s=standing(), v=summit(), p=v.packed||{}, out=[];
+    [['kit',s.kit],['rib',s.rib],['merch',v.merch]].forEach(([sec,rows])=>
+      rows.forEach(r=>out.push({r:r, sec:sec, on:!!p[r.k]})));
+    return out;
+  }
+  function tkpSet(k,on){
+    const p=summit().packed; if(on) p[k]=1; else delete p[k];
+    TKP.fresh=k; TKP.thunk=!!on;
+    save('summit'); render(true);
+  }
+  function tkpTag(it, inTrunk){
+    const b=el('button','tkp-tag'); b.type='button'; b.dataset.s=it.sec; b.dataset.k=it.r.k;
+    const nm=String(it.r.t||'').trim(), q=String(it.r.q||'').trim(), note=String(it.r.n||'').trim();
+    if(q) b.appendChild(el('span','q',q));
+    b.appendChild(el('span','nm', nm||'New item'));
+    if(!nm) b.classList.add('is-blank');
+    if(note) b.appendChild(el('span','nt',note));
+    if(inTrunk) b.appendChild(el('span','ck','✓'));
+    const said=(q?q+' ':'')+(nm||'new item')+(note?' ('+note+')':'');
+    b.setAttribute('aria-label', inTrunk? 'Take '+said+' out of the trunk' : 'Pack '+said);
+    b.title = inTrunk? 'Drag it out, or tap, to take it out of the trunk' : 'Drag it into the trunk, or tap to pack it';
+    if(TKP.fresh===it.r.k) b.classList.add('is-new');
+    tkpBind(b, it);
+    return b;
+  }
+  function tkpScroller(n){
+    for(let p=n.parentElement; p && p!==document.body; p=p.parentElement){
+      const s=getComputedStyle(p).overflowY;
+      if((s==='auto'||s==='scroll') && p.scrollHeight>p.clientHeight+4) return p;
+    }
+    return window;
+  }
+  function tkpGhost(b,r){
+    const g=b.cloneNode(true); g.classList.remove('is-held','is-new','is-lifted');
+    g.classList.add('tkp-ghost'); g.style.width=r.width+'px'; g.setAttribute('aria-hidden','true');
+    document.body.appendChild(g); return g;
+  }
+  /* a tap: the line flies across, then the tick is made */
+  function tkpFly(b,it){
+    if(TKP.flying || TKP.drag) return;
+    const to = it.on ? $('#tkp-floor') : $('#tkp-in');
+    const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce || !b.animate || !to){ tkpSet(it.r.k,!it.on); return; }
+    const r=b.getBoundingClientRect(), t=to.getBoundingClientRect();
+    const g=tkpGhost(b,r); b.classList.add('is-lifted'); TKP.flying=true;
+    const tx=t.left+t.width/2-r.width/2, ty=t.top+Math.min(t.height/2,70)-r.height/2;
+    const a=g.animate([
+      {transform:'translate('+r.left+'px,'+r.top+'px)'},
+      {transform:'translate('+((r.left+tx)/2)+'px,'+(Math.min(r.top,ty)-50)+'px) rotate(-4deg) scale(1.06)', offset:.5},
+      {transform:'translate('+tx+'px,'+ty+'px) scale(.85)', opacity:.55}
+    ],{duration:430, easing:'cubic-bezier(.4,0,.2,1)'});
+    let ended=false;
+    const done=()=>{ if(ended) return; ended=true; g.remove(); TKP.flying=false; tkpSet(it.r.k,!it.on); };
+    a.onfinish=done; a.oncancel=done;
+  }
+  /* a drag: the line rides under the pointer and goes wherever it is let go */
+  function tkpLift(b,it,ev){
+    const host=$('#tk-pack');
+    const r=b.getBoundingClientRect(), g=tkpGhost(b,r);
+    const ox=ev.clientX-r.left, oy=ev.clientY-r.top;
+    b.classList.add('is-lifted');
+    host.classList.add('is-dragging', it.on?'from-trunk':'from-floor');
+    let over=null, x=ev.clientX, y=ev.clientY, raf=0;
+    const sc=tkpScroller(host);
+    const place=()=>{ g.style.transform='translate('+(x-ox)+'px,'+(y-oy)+'px) rotate(-2.5deg)'; };
+    const hit=()=>{
+      const n=document.elementFromPoint(x,y);
+      const z=n && n.closest ? n.closest('#tk-pack .tkp-zone') : null;
+      if(z!==over){ if(over) over.classList.remove('is-over'); over=z; if(z) z.classList.add('is-over'); }
+    };
+    /* near the top or bottom of the window, the page scrolls to meet it */
+    const edge=()=>{
+      raf=0; const h=window.innerHeight, m=70; let dy=0;
+      if(y<m) dy=-Math.ceil((m-y)/5); else if(y>h-m) dy=Math.ceil((y-(h-m))/5);
+      if(dy){ try{ sc.scrollBy(0,dy); }catch(e){} hit(); raf=requestAnimationFrame(edge); }
+    };
+    const esc=e=>{ if(e.key==='Escape'){ e.preventDefault(); d.drop(null); } };
+    document.addEventListener('keydown',esc,true);
+    const d={
+      move(e){ x=e.clientX; y=e.clientY; place(); hit(); if(!raf) raf=requestAnimationFrame(edge); },
+      drop(e){
+        if(TKP.drag!==d) return;
+        document.removeEventListener('keydown',esc,true); cancelAnimationFrame(raf);
+        if(e){ x=e.clientX; y=e.clientY; hit(); }
+        const z=e? over : null;
+        if(over) over.classList.remove('is-over');
+        host.classList.remove('is-dragging','from-trunk','from-floor');
+        g.remove(); TKP.drag=null;
+        const want = z ? z.dataset.zone==='trunk' : it.on;
+        if(want!==it.on) tkpSet(it.r.k, want);
+        else { b.classList.remove('is-lifted'); if(TKP.later) stage(); }
+      }
+    };
+    TKP.drag=d; place(); hit();
+    return d;
+  }
+  function tkpBind(b,it){
+    b.addEventListener('click',()=>{
+      if(b._noClick){ b._noClick=false; return; }
+      tkpFly(b,it);
+    });
+    b.addEventListener('pointerdown',e=>{
+      if(e.button!==0 || TKP.drag || TKP.flying) return;
+      const touch=e.pointerType==='touch';
+      const sx=e.clientX, sy=e.clientY; let held=!touch, d=null;
+      const hold = touch ? setTimeout(()=>{ held=true; TKP.holding=true; b.classList.add('is-held');
+        try{ navigator.vibrate && navigator.vibrate(10); }catch(_){} },220) : 0;
+      const stop=()=>{ clearTimeout(hold); TKP.holding=false; b.classList.remove('is-held');
+        window.removeEventListener('pointermove',mv); window.removeEventListener('pointerup',up);
+        window.removeEventListener('pointercancel',cancel); };
+      const mv=ev=>{
+        if(!d){
+          if(Math.hypot(ev.clientX-sx, ev.clientY-sy)<6) return;
+          if(!held){ stop(); return; }          /* a finger moving straight away is a scroll */
+          d=tkpLift(b,it,ev);
+        }
+        d.move(ev);
+      };
+      const up=ev=>{ const was=d; stop();
+        if(was){ b._noClick=true; setTimeout(()=>{ b._noClick=false; },400); was.drop(ev); } };
+      const cancel=()=>{ const was=d; stop(); if(was) was.drop(null); };
+      window.addEventListener('pointermove',mv); window.addEventListener('pointerup',up);
+      window.addEventListener('pointercancel',cancel);
+    });
+  }
+  function stage(){
+    const host=$('#tk-pack'); if(!host) return;
+    if(TKP.drag || TKP.flying){ TKP.later=true; return; }
+    TKP.later=false;
+    const items=tkpItems(), total=items.length, on=items.filter(i=>i.on), off=items.filter(i=>!i.on);
+    const full = total>0 && on.length===total;
+    if(!full) TKP.peek=false;
+
+    const floor=$('#tkp-floor'); floor.textContent='';
+    $('#tkp-left').textContent=String(off.length);
+    if(!off.length) floor.appendChild(el('div','tkp-clear', total
+      ? '✓  Everything is in the trunk.' : 'Nothing on the lists yet. Add items below.'));
+    TKP_SECS.forEach(([sec,label])=>{
+      const g=off.filter(i=>i.sec===sec); if(!g.length) return;
+      const box=el('div','tkp-grp'); box.dataset.s=sec;
+      const h=el('div','tkp-gh'); h.appendChild(el('i'));
+      h.appendChild(document.createTextNode(label)); h.appendChild(el('span','n',String(g.length)));
+      box.appendChild(h);
+      const tags=el('div','tkp-tags'); g.forEach(i=>tags.appendChild(tkpTag(i,false)));
+      box.appendChild(tags); floor.appendChild(box);
+    });
+
+    const inn=$('#tkp-in'), keep=inn.scrollTop; inn.textContent='';
+    if(!on.length) inn.appendChild(el('div','tkp-empty','Empty. Drag something in, or tap it.'));
+    TKP_SECS.forEach(([sec])=>on.filter(i=>i.sec===sec).forEach(i=>inn.appendChild(tkpTag(i,true))));
+    inn.scrollTop=keep;
+    const nw=TKP.fresh && inn.querySelector('.tkp-tag.is-new');
+    if(nw) inn.scrollTop=Math.max(0, nw.offsetTop-inn.clientHeight/2);
+
+    $('#tkp-fill').style.width=(total? Math.round(on.length/total*100) : 0)+'%';
+    const cnt=$('#tkp-cnt'); cnt.textContent='';
+    cnt.appendChild(el('b',null,String(on.length))); cnt.appendChild(el('small',null,' of '+total+' in'));
+    $('#tkp-done-sub').textContent='All '+total+(total===1?' item is':' items are')+' in the trunk.';
+    $('#tkp-empty-btn').hidden=!on.length;
+    const tr=$('#tkp-trunk');
+    tr.classList.toggle('is-shut', full && !TKP.peek);
+    if(TKP.thunk){ TKP.thunk=false; tr.classList.remove('is-thunk'); void tr.offsetWidth; tr.classList.add('is-thunk'); }
+    if(TKP.fresh){ const k=TKP.fresh; setTimeout(()=>{ if(TKP.fresh===k) TKP.fresh=''; },700); }
+  }
+  (function wireStage(){
+    const h=$('#tk-pack'); if(!h) return;
+    /* once a line is picked up on a phone, the page holds still under it */
+    h.addEventListener('touchmove',e=>{ if(TKP.holding || TKP.drag) e.preventDefault(); },{passive:false});
+    const open=()=>{ TKP.peek=true; stage(); };
+    $('#tkp-open').addEventListener('click',e=>{ e.stopPropagation(); open(); });
+    $('#tkp-cover').addEventListener('click',open);
+    $('#tkp-trunk').addEventListener('animationend',e=>{
+      if(e.animationName==='tkpThunk') $('#tkp-trunk').classList.remove('is-thunk'); });
+    $('#tkp-empty-btn').addEventListener('click',()=>{
+      if(!window.confirm('Take everything back out of the trunk? The Packed ticks on the lists below clear too.')) return;
+      summit().packed={}; save('summit'); render(true);
+    });
+  })();
 
   /* someone typing when a redraw came in: catch up once they stop */
   document.addEventListener('focusout',e=>{
@@ -5617,6 +5954,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       <p>Every speaker, sponsor and board member, and where each stands. See <b>Speakers and Sponsors, Start to Finish</b>.</p>
       <h4>The Trunk</h4>
       <p>Bernie&rsquo;s packing list. The Standard kit is the same every Summit; ribbons and sponsor merchandise are per Summit, and ticks reset for the next one.</p>
+      <ul>
+        <li><b>Pack the Trunk:</b> every line on the lists sits on the floor at the top of the page. Drag it into the trunk, or just tap it, to pack it; drag it (or tap it) back out to unpack. On a phone, press and hold a line for a moment to pick it up.</li>
+        <li>Packing a line in the trunk is the same as ticking <b>Packed</b> on its row below, so the two always agree.</li>
+        <li>When the last line goes in, the lid comes down: <b>Packed and Ready to Ship</b>. <b>Open It Back Up</b> to look inside. <b>Empty the Trunk</b> takes everything back out.</li>
+      </ul>
     </div>
   </details>
 
