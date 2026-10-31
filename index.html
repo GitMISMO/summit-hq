@@ -4514,6 +4514,29 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 #app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
 @media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
+#app-people .se-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.se-modal{position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center}
+.se-scrim{position:absolute;inset:0;background:rgba(16,19,23,.55)}
+.se-box{position:relative;background:var(--surface);border:1px solid var(--line-2);border-radius:6px;width:min(1180px,96vw);height:min(860px,94vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.se-hd{display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.se-t{font-weight:700;font-size:15px;color:var(--ink);flex:1 1 auto}
+.se-tabs{display:flex;gap:4px}
+.se-tabs button{font:inherit;font-size:12px;padding:5px 10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-2);border-radius:4px;cursor:pointer}
+.se-tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
+.se-x{background:transparent;border:0;font-size:24px;line-height:1;color:var(--ink-3);cursor:pointer;padding:0 4px}
+.se-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
+.se-edit{overflow:auto;padding:14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.se-f{display:flex;flex-direction:column;gap:3px;font-size:11px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.se-f input,.se-f textarea{font-family:inherit;font:13px/1.5 var(--sans, Arial, sans-serif);letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px}
+.se-f textarea{resize:vertical;min-height:260px}
+.se-note{font-size:11.5px;color:var(--ink-3);line-height:1.45}
+.se-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.se-graphic{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding:8px 10px;border:1px dashed var(--line-2);border-radius:4px}
+.se-gbtn{position:relative;overflow:hidden;cursor:pointer}
+.se-gbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.se-prev{min-height:0;background:#f1f6fa}
+.se-frame{width:100%;height:100%;border:0;background:#f1f6fa}
+@media (max-width:760px){ .se-body{grid-template-columns:1fr;grid-template-rows:auto 420px} .se-edit{border-right:0;border-bottom:1px solid var(--line)} }
 #app-reg .ws-title.ws-edit{cursor:text}
 #app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
 #app-reg .ws-title-in{width:100%;min-width:120px;font:inherit;font-size:inherit;padding:2px 5px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
@@ -43878,7 +43901,7 @@ const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25
    where a sponsorship is worked, this is where it turns into somebody to register. */
 const EVENT_VENUE={'winter 2027':['nola'],'spring 2027':['slc'],'fall 2027':['bethesda'],
   '2027 series':['nola','slc','bethesda']};
-const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), venue:'', ready:false,
+const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), semail:new Map(), venue:'', ready:false,
   open:new Set(), q:'', role:'', left:false, step:'', elseOpen:false, addOpen:false};
 const undoStack=[];
 const GONE=new Map();   /* people just removed: id -> when */
@@ -44326,6 +44349,7 @@ function personRow(p, off){
   let line, cls='';
   if(nx){ line='Next: '+nx.ask+' — '+(WHO[nx.who]||nx.who); }
   else { line='Ready — they have everything they need'; cls=' ok'; }
+  if(stOf(p).welcome) line+='  ·  Speaker email sent';
   hd.appendChild(el('span','pp-next'+cls,line));
   hd.addEventListener('click',()=>{ if(open) ST.open.delete(p.i); else ST.open.add(p.i); render(); });
   row.appendChild(hd);
@@ -44402,6 +44426,17 @@ function putTypingBack(host, kept){
 function personBody(p, off){
   const b=el('div','pp-body'), st=stOf(p), v=venueNow();
 
+  /* Amy, 2026-10-31: the speaker email, one button away */
+  if(!off && speaking(p)){
+    const sw=el('div','se-row');
+    const sent=st.welcome;
+    const b0=el('button','btn'+(sent?' ghost':''), sent? 'Speaker Email Sent — Open' : 'Send Speaker Email'); b0.type='button';
+    b0.title='Opens the speaker email — check it, change anything, and send';
+    b0.addEventListener('click',()=>openSpeakerEmail(p.i));
+    sw.appendChild(b0);
+    sw.appendChild(el('span','pnote', sent? 'Sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'') : (p.e? 'Goes to '+p.e : 'Add their email below first')));
+    b.appendChild(sw);
+  }
   /* who they are */
   const g=el('div','pgrid');
   g.appendChild(textField('Name',p.n,x=>{ patch(p.i,{n:x},'a name'); renderSoon(); }, p.i+':n'));
@@ -45102,6 +45137,218 @@ async function notifyBernie(){
   render();
 }
 /* add somebody as a speaker on this summit; work already done for them as a speaker stands */
+
+/* ============================================================
+   SPEAKER EMAIL (Amy, 2026-10-31)
+   One button on a speaker's row sends them the "you're speaking" email, branded, with
+   the "I'm Speaking" graphic attached. The wording is a template per summit that Amy
+   can change; each email can be changed again before it goes. Summit HQ cannot send
+   mail, so it queues the email in feeds/speaker-email and the "Summit HQ - Speaker
+   Emails" flow, which looks every minute, sends it and notes it in feeds/speaker-email-sent.
+   ============================================================ */
+const SE_AMY = {name:'Amy Moses', title:'VP of Strategic Growth, MISMO', email:'amoses@mismo.org'};
+const seDoc = () => ST.semail.get(venueNow()) || {};
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WDAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function seFirstDay(){
+  const t=String(venueInfo().dates||''), y=(t.match(/(\d{4})/)||[])[1];
+  const m=/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})/i.exec(t);
+  if(!y||!m) return null;
+  return new Date(+y, MONTHS.findIndex(x=>x.toLowerCase()===m[1].toLowerCase()), +m[2]);
+}
+const seDay=(n,withDay)=>{ const d=seFirstDay(); if(!d) return ''; d.setDate(d.getDate()+n);
+  return (withDay? WDAYS[d.getDay()]+', ' : '')+MONTHS[d.getMonth()]+' '+d.getDate(); };
+function seDates(){ const d=seFirstDay(); if(!d) return venueInfo().dates||'';
+  const e=new Date(d); e.setDate(e.getDate()+3);
+  return MONTHS[d.getMonth()]+' '+d.getDate()+(e.getMonth()===d.getMonth()? '–'+e.getDate() : '–'+MONTHS[e.getMonth()]+' '+e.getDate()); }
+function seSummitShort(){ const n=String(venueInfo().name||'Summit'); const m=/(Winter|Spring|Fall)/i.exec(n); return m? m[1]+' Summit' : n; }
+/* what the hotel section can say, from the Resume when it has it */
+async function seResume(){
+  if(ST.seResume && ST.seResume.v===venueNow()) return ST.seResume.d;
+  let d={}; try{ const s=ST.db? await ST.db.doc('resume/'+venueNow()).get() : null; d=(s&&s.exists&&s.data())||{}; }catch(e){ d={}; }
+  ST.seResume={v:venueNow(), d}; return d;
+}
+function seDefault(r){
+  r=r||{};
+  const hotel=String(r.hotelName||venueInfo().city||'[hotel]').trim();
+  const addr=String(r.hotelAddr||'').replace(/\s*\n\s*/g,', ').trim();
+  let wk='MISMO Workshop'; try{ wk=workshopName(); }catch(e){}
+  let recSp=''; try{ const rr=portalRows().filter(x=>/reception/i.test(String(x.opportunity||''))); if(rr.length===1) recSp=', sponsored by '+String(rr[0].company||'').trim(); }catch(e){}
+  const book = r.reservations && /^https?:/i.test(String(r.reservations).trim())
+    ? 'Book via the official MISMO room block [here]('+String(r.reservations).trim()+')'
+    : 'Book via the official MISMO room block here: '+(r.reservations||'[room block link]');
+  return {
+    subject:"You’re Speaking at the MISMO {summitShort}",
+    body:[
+'Hi {first},',
+'Thank you for agreeing to participate in {session} at the MISMO {summitShort} on {sessionDate}! The {summitShort} will be held {dates} and the day of General Sessions is {gsDate}.',
+'Please review the below and let me know if you have questions.',
+'A few details for you to begin planning and promoting your involvement with the Summit:',
+'Summit registration:\nThis week we’ll register you as our guest for the Summit. You’ll receive an email once your registration has been processed.',
+'Hotel:\nThe Summit will be held at the '+hotel+(addr? ', '+addr : '')+'.\n'+book+(r.rate? ' for the negotiated rate of '+r.rate+' plus tax.' : ' for the negotiated rate of [rate] plus tax.'),
+'Promotion:\nI’ve attached an “I’m Speaking” graphic that you can post on LinkedIn.\nWe’ll be creating a session-specific graphic that we’ll provide once the event is closer. Promotion of your session will be on LinkedIn, in our monthly newsletter, MISMO Matters, in marketing emails and more!',
+'Session Planning & Prep:\nAbout six weeks out, we’ll reach out to schedule our first planning meetings for you and your fellow panelists.\nIn the meantime, please let us know of any questions you have.',
+'Summit Schedule Overview:\n'+seDay(0,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 12:00 p.m. – MISMO Workgroups\n1:00 p.m. – 5:00 p.m. – Workshop: '+wk+'\n5:00 p.m. – 6:00 p.m. – MISMO Welcome Reception',
+seDay(1,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 5:00 p.m. – General Sessions\n5:00 p.m. – 6:00 p.m. – MISMO Matters Reception'+recSp,
+seDay(2,true)+' and '+seDay(3,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 4:30 p.m. – MISMO Workgroups',
+'Thank you so much!'
+    ].join('\n\n')
+  };
+}
+/* the speaker's own details, for the {placeholders} */
+function seVars(p){
+  const st=stOf(p), ses=summitSessions();
+  const mine=(st.ses||[]).map(k=>ses.find(x=>x.key===k)).filter(Boolean);
+  const names=mine.map(x=>x.name);
+  const join=a=>a.length<2? (a[0]||'') : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+  const days=[...new Set(mine.map(x=>{ const i=x.idx; return i>=0? seDay(i,false) : ''; }).filter(Boolean))];
+  return {first:String(p.n||'').trim().split(/\s+/)[0]||'there', name:p.n||'', session: names.length? 'our '+join(names) : 'the General Sessions',
+    sessionDate: days.length? join(days) : seDay(1,false), summit:venueInfo().name||'Summit', summitShort:seSummitShort(),
+    dates:seDates(), gsDate:seDay(1,false)};
+}
+const seFill=(t,v)=>String(t||'').replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? v[k] : m);
+/* the branded email: blank line = new paragraph, a short first line ending in ":" = heading,
+   [words](link) = a link */
+function seHtml(subject, body){
+  const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const inline=x=>e(x).replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,a,u)=>'<a href="'+u.replace(/"/g,'%22')+'" style="color:#0f6fa8;font-weight:700">'+a+'</a>');
+  const paras=String(body||'').replace(/\r/g,'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(par=>{
+    const lines=par.split('\n'); let h='';
+    if(lines.length>1 && /:\s*$/.test(lines[0]) && lines[0].length<=60){ h=lines.shift().replace(/:\s*$/,''); }
+    else if(lines.length===1 && /:\s*$/.test(lines[0]) && lines[0].length<=40){ return '<div style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#0d314c;margin:22px 0 6px">'+e(lines[0].replace(/:\s*$/,''))+'</div>'; }
+    return (h? '<div style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#0d314c;margin:22px 0 6px;border-bottom:2px solid #74bfeb;padding-bottom:4px">'+e(h)+'</div>' : '')
+      +'<p style="margin:0 0 12px">'+lines.map(inline).join('<br>')+'</p>';
+  }).join('');
+  const F='font-family:Arial,Helvetica,sans-serif';
+  return '<table cellpadding="0" cellspacing="0" style="width:100%;background:#f1f6fa"><tbody><tr><td style="padding:24px 12px;text-align:center">'
+   +'<table cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;margin:0 auto;text-align:left;background:#ffffff;border:1px solid #d5e2ed;border-radius:8px"><tbody>'
+   +'<tr><td style="background:#0d314c;padding:16px 32px;border-radius:7px 7px 0 0"><table cellpadding="0" cellspacing="0" style="width:100%"><tbody><tr><td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tbody><tr><td style="background:#ffffff;border-radius:5px;padding:8px 12px"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO" width="132" height="20" border="0" style="display:block;border:0;outline:none;width:132px;height:20px"></td></tr></tbody></table></td><td style="vertical-align:middle;text-align:right;'+F+';font-size:13px;font-weight:600;color:#a9d8f3">MISMO Summit</td></tr></tbody></table></td></tr>'
+   +'<tr><td style="height:3px;line-height:3px;font-size:0;background:#74bfeb">&nbsp;</td></tr>'
+   +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">'+e(subject)+'</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+e((venueInfo().name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
+   +'<tr><td style="padding:16px 32px 8px;'+F+';font-size:15px;line-height:1.6;color:#0d314c">'+paras+'</td></tr>'
+   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(SE_AMY.name)+'</b><br><span style="color:#55657a">'+e(SE_AMY.title)+'</span><br><a href="mailto:'+SE_AMY.email+'" style="color:#0f6fa8">'+SE_AMY.email+'</a> &nbsp;|&nbsp; <a href="https://www.mismo.org" style="color:#0f6fa8">mismo.org</a></td></tr>'
+   +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
+   +'</tbody></table></td></tr></tbody></table>';
+}
+function seSave(fields,label){ saveColl('speaker-email',ST.semail,fields,label||'the speaker email'); }
+/* queue it for the flow; only the last few hours are kept, the flow takes what is new */
+async function seQueue(req){
+  if(!ST.db) throw new Error('not signed in');
+  const ref=ST.db.doc('feeds/speaker-email');
+  let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ cur={}; }
+  const cut=Date.now()-60*60*1000;            /* the flow sends within minutes; an hour is plenty */
+  const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
+  list.push(req);
+  await ref.set({updatedAt:new Date().toISOString(), requests:list});
+}
+let seOpen=null;
+async function openSpeakerEmail(id){
+  const p=byId(id); if(!p) return;
+  const r=await seResume();
+  const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
+  const v=seVars(p);
+  seOpen={id, mode:'one', to:p.e||'', cc:SE_AMY.email, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
+    tSubject:tpl.subject, tBody:tpl.body, sending:false};
+  drawSpeakerEmail();
+}
+function drawSpeakerEmail(){
+  let m=document.getElementById('se-modal');
+  if(!seOpen){ if(m) m.remove(); return; }
+  const p=byId(seOpen.id); if(!p){ seOpen=null; if(m) m.remove(); return; }
+  if(!m){ m=el('div','se-modal'); m.id='se-modal'; document.body.appendChild(m); }
+  m.textContent='';
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',()=>{ seOpen=null; drawSpeakerEmail(); }); m.appendChild(scrim);
+  const box=el('div','se-box'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Speaker email');
+  const hd=el('div','se-hd');
+  hd.appendChild(el('div','se-t','Speaker Email — '+(p.n||'')));
+  const tabs=el('div','se-tabs');
+  [['one','This Email'],['tpl','Template for Every Speaker']].forEach(([k,lab])=>{
+    const b=el('button',seOpen.mode===k?'on':'',lab); b.type='button';
+    b.addEventListener('click',()=>{ seOpen.mode=k; drawSpeakerEmail(); }); tabs.appendChild(b); });
+  hd.appendChild(tabs);
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',()=>{ seOpen=null; drawSpeakerEmail(); });
+  hd.appendChild(x);
+  box.appendChild(hd);
+  const body=el('div','se-body');
+  const L=el('div','se-edit'), R=el('div','se-prev');
+  const fld=(lab,val,on,opt)=>{ const w=el('label','se-f'); w.appendChild(el('span',null,lab));
+    const i=document.createElement(opt&&opt.area?'textarea':'input'); if(!opt||!opt.area) i.type='text'; i.value=val||'';
+    if(opt&&opt.rows) i.rows=opt.rows; if(opt&&opt.ph) i.placeholder=opt.ph;
+    i.addEventListener('input',()=>{ on(i.value); paintPrev(); }); w.appendChild(i); L.appendChild(w); return i; };
+  const g=seDoc().graphic;
+  if(seOpen.mode==='one'){
+    fld('To',seOpen.to,v=>seOpen.to=v,{ph:'speaker@company.com'});
+    fld('Cc',seOpen.cc,v=>seOpen.cc=v);
+    fld('Subject',seOpen.subject,v=>seOpen.subject=v);
+    fld('Message',seOpen.body,v=>seOpen.body=v,{area:true,rows:18});
+    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and [words](https://link) makes a link.'));
+  } else {
+    fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
+    fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
+    L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}.'));
+    const row=el('div','se-acts');
+    const sv=el('button','btn','Save the Template'); sv.type='button';
+    sv.addEventListener('click',()=>{ seSave({subject:seOpen.tSubject, body:seOpen.tBody, savedAt:new Date().toISOString()},'the speaker email template');
+      const v=seVars(p); seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); seOpen.mode='one'; drawSpeakerEmail(); });
+    const rs=el('button','btn ghost','Start Over From the Standard Wording'); rs.type='button';
+    rs.addEventListener('click',async()=>{ const d=seDefault(await seResume()); seOpen.tSubject=d.subject; seOpen.tBody=d.body; drawSpeakerEmail(); });
+    row.appendChild(sv); row.appendChild(rs); L.appendChild(row);
+  }
+  /* the graphic */
+  const gw=el('div','se-graphic');
+  gw.appendChild(el('span',null, g&&g.name? 'Attached: '+g.name : 'No “I’m Speaking” graphic yet'));
+  const gl=el('label','btn ghost se-gbtn', g&&g.name? 'Replace the graphic' : 'Add the graphic');
+  const gi=document.createElement('input'); gi.type='file'; gi.accept='image/png,image/jpeg,image/gif,application/pdf';
+  gi.addEventListener('change',()=>{ const f=gi.files&&gi.files[0]; if(!f) return;
+    if(f.size>550*1024){ alert('That file is over 550 KB. Save a smaller version and try again.'); return; }
+    const fr=new FileReader(); fr.onload=async()=>{
+      /* the picture is kept on its own, where the flow can pick it up and attach it */
+      try{ await ST.db.doc('feeds/speaker-graphic-'+venueNow()).set({name:f.name, type:f.type||'application/octet-stream',
+        b64:String(fr.result).replace(/^data:[^,]*,/,''), savedAt:new Date().toISOString()}); }
+      catch(e){ alert('The graphic could not be saved. Try a smaller file.'); return; }
+      seSave({graphic:{name:f.name, at:new Date().toISOString()}},'the speaker graphic'); drawSpeakerEmail(); };
+    fr.readAsDataURL(f); });
+  gl.appendChild(gi); gw.appendChild(gl);
+  L.appendChild(gw);
+  if(seOpen.mode==='one'){
+    const acts=el('div','se-acts');
+    const sent=stOf(p).welcome;
+    const go=el('button','btn', seOpen.sending? 'Sending…' : (sent? 'Send It Again' : 'Send the Email')); go.type='button';
+    go.disabled=!!seOpen.sending;
+    let armed=false;
+    go.addEventListener('click',async()=>{
+      const to=String(seOpen.to||'').trim();
+      if(!/@/.test(to)){ alert('Add their email address first.'); return; }
+      if(!armed){ armed=true; go.textContent='Click Again to Send to '+to; go.classList.add('armed'); return; }
+      seOpen.sending=true; drawSpeakerEmail();
+      const g2=seDoc().graphic;
+      let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
+      const req={id:'se-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:who,
+        to, cc:String(seOpen.cc||'').trim(), subject:seOpen.subject, html:seHtml(seOpen.subject, seOpen.body), person:p.i, summit:venueNow(),
+        graphic: g2&&g2.name ? 'speaker-graphic-'+venueNow() : ''};
+      try{ await seQueue(req); }
+      catch(e){ seOpen.sending=false; drawSpeakerEmail(); alert('Summit HQ could not queue the email. Check you are signed in and try again.'); return; }
+      patchSt(p.i,{welcome:{at:new Date().toISOString(), by:who, to}},'a speaker email');
+      seOpen=null; drawSpeakerEmail(); render();
+      try{ if(window.__hqFlash) window.__hqFlash('On its way to '+to+' — it goes out within a couple of minutes.'); }catch(e){}
+    });
+    acts.appendChild(go);
+    if(sent) acts.appendChild(el('span','se-note','Last sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'')+'.'));
+    L.appendChild(acts);
+  }
+  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks';
+  R.appendChild(pf);
+  function paintPrev(){
+    const v=seVars(p);
+    const sub = seOpen.mode==='one'? seOpen.subject : seFill(seOpen.tSubject,v);
+    const bod = seOpen.mode==='one'? seOpen.body : seFill(seOpen.tBody,v);
+    pf.srcdoc='<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0">'+seHtml(sub,bod)+'</body></html>';
+  }
+  body.appendChild(L); body.appendChild(R); box.appendChild(body);
+  m.appendChild(box);
+  paintPrev();
+}
+
 function addProspect(id){
   const p=byId(id); if(!p) return;
   patchSt(id,{prospect:true},'a speaker prospect');
@@ -45381,7 +45628,7 @@ function init(){
   if(window.__hqUndo) window.__hqUndo.register('people',async()=>{
     const e=undoStack.pop(); if(!e) return;
     if(e.coll){
-      const map=e.coll==='board'?ST.board:ST.sag;
+      const map=e.coll==='board'?ST.board:e.coll==='speaker-email'?ST.semail:ST.sag;
       if(e.prev) map.set(e.v,e.prev); else map.delete(e.v);
       if(ST.db){ try{ ST.db.doc(e.coll+'/'+e.v).set(e.prev||{}); }catch(x){} }
       if(e.coll==='board') pushBoardHeadcount();
@@ -45412,7 +45659,7 @@ function init(){
         render();
         try{ window.dispatchEvent(new Event('hq:portal')); }catch(e){}
       },()=>{});
-      [['board',ST.board],['sponsor-agenda',ST.sag]].forEach(([coll,map])=>{
+      [['board',ST.board],['sponsor-agenda',ST.sag],['speaker-email',ST.semail]].forEach(([coll,map])=>{
         db.collection(coll).onSnapshot(s=>{
           s.docChanges().forEach(c=>{ if(c.type==='removed') map.delete(c.doc.id); else map.set(c.doc.id,Object.assign({},c.doc.data())); });
           render();
