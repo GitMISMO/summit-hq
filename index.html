@@ -4212,7 +4212,12 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-wn ul{margin:5px 0 0;padding-left:18px}
 .psg-wn li span{color:var(--ink-3)}
 .psg-room.psg-flash{animation:psgPing 1.4s ease-out}
-#app-specs .psg-contract{display:flex;align-items:center;gap:8px;justify-content:center;width:100%;padding:10px 12px}
+#app-specs .mast{position:relative}
+#app-specs .mast > .psg-contract{position:absolute;right:0;top:4px;display:inline-flex;align-items:center;gap:8px;width:auto;padding:9px 14px;
+  background:var(--surface);border:1px solid var(--line-2);border-radius:7px;box-shadow:var(--shadow)}
+#app-specs .mast > .psg-contract:hover{border-color:#74bfeb}
+#app-specs .psg-contract .l-short{display:none}
+@media(max-width:700px){ #app-specs .mast > .psg-contract{top:-6px;padding:3px 8px;font-size:11px;gap:5px} #app-specs .mast > .psg-contract svg{width:12px;height:12px} #app-specs .psg-contract .l-full{display:none} #app-specs .psg-contract .l-short{display:inline} }
 #app-specs .psg-contract svg{width:15px;height:15px}
 .psg-note{font-size:11.5px;color:var(--ink-3);line-height:1.45;padding:0 2px}
 @media(max-width:1180px){
@@ -4348,6 +4353,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <h1 id="ps-title">Summit</h1>
         <div class="sub" id="ps-sub"></div>
       </div>
+      <!-- Jonna, 2026-10-31: at the very top, opposite the title -->
+      <button class="btn ghost psg-contract" id="contract-btn" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3 1h7l3 3v11H3zm6 1v3h3M5 8h6v1H5zm0 2h6v1H5zm0 2h4v1H5z"/></svg><span class="l-full">Contract, Floor Plan &amp; Capacities</span><span class="l-short">Contract</span></button>
       <div class="meters" id="ps-meters"></div>
     </header>
 
@@ -4372,7 +4379,6 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
             </section>
             <div id="nc-body"></div>
           </div>
-          <button class="btn ghost psg-contract" id="contract-btn" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3 1h7l3 3v11H3zm6 1v3h3M5 8h6v1H5zm0 2h6v1H5zm0 2h4v1H5z"/></svg>Contract, Floor Plan &amp; Capacities</button>
           <div class="psg-note" id="ps-note">Everything here follows the Schedule &mdash; change a room or a time there and this page follows. Type straight into any box; it saves itself.</div>
         </aside>
       </div>
