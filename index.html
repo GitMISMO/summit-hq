@@ -568,6 +568,19 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) {
     document.addEventListener(ev, function () { lastActive = now(); }, { capture: true, passive: true });
   });
+  /* Jonna, 2026-10-31: only what the page in front of you shows is checked every 30
+     seconds; everything else every few minutes, which keeps within the relay's shared
+     GitHub allowance. Going to a page checks its files at once. */
+  var PAGE_FILES = { 'app-ros': ['ros'], 'app-grid': ['schedule'], 'app-specs': ['schedule', 'resume'],
+    'app-resume': ['resume', 'schedule'], 'app-gs': ['schedule', 'people'], 'app-people': ['people'],
+    'app-reg': ['people'], 'app-trunk': ['ros'] };
+  function onPage() { var a = document.querySelector('.hq-app:not([hidden]), [id^="app-"]:not([hidden])'); return a ? a.id : ''; }
+  function hotNow(name) {
+    if (!hot(name)) return false;
+    var want = PAGE_FILES[onPage()];
+    if (!want) return true;
+    return want.some(function (w) { return name === w || name.indexOf(w + '-') === 0; });
+  }
   function poll(force) {
     if (!ready || !(RS() && RS().token())) return;
     if (!force && document.visibilityState === 'hidden') return;
@@ -575,7 +588,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     Object.keys(F).forEach(function (k) {
       var f = F[k];
       if (!f.loaded || f.flushing || f.pending.length || f.loading || !hasListener(f)) return;
-      var gap = hot(k) ? (idle ? IDLE_POLL_MS : POLL_MS) : COOL_POLL_MS;
+      var gap = hotNow(k) ? (idle ? IDLE_POLL_MS : POLL_MS) : COOL_POLL_MS;
       if (!force && now() - (f.polledAt || f.loadedAt) < gap) return;
       f.polledAt = now();
       load(f).catch(function () {});
@@ -583,6 +596,9 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   }
   setInterval(function () { poll(false); }, 5000);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') poll(true); });
+  /* a page just opened: bring its own files up to date straight away */
+  (function () { var seen = ''; setInterval(function () { var p = onPage(); if (p && p !== seen) { var first = !seen; seen = p;
+    if (!first) Object.keys(F).forEach(function (k) { if (hotNow(k)) { var f = F[k]; if (f.loaded && !f.flushing && !f.pending.length && !f.loading && hasListener(f) && now() - (f.polledAt || f.loadedAt) > 10000) { f.polledAt = now(); load(f).catch(function () {}); } } }); } }, 1000); })();
 
   /* ---------- who is signed in ---------- */
   function me() { var s = RS() && RS().current(); return { name: (s && s.name) || '', email: (s && s.email) || '' }; }
