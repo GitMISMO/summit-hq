@@ -43994,6 +43994,7 @@ function write(id,doc){
   if(!ST.db) return;
   clearTimeout(pend.get(id));
   pend.set(id,setTimeout(()=>{ try{ ST.db.doc('people/'+id).set(JSON.parse(JSON.stringify(doc))); }catch(e){} },260));
+  try{ speakerAddsTouch(id); }catch(e){}
 }
 /* a change to the person themselves */
 function patch(id,fields,label){
@@ -44917,6 +44918,7 @@ function addForm(){
     rec(id,'a person added');
     write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,
       st:{[venueNow()]:{on:true,role:'speaker',steps:{}}}});
+    speakerAdded(id);
     n.value=e.value=t.value=c.value=''; ST.open.add(id); ST.q=''; const qq=$('pp-q'); if(qq) qq.value='';
     ST.clearAdd=true;           /* they are on the list now; the form starts fresh */
     render(); ST.clearAdd=false;
@@ -45365,6 +45367,7 @@ function setInvite(id,v){
     if((st.role||'speaker')==='speaker') f.role='speaker'; else f.speaking=true;
   } else if(was==='accepted' && st.on){ f.on=false; }
   patchSt(id,f,'a speaker invitation');
+  if(v==='accepted' && was!=='accepted') speakerAdded(id);
   if(v==='declined') patch(id,{pros:true},'a speaker prospect');
   else if(v==='accepted') patch(id,{pros:false},'a speaker prospect');
   render();
@@ -45454,10 +45457,101 @@ function prospectAdd(){
   wrap.appendChild(f);
   return wrap;
 }
+/* ============================================================
+   SPEAKERS FOR BERNIE TO REGISTER (Jonna, 2026-10-31)
+   Bernie does the registrations. He does not get an email per speaker — every weekday
+   morning the "Summit HQ - New Speakers to Register" flow emails him one list of the
+   speakers added since the last one (Amy and Jonna copied). Summit HQ cannot send mail,
+   so each speaker added is written to feeds/speaker-adds with the email's own row
+   already drawn; the flow keeps the ids it has sent in feeds/speaker-adds-sent.
+   A speaker taken back off, or marked registered, before the email goes drops out.
+   ============================================================ */
+const SA_KEEP_DAYS=21;
+let saCache=null, saBusy=Promise.resolve();
+const saE=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function saWho(){ try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); return (s&&(s.name||s.email))||''; }catch(e){ return ''; } }
+function saDay(iso){ try{ return new Date(iso).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ''; } }
+function saRow(p,a){
+  const td='padding:12px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;color:#1b2733;vertical-align:top';
+  let ses=[]; try{ const all=summitSessions(); ses=((stOf(p).ses)||[]).map(k=>all.find(x=>x.key===k)).filter(Boolean).map(x=>x.name); }catch(e){}
+  const sub=[p.t,p.c].filter(Boolean).join(' · ');
+  const when=a.catchup? 'On the summit, not registered yet' : 'Added '+saDay(a.addedAt)+(a.addedBy?' by '+a.addedBy:'');
+  return '<tr><td style="'+td+'"><b style="font-size:15px;color:#0d314c">'+saE(p.n)+'</b>'
+    +(sub?'<br><span style="color:#55657a">'+saE(sub)+'</span>':'')
+    +'<br>'+(p.e?'<a href="mailto:'+saE(p.e)+'" style="color:#0f6fa8">'+saE(p.e)+'</a>':'<span style="color:#b4541a">No email on file yet</span>')+'</td>'
+    +'<td style="'+td+';width:42%"><span style="color:#0d314c">'+saE(ses.length? ses.join(', ') : 'Session to be set')+'</span>'
+    +'<br><span style="color:#6b7a8a;font-size:12px">'+saE(a.summitName||'')+'</span>'
+    +'<br><span style="color:#6b7a8a;font-size:12px">'+saE(when)+'</span></td></tr>';
+}
+function saFrame(){
+  const v=venueInfo(), F='font-family:Arial,Helvetica,sans-serif';
+  const head='<table cellpadding="0" cellspacing="0" style="width:100%;background:#f1f6fa"><tbody><tr><td style="padding:24px 12px;text-align:center">'
+   +'<table cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;margin:0 auto;text-align:left;background:#ffffff;border:1px solid #d5e2ed;border-radius:8px"><tbody>'
+   +'<tr><td style="background:#0d314c;padding:16px 32px;border-radius:7px 7px 0 0"><table cellpadding="0" cellspacing="0" style="width:100%"><tbody><tr><td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tbody><tr><td style="background:#ffffff;border-radius:5px;padding:8px 12px"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO" width="132" height="20" border="0" style="display:block;border:0;outline:none;width:132px;height:20px"></td></tr></tbody></table></td><td style="vertical-align:middle;text-align:right;'+F+';font-size:13px;font-weight:600;color:#a9d8f3">MISMO Summit</td></tr></tbody></table></td></tr>'
+   +'<tr><td style="height:3px;line-height:3px;font-size:0;background:#74bfeb">&nbsp;</td></tr>'
+   +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">New Speakers to Register</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+saE((v.name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
+   +'<tr><td style="padding:16px 32px 0;'+F+';font-size:15px;line-height:1.6;color:#0d314c"><p style="margin:0 0 6px">Good morning Bernie,</p><p style="margin:0">These speakers were added to the summit since the last list. Please register them as speakers.</p></td></tr>'
+   +'<tr><td style="padding:8px 22px 0"><table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:8px 0 4px"><tbody>';
+  const foot='</tbody></table></td></tr>'
+   +'<tr><td style="padding:16px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#55657a">Once they are registered, mark them <b>Registered</b> on their row in <a href="https://resources.mismo.org/summit-hq/" style="color:#0f6fa8;font-weight:700">Summit HQ</a> under People. This list goes out each weekday morning when speakers have been added.</td></tr>'
+   +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
+   +'</tbody></table></td></tr></tbody></table>';
+  return {head, foot, summitName:v.name||''};
+}
+/* every change goes through one queue so two quick adds cannot overwrite each other */
+function saUpdate(fn){
+  saBusy=saBusy.then(async()=>{
+    if(!ST.db) return;
+    const ref=ST.db.doc('feeds/speaker-adds');
+    let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
+    const cut=Date.now()-SA_KEEP_DAYS*864e5;
+    let adds=(Array.isArray(cur.adds)?cur.adds:[]).filter(a=>Date.parse(a.addedAt||0)>cut);
+    saCache=adds.slice();
+    const out=fn(adds); if(out===false) return;
+    adds=out||adds;
+    const fr=saFrame();
+    saCache=adds;
+    await ref.set({updatedAt:new Date().toISOString(), head:fr.head, foot:fr.foot, summitName:fr.summitName, adds});
+  }).catch(()=>{});
+  return saBusy;
+}
+const saStill=(p,a)=>!!p && (stOf(p).on) && roleOf(p)==='speaker' && !stepDone(p,'reg');
+function speakerAdded(id,opt){
+  opt=opt||{};
+  return saUpdate(adds=>{
+    const p=byId(id); if(!p) return false;
+    const v=venueNow();
+    if(adds.some(a=>a.person===id && a.summit===v)) return adds.map(a=>a.person===id&&a.summit===v? Object.assign(a,{row:saRow(p,a)}) : a);
+    const a={id:'sa-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6), addedAt:new Date().toISOString(),
+      addedBy:opt.catchup?'':saWho(), catchup:!!opt.catchup, person:id, summit:v, summitName:venueInfo().name||'',
+      name:p.n||'', email:p.e||'', title:p.t||'', company:p.c||''};
+    a.row=saRow(p,a);
+    adds.push(a); return adds;
+  });
+}
+/* a later change to someone on the list (their email, their session, taken back off,
+   registered) is carried onto their row before the morning email */
+const saTimers=new Map();
+function speakerAddsTouch(id){
+  if(saCache && !saCache.some(a=>a.person===id)) return;
+  clearTimeout(saTimers.get(id));
+  saTimers.set(id,setTimeout(()=>{ saTimers.delete(id);
+    saUpdate(adds=>{
+      if(!adds.some(a=>a.person===id)) return false;
+      const p=byId(id), v=venueNow();
+      return adds.filter(a=>a.person!==id || a.summit!==v || saStill(p,a))
+                 .map(a=>a.person===id && a.summit===v? Object.assign(a,{name:p.n||'',email:p.e||'',title:p.t||'',company:p.c||'',row:saRow(p,a)}) : a);
+    });
+  },1500));
+}
+window.__speakerAdds={added:speakerAdded, touch:speakerAddsTouch,
+  catchUp:()=>Promise.all(all().filter(p=>saStill(p,{})).map(p=>speakerAdded(p.i,{catchup:true})))};
+
 function addSpeaker(id){
   const p=byId(id); if(!p) return;
   const st=stOf(p), was=st.role||'speaker';
   patchSt(id,{on:true, role:'speaker', speaking:false, steps: was==='speaker'? (st.steps||{}) : {}},'a speaker added to the summit');
+  speakerAdded(id);
   ST.open.add(id); render();
   setTimeout(()=>{ const n=[...document.querySelectorAll('.pp-row[data-id="'+id+'"]')].find(x=>x.getClientRects().length>0);
     if(n){ try{ n.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){} } },60);
