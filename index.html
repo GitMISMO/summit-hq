@@ -7130,6 +7130,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
         <li>On the repository page choose <b>Add file &rarr; Upload files</b>, drop in the new <code>index.html</code>, write a short note of what changed, and press <b>Commit changes</b>.</li>
         <li>It is live on resources.mismo.org about a minute later. Reload Summit HQ to see it.</li>
       </ol>
+      <p>Two helpers live in the <code>lib</code> folder beside <code>index.html</code> and load only when they are used: <code>docx.js</code> writes the resume as a Word file, and <code>pdfjs-lib.js</code> with <code>pdfjs-worker.js</code> read a hotel contract PDF in Add A Summit. Leave that folder in place; without it those two buttons stop working.</p>
+      <p>Each part of Summit HQ waits until its own information has loaded before it saves anything, so a slow connection can never write a blank copy over real work. If a save is tried too early it says <b>Still loading</b>; try again a moment later.</p>
       <p>Never put names, emails, contracts or other private details in the page; they belong in the saved information, which only arrives after sign-in. If a change breaks the page, open <code>index.html</code>&rsquo;s history on GitHub and put the previous version back the same way.</p>
     </div>
   </details>
