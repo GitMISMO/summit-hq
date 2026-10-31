@@ -3847,6 +3847,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   </div>
 
   <nav aria-label="Summit HQ">
+    <!-- Jonna, 2026-10-31: People, Hotel Specs and The Trunk are pages of their own now,
+         and the menu reads in three groups: the plan, the people, the hotel -->
+    <div class="rail-grp">The Plan</div>
     <button type="button" data-hq="ros" title="Run of Show">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>
       <span>Run of Show</span></button>
@@ -3856,12 +3859,23 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button type="button" data-hq="gs" title="General Sessions">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4M8 22h8"/></svg>
       <span>General Sessions</span></button>
-    <button type="button" data-hq="resume" title="Resume">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></svg>
-      <span>Resume</span></button>
+    <div class="rail-grp">The People</div>
+    <button type="button" data-hq="people" title="People">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><circle cx="17" cy="9" r="2.8"/><path d="M15.5 14.2a5.5 5.5 0 016 5.8"/></svg>
+      <span>People</span></button>
     <button type="button" data-hq="reg" title="Registration">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
       <span>Registration</span></button>
+    <div class="rail-grp">The Hotel</div>
+    <button type="button" data-hq="specs" title="Hotel Specs">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M8 21v-5h8v5M8 10h.01M12 10h.01M16 10h.01M8 13h.01M12 13h.01M16 13h.01"/></svg>
+      <span>Hotel Specs</span></button>
+    <button type="button" data-hq="resume" title="Resume">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v4h4M9 12h6M9 16h6"/></svg>
+      <span>Resume</span></button>
+    <button type="button" data-hq="trunk" title="The Trunk">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M3 12h18M11 12v2h2v-2"/></svg>
+      <span>The Trunk</span></button>
   </nav>
 
   <div class="railsum">
@@ -3897,6 +3911,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button class="btn ghost" id="pdf-btn" type="button">Print / PDF</button>
     <button class="btn ghost" id="survey-btn" type="button" title="Email each workgroup's Chair(s) and Vice Chair the draft grid">Chair Survey</button>
     <span class="spacer"></span>
+    <label class="gfind"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      <input type="search" id="grid-find" placeholder="Find on the grid" aria-label="Find a session, workgroup or room on the grid" autocomplete="off"><span id="grid-findn"></span></label>
     <span class="savemark" id="savemark"></span>
   </div>
   <section class="svpanel" id="survey-sec"><h2>Chair Survey</h2><div class="body" id="survey-body"></div></section>
@@ -5583,6 +5599,13 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>The Road to the Summit</b> places every dated task on one line from the start of the cycle to three weeks after the Summit, colored by status, with milestones as diamonds and a marker for today. Hover a dot to see the task; click it to open it.</li>
         <li>The figures under it (Overdue, Due Next 14 Days, To Discuss, In Progress, Complete) each open the list behind them.</li>
       </ul>
+      <h4>Finding Your Way</h4>
+      <ul>
+        <li>The menu on the left reads in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). People, Hotel Specs and The Trunk are pages of their own; the cards for them on the Run of Show take you there.</li>
+        <li><b>People</b> opens on the Confirmed Speakers face by face, each ringed by how far along they are, with the next step under their name and the five steps as bars underneath. Click a face to open that speaker.</li>
+        <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
+        <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down.</li>
+      </ul>
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel.</p>
       <h4>The Plan</h4>
       <ul>
@@ -7237,6 +7260,8 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
      for this, so the Run of Show's own rules cannot reach inside it. */
   let page=null;   /* {el, home, next, wasHidden} */
   function openPage(id, title){
+    /* Jonna, 2026-10-31: People, Hotel Specs and The Trunk open as pages of their own */
+    if(/^app-(people|specs|trunk)$/.test(id) && window.__hqGo){ closePage(); close(); window.__hqGo(id.slice(4)); window.scrollTo(0,0); return; }
     if(page && page.el.id===id){ closePage(); return; }
     close(); closePage();
     const el=document.getElementById(id); if(!el) return;
@@ -34683,6 +34708,40 @@ function scrollbarSize(){
   if(!SBSIZE && SBSIZE!==0) SBSIZE = 15;
   return SBSIZE;
 }
+
+/* ---------- Jonna, 2026-10-31: the grid comes alive ----------
+   Hover anywhere on the week and its room and its time light up across the grid; type in
+   Find on the Grid and everything else dims, so a session, a workgroup or a room jumps out. */
+(function(){
+  const board=()=>document.getElementById('board');
+  let lastR=null,lastC=null;
+  function clear(){ const b=board(); if(!b) return; b.querySelectorAll('.xh').forEach(n=>n.classList.remove('xh')); lastR=lastC=null; }
+  document.addEventListener('mouseover',e=>{
+    const b=board(); if(!b || !b.contains(e.target)) return;
+    const cell=e.target.closest('.cell'); if(!cell||!b.contains(cell)){ clear(); return; }
+    const r=cell.style.gridRowStart||cell.style.gridRow, c=String(cell.style.gridColumnStart||cell.style.gridColumn||'').split('/')[0].trim();
+    if(r===lastR && c===lastC) return;
+    clear(); lastR=r; lastC=c;
+    b.querySelectorAll('.rm').forEach(n=>{ if((n.style.gridRowStart||n.style.gridRow)===r) n.classList.add('xh'); });
+    b.querySelectorAll('.hd-time').forEach(n=>{ if(String(n.style.gridColumnStart||n.style.gridColumn||'').split('/')[0].trim()===c) n.classList.add('xh'); });
+  });
+  document.addEventListener('mouseleave',e=>{ if(e.target===board()) clear(); },true);
+  function find(){
+    const q=document.getElementById('grid-find'), b=board(), n=document.getElementById('grid-findn');
+    if(!q||!b) return;
+    const t=q.value.trim().toLowerCase();
+    b.classList.toggle('finding', !!t);
+    let hits=0;
+    b.querySelectorAll('.card').forEach(c=>{ const on=!!t && c.textContent.toLowerCase().includes(t); c.classList.toggle('hit',on); if(on) hits++; });
+    b.querySelectorAll('.rm').forEach(r=>r.classList.toggle('hit', !!t && r.textContent.toLowerCase().includes(t)));
+    if(n) n.textContent = t? (hits? hits+' found' : 'none') : '';
+  }
+  document.addEventListener('input',e=>{ if(e.target && e.target.id==='grid-find') find(); });
+  document.addEventListener('keydown',e=>{ if(e.target && e.target.id==='grid-find' && e.key==='Escape'){ e.target.value=''; find(); } });
+  /* the grid redraws itself after every change; keep the find applied */
+  try{ new MutationObserver(()=>{ const q=document.getElementById('grid-find'); if(q && q.value.trim()) { clearTimeout(find._t); find._t=setTimeout(find,60); } })
+    .observe(document.getElementById('board')||document.body,{childList:true}); }catch(e){}
+})();
 function fitBoard(){
   const wrap=document.querySelector('.boardwrap'), board=$('board');
   if(!wrap||!board) return;
@@ -34701,7 +34760,13 @@ function fitBoard(){
   /* the key sits under the grid, so it has to fit in the same space */
   const lg=document.querySelector('.legend');
   const lgH = (lg && !lg.hidden) ? lg.offsetHeight + 8 : 0;
-  const avail=Math.max(300, Math.round(window.innerHeight - top - 16 - lgH));
+  /* Jonna, 2026-10-31: the week fits the window on any screen \u2014 sized to the window
+     under the masthead and the strip above the grid, wherever the page is scrolled to, so
+     the grid itself never scrolls up and down; the page brings it into view */
+  const hqH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||64;
+  const barEl=document.querySelector('#app-grid .bar');
+  const barH=barEl? barEl.offsetHeight+6 : 0;
+  const avail=Math.max(220, Math.round(window.innerHeight - hqH - barH - 20 - lgH));
   const hd1=(board.querySelector('.hd-day')||{offsetHeight:31}).offsetHeight;
   const hd2=(board.querySelector('.hd-time')||{offsetHeight:24}).offsetHeight;
   /* how thick this browser's scrollbars actually are \u2014 15 on a Mac, 17 on Windows,
@@ -43575,15 +43640,16 @@ startClock();
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
     resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg"),
-    gs:document.getElementById("app-gs"),help:document.getElementById("app-help")};
+    gs:document.getElementById("app-gs"),trunk:document.getElementById("app-trunk"),help:document.getElementById("app-help")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
     ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered",
-    gs:"Build Tuesday's General Sessions",help:"How Summit HQ works"};
+    gs:"Build Tuesday's General Sessions",trunk:"What goes to the Summit",help:"How Summit HQ works"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
-  const GROUP={ros:1,specs:1,people:1};
+  /* Jonna, 2026-10-31: People, Hotel Specs and The Trunk are their own pages in the menu now */
+  const GROUP={ros:1};
   const vbar=document.getElementById("viewbar");
   function show(which){
     if(!panes[which]) which="ros";
@@ -44658,6 +44724,44 @@ function funnel(){
   return wrap;
 }
 
+function speakerWall(){
+  const spk=all().filter(p=>onSummit(p) && roleOf(p)==='speaker');
+  if(!spk.length) return null;
+  const keys=STEPS.map(x=>x.k);
+  const prog=p=>keys.filter(k=>stepDone(p,k)).length;
+  const w=el('section','pp-wall');
+  const hd=el('div','pp-wallh');
+  const done=spk.filter(p=>prog(p)===keys.length).length;
+  hd.appendChild(el('span','pp-pill','Confirmed Speakers \u00b7 '+spk.length));
+  hd.appendChild(el('span','pp-wallsub', done+' of '+spk.length+' have everything they need \u00b7 click a face to open them'));
+  w.appendChild(hd);
+  const row=el('div','pp-faces');
+  spk.slice().sort((a,b)=>prog(a)-prog(b)||String(a.n).localeCompare(String(b.n))).forEach(p=>{
+    const n=prog(p), pct=Math.round(n/keys.length*100);
+    const nx=STEPS.find(x=>!stepDone(p,x.k));
+    const b=el('button','pp-face'+(n===keys.length?' all':'')); b.type='button';
+    b.style.setProperty('--p',pct);
+    b.title=(p.n||'')+' \u00b7 '+n+' of '+keys.length+' done'+(nx?' \u00b7 next: '+nx.t:'');
+    const ring=el('span','pp-ring'); ring.appendChild(avatar(p,true)); b.appendChild(ring);
+    b.appendChild(el('b',null,String(p.n||'').split(/\s+/)[0]||''));
+    b.appendChild(el('small',null, nx? nx.t : 'All set'));
+    b.addEventListener('click',()=>showPersonRow(p.i));
+    row.appendChild(b);
+  });
+  w.appendChild(row);
+  /* the steps as bars: how many of the speakers are past each one */
+  const bars=el('div','pp-steps');
+  STEPS.forEach((x,i)=>{
+    const c=spk.filter(p=>stepDone(p,x.k)).length;
+    const st=el('div','pp-step');
+    const t=el('div','pp-stept'); t.appendChild(el('span','pp-stepn',String(i+1))); t.appendChild(document.createTextNode(x.t)); st.appendChild(t);
+    const bar=el('div','pp-bar'); const f=el('i'); f.style.width=Math.round(c/spk.length*100)+'%'; bar.appendChild(f); st.appendChild(bar);
+    st.appendChild(el('div','pp-stepc',c+' of '+spk.length));
+    bars.appendChild(st);
+  });
+  w.appendChild(bars);
+  return w;
+}
 function avatar(p,big){
   const a=el('span','pp-av'+(hasShot(p)?'':' none'));
   const src=p.thumb||p.purl;
@@ -45042,6 +45146,9 @@ function render(){
      list, the portal's sponsors, then what is still outstanding \u2014 and both are put
      into the one grid at the end. */
   const cols=el('div','pp-cards');
+  /* Jonna, 2026-10-31: the plus-up \u2014 the speakers, face by face, each ringed by how far
+     along they are; click a face to go to their row */
+  try{ const w=speakerWall(); if(w) host.appendChild(w); }catch(e){}
   host.appendChild(cols);
   const left=document.createDocumentFragment(), right=document.createDocumentFragment();
   const s=stats();
@@ -47371,6 +47478,72 @@ html body .drawer > header .close:hover{background:rgba(255,255,255,.12);color:#
 .dr-facts span i{width:8px;height:8px;border-radius:50%;background:#8aa3b7}
 .dr-facts span.prog i{background:#e0a83c}.dr-facts span.disc i{background:#74bfeb}.dr-facts span.ok i{background:#4fc79b}
 .dr-facts span.late{border-color:rgba(255,138,122,.7);background:rgba(255,107,91,.18)} .dr-facts span.late i{background:#ff6b5b}
+
+/* the menu's group labels */
+.rail nav .rail-grp{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:rgba(255,255,255,.45);padding:12px 14px 4px}
+.rail nav .rail-grp:first-child{padding-top:2px}
+body.railmini .rail nav .rail-grp{font-size:0;padding:6px 0 2px;margin:4px 12px 0;border-top:1px solid rgba(255,255,255,.12)}
+body.railmini .rail nav .rail-grp:first-child{border-top:0}
+
+/* People: the speakers, face by face */
+#app-people .pp-wall{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:16px 18px 14px;margin:0 0 16px;color:#fff;box-shadow:0 2px 10px rgba(6,32,47,.12)}
+:root[data-theme="dark"] #app-people .pp-wall{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-people .pp-wall{background:#14304A;border-color:#2E4F70}}
+#app-people .pp-wallh{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+#app-people .pp-pill{display:inline-flex;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:4px;border:1px solid rgba(116,191,235,.65);background:rgba(116,191,235,.2)}
+#app-people .pp-wallsub{font-size:12.5px;color:rgba(255,255,255,.7)}
+#app-people .pp-faces{display:flex;gap:14px;flex-wrap:wrap}
+#app-people .pp-face{all:unset;box-sizing:border-box;cursor:pointer;width:92px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:6px 2px;border-radius:8px;transition:background .15s,transform .15s}
+#app-people .pp-face:hover,#app-people .pp-face:focus-visible{background:rgba(255,255,255,.08);transform:translateY(-2px)}
+#app-people .pp-face:focus-visible{outline:2px solid #74bfeb}
+#app-people .pp-ring{--p:0;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:conic-gradient(#74bfeb calc(var(--p)*1%),rgba(255,255,255,.14) 0)}
+#app-people .pp-face.all .pp-ring{background:conic-gradient(#4fc79b 100%,transparent 0)}
+#app-people .pp-ring .pp-av{width:54px!important;height:54px!important;border-radius:50%;border:3px solid #0f314c;font-size:16px;overflow:hidden}
+#app-people .pp-ring .pp-av img{width:100%;height:100%;object-fit:cover}
+#app-people .pp-face b{font-size:12.5px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app-people .pp-face small{font-size:10.5px;line-height:1.25;color:#9fd2f2}
+#app-people .pp-face.all small{color:#6fe0b5}
+#app-people .pp-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+@media(max-width:760px){#app-people .pp-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#app-people .pp-stept{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#fff;min-height:28px}
+#app-people .pp-stepn{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;background:rgba(255,255,255,.14);font-size:10.5px;flex:0 0 auto}
+#app-people .pp-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px}
+#app-people .pp-bar i{display:block;height:100%;background:linear-gradient(90deg,#74bfeb,#4fc79b);border-radius:3px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+#app-people .pp-stepc{font-size:11px;color:rgba(255,255,255,.65);margin-top:4px}
+
+#app-gs .gs-luh{margin-top:16px}
+#app-gs .gs-lineup{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+#app-gs .gs-lu{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 200px;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-top:3px solid #74bfeb;border-radius:8px;padding:10px 12px;
+  transition:background .15s,transform .15s;animation:gsLu .45s ease both}
+#app-gs .gs-lu:hover,#app-gs .gs-lu:focus-visible{background:rgba(255,255,255,.13);transform:translateY(-2px)}
+#app-gs .gs-lu:focus-visible{outline:2px solid #fff}
+#app-gs .gs-lu.spon{border-top-color:#e0a83c} #app-gs .gs-lu.over{border-top-color:#ff8a7a}
+#app-gs .gs-lut{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#9fd2f2}
+#app-gs .gs-lu b{font-size:14px;line-height:1.25;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px}
+#app-gs .gs-luf{display:flex;align-items:center}
+#app-gs .gs-av{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#2a5a80;color:#fff;font-size:11px;font-weight:700;border:2px solid #0f314c;margin-left:-6px;overflow:hidden}
+#app-gs .gs-av:first-child{margin-left:0}
+#app-gs .gs-av img{width:100%;height:100%;object-fit:cover}
+#app-gs .gs-av.more{background:rgba(255,255,255,.2)}
+#app-gs .gs-lunone{font-size:11.5px;color:rgba(255,255,255,.5)}
+#app-gs .gs-lus{font-size:11.5px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#app-gs .gs-lusp{font-size:10.5px;font-weight:700;color:#f3c87a}
+@keyframes gsLu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#app-gs .gs-lu{animation:none}}
+
+/* the grid comes alive: crosshair, find */
+#app-grid .board .rm.xh{background:linear-gradient(90deg,rgba(116,191,235,.35),transparent)!important;box-shadow:inset 3px 0 0 #3987e5}
+#app-grid .board .hd-time.xh{background:#0f314c!important;color:#fff!important}
+#app-grid .board.finding .card{opacity:.22;filter:saturate(.3);transition:opacity .2s,filter .2s}
+#app-grid .board.finding .card.hit{opacity:1;filter:none;box-shadow:0 0 0 2px #3987e5,0 8px 18px -8px rgba(13,49,76,.6);z-index:4}
+#app-grid .board .rm.hit{background:rgba(224,168,60,.25)!important}
+#app-grid .gfind{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);padding:0 8px;height:32px;margin-right:10px}
+#app-grid .gfind svg{width:15px;height:15px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:0 0 auto}
+#app-grid .gfind input{border:0;outline:0;background:transparent;font:inherit;font-size:13px;color:var(--ink);width:170px}
+#app-grid .gfind:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+#app-grid #grid-findn{font-size:11.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+@media(max-width:700px){#app-grid .gfind input{width:110px}}
 /* the figure that leads a card's line */
 .ascard .hc-w .hc-n{font-size:19px;font-weight:700;line-height:1;color:var(--accent);margin-right:5px;font-variant-numeric:tabular-nums;vertical-align:-1px}
 .ascard.is-warn .hc-w .hc-n{color:var(--warn-ink,#9a6a12)}
@@ -47694,6 +47867,29 @@ function dayRibbon(tl,from,to){
   const key=el('div','gs-dayk');
   [['','Session'],['soft','Break or Lunch'],['spon','Sponsored'],['over','Past the End Time']].forEach(([c,t])=>{ const k=el('span'); k.appendChild(el('i',c)); k.appendChild(document.createTextNode(t)); key.appendChild(k); });
   w.appendChild(key);
+  /* the lineup: every session as a card, like a festival bill \u2014 who is on, when */
+  const go=it=>{ const c=[...document.querySelectorAll('#app-gs .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } };
+  const lu=el('div','gs-lineup');
+  tl.filter(r=>!SOFT.has(r.it.kind)).forEach((row,ix)=>{
+    const it=row.it;
+    const c=el('button','gs-lu'+(it.sponsor?' spon':'')+(row.e>to?' over':'')); c.type='button';
+    c.appendChild(el('span','gs-lut',clock(row.s)+' \u00b7 '+(row.e-row.s)+' min'));
+    c.appendChild(el('b',null,it.title||it.kind||'Session'));
+    const faces=el('span','gs-luf');
+    const ppl=(it.people||[]).map(r=>personById(r.id)).filter(Boolean);
+    ppl.slice(0,5).forEach(p=>{ const a=el('span','gs-av'); a.title=p.n||'';
+      const src=p.thumb||p.purl; if(src){ const im=document.createElement('img'); im.src=src; im.alt=''; im.addEventListener('error',()=>{ im.remove(); a.textContent=initials(p.n); }); a.appendChild(im); } else a.textContent=initials(p.n);
+      faces.appendChild(a); });
+    if(ppl.length>5) faces.appendChild(el('span','gs-av more','+'+(ppl.length-5)));
+    if(!ppl.length) faces.appendChild(el('span','gs-lunone','Speakers to come'));
+    c.appendChild(faces);
+    c.appendChild(el('span','gs-lus', ppl.map(p=>String(p.n||'').split(/\s+/)[0]).join(', ')));
+    if(it.sponsor) c.appendChild(el('span','gs-lusp','Sponsored by '+it.sponsor));
+    c.style.animationDelay=(ix*40)+'ms';
+    c.addEventListener('click',()=>go(it));
+    lu.appendChild(c);
+  });
+  if(lu.childNodes.length){ const lh=el('div','gs-dayh gs-luh'); lh.appendChild(el('b',null,'The Lineup')); lh.appendChild(el('small',null,'every session and who is on')); w.appendChild(lh); w.appendChild(lu); }
   return w;
 }
 function insertLine(at){
