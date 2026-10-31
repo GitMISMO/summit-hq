@@ -6614,6 +6614,18 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 @media (max-width:640px){ #app-help .hp-panel{padding:2px 14px} #app-help .hp-in{padding-left:0}
   #app-help .hp-tbl td:first-child{width:auto} }
 #help-btn[aria-current]{color:#fff;background:rgba(116,191,235,.18)}
+.hqg{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:16px}
+.hqg-scrim{position:absolute;inset:0;background:rgba(8,24,38,.5)}
+.hqg-box{position:relative;width:400px;max-width:100%;background:var(--surface);color:var(--ink);border-radius:12px;padding:20px 20px 16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:var(--ui);display:flex;flex-direction:column;gap:6px;animation:hqgIn .18s ease-out}
+@keyframes hqgIn{from{opacity:0;transform:translateY(6px) scale(.98)}}
+.hqg-ic{width:34px;height:34px;border-radius:50%;background:#fbf0dc;color:#8a5200;font:800 18px/34px var(--ui);text-align:center;margin-bottom:4px}
+.hqg-box b{font:700 17px/1.25 var(--display)}
+.hqg-box p{margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.hqg-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.hqg-acts .hqg-save{background:#0d314c;color:#fff;border-color:#0d314c}
+.hqg-keep{margin-left:auto;background:transparent;border:0;color:var(--ink-3);font:600 12.5px var(--ui);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+
 /* Your Part, Person by Person (Jonna, 2026-10-31) */
 #app-help .hp-people{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
 #app-help .hp-people button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);
@@ -6871,7 +6883,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
         <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down.</li>
       </ul>
-      <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel.</p>
+      <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Plan</h4>
       <ul>
         <li>A <b>calendar</b> of every task by due date. Drag a task to another day to move it; click it to open it.</li>
@@ -8201,6 +8213,82 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
    working without knowing the pane exists. A tab that rebuilds its sections
    calls `refresh()` afterwards and the pane picks the new body up.
    ============================================================ */
+
+/* ============ UNSAVED CHANGES ============
+   Jonna, 2026-10-31: wherever there is a Save button (a panel on the right, a sheet over it,
+   a task or agenda item), closing it after a change without pressing Save asks first:
+   Save Changes, Discard Changes, or Keep Editing. Everything is still written as it is
+   typed, so Discard puts each changed box back to what it said when it was opened. */
+(function(){
+  "use strict";
+  const SEL='input:not([type=search]):not([type=file]):not([type=button]):not([type=submit]),textarea,select';
+  const ROOT={pane:'hq-pane-body', sheet:'hq-sheet-body', drawer:'rs-drawer-host'};
+  const st={};
+  let restoring=false, asking=null;
+  const val=n=> (n.type==='checkbox'||n.type==='radio')? (n.checked?'1':'0') : String(n.value==null?'':n.value);
+  const ok=n=> n && n.matches && n.matches(SEL) && !n.readOnly && !n.disabled && !(n.closest && n.closest('[data-nosave]'));
+  function S(name){ return st[name] || (st[name]={orig:new Map(), last:new Map()}); }
+  function attach(name){
+    const r=document.getElementById(ROOT[name]); if(!r || r.__guard) return;
+    r.__guard=true;
+    const first=e=>{ if(restoring) return; const n=e.target; if(!ok(n)) return; const s=S(name); if(!s.orig.has(n)) s.orig.set(n, val(n)); };
+    r.addEventListener('focusin',first,true);
+    r.addEventListener('pointerdown',first,true);
+    const edit=e=>{ if(restoring) return; const n=e.target; if(!ok(n)) return; const s=S(name); if(s.orig.has(n)) s.last.set(n, val(n)); };
+    r.addEventListener('input',edit,true); r.addEventListener('change',edit,true);
+  }
+  function reset(name){ attach(name); st[name]={orig:new Map(), last:new Map()}; }
+  function changed(name){ const s=st[name]; if(!s) return [];
+    return [...s.last.keys()].filter(n=>{ const now=n.isConnected? val(n) : s.last.get(n); return now!==s.orig.get(n); }); }
+  function dirty(name){ attach(name); return changed(name).length>0; }
+  function discard(name){
+    const s=st[name]; if(!s) return;
+    restoring=true;
+    try{ changed(name).forEach(n=>{ const o=s.orig.get(n);
+      if(n.type==='checkbox'||n.type==='radio') n.checked=(o==='1'); else n.value=o;
+      try{ n.dispatchEvent(new Event('input',{bubbles:true})); }catch(e){}
+      try{ n.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){}
+    }); }finally{ restoring=false; }
+    reset(name);
+  }
+  function commit(name){
+    const r=document.getElementById(ROOT[name]), a=document.activeElement;
+    if(r && a && r.contains(a) && a.matches && a.matches(SEL)){ try{ a.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} try{ a.blur(); }catch(e){} }
+    try{ window.dispatchEvent(new Event('hq:save')); }catch(e){}
+    reset(name);
+  }
+  function ask(){
+    if(asking) return asking;
+    asking=new Promise(res=>{
+      const w=document.createElement('div'); w.className='hqg'; w.setAttribute('role','alertdialog'); w.setAttribute('aria-label','Unsaved changes');
+      w.innerHTML='<div class="hqg-scrim"></div><div class="hqg-box"><div class="hqg-ic">!</div><b>Save your changes?</b>'
+        +'<p>You changed something here and didn’t press Save.</p>'
+        +'<div class="hqg-acts"><button type="button" class="btn hqg-save">Save Changes</button>'
+        +'<button type="button" class="btn ghost hqg-drop">Discard Changes</button>'
+        +'<button type="button" class="hqg-keep">Keep Editing</button></div></div>';
+      const done=r=>{ w.remove(); document.removeEventListener('keydown',key,true); asking=null; res(r); };
+      const key=e=>{ if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); done('keep'); } };
+      w.querySelector('.hqg-save').addEventListener('click',e=>{ e.stopPropagation(); done('save'); });
+      w.querySelector('.hqg-drop').addEventListener('click',e=>{ e.stopPropagation(); done('discard'); });
+      w.querySelector('.hqg-keep').addEventListener('click',e=>{ e.stopPropagation(); done('keep'); });
+      w.querySelector('.hqg-scrim').addEventListener('click',e=>{ e.stopPropagation(); done('keep'); });
+      ['mousedown','click','pointerdown'].forEach(ev=>w.addEventListener(ev,e=>e.stopPropagation()));
+      document.addEventListener('keydown',key,true);
+      document.body.appendChild(w);
+      setTimeout(()=>{ const b=w.querySelector('.hqg-save'); if(b) b.focus(); },30);
+    });
+    return asking;
+  }
+  /* close it, asking first if something changed and was not saved */
+  function then(name, go){
+    if(asking) return;
+    if(!dirty(name)){ go(); return; }
+    ask().then(r=>{ if(r==='keep') return; if(r==='save') commit(name); else discard(name); go(); });
+  }
+  window.__hqGuard={reset, dirty, discard, commit, then, asking:()=>!!asking};
+  window.addEventListener('beforeunload',e=>{ if(Object.keys(ROOT).some(dirty)){ e.preventDefault(); e.returnValue=''; } });
+})();
+
 (function(){
   "use strict";
   let openKey=null, home=null;
@@ -8238,6 +8326,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     /* leaving the field is what writes it */
     if(a && box && box.contains(a) && a.matches && a.matches(TYPING)){ try{ a.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} a.blur(); }
     try{ window.dispatchEvent(new Event('hq:save')); }catch(e){}
+    try{ window.__hqGuard && window.__hqGuard.reset(which); }catch(e){}
     btn.disabled=true; btn.textContent='\u2713 Saved'; msg.textContent='';
     setTimeout(()=>{
       btn.disabled=false; btn.textContent='Save';
@@ -8251,7 +8340,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     if(p) return p;
     const scrim=document.createElement('div');
     scrim.className='pane-scrim'; scrim.id='hq-pane-scrim';
-    scrim.addEventListener('click',()=>close());
+    scrim.addEventListener('click',()=>userClose());
     document.body.appendChild(scrim);
 
     p=document.createElement('aside');
@@ -8267,7 +8356,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const t=document.createElement('h3'); t.id='hq-pane-t';
     const x=document.createElement('button'); x.type='button'; x.className='pane-x';
     x.setAttribute('aria-label','Close'); x.title='Close (Esc)'; x.textContent='×';
-    x.addEventListener('click',()=>close());
+    x.addEventListener('click',()=>userClose());
     hd.appendChild(t); hd.appendChild(x);
     const body=document.createElement('div');
     body.className='pane-body'; body.id='hq-pane-body';
@@ -8343,7 +8432,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
        home first, always. */
     if(page) closePage();
     const sec=sectionFor(k); if(!sec) return false;
-    if(openKey===k){ close(); return false; }
+    if(openKey===k){ userClose(); return false; }
     if(openKey) putBack();
     const p0=shell();
     const h0=hostFor(sec);
@@ -8352,6 +8441,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     home={key:k, nodes:pull(sec)};
     openKey=k;
     document.getElementById('hq-pane-t').textContent=nameOf(sec);
+    try{ G() && G().reset('pane'); }catch(e){}
     document.body.classList.add('paneon');
     document.querySelectorAll('[data-card]').forEach(n=>n.classList.toggle('cardopen', n===sec));
     const p=document.getElementById('hq-pane');
@@ -8361,6 +8451,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
       if(f && !/mobi/i.test(navigator.userAgent)) { /* leave focus alone; just make sure it is reachable */ } },0);
     return true;
   }
+  const G=()=>window.__hqGuard;
+  function userClose(){ if(G()) G().then('pane', ()=>close()); else close(); }
+  function userCloseSheet(){ if(G()) G().then('sheet', ()=>closeSheet()); else closeSheet(); }
   function close(){
     /* both can be open at once if something opened a page behind a card; close both,
        and put the card's own nodes back before the body is emptied */
@@ -8484,10 +8577,11 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
        node has no ancestors to test. That is not a press away from the panel. */
     if(!t.isConnected) return;
     if(t.closest('#hq-sheet, .sheet-scrim')) return;
-    if(sheet){ closeSheet(); return; }
+    if(t.closest('.hqg')) return;
+    if(sheet){ userCloseSheet(); return; }
     if(t.closest('#hq-pane, [data-card], [data-page], .drawer, .scrim, .plans,'
       + ' .hq-replace, .hq-rzprompt, .hq.rail, .hqtop, #viewbar, .railscrim')) return;
-    close();
+    userClose();
   });
 
   /* Escape peels one layer at a time. Anything else on the page that opens over the
@@ -8498,9 +8592,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
   document.addEventListener('keydown',e=>{ if(e.key!=='Escape') return;
     const t=e.target;
     if(t && (t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT')) return;
-    if(sheet){ closeSheet(); return; }
+    if(document.querySelector('.hqg')) return;
+    if(sheet){ userCloseSheet(); return; }
     if(document.querySelector(OVER)) return;
-    if(openKey||page) close(); });
+    if(openKey||page) userClose(); });
 
   /* ── A second sheet over the panel ──────────────────────────────────
      The Run already works this way: the panel opens, and pressing a task in it brings
@@ -8515,7 +8610,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     if(sh){ if(sh.parentNode!==host) host.appendChild(sh); return sh; }
     const sc=document.createElement('div');
     sc.className='sheet-scrim'; sc.id='hq-sheet-scrim';
-    sc.addEventListener('click',()=>closeSheet());
+    sc.addEventListener('click',()=>userCloseSheet());
     sh=document.createElement('aside');
     sh.className='hqsheet'; sh.id='hq-sheet';
     sh.setAttribute('role','dialog'); sh.setAttribute('aria-modal','false');
@@ -8523,7 +8618,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     const t=document.createElement('h3'); t.id='hq-sheet-t';
     const x=document.createElement('button'); x.type='button'; x.className='pane-x';
     x.setAttribute('aria-label','Close'); x.title='Close (Esc)'; x.textContent='\u00d7';
-    x.addEventListener('click',e=>{ e.stopPropagation(); closeSheet(); });
+    x.addEventListener('click',e=>{ e.stopPropagation(); userCloseSheet(); });
     hd.appendChild(t); hd.appendChild(x);
     const body=document.createElement('div');
     body.className='pane-body'; body.id='hq-sheet-body';
@@ -8533,7 +8628,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     return sh;
   }
   function openSheet(sec){
-    if(sheet && sheet.sec===sec){ closeSheet(); return; }
+    if(sheet && sheet.sec===sec){ userCloseSheet(); return; }
     closeSheet();
     const host=hostFor(sec)||document.body;
     const sh=sheetShell(host);
@@ -8545,6 +8640,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     move.forEach(x=>body.appendChild(x));
     restore(k);
     sheet={sec:sec, nodes:move, key:sec.dataset.card||''};
+    try{ G() && G().reset('sheet'); }catch(e){}
     document.getElementById('hq-sheet-t').textContent=nameOf(sec);
     sec.classList.add('cardon');
     document.body.classList.add('sheeton');
@@ -43730,9 +43826,10 @@ function dateFromDaysOut(n){
 }
 function openDrawer(id){
   const t=S.tasks.get(id);if(!t)return;
+  try{ window.__hqGuard && window.__hqGuard.reset("drawer"); }catch(e){}
   S.open=id;
   const host=$("#rs-drawer-host");host.textContent="";
-  const scrim=el("div","scrim");scrim.addEventListener("click",closeDrawer);
+  const scrim=el("div","scrim");scrim.addEventListener("click",closeDrawerAsk);
   const dr=el("aside","drawer");dr.setAttribute("aria-label","Task detail");
 
   const hd=document.createElement("header");
@@ -43757,7 +43854,7 @@ function openDrawer(id){
   }
   hd.appendChild(ht);
   const cl=el("button","close","✕");cl.type="button";cl.setAttribute("aria-label","Close");
-  cl.addEventListener("click",closeDrawer);hd.appendChild(cl);
+  cl.addEventListener("click",closeDrawerAsk);hd.appendChild(cl);
   dr.appendChild(hd);
 
   const form=el("div","form");
@@ -43960,10 +44057,12 @@ function drawerSave(dr){
     const a=document.activeElement;
     if(a&&dr.contains(a)&&a.id!=="dd-note"&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){ try{a.dispatchEvent(new Event("change",{bubbles:true}));}catch(e){} a.blur(); }
     b.disabled=true;b.textContent="\u2713 Saved";flash("Saved");
+    try{ window.__hqGuard && window.__hqGuard.reset("drawer"); }catch(e){}
     setTimeout(closeDrawer,550);
   });
   return b;
 }
+function closeDrawerAsk(){ if(window.__hqGuard) window.__hqGuard.then("drawer", closeDrawer); else closeDrawer(); }
 function closeDrawer(){S.open=null;S.openDisc=null;$("#rs-drawer-host").textContent="";document.body.classList.remove("ros-peek");}
 
 /* dated running notes on an agenda item — MM/DD, matching the plan's own notes */
@@ -44009,10 +44108,11 @@ async function addDiscNote(discId,text){
   }catch(e){flash("Not saved");}
 }
 function openDiscDrawer(id){
+  try{ window.__hqGuard && window.__hqGuard.reset("drawer"); }catch(e){}
   const d=S.disc.get(id);if(!d)return;
   S.openDisc=id;S.open=null;
   const host=$("#rs-drawer-host");host.textContent="";
-  const scrim=el("div","scrim");scrim.addEventListener("click",closeDrawer);
+  const scrim=el("div","scrim");scrim.addEventListener("click",closeDrawerAsk);
   const dr=el("aside","drawer");dr.setAttribute("aria-label","Agenda item");
 
   const hd=document.createElement("header");
@@ -44021,7 +44121,7 @@ function openDiscDrawer(id){
   ht.appendChild(el("div","sub","Planning meeting · "+(d.status==="resolved"?"Resolved":"Open")));
   hd.appendChild(ht);
   const cl=el("button","close","✕");cl.type="button";cl.setAttribute("aria-label","Close");
-  cl.addEventListener("click",closeDrawer);hd.appendChild(cl);
+  cl.addEventListener("click",closeDrawerAsk);hd.appendChild(cl);
   dr.appendChild(hd);
 
   const form=el("div","form");
@@ -44250,7 +44350,7 @@ $("#sName").addEventListener("keydown",e=>{if(e.key==="Enter")addSummit();});
 $("#addTask").addEventListener("click",addTask);
 $("#discAdd").addEventListener("click",addDisc);
 $("#discInput").addEventListener("keydown",e=>{if(e.key==="Enter")addDisc();});
-document.addEventListener("keydown",e=>{if(rosOn()&&e.key==="Escape"&&(S.open||S.openDisc))closeDrawer();});
+document.addEventListener("keydown",e=>{if((rosOn()||document.body.classList.contains("ros-peek"))&&e.key==="Escape"&&(S.open||S.openDisc)&&!document.querySelector(".hqg"))closeDrawerAsk();});
 
 renderAll();
 startClock();
