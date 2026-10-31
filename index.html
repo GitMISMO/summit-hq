@@ -4288,6 +4288,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-li i{width:10px;height:10px;border-radius:2px;flex:0 0 auto}
 .psg-li .t{flex:1 1 auto}
 .psg-li .n{color:#a9d8f3;font-weight:600;white-space:nowrap}
+.psg-li{flex-wrap:wrap;row-gap:4px}
+html body .psg-li .bar{display:block !important;flex:0 0 calc(100% - 18px);height:4px !important;min-height:0 !important;padding:0 !important;border:0 !important;
+  border-radius:2px;background:rgba(255,255,255,.16) !important;overflow:hidden;margin:0 0 0 18px;box-shadow:none !important}
+html body .psg-li .bar i{display:block !important;height:4px !important;width:0;border-radius:2px;margin:0;transition:width .8s cubic-bezier(.3,1,.4,1)}
 .psg-spon{font-size:11.5px;color:#a9d8f3;margin-top:4px}
 .psg-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .psg-day{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:11px 12px;border-radius:7px;cursor:pointer;
@@ -37756,14 +37760,12 @@ function renderGlance(){
   const hero=el('div','psg-hero');
   const rd=glReady();
   const ring=el('div','psg-ring');
-  const R=[46,36,26];
-  let svg='';
-  rd.rings.forEach((g,i)=>{
-    const r=R[i], C=2*Math.PI*r, f=g.of? g.n/g.of : 0;
-    svg+='<circle cx="56" cy="56" r="'+r+'" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="8"/>'
-      +'<circle class="psg-arc" cx="56" cy="56" r="'+r+'" fill="none" stroke="'+g.col+'" stroke-width="8" stroke-linecap="round"'
-      +' stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-f)).toFixed(1)+'" style="--c:'+C.toFixed(1)+'" transform="rotate(-90 56 56)"/>';
-  });
+  /* Jonna, 2026-10-31: three rings inside each other read wrong (two full, one empty, and
+     the figure sat on top of the inner one). One ring for the whole, and a bar a measure. */
+  const RR=46, CC=2*Math.PI*RR, ff=rd.pct/100;
+  const svg='<circle cx="56" cy="56" r="'+RR+'" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="10"/>'
+    +'<circle class="psg-arc" cx="56" cy="56" r="'+RR+'" fill="none" stroke="'+(rd.pct>=100?'#7fd1a8':'#74bfeb')+'" stroke-width="10" stroke-linecap="round"'
+    +' stroke-dasharray="'+CC.toFixed(1)+'" stroke-dashoffset="'+(CC*(1-ff)).toFixed(1)+'" style="--c:'+CC.toFixed(1)+'" transform="rotate(-90 56 56)"'+(ff<=0?' opacity="0"':'')+'/>';
   ring.appendChild(glSvg(112,112,svg));
   const mid=el('div','psg-pct'); mid.appendChild(el('b',null,rd.pct+'%')); mid.appendChild(el('span',null,'Ready'));
   ring.appendChild(mid);
@@ -37775,6 +37777,7 @@ function renderGlance(){
     const sw=el('i'); sw.style.background=g.col; b.appendChild(sw);
     b.appendChild(el('span','t',g.lbl));
     b.appendChild(el('span','n', g.of ? g.n+' of '+g.of : '—'));
+    const bar=el('span','bar'); const fi=el('i'); fi.style.width=(g.of? Math.round(g.n/g.of*100) : 0)+'%'; fi.style.background=g.col; bar.appendChild(fi); b.appendChild(bar);
     b.title='Open where this is filled in';
     b.addEventListener('click',()=>glOpen(g.card));
     leg.appendChild(b);
