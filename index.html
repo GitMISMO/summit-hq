@@ -7113,7 +7113,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
         <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down. <b>Enlarge</b> opens the week full screen with taller rows; drag and click work the same, and <b>Close</b> or Esc puts it back.</li>
       </ul>
-      <p><b>Opening a task, an agenda item or a session.</b> It opens wide on the right. The navy top says what it is, who is on it (owner, assists, facilitator, chairs), the dates and numbers that matter as tiles (due date, days before the Summit, the day and room, seats and headcount) and where it stands as steps; press a step to move it there. Under it are tabs: <b>Overview</b> says what to do next with buttons to do it, then the record at a glance; <b>Details</b> is every field to edit; <b>Notes</b> (tasks and agenda items) is the running log; <b>Conflicts</b> (sessions) lists anything that clashes. The tab you were last on comes back next time.</p>
+      <p><b>Opening a task, an agenda item or a session.</b> It opens wide on the right, laid out like the Certification Management panel. The navy top has its name and a few tags (phase, scope, day, room, status). Under it, numbered steps show where it stands; press one to move it there. The box under the steps says what to do next, with the buttons to do it. Then come the tabs. <b>Overview</b> has the record at a glance (owner, due date, room, headcount, chairs and so on) and its notes. <b>Details</b> has every field to edit. <b>Notes</b> (tasks and agenda items) is the running log, and <b>Conflicts</b> (sessions) lists anything that clashes. The tab you were last on comes back next time.</p>
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Buttons Above the Calendar</h4>
       <p><b>The Plan</b>, <b>Planning Meeting</b> and <b>All Tasks</b> switch the view without moving you back to the top of the page. <b>+ New Task</b> adds a task. <b>+ Add A Summit</b> opens the panel where you name a new Summit and drop its hotel contract in; the Schedule, the cycle, the Contract viewer and the resume are written together.</p>
@@ -17471,12 +17471,13 @@ function sessRail(d,s,p,rm,form){
     onPick:(i)=>{ const want=i===2?'Confirmed':i===1?'Not confirmed':null; if(!want||!p)return;
       const b=[...d.querySelectorAll('.statusbtns button')].find(x=>x.textContent===want); if(b)b.click(); }}:null;
   const hero=R.hero({
+    mono:nm,monoTone:s.kind==='wg'?'#1F6288':s.kind==='standing'||s.kind==='fixed'?'#8A5200':'#3F7F99',
     eyebrow:[SESS_KIND[s.kind]||'Session',blk?blk.dayLabel+' '+(blk.half||''):(stRoom?stRoom.nm:'Not on the grid'),room&&blk?room.nm:''],
     title:nm,badges,people,tiles,steps,onClose:askCloseEditor
   });
 
   /* Overview */
-  const ov=document.createElement('div');ov.style.cssText='display:flex;flex-direction:column;gap:14px';
+  const ov=document.createElement('div');ov.style.cssText='display:flex;flex-direction:column;gap:12px';
   const goDetails=sel=>{const w=d.querySelector('.rl-tabwrap');if(w&&w._show)w._show('details',true);
     if(sel)setTimeout(()=>{const n=[...d.querySelectorAll('.fld > label')].find(l=>new RegExp(sel,'i').test(l.textContent));if(n){const c=n.parentNode.querySelector('select,input,button');if(c){c.focus();c.scrollIntoView({block:'center'});}}},60);};
   const goConf=()=>{const w=d.querySelector('.rl-tabwrap');if(w&&w._show)w._show('conflicts',true);};
@@ -17490,7 +17491,7 @@ function sessRail(d,s,p,rm,form){
   else if(p&&!p.confirmed)nx={kicker:'Up Next',title:'Placed, not confirmed yet',sub:(blk?blk.dayLabel+' '+(blk.half||''):'')+(room?' in '+room.nm:'')+'. Confirm it once it is settled.',
     actions:[{label:'Mark Confirmed',onClick:()=>{const b=[...d.querySelectorAll('.statusbtns button')].find(x=>x.textContent==='Confirmed');if(b)b.click();}}]};
   else nx={tone:'good',kicker:'All Set',title:p?'Confirmed and in place':'In place for the week',sub:[blk?blk.dayLabel+' '+(blk.half||'')+(hours?', '+hours:''):'',room?room.nm:''].filter(Boolean).join(' · '),actions:[]};
-  ov.appendChild(R.next(nx));
+  hero.appendChild(R.next(nx));
   const av=s.av||(p&&p.av)||'';
   ov.appendChild(R.card('At a Glance',R.facts([
     {icon:'cal',label:'Day & Time',value:blk?blk.dayLabel+' '+(blk.half||''):s.kind==='standing'?'All week':'Not placed',sub:hours,onClick:()=>goDetails('Day & time|When')},
@@ -21930,7 +21931,7 @@ function rlGoTab(dr,key,focusSel){
   const w=dr.querySelector(".rl-tabwrap");if(w&&w._show)w._show(key,true);
   if(focusSel)setTimeout(()=>{const n=dr.querySelector(focusSel);if(n){try{n.focus();n.scrollIntoView({block:"center"});}catch(e){}}},60);
 }
-function taskHero(t){
+function taskHero(t,dr){
   const R=window.HQR;
   const st=t.status||"Not Started";
   const n=(t.dueKind==="date"&&t.due)?dayDiff(t.due):null;
@@ -21949,8 +21950,9 @@ function taskHero(t){
   const dout=(t.dueKind==="date"&&t.due)?daysOutOf(t.due):null;
   if(dout!==null&&su.start)tiles.push({big:Math.abs(dout),small:"DAYS",icon:"target",label:dout>=0?"Before the Summit":"After the Summit",sub:su.name||""});
   return R.hero({
-    eyebrow:["Task",t.phase||"Pre-Summit",SCOPE_SHORT[t.scope]||"No Scope"],
-    title:t.task||"Untitled task",badges,
+    monoIcon:"check",monoTone:{"Complete":"#2F8A5B","In Progress":"#8A5200","Need to Discuss":"#6B4A9E","Being Discussed":"#1F6288"}[st]||"#1F6288",
+    eyebrow:[t.phase||"Pre-Summit",SCOPE_SHORT[t.scope]||"No Scope"],
+    title:t.task||"Untitled task",badges,next:taskNext(t,dr),
     people:[{name:t.owner||"",empty:"Nobody yet",role:"Owner"}].concat(assists.map(a=>({name:a,role:"Assists"}))),
     tiles,
     steps:{items:RL_STATUS.map(s=>({label:s,state:st==="Complete"?"done":s===st?"now":""})),
@@ -21958,9 +21960,8 @@ function taskHero(t){
     onClose:closeDrawerAsk
   });
 }
-function taskOverview(t,dr){
-  const R=window.HQR,id=t.id;
-  const box=document.createElement("div");box.className="rl-pane-in";box.style.cssText="display:flex;flex-direction:column;gap:14px";
+function taskNext(t,dr){
+  const id=t.id;
   const st=t.status||"Not Started";
   const n=(t.dueKind==="date"&&t.due)?dayDiff(t.due):null;
   const when=t.due?parseD(t.due).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):"";
@@ -21981,7 +21982,14 @@ function taskOverview(t,dr){
   else nx={kicker:st==="In Progress"?"Underway":"Up Next",title:"Due "+when,sub:(n===0?"Today":n===1?"Tomorrow":"In "+n+" days")+" · "+(t.owner||"")+(st==="Not Started"?" hasn't started yet":" is on it"),
     actions:[W&&st==="Not Started"&&{label:"Start It",onClick:()=>save(id,{status:"In Progress"})},done&&(st==="Not Started"?Object.assign({},done,{kind:"ghost"}):done),
       W&&{label:"Flag for the Meeting",kind:"ghost",onClick:()=>save(id,{flagged:true})}]};
-  box.appendChild(R.next(nx));
+  return nx;
+}
+function taskOverview(t,dr){
+  const R=window.HQR,id=t.id;
+  const box=document.createElement("div");box.className="rl-pane-in";box.style.cssText="display:flex;flex-direction:column;gap:12px";
+  const st=t.status||"Not Started";
+  const n=(t.dueKind==="date"&&t.due)?dayDiff(t.due):null;
+  const W=canWrite!==false;
 
   const su=activeSummit()||{};
   const assists=(t.assists||"").split(",").map(x=>x.trim()).filter(Boolean);
@@ -22035,7 +22043,7 @@ function taskRail(dr,t,form){
     {key:"details",label:"Details",icon:"list",node:wrap},
     {key:"notes",label:"Notes",icon:"note",count:nNotes||"",node:notes}
   ]);
-  R.frame(dr,taskHero(t),tabs);
+  R.frame(dr,taskHero(t,dr),tabs);
   dr._rail={id:t.id};
 }
 /* a change made anywhere (the steps, a button, a field, another person) repaints the head and Overview */
@@ -22044,7 +22052,7 @@ function taskRailRefresh(){
   const t=S.tasks.get(dr._rail.id);if(!t)return;
   const sc=dr.querySelector(".rl-scroll");if(!sc)return;
   const top=sc.scrollTop;
-  const old=sc.querySelector(":scope > .rl-hero");if(old)sc.replaceChild(taskHero(t),old);
+  const old=sc.querySelector(":scope > .rl-top");if(old)sc.replaceChild(taskHero(t,dr),old);
   const w=sc.querySelector(".rl-tabwrap");
   if(w&&w._panes&&w._panes.overview){w._panes.overview.textContent="";w._panes.overview.appendChild(taskOverview(t,dr));}
   sc.scrollTop=top;
@@ -22055,7 +22063,12 @@ function discRail(dr,d,form){
   const linked=d.taskId&&S.tasks.has(d.taskId)?S.tasks.get(d.taskId):null;
   const entries=parseLog(d.log);
   const created=d.createdAt?new Date(d.createdAt):null;
+  const nxD=open
+    ?{tone:"cons",kicker:"Next Planning Meeting",title:"Still to be settled",sub:"Add what was said as it is discussed; resolve it once it is decided.",
+      actions:[W&&{label:"Add a Note",onClick:()=>rlGoTab(dr,"notes","#dd-note")},W&&{label:"Mark Resolved",kind:"ghost",onClick:()=>{saveDisc(id,{status:"resolved"});openDiscDrawer(id);}}]}
+    :{tone:"good",kicker:"Settled",title:"Resolved",sub:"Reopen it if it comes back up.",actions:[W&&{label:"Reopen",kind:"ghost",onClick:()=>{saveDisc(id,{status:"open"});openDiscDrawer(id);}}]};
   const hero=R.hero({
+    monoIcon:"chat",monoTone:"#6B4A9E",next:nxD,
     eyebrow:["Agenda Item","Planning Meeting"],
     title:d.text||"Agenda item",
     badges:[{text:open?"Open":"Resolved",tone:open?"cons":"good"}],
@@ -22066,11 +22079,7 @@ function discRail(dr,d,form){
       onPick:W?(i)=>{ if(i===2&&open)saveDisc(id,{status:"resolved"}); if(i===1&&!open)saveDisc(id,{status:"open"}); if(i!==0)openDiscDrawer(id); }:null},
     onClose:closeDrawerAsk
   });
-  const ov=document.createElement("div");ov.style.cssText="display:flex;flex-direction:column;gap:14px";
-  ov.appendChild(R.next(open
-    ?{tone:"cons",kicker:"Next Planning Meeting",title:"Still to be settled",sub:"Add what was said as it is discussed; resolve it once it is decided.",
-      actions:[W&&{label:"Add a Note",onClick:()=>rlGoTab(dr,"notes","#dd-note")},W&&{label:"Mark Resolved",kind:"ghost",onClick:()=>{saveDisc(id,{status:"resolved"});openDiscDrawer(id);}}]}
-    :{tone:"good",kicker:"Settled",title:"Resolved",sub:"Reopen it if it comes back up.",actions:[W&&{label:"Reopen",kind:"ghost",onClick:()=>{saveDisc(id,{status:"open"});openDiscDrawer(id);}}]}));
+  const ov=document.createElement("div");ov.style.cssText="display:flex;flex-direction:column;gap:12px";
   ov.appendChild(R.card("At a Glance",R.facts([
     {icon:"user",label:"Raised By",value:d.owner||"Anyone"},
     {icon:"check",label:"Status",value:open?"Open":"Resolved",tone:open?"":"good"},
@@ -28489,150 +28498,126 @@ function attach(){
 })();
 </script>
 <style>
-/* ── THE RECORD RAIL (Jonna, 2026-11-01) — the MMS work-request panel is the reference ── */
-html :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1240px,calc(100vw - var(--rail-w,240px) - 24px));padding:0;background:var(--paper);
-  display:flex;flex-direction:column;box-shadow:-14px 0 40px rgba(6,32,47,.28);border-left:0}
-html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1240px,calc(100vw - var(--rail-mini,62px) - 24px))}
+/* ── THE RECORD RAIL (Jonna, 2026-11-01) — calmer, to the CMS company panel: a short navy head
+   with a monogram, the name and a few tags; numbered steps on white; one "what now" box;
+   underlined tabs; plain white cards with small labels. ── */
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1100px,calc(100vw - var(--rail-w,240px) - 24px));padding:0;background:var(--surface);
+  display:flex;flex-direction:column;box-shadow:-18px 0 48px rgba(6,32,47,.24);border-left:0}
+html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1100px,calc(100vw - var(--rail-mini,62px) - 24px))}
 @media (max-width:760px){html :is(#app-ros,#app-grid,#hqx) .drawer.rl,html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:calc(100vw - var(--rail-mini,62px))}}
 .drawer.rl .rl-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .drawer.rl .rail-grow{display:none}
-.drawer.rl .rl-hero{position:relative;background:linear-gradient(135deg,#0d314c 0%,#12405f 70%,#164a6c 100%);color:#fff;padding:22px 30px 18px}
-.drawer.rl .rl-x{position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:6px;border:1px solid rgba(255,255,255,.28);
-  background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.drawer.rl .rl-x:hover{background:rgba(255,255,255,.2)}
-.drawer.rl .rl-eb{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;color:#9fd2f2;padding-right:52px}
-.drawer.rl .rl-ebk{color:#74bfeb}
-.drawer.rl .rl-sep{color:rgba(255,255,255,.35)}
-.drawer.rl .rl-tr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 2px;padding-right:52px}
-.drawer.rl .rl-title{font-family:var(--display);font-size:30px;line-height:1.15;font-weight:800;color:#fff;margin:0;letter-spacing:-.01em;overflow-wrap:anywhere}
-.drawer.rl .rl-badge{font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:4px;border:1px solid rgba(116,191,235,.7);color:#9fd2f2;background:rgba(116,191,235,.12);white-space:nowrap}
-.drawer.rl .rl-badge.good{border-color:rgba(79,199,155,.75);color:#8fe0bd;background:rgba(79,199,155,.14)}
-.drawer.rl .rl-badge.warn{border-color:rgba(224,168,60,.8);color:#f3c87a;background:rgba(224,168,60,.14)}
-.drawer.rl .rl-badge.bad{border-color:rgba(255,138,122,.8);color:#ffb0a5;background:rgba(255,138,122,.14)}
-.drawer.rl .rl-badge.cons{border-color:rgba(182,154,224,.8);color:#d3c0f2;background:rgba(182,154,224,.14)}
-.drawer.rl .rl-lede{margin:6px 0 0;font-size:13.5px;color:rgba(255,255,255,.78);max-width:none}
-.drawer.rl .rl-band{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;margin-top:16px}
-.drawer.rl .rl-people{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;flex:0 1 auto;min-width:0}
-.drawer.rl .rl-person{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:8px;min-width:0}
-.drawer.rl .rl-person + .rl-person{border-left:1px solid rgba(255,255,255,.12);border-radius:0 8px 8px 0;padding-left:12px}
-.drawer.rl .rl-person.lead{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);padding:6px 14px 6px 6px}
-.drawer.rl .rl-person > div{display:flex;flex-direction:column;min-width:0}
-.drawer.rl .rl-role{font-size:10.5px;font-weight:700;color:#74bfeb;letter-spacing:.02em}
-.drawer.rl .rl-person b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.drawer.rl .rl-person.lead b{font-size:15.5px}
-.drawer.rl .rl-psub{font-size:11.5px;color:rgba(255,255,255,.62);white-space:nowrap}
-.rl-av{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;color:#fff;background:#5C6B7A;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
-.rl-av.big{width:46px;height:46px;font-size:15px;border-radius:10px}
-.rl-av.none{background:transparent;border:1px dashed rgba(255,255,255,.45);color:rgba(255,255,255,.7);box-shadow:none}
-.drawer.rl .rl-tiles{display:flex;gap:10px;flex-wrap:wrap}
-.drawer.rl .rl-tile{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;min-width:210px;padding:9px 16px 9px 9px;border-radius:10px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
-.drawer.rl button.rl-tile{cursor:pointer} .drawer.rl button.rl-tile:hover{background:rgba(255,255,255,.12)}
-.drawer.rl .rl-cal{flex:0 0 auto;width:52px;border-radius:7px;overflow:hidden;background:#fff;display:flex;flex-direction:column;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
-.drawer.rl .rl-cal i{display:block;width:100%;text-align:center;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;color:#0d314c;background:#74bfeb;padding:2px 0}
-.drawer.rl .rl-cal b{font-size:22px;line-height:1.05;font-weight:800;color:#0d314c;padding-top:2px;font-variant-numeric:tabular-nums}
-.drawer.rl .rl-cal em{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.08em;color:#5d7487;padding-bottom:3px}
-.drawer.rl .rl-cal.fig{justify-content:center;padding:6px 0 5px;min-height:52px}
-.drawer.rl .rl-cal.fig .rl-ic{width:14px;height:14px;color:#1F6288;margin-bottom:1px}
-.drawer.rl .rl-cal.fig b{font-size:18px;padding:0}
-.drawer.rl .rl-cal.none b{color:#9aa9b6}
-.drawer.rl .rl-tile.bad .rl-cal i{background:#ff8a7a} .drawer.rl .rl-tile.warn .rl-cal i{background:#e0a83c}
-.drawer.rl .rl-tile.good .rl-cal i{background:#4fc79b}
-.drawer.rl .rl-tt{display:flex;flex-direction:column;min-width:0}
-.drawer.rl .rl-tt b{font-size:14.5px;color:#fff;white-space:nowrap}
-.drawer.rl .rl-tt span{font-size:12.5px;color:rgba(255,255,255,.7);white-space:nowrap}
-.drawer.rl .rl-tile.bad .rl-tt span{color:#ffb0a5} .drawer.rl .rl-tile.warn .rl-tt span{color:#f3c87a}
-.drawer.rl .rl-steps{display:flex;gap:6px;margin-top:18px}
-.drawer.rl .rl-step{all:unset;box-sizing:border-box;flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px}
+.drawer.rl .rl-hero{position:relative;display:flex;gap:14px;align-items:center;padding:20px 64px 18px 22px;color:#fff;
+  background:radial-gradient(700px 220px at 100% -30%,rgba(116,191,235,.38),transparent 60%),linear-gradient(135deg,#06202f 0%,#0d314c 60%,#14486e 100%)}
+.drawer.rl .rl-mono{flex:0 0 auto;width:50px;height:50px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;background:#1F6288}
+.drawer.rl .rl-mono .rl-ic{width:24px;height:24px}
+.drawer.rl .rl-hw{display:flex;flex-direction:column;gap:7px;min-width:0}
+.drawer.rl .rl-title{font-family:var(--ui);font-size:19px;line-height:1.25;font-weight:600;color:#fff;margin:0;overflow-wrap:anywhere}
+.drawer.rl .rl-tags{display:flex;gap:6px;flex-wrap:wrap}
+.drawer.rl .rl-badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;border:1px solid rgba(255,255,255,.22);color:#fff;background:rgba(255,255,255,.12);white-space:nowrap}
+.drawer.rl .rl-badge.good{border-color:rgba(79,199,155,.6);color:#a6ead0;background:rgba(79,199,155,.16)}
+.drawer.rl .rl-badge.warn{border-color:rgba(224,168,60,.65);color:#f3d08f;background:rgba(224,168,60,.16)}
+.drawer.rl .rl-badge.bad{border-color:rgba(255,138,122,.65);color:#ffc0b7;background:rgba(255,138,122,.16)}
+.drawer.rl .rl-badge.cons{border-color:rgba(182,154,224,.6);color:#dccdf5;background:rgba(182,154,224,.16)}
+.drawer.rl .rl-x{position:absolute;top:50%;right:16px;transform:translateY(-50%);width:32px;height:32px;border-radius:6px;border:0;background:transparent;
+  color:rgba(255,255,255,.85);font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.drawer.rl .rl-x:hover{background:rgba(255,255,255,.14);color:#fff}
+/* numbered steps on white */
+.drawer.rl .rl-steps{display:flex;padding:16px 22px 4px}
+.drawer.rl .rl-step{all:unset;box-sizing:border-box;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;text-align:center}
 .drawer.rl button.rl-step{cursor:pointer}
-.drawer.rl .rl-step i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.18);transition:background .15s}
-.drawer.rl .rl-step.done i{background:#74bfeb}
-.drawer.rl .rl-step.now i{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
-.drawer.rl .rl-step.bad i{background:#ff8a7a}
-.drawer.rl button.rl-step:hover i{background:rgba(255,255,255,.55)}
-.drawer.rl .rl-step b{font-size:12px;color:rgba(255,255,255,.7);font-weight:700;line-height:1.25}
-.drawer.rl .rl-step.now b{color:#fff} .drawer.rl .rl-step.done b{color:#c8e6f8}
-.drawer.rl .rl-step span{font-size:11px;color:rgba(255,255,255,.5)}
-/* tabs ride on the navy and stay put while the pane scrolls */
-.drawer.rl .rl-tabs{position:sticky;top:0;z-index:3;display:flex;gap:4px;flex-wrap:wrap;background:#12405f;padding:8px 26px 0;box-shadow:0 1px 0 rgba(0,0,0,.08)}
-.drawer.rl .rl-tab{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:10px 16px 11px;border-radius:8px 8px 0 0;
-  font-size:13.5px;font-weight:700;color:rgba(255,255,255,.82);white-space:nowrap}
-.drawer.rl .rl-tab .rl-ic{width:15px;height:15px}
-.drawer.rl .rl-tab em{font-style:normal;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);color:#fff;border-radius:4px;padding:0 6px;font-variant-numeric:tabular-nums}
-.drawer.rl .rl-tab:hover{background:rgba(255,255,255,.1);color:#fff}
-.drawer.rl .rl-tab[aria-selected="true"]{background:var(--paper);color:var(--ink)}
-.drawer.rl .rl-tab[aria-selected="true"] em{background:var(--accent-soft);color:var(--accent)}
-.drawer.rl .rl-tab:focus-visible{outline:2px solid #74bfeb;outline-offset:-2px}
-.drawer.rl .rl-panes{padding:20px 26px 34px}
-.drawer.rl .rl-pane{display:flex;flex-direction:column;gap:14px}
+.drawer.rl .rl-step::before{content:"";position:absolute;top:13px;right:50%;width:100%;height:2px;background:var(--line);z-index:0}
+.drawer.rl .rl-step:first-child::before{display:none}
+.drawer.rl .rl-step.done::before,.drawer.rl .rl-step.now::before{background:#0f7b5c}
+.drawer.rl .rl-step i{position:relative;z-index:1;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-style:normal;
+  font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--ink-3);border:2px solid var(--line)}
+.drawer.rl .rl-step.done i{background:var(--good-soft);border-color:#0f7b5c;color:#0f7b5c}
+.drawer.rl .rl-step.now i{background:#0d314c;border-color:#0d314c;color:#fff}
+.drawer.rl .rl-step.bad i{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.drawer.rl button.rl-step:hover i{border-color:var(--accent)}
+.drawer.rl .rl-step b{font-size:10.5px;font-weight:600;color:var(--ink-3);line-height:1.25}
+.drawer.rl .rl-step.now b{color:var(--ink)}
+/* the tabs: underlined, like the CMS */
+.drawer.rl .rl-tabs{position:sticky;top:0;z-index:3;display:flex;gap:6px;flex-wrap:wrap;background:var(--surface);padding:6px 22px 0;border-bottom:1px solid var(--line)}
+.drawer.rl .rl-tab{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:12px 10px 10px;
+  font-size:13px;font-weight:600;color:var(--ink-3);border-bottom:2.5px solid transparent;white-space:nowrap}
+.drawer.rl .rl-tab .rl-ic{display:none}
+.drawer.rl .rl-tab em{font-style:normal;font-size:10.5px;font-weight:600;background:var(--accent-soft);color:var(--accent);border-radius:3px;padding:1px 6px}
+.drawer.rl .rl-tab:hover{color:var(--ink)}
+.drawer.rl .rl-tab[aria-selected="true"]{color:var(--ink);border-bottom-color:#74bfeb}
+.drawer.rl .rl-tab:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.drawer.rl .rl-panes{padding:16px 22px 30px}
+.drawer.rl .rl-pane{display:flex;flex-direction:column;gap:12px}
 .drawer.rl .rl-pane[hidden]{display:none}
 .rl-ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.drawer.rl .rl-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(13,49,76,.05)}
-.drawer.rl .rl-ch{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.drawer.rl .rl-ch h4{font-family:var(--display);font-size:15px;font-weight:700;color:var(--ink);margin:0}
-.drawer.rl .rl-link{all:unset;cursor:pointer;margin-left:auto;font-size:12.5px;font-weight:700;color:var(--accent);white-space:nowrap}
-.drawer.rl .rl-link:hover{text-decoration:underline}
-.drawer.rl .rl-next{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 18px}
-.drawer.rl .rl-next.bad{border-left-color:var(--bad);background:var(--bad-soft)}
-.drawer.rl .rl-next.warn{border-left-color:var(--warn);background:var(--warn-soft)}
-.drawer.rl .rl-next.good{border-left-color:var(--good);background:var(--good-soft)}
-.drawer.rl .rl-next.cons{border-left-color:var(--cons,#6B4A9E)}
-.drawer.rl .rl-nw{display:flex;flex-direction:column;gap:2px;flex:1 1 280px;min-width:0}
-.drawer.rl .rl-nk{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--ink-3)}
-.drawer.rl .rl-nw b{font-family:var(--display);font-size:17px;color:var(--ink)}
-.drawer.rl .rl-ns{font-size:12.5px;color:var(--ink-3)}
+/* "what now" — one quiet box above the tabs' content */
+.drawer.rl .rl-next{display:flex;gap:12px 16px;align-items:center;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:14px 22px 0}
+.drawer.rl .rl-next.bad{background:var(--bad-soft);border-color:var(--bad)}
+.drawer.rl .rl-next.warn{background:var(--warn-soft)}
+.drawer.rl .rl-next.good{background:var(--good-soft)}
+.drawer.rl .rl-nw{display:flex;flex-direction:column;gap:2px;flex:1 1 260px;min-width:0}
+.drawer.rl .rl-nk{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.drawer.rl .rl-next.bad .rl-nk{color:var(--bad)}
+.drawer.rl .rl-nw b{font-size:17px;font-weight:700;color:var(--ink)}
+.drawer.rl .rl-ns{font-size:12.5px;color:var(--ink-2)}
 .drawer.rl .rl-na{display:flex;gap:7px;flex-wrap:wrap}
-.drawer.rl .rl-na .btn{white-space:nowrap;min-width:max-content}
-.drawer.rl .rl-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px}
-.drawer.rl .rl-fact{all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:flex-start;padding:10px 8px;border-radius:8px;min-width:0}
-.drawer.rl button.rl-fact{cursor:pointer} .drawer.rl button.rl-fact:hover{background:var(--accent-soft)}
+.drawer.rl .rl-na .btn,.drawer.rl .rl-acts .btn{white-space:nowrap;min-width:max-content}
+/* plain white cards, small labels */
+.drawer.rl .rl-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.drawer.rl .rl-ch{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.drawer.rl .rl-ch h4{font-family:var(--ui);font-size:14px;font-weight:700;color:var(--ink);margin:0}
+.drawer.rl .rl-link{all:unset;cursor:pointer;margin-left:auto;font-size:12.5px;font-weight:600;color:var(--accent);white-space:nowrap}
+.drawer.rl .rl-link:hover{text-decoration:underline}
+.drawer.rl .rl-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px 20px}
+.drawer.rl .rl-fact{all:unset;box-sizing:border-box;display:block;min-width:0;border-radius:4px}
+.drawer.rl button.rl-fact{cursor:pointer;display:flex;align-items:flex-start;text-align:left} .drawer.rl button.rl-fact > div{width:100%}
+.drawer.rl .rl-facts{align-items:start}
+.drawer.rl button.rl-fact:hover .rl-fv{color:var(--accent);text-decoration:underline}
 .drawer.rl .rl-fact.wide{grid-column:1/-1}
-.drawer.rl .rl-fi{flex:0 0 auto;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
-.drawer.rl .rl-fact.bad .rl-fi{background:var(--bad-soft);color:var(--bad)} .drawer.rl .rl-fact.warn .rl-fi{background:var(--warn-soft);color:var(--warn)}
-.drawer.rl .rl-fact.good .rl-fi{background:var(--good-soft);color:var(--good)}
-.drawer.rl .rl-fact > div{display:flex;flex-direction:column;min-width:0;gap:1px}
-.drawer.rl .rl-fact b{font-size:13.5px;color:var(--ink);font-weight:700}
-.drawer.rl .rl-fv{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
-.drawer.rl .rl-fs{font-size:11.5px;color:var(--ink-3)}
-.drawer.rl .rl-text{font-size:13.5px;line-height:1.6;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+.drawer.rl .rl-fi{display:none}
+.drawer.rl .rl-fact > div{display:flex;flex-direction:column;min-width:0;gap:2px}
+.drawer.rl .rl-fact b{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.drawer.rl .rl-fv{font-size:13.5px;color:var(--ink);font-weight:600;overflow-wrap:anywhere}
+.drawer.rl .rl-fact.bad .rl-fv{color:var(--bad)} .drawer.rl .rl-fact.warn .rl-fv{color:var(--warn-ink,var(--warn))} .drawer.rl .rl-fact.good .rl-fv{color:var(--good)}
+.drawer.rl .rl-fs{font-size:12px;color:var(--ink-3)}
+.drawer.rl .rl-text{font-size:13px;line-height:1.55;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
 .drawer.rl .rl-text.empty{color:var(--ink-3)}
-.drawer.rl .rl-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.drawer.rl .rl-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media (max-width:900px){.drawer.rl .rl-two{grid-template-columns:minmax(0,1fr)}}
-/* the forms that were already there, laid across the width */
-html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form{padding:0;overflow:visible;flex:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px 20px;align-items:start}
+/* the forms that were already there, across the width */
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form{padding:0;overflow:visible;flex:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px 18px;align-items:start}
 html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > *{min-width:0}
 html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > .fld:first-child{grid-column:1/-1}
 html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > :is(.row2,.row3,.chips-pick,.fixbtn,.capline,.notice,h4,hr),
 html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > .fld:has(textarea,.chips-pick,.ovl-chips,.statusbtns,.swatches,.log,.readout,.linkrow,.flagtoggle,.pl,.box){grid-column:1/-1}
-html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .rl-wrapform{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
-html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .fld textarea{min-height:110px}
-html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:12px 26px;background:var(--surface);border-top:1px solid var(--line)}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .rl-wrapform{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .fld > label{font-size:10px;letter-spacing:1px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .fld textarea{min-height:90px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;background:var(--surface);border-top:1px solid var(--line)}
 .drawer.rl .rl-acts{display:flex;gap:7px;flex-wrap:wrap}
-.drawer.rl .rl-acts .btn{white-space:nowrap;min-width:max-content}
 .drawer.rl .rl-issues{display:flex;flex-direction:column;gap:7px}
-.drawer.rl .rl-issue{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:7px;padding:9px 12px;background:var(--surface)}
+.drawer.rl .rl-issue{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:6px;padding:9px 12px;background:var(--surface)}
 .drawer.rl .rl-issue.bad{border-left-color:var(--bad);background:var(--bad-soft)}
 .drawer.rl .rl-issue .rl-ic{color:var(--warn);margin-top:1px} .drawer.rl .rl-issue.bad .rl-ic{color:var(--bad)}
 .drawer.rl .rl-issue b{display:block;font-size:13px;color:var(--ink)}
 .drawer.rl .rl-issue span{font-size:12px;color:var(--ink-2)}
-.drawer.rl .rl-ok{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:600;color:var(--good);background:var(--good-soft);border-radius:7px;padding:10px 12px}
+.drawer.rl .rl-ok{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:600;color:var(--good);background:var(--good-soft);border-radius:6px;padding:10px 12px}
 .drawer.rl .rl-ok .rl-ic{color:var(--good)}
 .drawer.rl .rl-log{display:flex;flex-direction:column}
-.drawer.rl .rl-li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding:7px 0;position:relative}
-.drawer.rl .rl-li::before{content:"";width:8px;height:8px;border-radius:2px;background:#74bfeb;margin-top:6px}
+.drawer.rl .rl-li{padding:7px 0;border-top:1px solid var(--line)}
+.drawer.rl .rl-li:first-child{border-top:0;padding-top:0}
 .drawer.rl .rl-li > div{display:flex;flex-direction:column}
-.drawer.rl .rl-li em{font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.drawer.rl .rl-li em{font-style:normal;font-size:11px;color:var(--ink-3);font-weight:600}
 .drawer.rl .rl-li span{font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
 .drawer.rl .rl-chips{display:flex;gap:6px;flex-wrap:wrap}
-.drawer.rl .rl-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink);border:1px solid var(--line-2);border-radius:6px;padding:6px 11px;background:var(--surface)}
+.drawer.rl .rl-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-2);border:1px solid var(--line-2);border-radius:6px;padding:6px 11px;background:var(--surface)}
 .drawer.rl .rl-chip:hover{border-color:var(--accent);color:var(--accent)}
 .drawer.rl .rl-chip .rl-ic{width:14px;height:14px;color:var(--accent)}
+.rl-av{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:700;color:#fff;background:#5C6B7A}
 @media (max-width:760px){
-  .drawer.rl .rl-hero{padding:18px 16px 14px} .drawer.rl .rl-title{font-size:23px}
-  .drawer.rl .rl-tabs{padding:8px 10px 0} .drawer.rl .rl-panes{padding:14px 12px 28px}
-  .drawer.rl .rl-steps{flex-wrap:wrap} .drawer.rl .rl-step{flex:1 1 30%}
-  .drawer.rl .rl-tile{min-width:0;flex:1 1 100%}
+  .drawer.rl .rl-hero{padding:16px 54px 14px 14px} .drawer.rl .rl-mono{width:42px;height:42px;font-size:15px}
+  .drawer.rl .rl-steps{padding:14px 10px 2px} .drawer.rl .rl-step b{font-size:9.5px}
+  .drawer.rl .rl-tabs{padding:4px 10px 0} .drawer.rl .rl-panes{padding:12px 12px 24px} .drawer.rl .rl-next{margin:12px 12px 0}
 }
 </style>
 <script>
@@ -28713,51 +28698,41 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:12px 26px;backgrou
     w.appendChild(t);
     return w;
   }
-  /* the head of the rail */
+  /* the head of the rail — Jonna, 2026-11-01: calmer, to the CMS company panel. A monogram,
+     the name and a few tags on navy; the steps sit on white under it. People and dates live
+     in Overview's At a Glance instead of crowding the head. */
   function hero(o){
+    const wrap=mk("div","rl-top");
     const h=mk("div","rl-hero");
-    const x=mk("button","rl-x","×");x.type="button";x.title="Close (Esc)";x.setAttribute("aria-label","Close");
+    const m=mk("span","rl-mono");
+    if(o.monoIcon)m.appendChild(icon(o.monoIcon)); else m.textContent=ini(o.mono||o.title);
+    if(o.monoTone)m.style.background=o.monoTone;
+    h.appendChild(m);
+    const w=mk("div","rl-hw");
+    w.appendChild(mk("h2","rl-title",o.title||"Untitled"));
+    const tg=mk("div","rl-tags");
+    (o.eyebrow||[]).filter(Boolean).forEach(t=>tg.appendChild(mk("span","rl-badge",t)));
+    (o.badges||[]).forEach(b=>{const s=mk("span","rl-badge "+(b.tone||""),b.text);if(b.title)s.title=b.title;tg.appendChild(s);});
+    w.appendChild(tg);
+    h.appendChild(w);
+    const x=mk("button","rl-x","\u00d7");x.type="button";x.title="Close (Esc)";x.setAttribute("aria-label","Close");
     x.addEventListener("click",o.onClose);h.appendChild(x);
-    const eb=mk("div","rl-eb");
-    (o.eyebrow||[]).filter(Boolean).forEach((t,i)=>{ if(i)eb.appendChild(mk("span","rl-sep","·")); eb.appendChild(mk("span",i?null:"rl-ebk",t)); });
-    h.appendChild(eb);
-    const tr=mk("div","rl-tr");
-    tr.appendChild(mk("h2","rl-title",o.title||"Untitled"));
-    (o.badges||[]).forEach(b=>{const s=mk("span","rl-badge "+(b.tone||""),b.text);if(b.title)s.title=b.title;tr.appendChild(s);});
-    h.appendChild(tr);
-    if(o.lede)h.appendChild(mk("p","rl-lede",o.lede));
-    const band=mk("div","rl-band");
-    const people=(o.people||[]).filter(p=>p&&(p.name||p.empty));
-    if(people.length){
-      const ppl=mk("div","rl-people");
-      people.forEach((p,i)=>{
-        const c=mk("div","rl-person"+(i===0&&p.lead!==false?" lead":""));
-        c.appendChild(avatar(p.name,i===0&&p.lead!==false));
-        const w=mk("div");
-        w.appendChild(mk("span","rl-role",p.role||""));
-        w.appendChild(mk("b",null,p.name||p.empty));
-        if(p.sub)w.appendChild(mk("span","rl-psub",p.sub));
-        c.appendChild(w);ppl.appendChild(c);
-      });
-      band.appendChild(ppl);
-    }
-    const tiles=(o.tiles||[]).filter(Boolean);
-    if(tiles.length){const tw=mk("div","rl-tiles");tiles.forEach(t=>tw.appendChild(t.date!==undefined?dateTile(t):factTile(t)));band.appendChild(tw);}
-    if(band.childNodes.length)h.appendChild(band);
+    wrap.appendChild(h);
     if(o.steps&&o.steps.items&&o.steps.items.length){
       const st=mk("div","rl-steps");
       const cur=o.steps.items.findIndex(x=>x.state==="now");
       o.steps.items.forEach((s,i)=>{
-        const b=mk(o.steps.onPick?"button":"div","rl-step "+(s.state||(cur>-1&&i<cur?"done":"")));
+        const state=s.state||(cur>-1&&i<cur?"done":"");
+        const b=mk(o.steps.onPick?"button":"div","rl-step "+state);
         if(o.steps.onPick){b.type="button";b.title=s.tip||("Set to "+s.label);b.addEventListener("click",()=>o.steps.onPick(i,s));}
-        b.appendChild(mk("i"));
+        b.appendChild(mk("i",null,state==="done"?"\u2713":String(i+1)));
         b.appendChild(mk("b",null,s.label));
-        if(s.sub)b.appendChild(mk("span",null,s.sub));
         st.appendChild(b);
       });
-      h.appendChild(st);
+      wrap.appendChild(st);
     }
-    return h;
+    if(o.next)wrap.appendChild(next(o.next));
+    return wrap;
   }
   /* tabs under the head; the one she was on comes back next time she opens that kind */
   const MEM={};
