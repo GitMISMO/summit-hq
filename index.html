@@ -1656,6 +1656,33 @@ body.compact .meter .n{font-size:16px}
 #holds-host .catsum{margin-bottom:0}
 .holdlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:2px 12px;margin:6px 0 8px}
 .holdrow{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:2px 0;cursor:pointer;min-width:0}
+/* Hold in Place (Jonna, 2026-11-01): the week a column per half-day, a tile a session */
+.hip-top{display:flex;gap:10px 18px;align-items:center;flex-wrap:wrap;margin:2px 0 10px}
+.hip-lede{margin:0;flex:1 1 320px;font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.hip-keys{display:flex;gap:6px;flex-wrap:wrap}
+.hip-key{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:4px 8px;background:var(--surface);white-space:nowrap}
+.hip-key i{width:10px;height:10px;border-radius:2px;background:var(--surface);border:1.5px dashed var(--line-2)}
+.hip-key b{font-size:12.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.hip-key.conf i{background:var(--good);border:0} .hip-key.ask i{background:var(--warn);border:0} .hip-key.held i{background:var(--accent);border:0}
+.hip-cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;align-items:start}
+.hip-col{display:flex;flex-direction:column;gap:5px;background:var(--sunk);border:1px solid var(--line);border-radius:7px;padding:8px}
+.hip-hd{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:0 2px 3px}
+.hip-hd b{font-size:12.5px;color:var(--ink)}
+.hip-hd span{font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+.hip-t{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;font:inherit;cursor:pointer;
+  background:var(--surface);border:1px dashed var(--line-2);border-left:3px solid var(--line-2);border-radius:5px;padding:6px 8px;transition:border-color .12s,background .12s,transform .12s}
+.hip-t:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px)}
+.hip-t:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hip-n{font-size:12px;font-weight:600;color:var(--ink);line-height:1.3;overflow-wrap:anywhere}
+.hip-s{font-size:10.5px;font-weight:600;color:var(--ink-3)}
+.hip-t.held{background:var(--accent-soft);border-style:solid;border-color:var(--accent);border-left-color:var(--accent)}
+.hip-t.held .hip-s{color:var(--accent)}
+.hip-t.conf{cursor:default;background:var(--good-soft);border-style:solid;border-color:transparent;border-left-color:var(--good)}
+.hip-t.conf .hip-s{color:var(--good)}
+.hip-t.ask{cursor:default;background:var(--warn-soft);border-style:solid;border-color:transparent;border-left-color:var(--warn)}
+.hip-t.ask .hip-s{color:var(--warn-ink,var(--warn))}
+.hip-acts{display:flex;gap:7px;margin-top:10px}
+.hip-acts .btn{white-space:nowrap;min-width:max-content}
 .holdrow.fixed{opacity:.68;cursor:default}
 .holdrow input{flex:0 0 auto;margin:0}
 .holdrow .hn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -14027,38 +14054,75 @@ function renderVersions(box){
   w.appendChild(body);
   box.appendChild(w);
 }
+/* Jonna, 2026-11-01: Hold in Place, given some love. The week a column per half-day, each
+   placed session a tile that says where it stands — confirmed with the hotel, held by a
+   staff request, held by her, or free to move. Press a free tile to hold it, a held one
+   to let it go. */
 function renderHolds(box){
   const pl=place();
   const placedWG = WGS.filter(w=>pl[w.id]).sort((a,b)=>a.nm.localeCompare(b.nm));
+  const stateOf = x => pl[x.id].confirmed ? 'conf' : askLocked(x.id) ? 'ask' : isHeld(x.id) ? 'held' : 'free';
+  const tally={conf:0,ask:0,held:0,free:0};
+  placedWG.forEach(x=>tally[stateOf(x)]++);
   const n = placedWG.filter(w=>isHeld(w.id)).length;
   const w=el('div','arrsec'+(holdsOpen?'':' shut'));
-  w.appendChild(arrHead('Hold in place', 'What must not move', n||'', holdsOpen,
+  w.appendChild(arrHead('Hold in Place', 'What must not move', n||'', holdsOpen,
     ()=>{ holdsOpen=!holdsOpen; renderOptions(); }));
   const body=el('div','arrsec-body'); body.hidden=!holdsOpen;
-  body.appendChild(el('div','hint','Tick anything that must stay exactly where it is. '
-    +'Every arrangement is then built around it. Confirmed sessions are held whatever you do here.'));
-  if(!placedWG.length) body.appendChild(el('div','hint','Nothing is on the grid yet.'));
-  const grid=el('div','holdlist');
-  placedWG.forEach(x=>{
-    const p=pl[x.id], blk=BLOCK[p.b];
-    const lab=el('label','holdrow'+(p.confirmed?' fixed':''));
-    const cb=document.createElement('input'); cb.type='checkbox';
-    const byAsk = askLocked(x.id);
-    cb.checked = isHeld(x.id); cb.disabled = !!p.confirmed || byAsk;
-    cb.addEventListener('change',()=>toggleHold(x.id));
-    lab.appendChild(cb);
-    lab.appendChild(el('span','hn', x.nm));
-    lab.appendChild(el('span','hw', blk ? blk.dayLabel.slice(0,3)+' '+(blk.half||'') : ''));
-    if(p.confirmed) lab.title = x.nm+' is confirmed, so it is already held';
-    else if(byAsk) lab.title = x.nm+' is held by a staff request, so it cannot move';
-    grid.appendChild(lab);
+  if(!placedWG.length){ body.appendChild(el('div','hint','Nothing is on the grid yet.')); w.appendChild(body); box.appendChild(w); return; }
+  const top=el('div','hip-top');
+  top.appendChild(el('p','hip-lede','Press a session to hold it where it is. Every arrangement is built around what is held; confirmed sessions are always held.'));
+  const keys=el('div','hip-keys');
+  [['conf','Confirmed'],['ask','Staff Request'],['held','Held by You'],['free','Free to Move']].forEach(([k,lab])=>{
+    const c=el('span','hip-key '+k); c.appendChild(el('i')); c.appendChild(el('b',null,String(tally[k]))); c.appendChild(document.createTextNode(lab)); keys.appendChild(c);
   });
-  body.appendChild(grid);
-  if(n){
-    const clr=el('button','btn ghost','Release all'); clr.type='button';
-    clr.addEventListener('click',e=>{ e.stopPropagation(); markUndo();
-      const h=HOLDS(); Object.keys(h).forEach(k=>delete h[k]); renderOptions(); save(); });
-    body.appendChild(clr);
+  top.appendChild(keys);
+  body.appendChild(top);
+  const cols=el('div','hip-cols');
+  BLOCKS.forEach(bk=>{
+    const here=placedWG.filter(x=>pl[x.id].b===bk.id);
+    if(!here.length) return;
+    const col=el('div','hip-col');
+    const hd=el('div','hip-hd');
+    hd.appendChild(el('b',null,bk.dayLabel.slice(0,3)+' '+(bk.half||'')));
+    const heldHere=here.filter(x=>stateOf(x)!=='free').length;
+    hd.appendChild(el('span',null,heldHere+' of '+here.length+' held'));
+    col.appendChild(hd);
+    here.forEach(x=>{
+      const st=stateOf(x);
+      const t=el('button','hip-t '+st); t.type='button';
+      t.appendChild(el('span','hip-n',x.nm));
+      t.appendChild(el('span','hip-s',{conf:'\u2713 Confirmed',ask:'Staff Request',held:'Held',free:'Free to move'}[st]));
+      if(st==='conf'||st==='ask'){
+        t.disabled=true;
+        t.title = st==='conf' ? x.nm+' is confirmed, so it is already held' : x.nm+' is held by a staff request, so it cannot move';
+      } else {
+        t.setAttribute('aria-pressed', st==='held'?'true':'false');
+        t.title = st==='held' ? 'Held \u2014 press to let '+x.nm+' move' : 'Press to hold '+x.nm+' where it is';
+        t.addEventListener('click',e=>{ e.stopPropagation(); toggleHold(x.id); });
+      }
+      col.appendChild(t);
+    });
+    cols.appendChild(col);
+  });
+  body.appendChild(cols);
+  if(n || tally.free){
+    const acts=el('div','hip-acts');
+    if(tally.free){
+      const all=el('button','btn ghost','Hold Everything'); all.type='button';
+      all.title='Hold every session that is free to move';
+      all.addEventListener('click',e=>{ e.stopPropagation();
+        markUndo(); const h=HOLDS(); placedWG.filter(x=>stateOf(x)==='free').forEach(x=>{ h[x.id]=1; });
+        renderOptions(); save(); });
+      acts.appendChild(all);
+    }
+    if(n){
+      const clr=el('button','btn ghost','Release All'); clr.type='button';
+      clr.addEventListener('click',e=>{ e.stopPropagation(); markUndo();
+        const h=HOLDS(); Object.keys(h).forEach(k=>delete h[k]); renderOptions(); save(); });
+      acts.appendChild(clr);
+    }
+    body.appendChild(acts);
   }
   w.appendChild(body);
   box.appendChild(w);
