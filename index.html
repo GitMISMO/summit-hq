@@ -3106,6 +3106,21 @@ body.pm-dragging #app-ros .pm-lane:not(.pm-over),body.pm-dragging #app-ros .pm-w
 #app-ros .pm-later span:not(.pm-eb){font-size:12px;color:var(--ink-3)}
 #app-ros .pm-later .btn{margin-top:8px}
 
+/* the strip of weeks that rises while a task is being dragged */
+#app-ros .pm-dock{position:fixed;left:0;right:0;margin:0 auto;width:fit-content;bottom:14px;z-index:400;transform:translateY(140%);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);background:#0d314c;color:#fff;border-radius:10px;padding:9px 10px 9px 14px;
+  box-shadow:0 12px 32px -10px rgba(0,0,0,.55);transition:transform .22s cubic-bezier(.2,.8,.2,1),opacity .18s}
+#app-ros .pm-dock.on{transform:translateY(0);opacity:1;pointer-events:auto}
+#app-ros .pm-dk{flex:0 0 auto;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#9fd2f2}
+#app-ros .pm-dw{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+#app-ros .pm-dt{flex:0 0 auto;display:flex;flex-direction:column;min-width:84px;padding:7px 10px;border-radius:6px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);transition:background .12s,transform .12s}
+#app-ros .pm-dt b{font-size:12.5px;color:#fff;white-space:nowrap}
+#app-ros .pm-dt span{font-size:10.5px;color:rgba(255,255,255,.65);white-space:nowrap}
+#app-ros .pm-dt.summit{border-color:#e0a83c}
+#app-ros .pm-dt.pm-over{background:#74bfeb;border-color:#74bfeb;transform:translateY(-3px)}
+#app-ros .pm-dt.pm-over b,#app-ros .pm-dt.pm-over span{color:#0d314c}
+@media (prefers-reduced-motion:reduce){#app-ros .pm-dock{transition:none}}
 /* automate and the schedule, side by side */
 #app-ros .pm-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 @media(max-width:900px){#app-ros .pm-two{grid-template-columns:minmax(0,1fr)}}
@@ -7112,7 +7127,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>The top</b> says what there is to cover and has four numbered steps; click one to jump to it. The bar fills as things are decided.</li>
         <li><b>Talk About Today</b> has three lanes. <b>Carried Over</b> is anything still Being Discussed. <b>New to Raise</b> is anything flagged or set to Need to Discuss, plus agenda items. Type in <b>Add something to raise</b> to add an agenda item. Drag a card between lanes as the conversation moves; drag it into <b>Decided</b> once it is settled (a task goes back to In Progress and its questions close).</li>
         <li><b>Fix Before It Slips</b> lists open tasks that are overdue, have no date or have no owner. Pick an owner or a date right on the line, or press <b>Done</b>; the line drops off once it is fixed.</li>
-        <li><b>Coming Up</b> shows the next six weeks, a week to a column, with the Schedule milestones and the Summit itself marked. The bar on each week shows how much of it is done. Drag a task to another week to move it; it keeps its weekday. <b>Who Is Carrying These Six Weeks</b> shows each person&rsquo;s load (click a name for their tasks), and <b>See the Whole Run</b> opens the full countdown from 20+ weeks out to after the Summit.</li>
+        <li><b>Coming Up</b> shows the next six weeks, a week to a column, with the Schedule milestones and the Summit itself marked. The bar on each week shows how much of it is done. Drag a task to another week to move it; it keeps its weekday. Any task on the board, in any lane, can be moved this way: the moment you pick one up, a strip of weeks rises from the bottom of the screen, out to Summit week, so you can drop it on a week without scrolling. <b>Who Is Carrying These Six Weeks</b> shows each person&rsquo;s load (click a name for their tasks), and <b>See the Whole Run</b> opens the full countdown from 20+ weeks out to after the Summit.</li>
         <li><b>Marked To Automate</b> lists tasks that should stop being done by hand, across every Summit. Drag a task onto it to mark it.</li>
         <li>The <b>Schedule</b> box shows this Summit&rsquo;s two scheduling milestones (the Chair Survey 104 days out and the finalized schedule 97 days out, each on a Tuesday) and whether they are done. <b>Every Summit&rsquo;s Timeline</b> opens the list for every Summit, where a Summit can also be added by name and first day.</li>
       </ul>
@@ -21098,8 +21113,9 @@ function pmDraggable(node,kind,id){
     dragId=id;dragKind=kind;
     try{e.dataTransfer.setData("text/plain",id);e.dataTransfer.effectAllowed="move";}catch(x){}
     node.classList.add("dragging");document.body.classList.add("pm-dragging");
+    if(kind==="task")pmDock(true);
   });
-  node.addEventListener("dragend",()=>{dragId=null;node.classList.remove("dragging");document.body.classList.remove("pm-dragging");});
+  node.addEventListener("dragend",()=>{dragId=null;node.classList.remove("dragging");document.body.classList.remove("pm-dragging");pmDock(false);});
 }
 /* a drop zone that takes tasks and agenda items alike */
 function pmDrop(node,fn){
@@ -21211,6 +21227,43 @@ function pmJump(id){
   const bar=$("#viewbar");const off=(bar?bar.getBoundingClientRect().bottom:80)+10;
   window.scrollTo({top:n.getBoundingClientRect().top+window.scrollY-off,behavior:"smooth"});
   n.classList.remove("pm-flash");void n.offsetWidth;n.classList.add("pm-flash");
+}
+/* a task dropped on a week keeps its weekday there; one with no date lands on the Friday */
+function pmToWeek(a,id){
+  const t=S.tasks.get(id);if(!t)return;
+  let off=4;
+  if(t.dueKind==="date"&&t.due){const d=parseD(t.due);off=Math.min(4,(d.getDay()+6)%7);}
+  let nd=iso(new Date(a.getFullYear(),a.getMonth(),a.getDate()+off));
+  if(nd<iso(today()))nd=iso(today());
+  if(nd===t.due){flash("Already that week");return;}
+  save(id,{due:nd,dueKind:"date",daysOut:daysOutOf(nd)});
+  flash("Moved to "+parseD(nd).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}));
+}
+/* Jonna, 2026-11-01: any task on the board can go to any week without scrolling — the
+   moment a card is picked up, a strip of weeks rises from the bottom of the screen;
+   drop it on one. It reaches past the six columns, out to the Summit itself. */
+function pmDock(show){
+  let d=document.getElementById("pmDock");
+  if(!show){ if(d)d.classList.remove("on"); return; }
+  const host=document.getElementById("app-ros");if(!host)return;
+  if(!d){d=el("div","pm-dock");d.id="pmDock";host.appendChild(d);}
+  d.textContent="";
+  d.appendChild(el("span","pm-dk","Move to"));
+  const mon0=mondayOf(today());if([0,6].includes(today().getDay()))mon0.setDate(mon0.getDate()+7);
+  const su=activeSummit();
+  const last=su.start?mondayOf(parseD(su.start)):null;
+  const row=el("div","pm-dw");
+  for(let w=0;w<20;w++){
+    const a=new Date(mon0);a.setDate(a.getDate()+w*7);
+    if(w>=8&&(!last||a>last))break;
+    const b=el("div","pm-dt"+(last&&+a===+last?" summit":""));
+    b.appendChild(el("b",null,w===0?"This Week":w===1?"Next Week":fmtD(iso(a))));
+    b.appendChild(el("span",null,last&&+a===+last?"Summit week":"Mon "+fmtD(iso(a))));
+    pmDrop(b,(kind,id)=>{ if(kind==="task"){pmToWeek(a,id);} pmDock(false); });
+    row.appendChild(b);
+  }
+  d.appendChild(row);
+  requestAnimationFrame(()=>d.classList.add("on"));
 }
 function mondayOf(d){const x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
 function renderMeeting(){
@@ -21324,7 +21377,7 @@ function renderMeeting(){
   /* on a Saturday or Sunday, "this week" is the one about to start */
   const mon0=mondayOf(today());if([0,6].includes(today().getDay()))mon0.setDate(mon0.getDate()+7);
   const steps=stepsFor(su);
-  const ahead=pmSec("pm-ahead","Step 4","Coming Up","The next six weeks. Drag a task to another week to move it; the bar shows how much of each week is done.");
+  const ahead=pmSec("pm-ahead","Step 4","Coming Up","The next six weeks. Drag any task on this board to a week to move it \u2014 pick one up and a strip of weeks appears at the bottom of the screen. The bar shows how much of each week is done.");
   const cols=el("div","pm-weeks");
   const load=new Map();
   for(let w=0;w<WEEKS;w++){
@@ -21369,17 +21422,7 @@ function renderMeeting(){
     if(!body.childNodes.length)body.appendChild(el("div","pm-empty","Clear"));
     col.appendChild(body);
     /* a dropped task keeps its weekday in the new week; one with no date lands on the Friday */
-    if(canWrite!==false)pmDrop(col,(kind,id)=>{
-      if(kind!=="task")return;
-      const t=S.tasks.get(id);if(!t)return;
-      let off=4;
-      if(t.dueKind==="date"&&t.due){const d=parseD(t.due);off=Math.min(4,(d.getDay()+6)%7);}
-      let nd=iso(new Date(a.getFullYear(),a.getMonth(),a.getDate()+off));
-      if(nd<iso(today()))nd=iso(today());
-      if(nd===t.due)return;
-      save(id,{due:nd,dueKind:"date",daysOut:daysOutOf(nd)});
-      flash("Moved to "+fmtD(nd));
-    });
+    if(canWrite!==false)pmDrop(col,(kind,id)=>{ if(kind==="task")pmToWeek(a,id); });
     cols.appendChild(col);
   }
   ahead.appendChild(cols);
