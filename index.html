@@ -7112,6 +7112,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
         <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down. <b>Enlarge</b> opens the week full screen with taller rows; drag and click work the same, and <b>Close</b> or Esc puts it back.</li>
       </ul>
+      <p><b>Opening a task, an agenda item or a session.</b> It opens wide on the right. The navy top says what it is, who is on it (owner, assists, facilitator, chairs), the dates and numbers that matter as tiles (due date, days before the Summit, the day and room, seats and headcount) and where it stands as steps; press a step to move it there. Under it are tabs: <b>Overview</b> says what to do next with buttons to do it, then the record at a glance; <b>Details</b> is every field to edit; <b>Notes</b> (tasks and agenda items) is the running log; <b>Conflicts</b> (sessions) lists anything that clashes. The tab you were last on comes back next time.</p>
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Buttons Above the Calendar</h4>
       <p><b>The Plan</b>, <b>Planning Meeting</b> and <b>All Tasks</b> switch the view without moving you back to the top of the page. <b>+ New Task</b> adds a task. <b>+ Add A Summit</b> opens the panel where you name a new Summit and drop its hotel contract in; the Schedule, the cycle, the Contract viewer and the resume are written together.</p>
@@ -16969,6 +16970,8 @@ function renderEditor(){
     }
   }
   renderEditor._later=false;
+  { const sc=host.querySelector('.drawer .rl-scroll'), was=host.querySelector('.drawer');
+    renderEditor._top = (sc && was && was.dataset.sid===String(editing)) ? sc.scrollTop : 0; }
   host.textContent='';
   if(!editing || !S[editing]) return;
   /* a joint meeting's details edit the host's own fields; the joint itself has its own box */
@@ -16982,6 +16985,7 @@ function renderEditor(){
 
   const d = el('div','drawer');
   d.setAttribute('role','dialog'); d.setAttribute('aria-label','Session details');
+  d.dataset.sid=String(editing);
 
   const hd = document.createElement('header');
   const hl = el('div');
@@ -17326,7 +17330,11 @@ function renderEditor(){
     cxl0.addEventListener('click', cancelEditor); ft0.appendChild(cxl0);
     const done0=el('button','btn','Save'); done0.type='button';
     done0.addEventListener('click', closeEditor); ft0.appendChild(done0);
-    d.appendChild(ft0); host.appendChild(d); return;
+    d.appendChild(ft0);
+    try{ sessRail(d,s,p,rm,form); }catch(e){ console.warn('session rail',e); }
+    host.appendChild(d);
+    if(renderEditor._top){ const sc=d.querySelector('.rl-scroll'); if(sc) sc.scrollTop=renderEditor._top; }
+    return;
   }
   form.appendChild(field('Card colour', colourPicker(s.id),
     'Only changes how it looks on the grid.'));
@@ -17400,8 +17408,123 @@ function renderEditor(){
   done.addEventListener('click', closeEditor);
   ft.appendChild(done);
   d.appendChild(ft);
+  try{ sessRail(d,s,p,rm,form); }catch(e){ console.warn('session rail',e); }
 
   host.appendChild(d);
+  /* the editor redraws itself as things change; keep her place in it */
+  if(renderEditor._top){ const sc=d.querySelector('.rl-scroll'); if(sc) sc.scrollTop=renderEditor._top; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   THE SESSION RAIL — Jonna, 2026-11-01. A workgroup meeting (or any card on the grid)
+   opens the way an MMS work request does: what and where in a navy head, who runs it,
+   the day, the room and the headcount as tiles, its placement as steps; then an
+   Overview that says what is left to do, Details (the editor across the width) and
+   anything it clashes with.
+   ════════════════════════════════════════════════════════════════════════ */
+const SESS_KIND={wg:'Workgroup Meeting',standing:'Standing Item',fixed:'Set Piece',cons:'Certified Consultant Room',other:'Session'};
+function sessIssues(id){
+  let all=[];try{all=analyze().issues||[];}catch(e){}
+  return all.filter(i=>(i.ids||[i.who,i.who2]).filter(Boolean).includes(id));
+}
+function sessRail(d,s,p,rm,form){
+  const R=window.HQR;if(!R)return;
+  const id=s.id, nm=(S[id]&&S[id].nm)||s.nm, isWG=s.kind==='wg';
+  const blk=p?BLOCK[p.b]:null;
+  const stRoom=s.kind==='standing'?roomById(standingRoomFor(s.id)):null;
+  const room=rm||stRoom;
+  let day=null;
+  try{ const a=window.__ros&&window.__ros.active&&window.__ros.active(); const st=a&&a.start?window.HQR.parse(a.start):null;
+    if(st&&blk){const off={mon:0,tue:1,wed:2,thu:3}[blk.day];if(off!=null)day=new Date(st.getFullYear(),st.getMonth(),st.getDate()+off);} }catch(e){}
+  const hours=(typeof ownHours==='function'&&ownHours(s))||(blk&&blk.t1&&blk.t2? blk.t1.split('–')[0]+'–'+blk.t2.split('–')[1] : '');
+  const setup=p&&room?(p.setup||roomSetupOn(room,blk?blk.day:null)):null;
+  let seats=p&&room?(p.capOverride||capOf(room,setup)):0;
+  if(!seats&&room&&!p){ try{ seats=capFor(room)||0; }catch(e){} }
+  const att=Number(s.att)||0;
+  const over=seats&&att&&att>seats;
+  const issues=sessIssues(id);
+  const bad=issues.filter(i=>i.sev==='bad').length;
+  let fac='';try{fac=facOf(id)||'';}catch(e){fac=s.fac||'';}
+  if(/^(staff|tbd)$/i.test(fac))fac='';
+  const chairs=(s.chairs||[]).map(x=>String(x).trim()).filter(Boolean);
+  const staff=(s.staffIds||(s.staff?String(s.staff).split(',').map(t=>t.trim()):[])).filter(Boolean);
+  const dns=s.dns, unk=s.unk;
+  const badges=[];
+  if(isWG&&dns)badges.push({text:'No Session This Summit',tone:'warn'});
+  else if(isWG&&unk)badges.push({text:'Unknown',tone:'warn'});
+  else if(p)badges.push(p.confirmed?{text:'✓ Confirmed',tone:'good'}:{text:'Not Confirmed',tone:'warn'});
+  else if(s.kind!=='standing')badges.push({text:'Not on the Grid',tone:'warn'});
+  if(bad)badges.push({text:bad+' Conflict'+(bad===1?'':'s'),tone:'bad'});
+  if(s.joint||s.jointWith)badges.push({text:'Joint Meeting',tone:'cons'});
+  const people=[];
+  people.push({name:fac,empty:'Assigned by the schedule',role:'Facilitator'});
+  chairs.slice(0,4).forEach((c,i)=>people.push({name:c,role:i===0?'Chair':'Co-Chair'}));
+  if(chairs.length>4)people.push({name:'+'+(chairs.length-4),role:'More Chairs'});
+  const tiles=[];
+  if(blk)tiles.push({date:day,label:blk.dayLabel+' '+(blk.half||''),sub:hours||'',tone:p&&p.confirmed?'good':''});
+  else if(s.kind==='standing')tiles.push({big:'All',small:'WEEK',icon:'cal',label:'Through the Week',sub:hours||'Its own times each day'});
+  else tiles.push({date:null,label:'Not Placed',sub:'Pick a day and time in Details',tone:'warn'});
+  if(room)tiles.push({big:seats||'—',small:'SEATS',icon:'door',label:room.nm,sub:setup?(SETUPS[setup]||setup):'',tone:over?'bad':''});
+  if(isWG||att)tiles.push({big:att||'—',small:'PEOPLE',icon:'users',label:'Expected',sub:att?(over?(att-seats)+' more than the room seats':'From last Summit'):'No headcount yet',tone:over?'bad':''});
+  const steps=isWG&&!dns?{items:[{label:'On the List',state:'done'},{label:'On the Grid',state:p?(p.confirmed?'done':'now'):'now'},{label:'Confirmed',state:p&&p.confirmed?'now':''}],
+    onPick:(i)=>{ const want=i===2?'Confirmed':i===1?'Not confirmed':null; if(!want||!p)return;
+      const b=[...d.querySelectorAll('.statusbtns button')].find(x=>x.textContent===want); if(b)b.click(); }}:null;
+  const hero=R.hero({
+    eyebrow:[SESS_KIND[s.kind]||'Session',blk?blk.dayLabel+' '+(blk.half||''):(stRoom?stRoom.nm:'Not on the grid'),room&&blk?room.nm:''],
+    title:nm,badges,people,tiles,steps,onClose:askCloseEditor
+  });
+
+  /* Overview */
+  const ov=document.createElement('div');ov.style.cssText='display:flex;flex-direction:column;gap:14px';
+  const goDetails=sel=>{const w=d.querySelector('.rl-tabwrap');if(w&&w._show)w._show('details',true);
+    if(sel)setTimeout(()=>{const n=[...d.querySelectorAll('.fld > label')].find(l=>new RegExp(sel,'i').test(l.textContent));if(n){const c=n.parentNode.querySelector('select,input,button');if(c){c.focus();c.scrollIntoView({block:'center'});}}},60);};
+  const goConf=()=>{const w=d.querySelector('.rl-tabwrap');if(w&&w._show)w._show('conflicts',true);};
+  let nx;
+  if(isWG&&dns)nx={tone:'warn',kicker:'This Summit',title:'Not meeting this Summit',sub:'It stays on the workgroup list tagged DNS.',actions:[{label:'It Needs a Session',kind:'ghost',onClick:()=>setDNS(id,false)}]};
+  else if(isWG&&unk)nx={tone:'warn',kicker:'This Summit',title:'Not decided yet',sub:'Find out whether the group is meeting, then set it.',actions:[{label:'Needs a Session',onClick:()=>setDNS(id,false)},{label:'No Session',kind:'ghost',onClick:()=>setDNS(id,true)}]};
+  else if(bad)nx={tone:'bad',kicker:'Needs Attention',title:bad+' conflict'+(bad===1?'':'s')+' on this '+(isWG?'meeting':'session'),sub:issues.filter(i=>i.sev==='bad').map(i=>i.h).slice(0,2).join(' · '),actions:[{label:'See the Conflicts',onClick:goConf}]};
+  else if(issues.length)nx={tone:'warn',kicker:'Heads Up',title:issues.length+' warning'+(issues.length===1?'':'s')+' on this '+(isWG?'meeting':'session'),sub:issues.map(i=>i.h).slice(0,2).join(' · '),actions:[{label:'See the Warnings',onClick:goConf}]};
+  else if(!p&&s.kind!=='standing')nx={tone:'warn',kicker:'Up Next',title:'Not on the grid yet',sub:'Pick a day, time and room, or drag the card onto the grid.',actions:[{label:'Place It',onClick:()=>goDetails('Day & time')}]};
+  else if(over)nx={tone:'bad',kicker:'Room Too Small',title:att+' expected, '+seats+' seats',sub:'Change the set-up, raise the capacity, or move it to a bigger room.',actions:[{label:'Change the Room',onClick:()=>goDetails('^Room$')},{label:'Set-Up',kind:'ghost',onClick:()=>goDetails('Room set-up')}]};
+  else if(p&&!p.confirmed)nx={kicker:'Up Next',title:'Placed, not confirmed yet',sub:(blk?blk.dayLabel+' '+(blk.half||''):'')+(room?' in '+room.nm:'')+'. Confirm it once it is settled.',
+    actions:[{label:'Mark Confirmed',onClick:()=>{const b=[...d.querySelectorAll('.statusbtns button')].find(x=>x.textContent==='Confirmed');if(b)b.click();}}]};
+  else nx={tone:'good',kicker:'All Set',title:p?'Confirmed and in place':'In place for the week',sub:[blk?blk.dayLabel+' '+(blk.half||'')+(hours?', '+hours:''):'',room?room.nm:''].filter(Boolean).join(' · '),actions:[]};
+  ov.appendChild(R.next(nx));
+  const av=s.av||(p&&p.av)||'';
+  ov.appendChild(R.card('At a Glance',R.facts([
+    {icon:'cal',label:'Day & Time',value:blk?blk.dayLabel+' '+(blk.half||''):s.kind==='standing'?'All week':'Not placed',sub:hours,onClick:()=>goDetails('Day & time|When')},
+    {icon:'door',label:'Room',value:room?room.nm:'No room yet',sub:setup?(SETUPS[setup]||setup)+(seats?' · '+seats+' seats':''):'',tone:room?'':'warn',onClick:()=>goDetails('^Room')},
+    {icon:'users',label:'Headcount',value:att?att+' expected':'Not set',sub:seats&&att?(over?'Over by '+(att-seats):(seats-att)+' seats to spare'):'',tone:over?'bad':''},
+    {icon:'user',label:'Facilitator',value:fac||'Assigned by the schedule',sub:s.primaryFac&&s.primaryFac!==fac?'Standing: '+s.primaryFac:''},
+    chairs.length?{icon:'users',label:chairs.length===1?'Chair':'Chairs',value:chairs.join(', ')}:null,
+    {icon:'tag',label:'MISMO Staff',value:staff.length?staff.join(', '):'Nobody named'},
+    {icon:'clock',label:'Length',value:s.dur?s.dur+' minutes':'—'},
+    {icon:'av',label:'AV',value:av||'Not set'}
+  ])));
+  const two=document.createElement('div');two.className='rl-two';
+  two.appendChild(R.card('Notes',R.text(s.notes||s.note,'No notes on this '+(isWG?'meeting':'session')+'.'),{action:{label:'Edit',onClick:()=>goDetails('^Notes')}}));
+  const avoid=(s.avoid||[]).map(a=>S[a]?S[a].nm:a).filter(Boolean);
+  const ch=document.createElement('div');ch.className='rl-chips';
+  if(!avoid.length)ch.appendChild(R.text('','No Do Not Overlap rules.'));
+  avoid.forEach(n=>{const b=document.createElement('span');b.className='rl-chip';b.style.cursor='default';b.appendChild(R.icon('alert'));b.appendChild(document.createTextNode(n));ch.appendChild(b);});
+  two.appendChild(R.card('Do Not Overlap With',ch,{action:{label:'Edit',onClick:()=>goDetails('Do Not Overlap')}}));
+  ov.appendChild(two);
+
+  /* Conflicts */
+  const cf=document.createElement('div');cf.className='rl-card';
+  const list=document.createElement('div');list.className='rl-issues';
+  if(!issues.length){const ok=document.createElement('div');ok.className='rl-ok';ok.appendChild(R.icon('check'));ok.appendChild(document.createTextNode('Nothing clashes with this '+(isWG?'meeting':'session')+'.'));list.appendChild(ok);}
+  issues.forEach(i=>{const r=document.createElement('div');r.className='rl-issue '+(i.sev||'');r.appendChild(R.icon('alert'));
+    const w=document.createElement('div');w.appendChild(el('b',null,i.h||''));if(i.d||i.w)w.appendChild(el('span',null,[i.d,i.w].filter(Boolean).join(' · ')));r.appendChild(w);list.appendChild(r);});
+  cf.appendChild(list);
+
+  const wrap=document.createElement('div');wrap.className='rl-wrapform';wrap.appendChild(form);
+  const tabs=R.tabs('session',[
+    {key:'overview',label:'Overview',icon:'grid',node:ov},
+    {key:'details',label:'Details',icon:'list',node:wrap},
+    {key:'conflicts',label:'Conflicts',icon:'alert',count:issues.length||'',node:cf}
+  ]);
+  R.frame(d,hero,tabs);
 }
 
 function addSession(){
@@ -19512,6 +19635,7 @@ async function save(id,patch,opts){
   }
   if(t)Object.assign(t,patch);
   renderAll();flash("Saving…",true);
+  try{ if(S.open===id) taskRailRefresh(); }catch(e){}
   try{ await db.doc("tasks/"+id).update(Object.assign({},patch,{updatedAt:new Date().toISOString()})); flash("Saved"); }
   catch(e){ if(e&&e.code==="invalid_argument"){canWrite=false;renderAll();flash("Read-only");} else flash("Not saved"); }
 }
@@ -21790,8 +21914,185 @@ function openDrawer(id){
   if(canWrite===false) ft.appendChild(el("span","hint","You have view-only access."));
   else ft.appendChild(drawerSave(dr));
   dr.appendChild(ft);
+  try{ taskRail(dr,t,form); }catch(e){ console.warn("task rail",e); }
 
   host.appendChild(scrim);host.appendChild(dr);
+}
+/* ════════════════════════════════════════════════════════════════════════
+   THE TASK AND AGENDA RAILS — Jonna, 2026-11-01. The MMS work-request panel is the
+   standard: a navy head (what it is, who is on it, the dates as calendar tiles, the
+   status as steps you can press), then tabs. Overview says what to do next and shows
+   the task at a glance; Details is the full form across the width; Notes is the log.
+   ════════════════════════════════════════════════════════════════════════ */
+const RL_STATUS=["Not Started","In Progress","Need to Discuss","Being Discussed","Complete"];
+function rlGoTab(dr,key,focusSel){
+  const w=dr.querySelector(".rl-tabwrap");if(w&&w._show)w._show(key,true);
+  if(focusSel)setTimeout(()=>{const n=dr.querySelector(focusSel);if(n){try{n.focus();n.scrollIntoView({block:"center"});}catch(e){}}},60);
+}
+function taskHero(t){
+  const R=window.HQR;
+  const st=t.status||"Not Started";
+  const n=(t.dueKind==="date"&&t.due)?dayDiff(t.due):null;
+  const late=n!==null&&n<0&&st!=="Complete";
+  const su=activeSummit()||{};
+  const assists=(t.assists||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const tone={"Complete":"good","In Progress":"warn","Need to Discuss":"cons","Being Discussed":"cons"}[st]||"";
+  const badges=[{text:st,tone}];
+  if(late)badges.push({text:Math.abs(n)+(Math.abs(n)===1?" Day":" Days")+" Overdue",tone:"bad"});
+  if(t.flagged&&st!=="Complete")badges.push({text:"⚑ On the Meeting Agenda",tone:"cons"});
+  if(t.automate)badges.push({text:"Marked To Automate",tone:""});
+  const tiles=[];
+  if(t.dueKind==="date"&&t.due)tiles.push({date:t.due,label:"Due",tone:st==="Complete"?"good":late?"bad":(n!==null&&n<=7)?"warn":"",
+    sub:st==="Complete"?"Complete":late?Math.abs(n)+" day"+(Math.abs(n)===1?"":"s")+" overdue":n===0?"Today":n===1?"Tomorrow":"In "+n+" days"});
+  else tiles.push({date:null,label:t.dueKind==="now"?"Active Now":"No Due Date",sub:t.dueKind==="now"?"No fixed date":"Set one in Details",tone:"warn"});
+  const dout=(t.dueKind==="date"&&t.due)?daysOutOf(t.due):null;
+  if(dout!==null&&su.start)tiles.push({big:Math.abs(dout),small:"DAYS",icon:"target",label:dout>=0?"Before the Summit":"After the Summit",sub:su.name||""});
+  return R.hero({
+    eyebrow:["Task",t.phase||"Pre-Summit",SCOPE_SHORT[t.scope]||"No Scope"],
+    title:t.task||"Untitled task",badges,
+    people:[{name:t.owner||"",empty:"Nobody yet",role:"Owner"}].concat(assists.map(a=>({name:a,role:"Assists"}))),
+    tiles,
+    steps:{items:RL_STATUS.map(s=>({label:s,state:st==="Complete"?"done":s===st?"now":""})),
+      onPick:canWrite===false?null:(i)=>{ if(RL_STATUS[i]!==st)save(t.id,{status:RL_STATUS[i]}); }},
+    onClose:closeDrawerAsk
+  });
+}
+function taskOverview(t,dr){
+  const R=window.HQR,id=t.id;
+  const box=document.createElement("div");box.className="rl-pane-in";box.style.cssText="display:flex;flex-direction:column;gap:14px";
+  const st=t.status||"Not Started";
+  const n=(t.dueKind==="date"&&t.due)?dayDiff(t.due):null;
+  const when=t.due?parseD(t.due).toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"}):"";
+  const W=canWrite!==false;
+  const done=W?{label:"Mark Complete",onClick:()=>save(id,{status:"Complete"})}:null;
+  const pushWeek=W&&t.due?{label:"Push a Week",kind:"ghost",onClick:()=>{const nd=shift(t.due,7);save(id,{due:nd,dueKind:"date",daysOut:daysOutOf(nd)});}}:null;
+  const setDate={label:"Set a Date",kind:"ghost",onClick:()=>rlGoTab(dr,"details","#dr-due")};
+  let nx;
+  if(st==="Complete")nx={tone:"good",kicker:"Done",title:"Complete",sub:"Finished"+(t.due?" · was due "+when:"")+". Reopen it if something changed.",
+    actions:[W&&{label:"Reopen",kind:"ghost",onClick:()=>save(id,{status:"In Progress"})}]};
+  else if(n!==null&&n<0)nx={tone:"bad",kicker:"Overdue",title:Math.abs(n)+" day"+(Math.abs(n)===1?"":"s")+" past its date",sub:"It was due "+when+". Finish it, or give it a new date.",actions:[done,pushWeek,setDate]};
+  else if(st==="Being Discussed")nx={tone:"cons",kicker:"At the Planning Meeting",title:"Being discussed",sub:"It stays at the top of every meeting until it is settled.",
+    actions:[W&&{label:"Decided — Back to In Progress",onClick:()=>save(id,{status:"In Progress",flagged:false})},done&&Object.assign({},done,{kind:"ghost"})]};
+  else if(st==="Need to Discuss"||t.flagged)nx={tone:"cons",kicker:"Next Planning Meeting",title:"On the agenda to talk through",sub:"It is in New to Raise on the Planning Meeting board.",
+    actions:[W&&{label:"Start Discussing",onClick:()=>save(id,{status:"Being Discussed"})},W&&{label:"Take Off the Agenda",kind:"ghost",onClick:()=>save(id,{flagged:false,status:st==="Need to Discuss"?"In Progress":st})}]};
+  else if(t.dueKind!=="date"||!t.due)nx={tone:"warn",kicker:"Needs a Date",title:t.dueKind==="now"?"Active now, with no fixed date":"Nothing is counting this down",sub:"Give it a due date so it lands on the calendar and the Run.",actions:[setDate,done&&Object.assign({},done,{kind:"ghost"})]};
+  else if(!String(t.owner||"").trim())nx={tone:"warn",kicker:"Needs an Owner",title:"Nobody owns this yet",sub:"Due "+when+".",actions:[{label:"Assign Someone",onClick:()=>rlGoTab(dr,"details","#dr-owner")}]};
+  else nx={kicker:st==="In Progress"?"Underway":"Up Next",title:"Due "+when,sub:(n===0?"Today":n===1?"Tomorrow":"In "+n+" days")+" · "+(t.owner||"")+(st==="Not Started"?" hasn't started yet":" is on it"),
+    actions:[W&&st==="Not Started"&&{label:"Start It",onClick:()=>save(id,{status:"In Progress"})},done&&(st==="Not Started"?Object.assign({},done,{kind:"ghost"}):done),
+      W&&{label:"Flag for the Meeting",kind:"ghost",onClick:()=>save(id,{flagged:true})}]};
+  box.appendChild(R.next(nx));
+
+  const su=activeSummit()||{};
+  const assists=(t.assists||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const dout=t.due?daysOutOf(t.due):null;
+  box.appendChild(R.card("At a Glance",R.facts([
+    {icon:"user",label:"Owner",value:t.owner||"Unassigned",tone:t.owner?"":"warn",onClick:W?()=>rlGoTab(dr,"details","#dr-owner"):null},
+    {icon:"users",label:"Assists",value:assists.length?assists.join(", "):"Nobody else"},
+    {icon:"cal",label:"Due",value:t.due?parseD(t.due).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}):t.dueKind==="now"?"Active now":"No date",
+      tone:(n!==null&&n<0&&st!=="Complete")?"bad":t.due?"":"warn",onClick:W?()=>rlGoTab(dr,"details","#dr-due"):null},
+    {icon:"target",label:"Days Out",value:dout===null?"—":dout>=0?dout+" days before the Summit":Math.abs(dout)+" days after",sub:su.name||""},
+    {icon:"layers",label:"Summit Scope",value:t.scope||"Unassigned"},
+    {icon:"flag",label:"Phase",value:t.phase||"Pre-Summit"}
+  ])));
+  const two=document.createElement("div");two.className="rl-two";
+  two.appendChild(R.card("What It Involves",R.text(t.desc,"Nothing written yet — add it in Details."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details","#dr-desc")}}:{}));
+  two.appendChild(R.card("Instructions",R.text(t.details,"No instructions yet — add how it gets done in Details."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details","#dr-details")}}:{}));
+  box.appendChild(two);
+  const lines=String(t.notes||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);
+  const lg=document.createElement("div");lg.className="rl-log";
+  if(!lines.length)lg.appendChild(R.text("","No notes yet."));
+  lines.slice(-4).reverse().forEach(l=>{
+    const m=/^(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)\s*[:\-—]?\s*(.*)$/.exec(l);
+    const r=document.createElement("div");r.className="rl-li";const w=document.createElement("div");
+    if(m){w.appendChild(el("em",null,m[1]));w.appendChild(el("span",null,m[2]));}else w.appendChild(el("span",null,l));
+    r.appendChild(w);lg.appendChild(r);
+  });
+  const refs=[...S.disc.values()].filter(x=>x.taskId===id);
+  const nb=document.createElement("div");nb.className="rl-two";
+  nb.appendChild(R.card("Latest Notes",lg,{action:{label:lines.length>4?"All "+lines.length+" Notes":"Notes",onClick:()=>rlGoTab(dr,"notes","#dr-notes")}}));
+  const ch=document.createElement("div");ch.className="rl-chips";
+  if(!refs.length)ch.appendChild(R.text("","Not on the planning-meeting agenda."));
+  refs.forEach(x=>{const b=document.createElement("button");b.className="rl-chip";b.type="button";
+    b.appendChild(R.icon(x.status==="resolved"?"check":"chat"));b.appendChild(document.createTextNode(x.text||"Agenda item"));
+    b.addEventListener("click",()=>openDiscDrawer(x.id));ch.appendChild(b);});
+  nb.appendChild(R.card("Agenda Questions",ch));
+  box.appendChild(nb);
+  return box;
+}
+function taskRail(dr,t,form){
+  const R=window.HQR;if(!R)return;
+  const own=form.querySelector("select");if(own&&!own.id)own.id="dr-owner";
+  const dueIn=[...form.querySelectorAll("input[type=date],input")].find(i=>i.closest(".fld")&&/^due date$/i.test((i.closest(".fld").querySelector("label")||{}).textContent||""));
+  if(dueIn&&!dueIn.id)dueIn.id="dr-due";
+  const notes=document.createElement("div");notes.className="rl-wrapform";
+  const nform=document.createElement("div");nform.className="form";notes.appendChild(nform);
+  R.take(form,["Notes",/planning-meeting agenda/i],nform);
+  const wrap=document.createElement("div");wrap.className="rl-wrapform";wrap.appendChild(form);
+  const nNotes=String(t.notes||"").split(/\n+/).filter(x=>x.trim()).length;
+  const tabs=R.tabs("task",[
+    {key:"overview",label:"Overview",icon:"grid",node:taskOverview(t,dr)},
+    {key:"details",label:"Details",icon:"list",node:wrap},
+    {key:"notes",label:"Notes",icon:"note",count:nNotes||"",node:notes}
+  ]);
+  R.frame(dr,taskHero(t),tabs);
+  dr._rail={id:t.id};
+}
+/* a change made anywhere (the steps, a button, a field, another person) repaints the head and Overview */
+function taskRailRefresh(){
+  const dr=document.querySelector("#rs-drawer-host .drawer.rl");if(!dr||!dr._rail)return;
+  const t=S.tasks.get(dr._rail.id);if(!t)return;
+  const sc=dr.querySelector(".rl-scroll");if(!sc)return;
+  const top=sc.scrollTop;
+  const old=sc.querySelector(":scope > .rl-hero");if(old)sc.replaceChild(taskHero(t),old);
+  const w=sc.querySelector(".rl-tabwrap");
+  if(w&&w._panes&&w._panes.overview){w._panes.overview.textContent="";w._panes.overview.appendChild(taskOverview(t,dr));}
+  sc.scrollTop=top;
+}
+function discRail(dr,d,form){
+  const R=window.HQR;if(!R)return;
+  const id=d.id,W=canWrite!==false,open=d.status!=="resolved";
+  const linked=d.taskId&&S.tasks.has(d.taskId)?S.tasks.get(d.taskId):null;
+  const entries=parseLog(d.log);
+  const created=d.createdAt?new Date(d.createdAt):null;
+  const hero=R.hero({
+    eyebrow:["Agenda Item","Planning Meeting"],
+    title:d.text||"Agenda item",
+    badges:[{text:open?"Open":"Resolved",tone:open?"cons":"good"}],
+    people:[{name:d.owner||"",empty:"Anyone",role:"Raised By"}].concat(linked&&linked.owner?[{name:linked.owner,role:"Task Owner",sub:linked.task}]:[]),
+    tiles:[created&&!isNaN(created)?{date:new Date(created.getFullYear(),created.getMonth(),created.getDate()),label:"Raised"}:null,
+      {big:entries.length,small:entries.length===1?"NOTE":"NOTES",icon:"note",label:"Meeting Notes",sub:entries.length?"Last "+(entries[entries.length-1].date||""):"None yet"}],
+    steps:{items:[{label:"Raised",state:"done"},{label:"Open",state:open?"now":"done"},{label:"Resolved",state:open?"":"now"}],
+      onPick:W?(i)=>{ if(i===2&&open)saveDisc(id,{status:"resolved"}); if(i===1&&!open)saveDisc(id,{status:"open"}); if(i!==0)openDiscDrawer(id); }:null},
+    onClose:closeDrawerAsk
+  });
+  const ov=document.createElement("div");ov.style.cssText="display:flex;flex-direction:column;gap:14px";
+  ov.appendChild(R.next(open
+    ?{tone:"cons",kicker:"Next Planning Meeting",title:"Still to be settled",sub:"Add what was said as it is discussed; resolve it once it is decided.",
+      actions:[W&&{label:"Add a Note",onClick:()=>rlGoTab(dr,"notes","#dd-note")},W&&{label:"Mark Resolved",kind:"ghost",onClick:()=>{saveDisc(id,{status:"resolved"});openDiscDrawer(id);}}]}
+    :{tone:"good",kicker:"Settled",title:"Resolved",sub:"Reopen it if it comes back up.",actions:[W&&{label:"Reopen",kind:"ghost",onClick:()=>{saveDisc(id,{status:"open"});openDiscDrawer(id);}}]}));
+  ov.appendChild(R.card("At a Glance",R.facts([
+    {icon:"user",label:"Raised By",value:d.owner||"Anyone"},
+    {icon:"check",label:"Status",value:open?"Open":"Resolved",tone:open?"":"good"},
+    {icon:"cal",label:"Raised",value:created&&!isNaN(created)?created.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—"},
+    {icon:"link",label:"Linked Task",value:linked?linked.task:"Not linked",onClick:linked?()=>openDrawer(linked.id):()=>rlGoTab(dr,"details"),
+      sub:linked?(linked.owner||"Unassigned")+" · "+(linked.status||"Not Started"):"Link one in Details"}
+  ])));
+  ov.appendChild(R.card("Detail",R.text(d.context,"No background written yet."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details")}}:{}));
+  const lg=document.createElement("div");lg.className="rl-log";
+  if(!entries.length)lg.appendChild(R.text("","No notes on this item yet."));
+  entries.slice(-4).reverse().forEach(en=>{const r=document.createElement("div");r.className="rl-li";const w=document.createElement("div");
+    w.appendChild(el("em",null,en.date||""));w.appendChild(el("span",null,en.text));r.appendChild(w);lg.appendChild(r);});
+  ov.appendChild(R.card("Latest Notes",lg,{action:{label:entries.length?"All Notes":"Add a Note",onClick:()=>rlGoTab(dr,"notes","#dd-note")}}));
+  const notes=document.createElement("div");notes.className="rl-wrapform";
+  const nform=document.createElement("div");nform.className="form";notes.appendChild(nform);
+  R.take(form,["Meeting Notes"],nform);
+  const wrap=document.createElement("div");wrap.className="rl-wrapform";wrap.appendChild(form);
+  const tabs=R.tabs("disc",[
+    {key:"overview",label:"Overview",icon:"grid",node:ov},
+    {key:"notes",label:"Notes",icon:"note",count:entries.length||"",node:notes},
+    {key:"details",label:"Details",icon:"list",node:wrap}
+  ]);
+  R.frame(dr,hero,tabs);
 }
 /* Jonna, 2026-10-31 (team feedback): an explicit Save on the task and agenda-item panels.
    Each field still writes as it is left; Save writes the one she is in and closes. */
@@ -21991,6 +22292,7 @@ function openDiscDrawer(id){
   if(canWrite===false) ft.appendChild(el("span","hint","You have view-only access."));
   else ft.appendChild(drawerSave(dr));
   dr.appendChild(ft);
+  try{ discRail(dr,d,form); }catch(e){ console.warn("agenda rail",e); }
 
   host.appendChild(scrim);host.appendChild(dr);
 }
@@ -28183,6 +28485,370 @@ function attach(){
     requestAnimationFrame(function(){ queued=false; fit(); }); })
     .observe(document.documentElement, {childList:true, subtree:true});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', fit); else fit();
+})();
+</script>
+<style>
+/* ── THE RECORD RAIL (Jonna, 2026-11-01) — the MMS work-request panel is the reference ── */
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1240px,calc(100vw - var(--rail-w,240px) - 24px));padding:0;background:var(--paper);
+  display:flex;flex-direction:column;box-shadow:-14px 0 40px rgba(6,32,47,.28);border-left:0}
+html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1240px,calc(100vw - var(--rail-mini,62px) - 24px))}
+@media (max-width:760px){html :is(#app-ros,#app-grid,#hqx) .drawer.rl,html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:calc(100vw - var(--rail-mini,62px))}}
+.drawer.rl .rl-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.drawer.rl .rail-grow{display:none}
+.drawer.rl .rl-hero{position:relative;background:linear-gradient(135deg,#0d314c 0%,#12405f 70%,#164a6c 100%);color:#fff;padding:22px 30px 18px}
+.drawer.rl .rl-x{position:absolute;top:14px;right:16px;width:36px;height:36px;border-radius:6px;border:1px solid rgba(255,255,255,.28);
+  background:rgba(255,255,255,.08);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.drawer.rl .rl-x:hover{background:rgba(255,255,255,.2)}
+.drawer.rl .rl-eb{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;color:#9fd2f2;padding-right:52px}
+.drawer.rl .rl-ebk{color:#74bfeb}
+.drawer.rl .rl-sep{color:rgba(255,255,255,.35)}
+.drawer.rl .rl-tr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 2px;padding-right:52px}
+.drawer.rl .rl-title{font-family:var(--display);font-size:30px;line-height:1.15;font-weight:800;color:#fff;margin:0;letter-spacing:-.01em;overflow-wrap:anywhere}
+.drawer.rl .rl-badge{font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:4px;border:1px solid rgba(116,191,235,.7);color:#9fd2f2;background:rgba(116,191,235,.12);white-space:nowrap}
+.drawer.rl .rl-badge.good{border-color:rgba(79,199,155,.75);color:#8fe0bd;background:rgba(79,199,155,.14)}
+.drawer.rl .rl-badge.warn{border-color:rgba(224,168,60,.8);color:#f3c87a;background:rgba(224,168,60,.14)}
+.drawer.rl .rl-badge.bad{border-color:rgba(255,138,122,.8);color:#ffb0a5;background:rgba(255,138,122,.14)}
+.drawer.rl .rl-badge.cons{border-color:rgba(182,154,224,.8);color:#d3c0f2;background:rgba(182,154,224,.14)}
+.drawer.rl .rl-lede{margin:6px 0 0;font-size:13.5px;color:rgba(255,255,255,.78);max-width:none}
+.drawer.rl .rl-band{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;margin-top:16px}
+.drawer.rl .rl-people{display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 10px;flex:0 1 auto;min-width:0}
+.drawer.rl .rl-person{display:flex;align-items:center;gap:9px;padding:4px 10px 4px 4px;border-radius:8px;min-width:0}
+.drawer.rl .rl-person + .rl-person{border-left:1px solid rgba(255,255,255,.12);border-radius:0 8px 8px 0;padding-left:12px}
+.drawer.rl .rl-person.lead{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);padding:6px 14px 6px 6px}
+.drawer.rl .rl-person > div{display:flex;flex-direction:column;min-width:0}
+.drawer.rl .rl-role{font-size:10.5px;font-weight:700;color:#74bfeb;letter-spacing:.02em}
+.drawer.rl .rl-person b{font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drawer.rl .rl-person.lead b{font-size:15.5px}
+.drawer.rl .rl-psub{font-size:11.5px;color:rgba(255,255,255,.62);white-space:nowrap}
+.rl-av{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;background:#5C6B7A;box-shadow:0 0 0 2px rgba(255,255,255,.18)}
+.rl-av.big{width:46px;height:46px;font-size:15px;border-radius:10px}
+.rl-av.none{background:transparent;border:1px dashed rgba(255,255,255,.45);color:rgba(255,255,255,.7);box-shadow:none}
+.drawer.rl .rl-tiles{display:flex;gap:10px;flex-wrap:wrap}
+.drawer.rl .rl-tile{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:12px;min-width:210px;padding:9px 16px 9px 9px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+.drawer.rl button.rl-tile{cursor:pointer} .drawer.rl button.rl-tile:hover{background:rgba(255,255,255,.12)}
+.drawer.rl .rl-cal{flex:0 0 auto;width:52px;border-radius:7px;overflow:hidden;background:#fff;display:flex;flex-direction:column;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.drawer.rl .rl-cal i{display:block;width:100%;text-align:center;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.08em;color:#0d314c;background:#74bfeb;padding:2px 0}
+.drawer.rl .rl-cal b{font-size:22px;line-height:1.05;font-weight:800;color:#0d314c;padding-top:2px;font-variant-numeric:tabular-nums}
+.drawer.rl .rl-cal em{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.08em;color:#5d7487;padding-bottom:3px}
+.drawer.rl .rl-cal.fig{justify-content:center;padding:6px 0 5px;min-height:52px}
+.drawer.rl .rl-cal.fig .rl-ic{width:14px;height:14px;color:#1F6288;margin-bottom:1px}
+.drawer.rl .rl-cal.fig b{font-size:18px;padding:0}
+.drawer.rl .rl-cal.none b{color:#9aa9b6}
+.drawer.rl .rl-tile.bad .rl-cal i{background:#ff8a7a} .drawer.rl .rl-tile.warn .rl-cal i{background:#e0a83c}
+.drawer.rl .rl-tile.good .rl-cal i{background:#4fc79b}
+.drawer.rl .rl-tt{display:flex;flex-direction:column;min-width:0}
+.drawer.rl .rl-tt b{font-size:14.5px;color:#fff;white-space:nowrap}
+.drawer.rl .rl-tt span{font-size:12.5px;color:rgba(255,255,255,.7);white-space:nowrap}
+.drawer.rl .rl-tile.bad .rl-tt span{color:#ffb0a5} .drawer.rl .rl-tile.warn .rl-tt span{color:#f3c87a}
+.drawer.rl .rl-steps{display:flex;gap:6px;margin-top:18px}
+.drawer.rl .rl-step{all:unset;box-sizing:border-box;flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:3px}
+.drawer.rl button.rl-step{cursor:pointer}
+.drawer.rl .rl-step i{display:block;height:5px;border-radius:3px;background:rgba(255,255,255,.18);transition:background .15s}
+.drawer.rl .rl-step.done i{background:#74bfeb}
+.drawer.rl .rl-step.now i{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.drawer.rl .rl-step.bad i{background:#ff8a7a}
+.drawer.rl button.rl-step:hover i{background:rgba(255,255,255,.55)}
+.drawer.rl .rl-step b{font-size:12px;color:rgba(255,255,255,.7);font-weight:700;line-height:1.25}
+.drawer.rl .rl-step.now b{color:#fff} .drawer.rl .rl-step.done b{color:#c8e6f8}
+.drawer.rl .rl-step span{font-size:11px;color:rgba(255,255,255,.5)}
+/* tabs ride on the navy and stay put while the pane scrolls */
+.drawer.rl .rl-tabs{position:sticky;top:0;z-index:3;display:flex;gap:4px;flex-wrap:wrap;background:#12405f;padding:8px 26px 0;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.drawer.rl .rl-tab{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:10px 16px 11px;border-radius:8px 8px 0 0;
+  font-size:13.5px;font-weight:700;color:rgba(255,255,255,.82);white-space:nowrap}
+.drawer.rl .rl-tab .rl-ic{width:15px;height:15px}
+.drawer.rl .rl-tab em{font-style:normal;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);color:#fff;border-radius:4px;padding:0 6px;font-variant-numeric:tabular-nums}
+.drawer.rl .rl-tab:hover{background:rgba(255,255,255,.1);color:#fff}
+.drawer.rl .rl-tab[aria-selected="true"]{background:var(--paper);color:var(--ink)}
+.drawer.rl .rl-tab[aria-selected="true"] em{background:var(--accent-soft);color:var(--accent)}
+.drawer.rl .rl-tab:focus-visible{outline:2px solid #74bfeb;outline-offset:-2px}
+.drawer.rl .rl-panes{padding:20px 26px 34px}
+.drawer.rl .rl-pane{display:flex;flex-direction:column;gap:14px}
+.drawer.rl .rl-pane[hidden]{display:none}
+.rl-ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.drawer.rl .rl-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:0 1px 2px rgba(13,49,76,.05)}
+.drawer.rl .rl-ch{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.drawer.rl .rl-ch h4{font-family:var(--display);font-size:15px;font-weight:700;color:var(--ink);margin:0}
+.drawer.rl .rl-link{all:unset;cursor:pointer;margin-left:auto;font-size:12.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+.drawer.rl .rl-link:hover{text-decoration:underline}
+.drawer.rl .rl-next{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 18px}
+.drawer.rl .rl-next.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.drawer.rl .rl-next.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.drawer.rl .rl-next.good{border-left-color:var(--good);background:var(--good-soft)}
+.drawer.rl .rl-next.cons{border-left-color:var(--cons,#6B4A9E)}
+.drawer.rl .rl-nw{display:flex;flex-direction:column;gap:2px;flex:1 1 280px;min-width:0}
+.drawer.rl .rl-nk{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--ink-3)}
+.drawer.rl .rl-nw b{font-family:var(--display);font-size:17px;color:var(--ink)}
+.drawer.rl .rl-ns{font-size:12.5px;color:var(--ink-3)}
+.drawer.rl .rl-na{display:flex;gap:7px;flex-wrap:wrap}
+.drawer.rl .rl-na .btn{white-space:nowrap;min-width:max-content}
+.drawer.rl .rl-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 16px}
+.drawer.rl .rl-fact{all:unset;box-sizing:border-box;display:flex;gap:12px;align-items:flex-start;padding:10px 8px;border-radius:8px;min-width:0}
+.drawer.rl button.rl-fact{cursor:pointer} .drawer.rl button.rl-fact:hover{background:var(--accent-soft)}
+.drawer.rl .rl-fact.wide{grid-column:1/-1}
+.drawer.rl .rl-fi{flex:0 0 auto;width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--accent-soft);color:var(--accent)}
+.drawer.rl .rl-fact.bad .rl-fi{background:var(--bad-soft);color:var(--bad)} .drawer.rl .rl-fact.warn .rl-fi{background:var(--warn-soft);color:var(--warn)}
+.drawer.rl .rl-fact.good .rl-fi{background:var(--good-soft);color:var(--good)}
+.drawer.rl .rl-fact > div{display:flex;flex-direction:column;min-width:0;gap:1px}
+.drawer.rl .rl-fact b{font-size:13.5px;color:var(--ink);font-weight:700}
+.drawer.rl .rl-fv{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.drawer.rl .rl-fs{font-size:11.5px;color:var(--ink-3)}
+.drawer.rl .rl-text{font-size:13.5px;line-height:1.6;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+.drawer.rl .rl-text.empty{color:var(--ink-3)}
+.drawer.rl .rl-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.drawer.rl .rl-two{grid-template-columns:minmax(0,1fr)}}
+/* the forms that were already there, laid across the width */
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form{padding:0;overflow:visible;flex:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px 20px;align-items:start}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > *{min-width:0}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > .fld:first-child{grid-column:1/-1}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > :is(.row2,.row3,.chips-pick,.fixbtn,.capline,.notice,h4,hr),
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .form > .fld:has(textarea,.chips-pick,.ovl-chips,.statusbtns,.swatches,.log,.readout,.linkrow,.flagtoggle,.pl,.box){grid-column:1/-1}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .rl-wrapform{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-pane .fld textarea{min-height:110px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:12px 26px;background:var(--surface);border-top:1px solid var(--line)}
+.drawer.rl .rl-acts{display:flex;gap:7px;flex-wrap:wrap}
+.drawer.rl .rl-acts .btn{white-space:nowrap;min-width:max-content}
+.drawer.rl .rl-issues{display:flex;flex-direction:column;gap:7px}
+.drawer.rl .rl-issue{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:7px;padding:9px 12px;background:var(--surface)}
+.drawer.rl .rl-issue.bad{border-left-color:var(--bad);background:var(--bad-soft)}
+.drawer.rl .rl-issue .rl-ic{color:var(--warn);margin-top:1px} .drawer.rl .rl-issue.bad .rl-ic{color:var(--bad)}
+.drawer.rl .rl-issue b{display:block;font-size:13px;color:var(--ink)}
+.drawer.rl .rl-issue span{font-size:12px;color:var(--ink-2)}
+.drawer.rl .rl-ok{display:flex;gap:9px;align-items:center;font-size:13px;font-weight:600;color:var(--good);background:var(--good-soft);border-radius:7px;padding:10px 12px}
+.drawer.rl .rl-ok .rl-ic{color:var(--good)}
+.drawer.rl .rl-log{display:flex;flex-direction:column}
+.drawer.rl .rl-li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding:7px 0;position:relative}
+.drawer.rl .rl-li::before{content:"";width:8px;height:8px;border-radius:2px;background:#74bfeb;margin-top:6px}
+.drawer.rl .rl-li > div{display:flex;flex-direction:column}
+.drawer.rl .rl-li em{font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.drawer.rl .rl-li span{font-size:13px;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+.drawer.rl .rl-chips{display:flex;gap:6px;flex-wrap:wrap}
+.drawer.rl .rl-chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink);border:1px solid var(--line-2);border-radius:6px;padding:6px 11px;background:var(--surface)}
+.drawer.rl .rl-chip:hover{border-color:var(--accent);color:var(--accent)}
+.drawer.rl .rl-chip .rl-ic{width:14px;height:14px;color:var(--accent)}
+@media (max-width:760px){
+  .drawer.rl .rl-hero{padding:18px 16px 14px} .drawer.rl .rl-title{font-size:23px}
+  .drawer.rl .rl-tabs{padding:8px 10px 0} .drawer.rl .rl-panes{padding:14px 12px 28px}
+  .drawer.rl .rl-steps{flex-wrap:wrap} .drawer.rl .rl-step{flex:1 1 30%}
+  .drawer.rl .rl-tile{min-width:0;flex:1 1 100%}
+}
+</style>
+<script>
+/* ============================================================
+   THE RECORD RAIL — Jonna, 2026-11-01: "10x the right rails", to the standard of the
+   MMS work-request panel. Every record opened on the right (a task, an agenda item, a
+   workgroup meeting or other session) reads the same way: a navy head with what it is,
+   who is on it, the dates that matter as calendar tiles and where it stands as steps;
+   then tabs, with an Overview that answers "what now?" before any form. The forms
+   themselves are the ones that were already there, laid out across the width.
+   ============================================================ */
+(function(){
+  "use strict";
+  const mk=(t,c,x)=>{const n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n;};
+  const TONES=["#0d314c","#1F6288","#2F8A5B","#8A5200","#6B4A9E","#A32219","#3F7F99","#5C6B7A"];
+  const ini=n=>{const w=String(n||"").replace(/\(.*?\)/g,"").trim().split(/\s+/).filter(Boolean);
+    return w.length?(w[0][0]+(w.length>1?w[w.length-1][0]:(w[0][1]||""))).toUpperCase():"?";};
+  function avatar(n,big){
+    const a=mk("span","rl-av"+(big?" big":"")+(n?"":" none"),n?ini(n):"?");
+    if(n){let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))>>>0;a.style.background=TONES[h%TONES.length];}
+    return a;
+  }
+  const ICON={
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+    users:'<circle cx="9" cy="8" r="3.5"/><path d="M2 20c1-3.5 3.6-5.5 7-5.5s6 2 7 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c2 .8 3.4 2.6 4 5.4"/>',
+    cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    flag:'<path d="M5 21V4s2-1 5-1 5 2 8 2 3-1 3-1v10s-1 1-3 1-5-2-8-2-5 1-5 1"/>',
+    layers:'<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/>',
+    door:'<path d="M4 21h16M6 21V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17"/><circle cx="14.5" cy="12" r=".9" fill="currentColor"/>',
+    note:'<path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4M8 12h8M8 16h6"/>',
+    target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+    tag:'<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.5"/>',
+    seat:'<path d="M6 11V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5"/><path d="M4 11h16v4H4zM6 15v5M18 15v5"/>',
+    av:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    alert:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17v.5"/>',
+    check:'<path d="m5 12 5 5 9-10"/>',
+    link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.5M3 12h.5M3 18h.5"/>',
+    chat:'<path d="M4 5h16v11H9l-5 4z"/>'
+  };
+  function icon(k){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("aria-hidden","true");
+    s.innerHTML=ICON[k]||ICON.grid;s.setAttribute("class","rl-ic");return s;}
+  const parse=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||"");return m?new Date(+m[1],+m[2]-1,+m[3]):null;};
+  const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+  function rel(d){
+    const n=Math.round((d-today())/86400000);
+    return n===0?"Today":n===1?"Tomorrow":n===-1?"Yesterday":n>0?"In "+n+" days":Math.abs(n)+" days ago";
+  }
+  /* a calendar tile: the month on a sky band, the day big, the weekday under it */
+  function dateTile(o){
+    const w=mk(o.onClick?"button":"div","rl-tile"+(o.tone?" "+o.tone:""));
+    if(o.onClick){w.type="button";w.addEventListener("click",o.onClick);}
+    const d=o.date instanceof Date?o.date:parse(o.date);
+    const cal=mk("span","rl-cal");
+    if(d){
+      cal.appendChild(mk("i",null,d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()));
+      cal.appendChild(mk("b",null,String(d.getDate())));
+      cal.appendChild(mk("em",null,d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()));
+    }else{cal.classList.add("none");cal.appendChild(mk("i",null,"DATE"));cal.appendChild(mk("b",null,"—"));cal.appendChild(mk("em",null,"NONE"));}
+    w.appendChild(cal);
+    const t=mk("span","rl-tt");
+    t.appendChild(mk("b",null,o.label));
+    t.appendChild(mk("span",null,o.sub!=null?o.sub:(d?rel(d):"Not set")));
+    w.appendChild(t);
+    return w;
+  }
+  /* a figure tile: a number or a short word in the box instead of a date */
+  function factTile(o){
+    const w=mk("div","rl-tile"+(o.tone?" "+o.tone:""));
+    const c=mk("span","rl-cal fig");
+    if(o.icon)c.appendChild(icon(o.icon));
+    c.appendChild(mk("b",null,String(o.big)));
+    if(o.small)c.appendChild(mk("em",null,o.small));
+    w.appendChild(c);
+    const t=mk("span","rl-tt");t.appendChild(mk("b",null,o.label));if(o.sub)t.appendChild(mk("span",null,o.sub));
+    w.appendChild(t);
+    return w;
+  }
+  /* the head of the rail */
+  function hero(o){
+    const h=mk("div","rl-hero");
+    const x=mk("button","rl-x","×");x.type="button";x.title="Close (Esc)";x.setAttribute("aria-label","Close");
+    x.addEventListener("click",o.onClose);h.appendChild(x);
+    const eb=mk("div","rl-eb");
+    (o.eyebrow||[]).filter(Boolean).forEach((t,i)=>{ if(i)eb.appendChild(mk("span","rl-sep","·")); eb.appendChild(mk("span",i?null:"rl-ebk",t)); });
+    h.appendChild(eb);
+    const tr=mk("div","rl-tr");
+    tr.appendChild(mk("h2","rl-title",o.title||"Untitled"));
+    (o.badges||[]).forEach(b=>{const s=mk("span","rl-badge "+(b.tone||""),b.text);if(b.title)s.title=b.title;tr.appendChild(s);});
+    h.appendChild(tr);
+    if(o.lede)h.appendChild(mk("p","rl-lede",o.lede));
+    const band=mk("div","rl-band");
+    const people=(o.people||[]).filter(p=>p&&(p.name||p.empty));
+    if(people.length){
+      const ppl=mk("div","rl-people");
+      people.forEach((p,i)=>{
+        const c=mk("div","rl-person"+(i===0&&p.lead!==false?" lead":""));
+        c.appendChild(avatar(p.name,i===0&&p.lead!==false));
+        const w=mk("div");
+        w.appendChild(mk("span","rl-role",p.role||""));
+        w.appendChild(mk("b",null,p.name||p.empty));
+        if(p.sub)w.appendChild(mk("span","rl-psub",p.sub));
+        c.appendChild(w);ppl.appendChild(c);
+      });
+      band.appendChild(ppl);
+    }
+    const tiles=(o.tiles||[]).filter(Boolean);
+    if(tiles.length){const tw=mk("div","rl-tiles");tiles.forEach(t=>tw.appendChild(t.date!==undefined?dateTile(t):factTile(t)));band.appendChild(tw);}
+    if(band.childNodes.length)h.appendChild(band);
+    if(o.steps&&o.steps.items&&o.steps.items.length){
+      const st=mk("div","rl-steps");
+      const cur=o.steps.items.findIndex(x=>x.state==="now");
+      o.steps.items.forEach((s,i)=>{
+        const b=mk(o.steps.onPick?"button":"div","rl-step "+(s.state||(cur>-1&&i<cur?"done":"")));
+        if(o.steps.onPick){b.type="button";b.title=s.tip||("Set to "+s.label);b.addEventListener("click",()=>o.steps.onPick(i,s));}
+        b.appendChild(mk("i"));
+        b.appendChild(mk("b",null,s.label));
+        if(s.sub)b.appendChild(mk("span",null,s.sub));
+        st.appendChild(b);
+      });
+      h.appendChild(st);
+    }
+    return h;
+  }
+  /* tabs under the head; the one she was on comes back next time she opens that kind */
+  const MEM={};
+  function tabs(kind,list,onShow){
+    const wrap=mk("div","rl-tabwrap");
+    const bar=mk("nav","rl-tabs");bar.setAttribute("role","tablist");
+    const panes=mk("div","rl-panes");
+    let want=MEM[kind]&&list.some(t=>t.key===MEM[kind])?MEM[kind]:list[0].key;
+    const btns={},ps={};
+    list.forEach(t=>{
+      const b=mk("button","rl-tab");b.type="button";b.setAttribute("role","tab");
+      if(t.icon)b.appendChild(icon(t.icon));
+      b.appendChild(mk("span",null,t.label));
+      if(t.count!=null&&t.count!=="")b.appendChild(mk("em",null,String(t.count)));
+      b.addEventListener("click",()=>show(t.key,true));
+      bar.appendChild(b);btns[t.key]=b;
+      const p=mk("div","rl-pane");p.setAttribute("role","tabpanel");p.hidden=true;
+      if(t.node)p.appendChild(t.node);
+      panes.appendChild(p);ps[t.key]=p;
+    });
+    function show(k,user){
+      MEM[kind]=k;
+      Object.keys(btns).forEach(x=>{btns[x].setAttribute("aria-selected",x===k?"true":"false");ps[x].hidden=x!==k;});
+      if(user){const sc=wrap.closest(".rl-scroll");if(sc){const top=bar.offsetTop;if(sc.scrollTop>top)sc.scrollTop=top;}}
+      if(onShow)try{onShow(k);}catch(e){}
+    }
+    show(want,false);
+    wrap.appendChild(bar);wrap.appendChild(panes);
+    wrap._show=show;wrap._panes=ps;
+    return wrap;
+  }
+  function card(title,node,opts){
+    opts=opts||{};
+    const c=mk("section","rl-card"+(opts.cls?" "+opts.cls:""));
+    if(title){const h=mk("div","rl-ch");h.appendChild(mk("h4",null,title));
+      if(opts.action){const a=mk("button","rl-link",opts.action.label);a.type="button";a.addEventListener("click",opts.action.onClick);h.appendChild(a);}
+      c.appendChild(h);}
+    if(node)c.appendChild(node);
+    return c;
+  }
+  /* "what now?" — the first thing on the Overview */
+  function next(o){
+    const c=mk("section","rl-next "+(o.tone||""));
+    const w=mk("div","rl-nw");
+    w.appendChild(mk("span","rl-nk",o.kicker||"Next"));
+    w.appendChild(mk("b",null,o.title));
+    if(o.sub)w.appendChild(mk("span","rl-ns",o.sub));
+    c.appendChild(w);
+    const a=mk("div","rl-na");
+    (o.actions||[]).filter(Boolean).forEach(x=>{
+      const b=mk("button","btn"+(x.kind?" "+x.kind:""),x.label);b.type="button";
+      if(x.disabled)b.disabled=true;b.addEventListener("click",x.onClick);a.appendChild(b);});
+    if(a.childNodes.length)c.appendChild(a);
+    return c;
+  }
+  function facts(list){
+    const g=mk("div","rl-facts");
+    list.filter(Boolean).forEach(f=>{
+      const r=mk(f.onClick?"button":"div","rl-fact"+(f.tone?" "+f.tone:"")+(f.wide?" wide":""));
+      if(f.onClick){r.type="button";r.addEventListener("click",f.onClick);}
+      const ic=mk("span","rl-fi");ic.appendChild(icon(f.icon));r.appendChild(ic);
+      const w=mk("div");
+      w.appendChild(mk("b",null,f.label));
+      const v=mk("span","rl-fv");if(f.value instanceof Node)v.appendChild(f.value);else v.textContent=f.value==null||f.value===""?"—":String(f.value);
+      w.appendChild(v);
+      if(f.sub)w.appendChild(mk("span","rl-fs",f.sub));
+      r.appendChild(w);g.appendChild(r);
+    });
+    return g;
+  }
+  function text(t,empty){ const p=mk("div","rl-text"+(t?"":" empty"),t||empty||"Nothing written yet."); return p; }
+  /* Rebuild a drawer as a rail: the head, then the tabs, all in one scroller over the footer */
+  function frame(dr,head,tabWrap){
+    dr.classList.add("rl");
+    const old=dr.querySelector(":scope > header");if(old)old.remove();
+    const ft=dr.querySelector(":scope > footer");
+    const sc=mk("div","rl-scroll");
+    sc.appendChild(head);sc.appendChild(tabWrap);
+    dr.insertBefore(sc,ft||null);
+    return sc;
+  }
+  /* move the form fields whose label matches into another node, in the order given */
+  function take(form,labels,into){
+    labels.forEach(l=>{
+      const re=l instanceof RegExp?l:new RegExp("^"+l.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"$","i");
+      [...form.querySelectorAll(":scope > .fld, :scope > .row2 > .fld, :scope > .row3 > .fld, :scope > div > .fld")].forEach(f=>{
+        const lb=f.querySelector(":scope > label");if(lb&&re.test(lb.textContent.trim()))into.appendChild(f);
+      });
+    });
+    form.querySelectorAll(":scope > .row2:empty, :scope > .row3:empty").forEach(n=>n.remove());
+  }
+  window.HQR={hero,tabs,card,next,facts,text,frame,take,avatar,icon,dateTile,factTile,rel,parse};
 })();
 </script>
 <script>
