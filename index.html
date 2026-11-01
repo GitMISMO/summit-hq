@@ -3569,12 +3569,12 @@ body.sheeton .hqsheet{display:flex}
   display:flex;gap:6px;align-items:baseline}
 #app-resume .rz-f > label .miss{color:var(--warn-ink);letter-spacing:.04em}
 #app-resume .rz-f .note{font-size:11px;color:var(--ink-3)}
-#app-resume :is(#rz-doc,#rz-vers) input,#app-resume :is(#rz-doc,#rz-vers) select,#app-resume :is(#rz-doc,#rz-vers) textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);
+#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) input,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) select,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) textarea{font:inherit;font-size:13px;color:var(--ink);background:var(--surface);
   border:1px solid var(--line-2);border-radius:3px;padding:6px 8px;width:100%;min-width:0}
-#app-resume :is(#rz-doc,#rz-vers) textarea{min-height:58px;resize:vertical;line-height:1.45;font-family:inherit}
-#app-resume :is(#rz-doc,#rz-vers) input:focus,#app-resume :is(#rz-doc,#rz-vers) textarea:focus,#app-resume :is(#rz-doc,#rz-vers) select:focus{outline:2px solid var(--sky);outline-offset:0;border-color:var(--accent)}
-#app-resume :is(#rz-doc,#rz-vers) input.empty,#app-resume :is(#rz-doc,#rz-vers) textarea.empty{background:var(--warn-soft);border-color:var(--warn)}
-#app-resume :is(#rz-doc,#rz-vers) input::placeholder,#app-resume :is(#rz-doc,#rz-vers) textarea::placeholder{color:var(--ink-3);opacity:.8}
+#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) textarea{min-height:58px;resize:vertical;line-height:1.45;font-family:inherit}
+#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) input:focus,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) textarea:focus,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) select:focus{outline:2px solid var(--sky);outline-offset:0;border-color:var(--accent)}
+#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) input.empty,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) textarea.empty{background:var(--warn-soft);border-color:var(--warn)}
+#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) input::placeholder,#app-resume :is(#rz-doc,#rz-vers,#hq-pane,#hq-sheet) textarea::placeholder{color:var(--ink-3);opacity:.8}
 #app-resume .rz-sub-h{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);font-weight:700;
   margin:18px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
 #app-resume .rz-sub-h:first-child{margin-top:0}
@@ -6643,6 +6643,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 @media (max-width:640px){ #app-help .hp-panel{padding:2px 14px} #app-help .hp-in{padding-left:0}
   #app-help .hp-tbl td:first-child{width:auto} }
 #help-btn[aria-current]{color:#fff;background:rgba(116,191,235,.18)}
+/* Jonna, 2026-11-01: no typewriter type anywhere — a box with no font of its own takes the page's */
+textarea,input,select{font-family:var(--ui,inherit)}
 .hqg{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:16px}
 .hqg-scrim{position:absolute;inset:0;background:rgba(8,24,38,.5)}
 .hqg-box{position:relative;width:400px;max-width:100%;background:var(--surface);color:var(--ink);border-radius:12px;padding:20px 20px 16px;
