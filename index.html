@@ -7113,7 +7113,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
         <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down. <b>Enlarge</b> opens the week full screen with taller rows; drag and click work the same, and <b>Close</b> or Esc puts it back.</li>
       </ul>
-      <p><b>Opening a task, an agenda item or a session.</b> It opens wide on the right, laid out like the Certification Management panel. The navy top has its name and a few tags (phase, scope, day, room, status). Under it, numbered steps show where it stands; press one to move it there. The box under the steps says what to do next, with the buttons to do it. Then come the tabs. <b>Overview</b> has the record at a glance (owner, due date, room, headcount, chairs and so on) and its notes. <b>Details</b> has every field to edit. <b>Notes</b> (tasks and agenda items) is the running log, and <b>Conflicts</b> (sessions) lists anything that clashes. The tab you were last on comes back next time.</p>
+      <p><b>Opening a task, an agenda item or a session.</b> It opens wide on the right, laid out like the Certification Management panel. The navy top has its name and a few tags (phase, scope, day, room, status). Under it, numbered steps show where it stands; press one to move it there. The box under the steps says what to do next, with the buttons to do it. Then come the tabs. <b>Overview</b> has the record at a glance (owner, due date, room, headcount, chairs and so on) and its notes; type or pick straight in those boxes and it saves when you click away, and the same field on Details follows along. <b>Details</b> has every field to edit. <b>Notes</b> (tasks and agenda items) is the running log, and <b>Conflicts</b> (sessions) lists anything that clashes. The tab you were last on comes back next time.</p>
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Buttons Above the Calendar</h4>
       <p><b>The Plan</b>, <b>Planning Meeting</b> and <b>All Tasks</b> switch the view without moving you back to the top of the page. <b>+ New Task</b> adds a task. <b>+ Add A Summit</b> opens the panel where you name a new Summit and drop its hotel contract in; the Schedule, the cycle, the Contract viewer and the resume are written together.</p>
@@ -17496,15 +17496,16 @@ function sessRail(d,s,p,rm,form){
   ov.appendChild(R.card('At a Glance',R.facts([
     {icon:'cal',label:'Day & Time',value:blk?blk.dayLabel+' '+(blk.half||''):s.kind==='standing'?'All week':'Not placed',sub:hours,onClick:()=>goDetails('Day & time|When')},
     {icon:'door',label:'Room',value:room?room.nm:'No room yet',sub:setup?(SETUPS[setup]||setup)+(seats?' · '+seats+' seats':''):'',tone:room?'':'warn',onClick:()=>goDetails('^Room')},
-    {icon:'users',label:'Headcount',value:att?att+' expected':'Not set',sub:seats&&att?(over?'Over by '+(att-seats):(seats-att)+' seats to spare'):'',tone:over?'bad':''},
+    {icon:'users',label:'Headcount',value:R.inline({type:'number',label:'Headcount',value:att||'',placeholder:'How many',onSave:v=>setEdit(id,{att:v===''?null:Math.max(0,parseInt(v,10)||0)})}),
+      sub:seats&&att?(over?'Over by '+(att-seats):(seats-att)+' seats to spare'):'',tone:over?'bad':''},
     {icon:'user',label:'Facilitator',value:fac||'Assigned by the schedule',sub:s.primaryFac&&s.primaryFac!==fac?'Standing: '+s.primaryFac:''},
     chairs.length?{icon:'users',label:chairs.length===1?'Chair':'Chairs',value:chairs.join(', ')}:null,
     {icon:'tag',label:'MISMO Staff',value:staff.length?staff.join(', '):'Nobody named'},
     {icon:'clock',label:'Length',value:s.dur?s.dur+' minutes':'—'},
-    {icon:'av',label:'AV',value:av||'Not set'}
+    {icon:'av',label:'AV',value:R.inline({type:'text',label:'AV set-up',value:s.av||'',placeholder:'e.g. Rally + Screen',onSave:v=>setEdit(id,{av:v})})}
   ])));
   const two=document.createElement('div');two.className='rl-two';
-  two.appendChild(R.card('Notes',R.text(s.notes||s.note,'No notes on this '+(isWG?'meeting':'session')+'.'),{action:{label:'Edit',onClick:()=>goDetails('^Notes')}}));
+  two.appendChild(R.card('Notes',R.inline({type:'area',label:'Notes',value:s.notes||'',placeholder:'Anything the facilitator or the hotel needs to know',onSave:v=>setEdit(id,{notes:v},true)})));
   const avoid=(s.avoid||[]).map(a=>S[a]?S[a].nm:a).filter(Boolean);
   const ch=document.createElement('div');ch.className='rl-chips';
   if(!avoid.length)ch.appendChild(R.text('','No Do Not Overlap rules.'));
@@ -21994,18 +21995,33 @@ function taskOverview(t,dr){
   const su=activeSummit()||{};
   const assists=(t.assists||"").split(",").map(x=>x.trim()).filter(Boolean);
   const dout=t.due?daysOutOf(t.due):null;
+  /* Jonna, 2026-11-01: typed into right here; the same field on Details follows along */
+  const sync=(sel,v)=>{const n=dr.querySelector(sel);if(n&&n!==document.activeElement)n.value=v;};
+  const syncLbl=(lab,v)=>{const l=[...dr.querySelectorAll(".rl-pane .fld > label")].find(x=>x.textContent.trim().toLowerCase()===lab.toLowerCase());
+    const c=l&&l.parentNode.querySelector("select,input,textarea");if(c)c.value=v;};
+  const ownerIn=R.inline({type:"select",label:"Owner",value:t.owner||"",disabled:!W,options:[["","Unassigned"]].concat(owners()),
+    onSave:v=>{save(id,{owner:v});sync("#dr-owner",v);}});
+  const dueIn=R.inline({type:"date",label:"Due date",value:t.dueKind==="date"&&t.due?t.due:"",disabled:!W,
+    onSave:v=>{ if(v){save(id,{due:v,dueKind:"date",daysOut:daysOutOf(v)});sync("#dr-due",v);} }});
+  const doIn=R.inline({type:"number",label:"Days before the Summit",value:dout===null?"":dout,placeholder:"Days out",disabled:!W||!su.start,
+    onSave:v=>{ if(v===""||isNaN(+v))return; const nd=dateFromDaysOut(+v); if(nd){save(id,{due:nd,dueKind:"date",daysOut:+v});sync("#dr-due",nd);dueIn.value=nd;} }});
+  const scIn=R.inline({type:"select",label:"Summit scope",value:t.scope||"Unassigned",disabled:!W,options:SCOPES,
+    onSave:v=>{save(id,Object.assign({scope:v},stampScope(t,v)));syncLbl("Summit Scope",v);}});
+  const phIn=R.inline({type:"select",label:"Phase",value:t.phase||"Pre-Summit",disabled:!W,options:phases(),
+    onSave:v=>{save(id,{phase:v});syncLbl("Phase",v);}});
   box.appendChild(R.card("At a Glance",R.facts([
-    {icon:"user",label:"Owner",value:t.owner||"Unassigned",tone:t.owner?"":"warn",onClick:W?()=>rlGoTab(dr,"details","#dr-owner"):null},
-    {icon:"users",label:"Assists",value:assists.length?assists.join(", "):"Nobody else"},
-    {icon:"cal",label:"Due",value:t.due?parseD(t.due).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric"}):t.dueKind==="now"?"Active now":"No date",
-      tone:(n!==null&&n<0&&st!=="Complete")?"bad":t.due?"":"warn",onClick:W?()=>rlGoTab(dr,"details","#dr-due"):null},
-    {icon:"target",label:"Days Out",value:dout===null?"—":dout>=0?dout+" days before the Summit":Math.abs(dout)+" days after",sub:su.name||""},
-    {icon:"layers",label:"Summit Scope",value:t.scope||"Unassigned"},
-    {icon:"flag",label:"Phase",value:t.phase||"Pre-Summit"}
+    {icon:"user",label:"Owner",value:ownerIn,tone:t.owner?"":"warn"},
+    {icon:"users",label:"Assists",value:assists.length?assists.join(", "):"Nobody else",sub:W?"Pick them on Details":"",onClick:W?()=>rlGoTab(dr,"details"):null},
+    {icon:"cal",label:"Due",value:dueIn,tone:(n!==null&&n<0&&st!=="Complete")?"bad":t.due?"":"warn",sub:n===null?(t.dueKind==="now"?"Active now, no fixed date":"No date yet"):st==="Complete"?"":n<0?Math.abs(n)+" days overdue":n===0?"Today":"In "+n+" days"},
+    {icon:"target",label:"Days Before the Summit",value:doIn,sub:su.name||""},
+    {icon:"layers",label:"Summit Scope",value:scIn},
+    {icon:"flag",label:"Phase",value:phIn}
   ])));
   const two=document.createElement("div");two.className="rl-two";
-  two.appendChild(R.card("What It Involves",R.text(t.desc,"Nothing written yet — add it in Details."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details","#dr-desc")}}:{}));
-  two.appendChild(R.card("Instructions",R.text(t.details,"No instructions yet — add how it gets done in Details."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details","#dr-details")}}:{}));
+  two.appendChild(R.card("What It Involves",R.inline({type:"area",label:"What it involves",value:t.desc||"",disabled:!W,placeholder:"What this task actually covers",
+    onSave:v=>{save(id,{desc:v});sync("#dr-desc",v);}})));
+  two.appendChild(R.card("Instructions",R.inline({type:"area",label:"Instructions",value:t.details||"",disabled:!W,placeholder:"How it gets done, caveats, who to ask",
+    onSave:v=>{save(id,{details:v});sync("#dr-details",v);}})));
   box.appendChild(two);
   const lines=String(t.notes||"").split(/\n+/).map(x=>x.trim()).filter(Boolean);
   const lg=document.createElement("div");lg.className="rl-log";
@@ -22054,7 +22070,8 @@ function taskRailRefresh(){
   const top=sc.scrollTop;
   const old=sc.querySelector(":scope > .rl-top");if(old)sc.replaceChild(taskHero(t,dr),old);
   const w=sc.querySelector(".rl-tabwrap");
-  if(w&&w._panes&&w._panes.overview){w._panes.overview.textContent="";w._panes.overview.appendChild(taskOverview(t,dr));}
+  const a=document.activeElement;
+  if(w&&w._panes&&w._panes.overview&&!(a&&w._panes.overview.contains(a))){w._panes.overview.textContent="";w._panes.overview.appendChild(taskOverview(t,dr));}
   sc.scrollTop=top;
 }
 function discRail(dr,d,form){
@@ -22080,14 +22097,20 @@ function discRail(dr,d,form){
     onClose:closeDrawerAsk
   });
   const ov=document.createElement("div");ov.style.cssText="display:flex;flex-direction:column;gap:12px";
+  const sync=(sel,v)=>{const n=dr.querySelector(sel);if(n)n.value=v;};
+  const whoIn=R.inline({type:"select",label:"Raised by",value:d.owner||"",disabled:!W,options:[["","Nobody in particular"]].concat(owners()),
+    onSave:v=>{saveDisc(id,{owner:v});const l=[...dr.querySelectorAll(".rl-pane .fld > label")].find(x=>/raised by/i.test(x.textContent));const c=l&&l.parentNode.querySelector("select");if(c)c.value=v;}});
+  const stIn=R.inline({type:"select",label:"Status",value:open?"open":"resolved",disabled:!W,options:[["open","Open"],["resolved","Resolved"]],
+    onSave:v=>{saveDisc(id,{status:v});openDiscDrawer(id);}});
   ov.appendChild(R.card("At a Glance",R.facts([
-    {icon:"user",label:"Raised By",value:d.owner||"Anyone"},
-    {icon:"check",label:"Status",value:open?"Open":"Resolved",tone:open?"":"good"},
+    {icon:"user",label:"Raised By",value:whoIn},
+    {icon:"check",label:"Status",value:stIn,tone:open?"":"good"},
     {icon:"cal",label:"Raised",value:created&&!isNaN(created)?created.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—"},
     {icon:"link",label:"Linked Task",value:linked?linked.task:"Not linked",onClick:linked?()=>openDrawer(linked.id):()=>rlGoTab(dr,"details"),
       sub:linked?(linked.owner||"Unassigned")+" · "+(linked.status||"Not Started"):"Link one in Details"}
   ])));
-  ov.appendChild(R.card("Detail",R.text(d.context,"No background written yet."),W?{action:{label:"Edit",onClick:()=>rlGoTab(dr,"details")}}:{}));
+  ov.appendChild(R.card("Detail",R.inline({type:"area",label:"Detail",value:d.context||"",disabled:!W,placeholder:"Background, who said what, what needs deciding",
+    onSave:v=>{saveDisc(id,{context:v});sync("#dd-context",v);}})));
   const lg=document.createElement("div");lg.className="rl-log";
   if(!entries.length)lg.appendChild(R.text("","No notes on this item yet."));
   entries.slice(-4).reverse().forEach(en=>{const r=document.createElement("div");r.className="rl-li";const w=document.createElement("div");
@@ -28581,6 +28604,13 @@ html body.railmini :is(#app-ros,#app-grid,#hqx) .drawer.rl{width:min(1100px,calc
 .drawer.rl .rl-fact.bad .rl-fv{color:var(--bad)} .drawer.rl .rl-fact.warn .rl-fv{color:var(--warn-ink,var(--warn))} .drawer.rl .rl-fact.good .rl-fv{color:var(--good)}
 .drawer.rl .rl-fs{font-size:12px;color:var(--ink-3)}
 .drawer.rl .rl-text{font-size:13px;line-height:1.55;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-in{display:block;width:100%;min-width:0;margin:1px 0 0 -7px;width:calc(100% + 7px);padding:4px 6px;
+  font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:transparent;border:1px solid transparent;border-radius:5px;transition:border-color .12s,background .12s}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl select.rl-in{appearance:auto;cursor:pointer}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-in:hover{border-color:var(--line-2);background:var(--paper)}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-in:focus{outline:0;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft)}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-area{font-weight:400;font-size:13px;line-height:1.55;color:var(--ink-2);resize:none;overflow:hidden;margin:0 -7px;width:calc(100% + 14px);padding:6px}
+html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-area::placeholder,html :is(#app-ros,#app-grid,#hqx) .drawer.rl .rl-in::placeholder{color:var(--ink-3);font-weight:400}
 .drawer.rl .rl-text.empty{color:var(--ink-3)}
 .drawer.rl .rl-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media (max-width:900px){.drawer.rl .rl-two{grid-template-columns:minmax(0,1fr)}}
@@ -28824,7 +28854,31 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     });
     form.querySelectorAll(":scope > .row2:empty, :scope > .row3:empty").forEach(n=>n.remove());
   }
-  window.HQR={hero,tabs,card,next,facts,text,frame,take,avatar,icon,dateTile,factTile,rel,parse};
+  /* Jonna, 2026-11-01: type straight into the boxes on Overview. A field reads as plain
+     text, shows its edge on hover and focus, and saves when she leaves it. */
+  function inline(o){
+    let n;
+    if(o.type==="select"){
+      n=mk("select","rl-in");
+      (o.options||[]).forEach(op=>{const v=Array.isArray(op)?op[0]:op, l=Array.isArray(op)?op[1]:op; n.appendChild(new Option(l,v));});
+      n.value=o.value==null?"":o.value;
+      n.addEventListener("change",()=>o.onSave(n.value));
+    }else if(o.type==="area"){
+      n=mk("textarea","rl-in rl-area");n.value=o.value||"";n.placeholder=o.placeholder||"";n.rows=2;
+      const grow=()=>{n.style.height="auto";n.style.height=Math.max(44,n.scrollHeight+2)+"px";};
+      n.addEventListener("input",grow);setTimeout(grow,0);
+      n.addEventListener("change",()=>o.onSave(n.value));
+    }else{
+      n=mk("input","rl-in");n.type=o.type||"text";n.value=o.value==null?"":o.value;n.placeholder=o.placeholder||"";
+      if(o.type==="number"){n.min="0";n.inputMode="numeric";}
+      n.addEventListener("change",()=>o.onSave(n.value));
+    }
+    if(o.label)n.setAttribute("aria-label",o.label);
+    if(o.disabled)n.disabled=true;
+    n.addEventListener("click",e=>e.stopPropagation());
+    return n;
+  }
+  window.HQR={hero,tabs,card,next,facts,text,frame,take,avatar,icon,dateTile,factTile,rel,parse,inline};
 })();
 </script>
 <script>
