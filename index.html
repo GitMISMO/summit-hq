@@ -7145,6 +7145,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Each room shows its capacity from the hotel contract, so a session too big for its room stands out.</li>
         <li><b>Arrangement Options</b> builds a clean week that respects every request and keeps sessions that should not overlap apart.</li>
         <li><b>Held for Next Summit</b> keeps a note about a future Summit (&ldquo;these two should never run together&rdquo;) without changing the week in front of you.</li>
+        <li><b>Rooms</b> change every Summit. Add A Summit makes the first pass from the hotel contract, and the <b>Rooms</b> card lets you add, rename, remove or update a room, the days it is held and what it is used for (Workgroup, General Sessions, Breakfast, Staff Office and so on).</li>
+        <li><b>Fixed</b> lists the set pieces of the week: Breakfast, the Staff Office, Champions Lounge, Member Engagement, Newcomer Orientation, the Workshop, both Receptions, General Sessions and the Joint Committee Meeting. Each one shows the room it sits in on the grid. The first time, it goes in the room whose use matches (Breakfast for the receptions, General Sessions for the Joint Committee); drag the card on the grid to change it. A line turns red if it has no room, or if the General Sessions room seats fewer in classroom than the headcount.</li>
         <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
         <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
       </ul>
@@ -11343,13 +11345,21 @@ function buildProgram(){
     r:'On the grid in the Monday lunch column — click it to edit'});
   if(S['workshop']) out.push({w:'Mon 1:30–4:30p', n: workshopName(),
     r: wsR ? wsR.nm : 'No room set for the workshop', gap: !wsR});
-  if(S['reception-mon']) out.push({w:'Mon evening', n:'Reception', r: v.id==='nola' ? 'Treme + Marigny — 2nd floor' : '—'});
+  /* Jonna, 2026-11-01: rooms change every summit. A reception or the Joint Committee
+     reads the room it sits in on the grid — placed there first by the room's role
+     (Breakfast for the receptions, General Sessions for Joint Committee), and moved,
+     added or renamed on the Rooms panel from then on. Nothing is typed in per hotel. */
+  const pl0=place();
+  const onGrid=(id,role)=>{ const at=pl0[id]; const r=at&&at.r? roomById(at.r) : byRole(role); return r||null; };
+  const recM=onGrid('reception-mon','fnb'), recT=onGrid('reception-tue','fnb'), jc=onGrid('joint-committee','plenary');
+  if(S['reception-mon']) out.push({w:'Mon evening', n:'Reception', r: recM ? recM.nm : 'No room set for the reception', gap: !recM});
   if(S['general-sessions']) out.push({w:'Tue, all day', n:'General Sessions',
     r: plen ? (plen.nm+' — '+gsNeed+' classroom + stage + rear AV'+(plen.clsrm?' (rated '+plen.clsrm+')':''))
             : 'No room set for General Sessions',
     gap: !plen || (plen.clsrm||0) < gsNeed});
-  if(S['reception-tue']) out.push({w:'Tue evening', n:'Reception', r: fnb ? fnb.nm : '—'});
-  if(S['joint-committee']) out.push({w:'Wed 4:45–6:00p', n:'Joint Committee Meeting', r:'Headcount and food in Information for Rosalyn'});
+  if(S['reception-tue']) out.push({w:'Tue evening', n:'Reception', r: recT ? recT.nm : 'No room set for the reception', gap: !recT});
+  if(S['joint-committee']) out.push({w:'Wed 4:45–6:00p', n:'Joint Committee Meeting',
+    r: (jc ? jc.nm+' — ' : 'No room set — ')+'headcount and food in Information for Rosalyn', gap: !jc});
   return out;
 }
 
