@@ -7317,7 +7317,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Member 360 &rarr; General Sessions.</b> Member 360&rsquo;s list of organizations says which are lenders, so General Sessions can highlight lender presenters.</li>
         <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
-        <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company and name (read by the Registration List to Sponsors email).</li>
+        <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company, name, job title and In-Person or Virtual (read by the Registration List to Sponsors email).</li>
         <li><b>People &rarr; Bernie.</b> Each speaker added on People is written to a small ready-made list that the <b>New Speakers to Register</b> flow reads every weekday morning, so Bernie gets one email rather than one per speaker.</li>
         <li><b>Aptify &rarr; Registration.</b> Through the files from Vanessa&rsquo;s registration dashboard.</li>
       </ul>
@@ -7337,7 +7337,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
-          <tr><td>Registration List to Sponsors</td><td>Mondays at 9:00 AM Eastern, from seven weeks before each Summit until it opens</td><td>Every approved sponsor&rsquo;s contact, sent on Kelly&rsquo;s behalf; the attached list has company and name only</td><td>Summit HQ - Registration List to Sponsors</td></tr>
+          <tr><td>Registration List to Sponsors</td><td>Mondays at 9:00 AM Eastern, from seven weeks before each Summit until it opens</td><td>Every approved sponsor&rsquo;s contact, sent on Kelly&rsquo;s behalf; the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
           <tr><td>Sponsorship invoice, logo request, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase</td><td>Invoice: Bernie. Logo: Vanessa. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
           <tr><td>New sponsorship application</td><td>A sponsor submits on the Prospectus</td><td>The sponsorship team</td><td>Sponsorship Intake</td></tr>
         </tbody>
@@ -29024,7 +29024,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
      feeds/tasks         every open task with a due date in the active cycle.
                          The Monday task email reads it ("Every Monday at 7:00 AM").
      feeds/sponsor-list  for each Summit still to come: its first day, and its
-                         registrants as company, name and job title (no emails), with
+                         registrants as company, name, job title and In-Person or Virtual
+                         (no emails), with
                          MISMO and MBA staff left out. The "Registration List to
                          Sponsors" flow sends it to approved sponsors every Monday
                          from seven weeks out.
@@ -29084,9 +29085,11 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
         const n=String(get(iN)||'').trim(), c=String(get(iC)||'').trim(), k=String(get(iK)||'');
         const em=String(get(cols.indexOf('email'))||'').trim();
         const t=String(get(iT)||'').trim() || String(((d.titles||{})[(em||n).toLowerCase()])||'').trim();
+        /* Kelly, 2026-11-02: sponsors see whether each person is coming in person or joining virtually */
+        const fr=String(get(cols.indexOf('format'))||'').trim(), fm=/virt/i.test(fr)?'Virtual':fr?'In-Person':'';
         if(!n || /^MBA\/MISMO$/i.test(k)) return;
         const key=(c+'|'+n).toLowerCase(); if(seen[key]) return; seen[key]=1;
-        people.push({company:c, name:n, title:t});
+        people.push({company:c, name:n, title:t, format:fm});
       });
       people.sort((a,b)=>a.company.localeCompare(b.company)||a.name.localeCompare(b.name));
       const f=(d.files&&d.files.current)||{};
