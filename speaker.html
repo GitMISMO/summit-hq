@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MISMO Speaker Bio &amp; Headshot</title>
+<!--
+  MISMO Summit speaker bio and headshot form (Amy and Jonna, 2026-11-03).
+  The speaker email from Summit HQ (People) carries each speaker's own link here with
+  their code (t) and the summit (v). What they send posts to the "Summit HQ - Speaker
+  Info Answers" flow, which saves it to feeds/si-<code>; Summit HQ puts the bio, title,
+  company, LinkedIn and headshot on their row. The headshot is made small here, on the
+  speaker's own device, before it goes. The page holds nothing private: the code only
+  matches a row in Summit HQ.
+-->
+<style>
+  :root{--navy:#0d314c;--sky:#74bfeb;--ink:#0d314c;--ink2:#3d5468;--ink3:#6c899f;--line:#d5e2ed;--wash:#f1f6fa;--bg:#f1f6fa;--card:#ffffff;--err:#b4541a}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#e6eef5;--ink2:#b9cad8;--ink3:#8aa3b7;--line:#2c4357;--wash:#16283a;--bg:#0b1824;--card:#112233}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5}
+  .wrap{max-width:680px;margin:0 auto;padding:24px 16px 48px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .hd{background:#0d314c;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo{background:#fff;border-radius:5px;padding:8px 12px;display:inline-flex}
+  .logo img{display:block;width:132px;height:20px}
+  .hd span{color:#a9d8f3;font-size:13px;font-weight:600}
+  .bar{height:3px;background:#74bfeb}
+  .bd{padding:24px}
+  h1{font-size:22px;line-height:1.25;margin:0 0 4px}
+  .sub{color:var(--ink3);font-size:13px;margin:0 0 18px}
+  p{margin:0 0 14px}
+  label.lab{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink);margin:0 0 8px}
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+  .row > div{flex:1 1 220px;min-width:0}
+  .blk{margin:0 0 18px}
+  input[type=text],input[type=url],textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink)}
+  input:focus,textarea:focus{outline:0;border-color:#0d314c;box-shadow:0 0 0 3px rgba(116,191,235,.35)}
+  textarea{min-height:190px;resize:vertical;line-height:1.5}
+  .hint{font-size:13px;color:var(--ink3);margin-top:4px}
+  .shot{display:flex;gap:16px;align-items:center;flex-wrap:wrap;border:1px dashed var(--line);border-radius:8px;padding:14px}
+  .shot.on{border-style:solid;border-color:#74bfeb;background:var(--wash)}
+  .face{width:96px;height:96px;border-radius:50%;background:var(--wash);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--ink3);font-size:12px;text-align:center;flex:0 0 auto}
+  .face img{width:100%;height:100%;object-fit:cover;display:block}
+  .pick{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:1px solid #0d314c;color:#0d314c;background:var(--card);border-radius:6px;padding:10px 16px;font-weight:700;font-size:14px;cursor:pointer}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pick{color:#e6eef5;border-color:#74bfeb}}
+  .pick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .shot-tx{flex:1 1 220px;min-width:0}
+  button.go{background:#0d314c;color:#fff;border:0;border-radius:6px;padding:14px 26px;font:inherit;font-weight:700;font-size:15px;cursor:pointer}
+  button.go:disabled{opacity:.5;cursor:not-allowed}
+  .count{font-size:12px;color:var(--ink3);text-align:right;margin-top:4px}
+  .msg{border-left:3px solid var(--sky);background:var(--wash);padding:12px 14px;border-radius:6px;margin:0 0 16px;font-size:15px}
+  .msg.err{border-color:var(--err)}
+  .ft{background:#0d314c;color:#a9d8f3;font-size:12px;padding:14px 24px}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hd"><div class="logo"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO"></div><span>MISMO Summit</span></div>
+    <div class="bar"></div>
+    <div class="bd">
+      <h1 id="title">Your Bio &amp; Headshot</h1>
+      <div class="sub" id="sub"></div>
+      <div id="bad" class="msg err" hidden>This link is missing its code. Please use the link in your email from MISMO.</div>
+      <form id="f" hidden novalidate>
+        <p id="hi"></p>
+        <div class="row">
+          <div><label class="lab" for="ti">Title</label><input type="text" id="ti" maxlength="160" autocomplete="organization-title" placeholder="As it should appear on the agenda"></div>
+          <div><label class="lab" for="co">Company</label><input type="text" id="co" maxlength="160" autocomplete="organization"></div>
+        </div>
+        <div class="blk">
+          <label class="lab" for="bio">Your Bio</label>
+          <textarea id="bio" maxlength="5000" placeholder="A short paragraph or two, in the third person, the way you would like it to appear on the agenda and the event app"></textarea>
+          <div class="count" id="cnt"></div>
+        </div>
+        <div class="blk">
+          <label class="lab">Your Headshot</label>
+          <div class="shot" id="shot">
+            <div class="face" id="face">No photo yet</div>
+            <div class="shot-tx">
+              <label class="pick" id="pickLab">Choose a Photo<input type="file" id="ph" accept="image/*"></label>
+              <div class="hint" id="phHint">A clear, recent photo of your head and shoulders. JPG or PNG; we make it the right size.</div>
+            </div>
+          </div>
+        </div>
+        <div class="blk">
+          <label class="lab" for="li">LinkedIn (optional)</label>
+          <input type="url" id="li" maxlength="300" placeholder="https://www.linkedin.com/in/…" inputmode="url">
+        </div>
+        <div id="err" class="msg err" hidden></div>
+        <button type="submit" class="go" id="go">Send My Bio &amp; Headshot</button>
+      </form>
+      <div id="done" class="msg" hidden></div>
+    </div>
+    <div class="ft">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</div>
+  </div>
+</div>
+<script>
+(function(){
+  /* the "Summit HQ - Speaker Info Answers" flow's address (When an HTTP request is received) */
+  var ENDPOINT = "";
+  var q = new URLSearchParams(location.search);
+  var get = function(k){ return (q.get(k) || "").trim(); };
+  var t=get("t"), v=get("v"), first=get("n"), summit=get("s")||"MISMO Summit", dates=get("d");
+  var $ = function(id){ return document.getElementById(id); };
+
+  $("title").textContent = "Your Bio & Headshot for the " + summit;
+  $("sub").textContent = dates;
+  document.title = summit + " Speaker Bio & Headshot";
+  if(!/^[a-z0-9]{6,24}$/.test(t) || !v){ $("bad").hidden=false; return; }
+  $("f").hidden=false;
+  $("hi").textContent = (first? "Hi "+first+", t" : "T") + "hank you for speaking at the " + summit + "! Please share your bio and a headshot. We use them for the agenda, the event app and your session graphic.";
+
+  var bio=$("bio");
+  var count=function(){ var n=bio.value.trim().split(/\s+/).filter(Boolean).length; $("cnt").textContent = n? n+" word"+(n===1?"":"s") : ""; };
+  bio.addEventListener("input",count); count();
+
+  /* the headshot: made small here so it sends quickly */
+  var photo="", thumb="";
+  var shrink=function(img,px,qq){
+    var k=Math.min(1,px/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height));
+    var c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round((img.naturalWidth||img.width)*k)); c.height=Math.max(1,Math.round((img.naturalHeight||img.height)*k));
+    var g=c.getContext("2d"); g.fillStyle="#ffffff"; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height);
+    return c.toDataURL("image/jpeg",qq);
+  };
+  $("ph").addEventListener("change",function(){
+    var f=this.files && this.files[0]; if(!f) return;
+    var hint=$("phHint"), err=$("err"); err.hidden=true;
+    if(f.size>25*1024*1024){ hint.textContent="That file is very large. Please choose a smaller photo."; return; }
+    hint.textContent="Getting it ready…";
+    var fr=new FileReader();
+    fr.onload=function(){
+      var img=new Image();
+      img.onload=function(){
+        try{ photo=shrink(img,600,0.85); thumb=shrink(img,96,0.8); }catch(e){ photo=thumb=""; }
+        if(!photo){ hint.textContent="That photo couldn’t be read. Please try a JPG or PNG."; return; }
+        var face=$("face"); face.textContent=""; var im=document.createElement("img"); im.src=photo; im.alt="Your headshot"; face.appendChild(im);
+        $("shot").classList.add("on");
+        $("pickLab").firstChild.nodeValue="Choose a Different Photo";
+        hint.textContent=f.name+" — looks good.";
+      };
+      img.onerror=function(){ hint.textContent="That photo couldn’t be read. Please try a JPG or PNG."; };
+      img.src=fr.result;
+    };
+    fr.onerror=function(){ hint.textContent="That photo couldn’t be read. Please try again."; };
+    fr.readAsDataURL(f);
+  });
+
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault();
+    var err=$("err"); err.hidden=true;
+    var b=bio.value.trim();
+    if(!b && !photo){ err.textContent="Please add your bio, your headshot, or both."; err.hidden=false; return; }
+    var li=$("li").value.trim();
+    if(li && !/^https?:\/\//i.test(li)) li="https://"+li.replace(/^\/+/,"");
+    var payload={t:t, v:v, bio:b.slice(0,5000), title:$("ti").value.trim().slice(0,160), company:$("co").value.trim().slice(0,160),
+      linkedin:li.slice(0,300), photo:photo, thumb:thumb};
+    var btn=$("go"); btn.disabled=true; btn.textContent="Sending…";
+    /* the flow's address is kept beside this page in speaker-endpoint.txt */
+    var where = ENDPOINT ? Promise.resolve(ENDPOINT)
+      : fetch("speaker-endpoint.txt",{cache:"no-store"}).then(function(r){ return r.ok? r.text() : ""; }).then(function(x){ return String(x||"").trim(); });
+    where.then(function(url){
+      if(!/^https:\/\//.test(url)) throw new Error("no endpoint");
+      /* a plain post the flow reads as JSON; the answer is not readable from here */
+      return fetch(url,{method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(payload)});
+    })
+      .then(function(){
+        $("f").hidden=true;
+        var d=$("done"); d.hidden=false;
+        d.textContent = "Thank you" + (first? ", "+first : "") + "! We have your " + [b?"bio":"", photo?"headshot":""].filter(Boolean).join(" and ")
+          + ". If you’d like to change anything, use this same link again.";
+      })
+      .catch(function(){
+        btn.disabled=false; btn.textContent="Send My Bio & Headshot";
+        err.textContent="That didn’t go through. Please check your connection and try again, or reply to the email with your bio and headshot attached."; err.hidden=false;
+      });
+  });
+})();
+</script>
+</body>
+</html>

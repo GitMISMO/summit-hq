@@ -572,7 +572,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
      seconds; everything else every few minutes, which keeps within the relay's shared
      GitHub allowance. Going to a page checks its files at once. */
   var PAGE_FILES = { 'app-ros': ['ros'], 'app-grid': ['schedule'], 'app-specs': ['schedule', 'resume'],
-    'app-resume': ['resume', 'schedule'], 'app-gs': ['schedule', 'people'], 'app-people': ['people'],
+    'app-resume': ['resume', 'schedule'], 'app-gs': ['schedule', 'people'], 'app-wk': ['schedule', 'people'], 'app-people': ['people'],
     'app-reg': ['people'], 'app-trunk': ['ros'] };
   function onPage() { var a = document.querySelector('.hq-app:not([hidden]), [id^="app-"]:not([hidden])'); return a ? a.id : ''; }
   function hotNow(name) {
@@ -1980,14 +1980,14 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
    These restate the full sizes with a `:root` prefix so neither the Schedule's own
    `body.compact` class (set below 860px) nor source order can take them back. */
 :root #app-grid .mast h1,:root #app-ros .mast h1,:root #app-specs .mast h1,:root #app-resume .rz-title,
-:root #app-gs .mast h1,:root #app-reg .mast h1{
+:root :is(#app-gs,#app-wk) .mast h1,:root #app-reg .mast h1{
   font-size:clamp(22px,3.4vw,34px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
 :root #app-grid .mast .eyebrow,:root #app-ros .mast .eyebrow,
 :root #app-specs .mast .eyebrow,:root #app-resume .rz-eyebrow,
-:root #app-gs .mast .eyebrow,:root #app-reg .mast .eyebrow{display:block;font-size:11px;letter-spacing:.11em}
+:root :is(#app-gs,#app-wk) .mast .eyebrow,:root #app-reg .mast .eyebrow{display:block;font-size:11px;letter-spacing:.11em}
 :root #app-grid .mast .sub,:root #app-ros .mast .sub,
 :root #app-specs .mast .sub,:root #app-resume .rz-sub,
-:root #app-gs .mast .sub,:root #app-reg .mast .sub{display:block;font-size:13px;margin-top:4px}
+:root :is(#app-gs,#app-wk) .mast .sub,:root #app-reg .mast .sub{display:block;font-size:13px;margin-top:4px}
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{
   gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
 
@@ -2011,13 +2011,13 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{align-items:flex-start}
 :root #app-grid .meters,:root #app-ros .meters,:root #app-specs .meters,:root #app-resume .rz-status{align-items:flex-start}
 /* Jonna, 2026-10-28: General Sessions and Registration carry the same header as the rest */
-:root #app-gs .mast,:root #app-reg .mast{align-items:flex-start;gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
+:root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{align-items:flex-start;gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
 @media(max-height:940px){
-  :root #app-gs .wrap,:root #app-reg .wrap{padding-block:12px 30px}
-  :root #app-gs .mast,:root #app-reg .mast{padding-bottom:10px;margin-bottom:10px}
+  :root :is(#app-gs,#app-wk) .wrap,:root #app-reg .wrap{padding-block:12px 30px}
+  :root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{padding-bottom:10px;margin-bottom:10px}
 }
-@media(max-height:780px){ :root #app-gs .mast,:root #app-reg .mast{padding-bottom:8px;margin-bottom:8px} }
-:root #app-gs .gs-acts,:root #app-reg .rg-acts{align-self:flex-start}
+@media(max-height:780px){ :root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{padding-bottom:8px;margin-bottom:8px} }
+:root :is(#app-gs,#app-wk) .gs-acts,:root #app-reg .rg-acts{align-self:flex-start}
 
 /* EVERY FIGURE TILE IS THE SAME HEIGHT, ON EVERY TAB (Jonna, 2026-09-19: all the
    boxes the height of the 114 days box, and the same across the whole of HQ). One
@@ -4099,6 +4099,9 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button type="button" data-hq="gs" title="General Sessions">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4M8 22h8"/></svg>
       <span>General Sessions</span></button>
+    <button type="button" data-hq="wk" title="Workshop">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4M7 8h6M7 12h10"/></svg>
+      <span>Workshop</span></button>
     <div class="rail-grp">The People</div>
     <button type="button" data-hq="people" title="People">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><circle cx="17" cy="9" r="2.8"/><path d="M15.5 14.2a5.5 5.5 0 016 5.8"/></svg>
@@ -5147,10 +5150,28 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-x{background:transparent;border:0;font-size:24px;line-height:1;color:var(--ink-3);cursor:pointer;padding:0 4px}
 .se-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr)}
 .se-edit{overflow:auto;padding:14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
-.se-f{display:flex;flex-direction:column;gap:3px;font-size:11px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.se-f{display:flex;flex-direction:column;gap:3px;font-size:11px;font-family:var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 .se-f input,.se-f textarea{font-family:inherit;font:13px/1.5 var(--sans, Arial, sans-serif);letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px}
 .se-f textarea{resize:vertical;min-height:260px}
 .se-note{font-size:11.5px;color:var(--ink-3);line-height:1.45}
+/* Amy, 2026-11-03: Add a Link, and what the Resume still has to give the email */
+.se-linkbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:-4px}
+.se-linkform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1 1 100%;background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:8px}
+.se-linkform[hidden]{display:none}
+.se-linkform input{flex:1 1 160px;min-width:0;font:13px/1.4 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px}
+.se-warn{font-size:12.5px;line-height:1.45;color:var(--warn-ink,var(--ink));background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 4px 4px 0;padding:8px 10px}
+.se-lnk{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline}
+#app-people .si-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-4px 0 12px;font-size:12.5px}
+#app-people .si-k{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);border-left:3px solid var(--line-2);padding-left:7px}
+#app-people .si-k.wait{border-left-color:var(--warn)} #app-people .si-k.in{border-left-color:var(--good);color:var(--good)}
+#app-people .se-bulkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--accent-soft)}
+#app-people .se-bulkt{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:1px}
+#app-people .se-bulkt b{font-size:13px;color:var(--ink)} #app-people .se-bulkt span{font-size:12px;color:var(--ink-2)}
+.se-who{border:1px solid var(--line);border-radius:6px;max-height:230px;overflow:auto}
+.se-whoh{position:sticky;top:0;background:var(--surface);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);padding:8px 10px;border-bottom:1px solid var(--line)}
+.se-whor{display:flex;gap:9px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
+.se-whor:last-child{border-bottom:0} .se-whor.on{background:var(--accent-soft)}
+.se-whor span{font-weight:600;color:var(--ink)} .se-whor small{color:var(--ink-3);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .se-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .se-graphic{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding:8px 10px;border:1px dashed var(--line-2);border-radius:4px}
 .se-gbtn{position:relative;overflow:hidden;cursor:pointer}
@@ -5173,6 +5194,16 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .prow.accepted .prow-st{color:var(--good);font-weight:600}
 #app-people .prow.declined .prow-l{opacity:.75}
 #app-people .prow .bd-opt.on{background:var(--accent)}
+#app-people .prow-ed{padding:5px 12px;font-size:12px}
+#app-people .prow-edit{flex:1 1 100%;display:flex;flex-direction:column;gap:10px;background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:2px 0 4px}
+#app-people .prow-note{display:flex;flex-direction:column;gap:4px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+#app-people .prow-note textarea{font:13px/1.45 var(--ui);letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px;resize:vertical}
+#app-people .prow-edit .se-lnk{align-self:flex-start;font-size:12.5px}
+#app-people .prow-pn{font-style:italic}
+#app-people .ml-find{display:flex;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+#app-people .ml-find input{flex:1 1 auto;min-width:0;font:13.5px/1.4 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px}
+#app-people .ml-find input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#app-people .ml-n{font-size:12px;color:var(--ink-3);white-space:nowrap}
 #app-people .prow.declined .bd-opt.on{background:var(--ink-3)}
 #app-people .prow.accepted .bd-opt.on{background:var(--good)}
 #app-people .prow-x{flex:0 0 auto;background:transparent;border:0;color:var(--ink-3);font-size:16px;line-height:1;padding:2px 6px;cursor:pointer;border-radius:3px}
@@ -6822,6 +6853,21 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 </div>
 </div>
 
+<!-- Amy, 2026-11-03: the Monday afternoon Workshop, built the same way as the General Sessions -->
+<div id="app-wk" hidden>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Workshop</div>
+      <h1 id="wk-title">Workshop</h1>
+      <div class="sub" id="wk-sub"></div>
+    </div>
+    <div class="gs-acts" id="wk-acts"></div>
+  </header>
+  <div id="wk-root"></div>
+</div>
+</div>
+
 <style>
 /* ── Help: how Summit HQ works, for whoever picks it up (Jonna, 2026-10-28) ── */
 #app-help .hp-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -6978,12 +7024,13 @@ textarea,input,select{font-family:var(--ui,inherit)}
 
       <div class="hp-who" data-p="amy" hidden>
         <div class="hp-whohd"><b>Amy Moses</b><span>VP of Strategic Growth. Gets every speaker&rsquo;s bio and headshot in.</span></div>
-        <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="gs">General Sessions</button><button type="button" data-go="trunk">The Trunk</button></div>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="gs">General Sessions</button><button type="button" data-go="wk">Workshop</button><button type="button" data-go="trunk">The Trunk</button></div>
         <h4>What You Do</h4>
         <ol class="hp-steps">
           <li><b>Open People.</b> The Confirmed Speakers wall shows every speaker ringed by how far along they are, with their next step under their name.</li>
-          <li><b>Ask for the bio and headshot.</b> Open the speaker and send the speaker email from there; then mark <b>Asked for a bio and headshot</b>.</li>
-          <li><b>Put the bio and headshot in</b> on the speaker&rsquo;s record. <b>Bio and headshot in hand</b> ticks itself once both are there.</li>
+          <li><b>Send the speaker email.</b> Press <b>Send to the N Not Sent</b> at the top of Confirmed Speakers to send it to everyone at once, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
+          <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. <b>Remind About the Bio</b> nudges everyone who has not sent theirs. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
+          <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
           <li><b>Use Only What&rsquo;s Outstanding</b> to see just the speakers who still owe you something.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
@@ -7110,7 +7157,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
     <div class="hp-in">
       <ul>
         <li><b>Search</b> finds a session, a task or a person wherever it lives and takes you to it.</li>
-        <li><b>The pages</b>, in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). Each has its own section below.</li>
+        <li><b>The pages</b>, in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions, Workshop), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). Each has its own section below.</li>
         <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
         <li><b>Undo</b> steps back the last change, on any tab. Ctrl+Z (Cmd+Z on a Mac) does the same.</li>
         <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
@@ -7135,7 +7182,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </ul>
       <h4>Finding Your Way</h4>
       <ul>
-        <li>The menu on the left reads in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). People, Hotel Specs and The Trunk are pages of their own.</li>
+        <li>The menu on the left reads in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions, Workshop), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). People, Hotel Specs and The Trunk are pages of their own.</li>
         <li><b>People</b> opens on the Confirmed Speakers face by face, each ringed by how far along they are, with the next step under their name and the five steps as bars underneath. Click a face to open that speaker.</li>
         <li><b>General Sessions</b> shows <b>The Lineup</b> under The Day: every session as a card with its time, who is on (their headshots) and its sponsor. Click a card to go to it.</li>
         <li>On the <b>Schedule</b>, hover anywhere on the week and its room and its time light up; type in <b>Find on the Grid</b> and everything else dims. The week always fits the window, so the grid itself never scrolls up and down. <b>Enlarge</b> opens the week full screen with taller rows; drag and click work the same, and <b>Close</b> or Esc puts it back.</li>
@@ -7228,6 +7275,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 is marked automatically, and you can mark one by hand. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
       </ul>
+      <h4>The Workshop</h4>
+      <p><b>Workshop</b> in the left menu works exactly the same way for Monday afternoon&rsquo;s Workshop. Start from a <b>Typical Workshop</b> (a welcome, sections, a break, a hands-on exercise and a wrap-up) or start blank, add sections, and drag speakers onto them from the <b>Confirmed Speakers</b> list on the right. Its start and end times come from the Workshop on the Schedule. Each Summit keeps its own Workshop, and its sections go into the event app&rsquo;s sessions file in place of the single Workshop block. A speaker put on a section shows it under <b>Sessions They Are In</b> on People, and the speaker email names it.</p>
     </div>
   </details>
 
@@ -7298,9 +7347,12 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <h4>The People Tab Tools</h4>
       <ul>
         <li><b>Confirmed Speakers</b> lists this Summit&rsquo;s speakers.</li>
-        <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits.</li>
-        <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment too.</li>
-        <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
+        <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits. <b>Edit</b> on a row opens their name, email, title and company to change right there, with a <b>Notes for This Summit</b> box (who suggested them, the topic, when to follow up).</li>
+        <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment or Workshop section too.</li>
+        <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. The search box at the top of the list narrows it as you type (a name, company, title or email). Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
+        <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the Reservations link) and {rate} (the group guestroom rate); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
+        <li><b>Bio and headshot, collected for you.</b> The speaker email carries each speaker&rsquo;s own link to a short MISMO form (resources.mismo.org/summit-hq/speaker.html): their bio, title, company, LinkedIn and a headshot, which the form makes the right size on their side. Sending the email ticks <b>Asked for bio &amp; headshot</b>. What they send lands on their row within a few minutes of People being open: the bio, title, company and headshot fill in, and <b>Bio &amp; headshot in hand</b> ticks itself. The <b>Bio &amp; Headshot Form</b> line on their row says whether the link went out and when they answered; <b>Copy Their Link</b> gives you their link to paste into an email of your own. They can use the same link again to change anything.</li>
+        <li><b>Speaker Emails</b>, at the top of Confirmed Speakers, sends to many at once. <b>Send to the N Not Sent</b> sends the speaker email to every confirmed speaker with an email address who has not had it, each filled in for them; untick anyone to leave them out, and press Preview to see a speaker&rsquo;s copy. <b>Remind About the Bio</b> sends a short reminder with their own link to everyone who had the email and has not sent their bio and headshot. Both ask you to click twice before anything goes, and both go out within a couple of minutes.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
@@ -7334,6 +7386,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>New Speakers to Register</td><td>Every weekday morning: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
           <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email on People, <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
           <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
+          <tr><td>Speaker bio and headshot answers</td><td>A speaker sends the form from the link in their speaker email</td><td>No email: the bio, title, company, LinkedIn and headshot land on their row on People</td><td>Summit HQ - Speaker Info Answers (saves each answer to feeds/si-&lt;their code&gt;)</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
@@ -23866,12 +23919,12 @@ startClock();
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
     resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg"),
-    gs:document.getElementById("app-gs"),trunk:document.getElementById("app-trunk"),help:document.getElementById("app-help")};
+    gs:document.getElementById("app-gs"),wk:document.getElementById("app-wk"),trunk:document.getElementById("app-trunk"),help:document.getElementById("app-help")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
     ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered",
-    gs:"Build Tuesday's General Sessions",trunk:"What goes to the Summit",help:"How Summit HQ works"};
+    gs:"Build Tuesday's General Sessions",wk:"Build Monday's Workshop",trunk:"What goes to the Summit",help:"How Summit HQ works"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
   /* Jonna, 2026-10-31: People, Hotel Specs and The Trunk are their own pages in the menu now */
@@ -25133,6 +25186,7 @@ function personBody(p, off){
     sw.appendChild(b0);
     sw.appendChild(el('span','pnote', sent? 'Sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'') : (p.e? 'Goes to '+p.e : 'Add their email below first')));
     b.appendChild(sw);
+    b.appendChild(siLine(p));
   }
   /* who they are */
   const g=el('div','pgrid');
@@ -25266,6 +25320,7 @@ function personBody(p, off){
         xb.addEventListener('click',()=>{
           patchSt(p.i,{ses:picked.filter(z=>z!==k)},'a session');
           if(/^gs-/.test(k)) try{ if(window.__gsPerson) window.__gsPerson(p.i,k,false); }catch(e){}
+          if(/^wk-/.test(k)) try{ if(window.__wkPerson) window.__wkPerson(p.i,k,false); }catch(e){}
           render();
         });
         chip.appendChild(xb);
@@ -25292,6 +25347,7 @@ function personBody(p, off){
           const k=sel.value;
           patchSt(p.i,{ses:picked.concat(k)},'a session');
           if(/^gs-/.test(k)) try{ if(window.__gsPerson) window.__gsPerson(p.i,k,true); }catch(e){}
+          if(/^wk-/.test(k)) try{ if(window.__wkPerson) window.__wkPerson(p.i,k,true); }catch(e){}
           render();
         });
         row.appendChild(sel);
@@ -25496,6 +25552,7 @@ function render(){
   left.appendChild(section('Confirmed Speakers', note||'Speakers. Click a row to open it.',
     list.length,'lOpen',true,box=>{
     if(ST.step){ stepView(box,list); return; }
+    if(ST.ready && s.total) box.appendChild(seBulkBar());
     box.appendChild(addBlock());
     if(!ST.ready){ box.appendChild(el('div','blank','Loading…')); return; }
     if(!list.length){
@@ -25518,8 +25575,26 @@ function render(){
     all().length+' people. Click anyone to edit their details, or add them as a speaker on this summit.',
     rest.length,'elseOpen',false,box=>{
     if(!rest.length){ box.appendChild(el('div','blank','Nobody left — everyone on the list is speaking at this summit.')); return; }
-    rest.slice(0,400).forEach(p=>box.appendChild(personRow(p,true)));
-    if(rest.length>400) box.appendChild(el('div','pmore','Showing the first 400 — search above to narrow it down.'));
+    /* Amy, 2026-11-03: a search of its own, right on the list. It narrows the rows as she
+       types and never rebuilds the box, so the cursor stays put. */
+    const sw=el('div','ml-find');
+    const mq=document.createElement('input'); mq.type='search'; mq.placeholder='Search the master list — a name, company, title or email';
+    mq.setAttribute('aria-label','Search the Master List of Speakers'); mq.dataset.keep='master:q'; mq.value=ST.mq||'';
+    sw.appendChild(mq);
+    const cnt=el('span','ml-n'); sw.appendChild(cnt);
+    box.appendChild(sw);
+    const lst=el('div','ml-list'); box.appendChild(lst);
+    const draw=()=>{
+      lst.textContent='';
+      const t=String(ST.mq||'').replace(/\s+/g,' ').trim().toLowerCase();
+      const hits=t? rest.filter(p=>hay(p).indexOf(t)>=0) : rest;
+      cnt.textContent= t? hits.length+' of '+rest.length : rest.length+' people';
+      if(!hits.length){ lst.appendChild(el('div','blank','Nobody on the master list matches \u201c'+String(ST.mq).trim()+'\u201d.')); return; }
+      hits.slice(0,400).forEach(p=>lst.appendChild(personRow(p,true)));
+      if(hits.length>400) lst.appendChild(el('div','pmore','Showing the first 400 \u2014 keep typing to narrow it down.'));
+    };
+    mq.addEventListener('input',()=>{ ST.mq=mq.value; draw(); });
+    draw();
   });
   elseSec.classList.add('tall');
   /* Amy, 2026-10-29: speaker prospects \u2014 invited, accepted or declined */
@@ -25872,6 +25947,9 @@ function seSummitShort(){ const n=String(venueInfo().name||'Summit'); const m=/(
 async function seResume(){
   if(ST.seResume && ST.seResume.v===venueNow()) return ST.seResume.d;
   let d={}; try{ const s=ST.db? await ST.db.doc('resume/'+venueNow()).get() : null; d=(s&&s.exists&&s.data())||{}; }catch(e){ d={}; }
+  /* Jonna, 2026-11-03: the Resume keeps its fields under details — the hotel, the booking
+     link and the group rate the email fills in were never being read from there */
+  d=Object.assign({}, d, d.details||{});
   ST.seResume={v:venueNow(), d}; return d;
 }
 function seDefault(r){
@@ -25880,9 +25958,9 @@ function seDefault(r){
   const addr=String(r.hotelAddr||'').replace(/\s*\n\s*/g,', ').trim();
   let wk='MISMO Workshop'; try{ wk=workshopName(); }catch(e){}
   let recSp=''; try{ const rr=portalRows().filter(x=>/reception/i.test(String(x.opportunity||''))); if(rr.length===1) recSp=', sponsored by '+String(rr[0].company||'').trim(); }catch(e){}
-  const book = r.reservations && /^https?:/i.test(String(r.reservations).trim())
-    ? 'Book via the official MISMO room block [here]('+String(r.reservations).trim()+')'
-    : 'Book via the official MISMO room block here: '+(r.reservations||'[room block link]');
+  /* Amy, 2026-11-03: the booking link, the rate and the bio form are placeholders, so the
+     template reads the Resume (and the speaker's own link) every time it is sent */
+  const book = 'Book via the official MISMO room block [here]({roomBlock})';
   return {
     subject:"You’re Speaking at the MISMO {summitShort}",
     body:[
@@ -25891,7 +25969,8 @@ function seDefault(r){
 'Please review the below and let me know if you have questions.',
 'A few details for you to begin planning and promoting your involvement with the Summit:',
 'Summit registration:\nThis week we’ll register you as our guest for the Summit. You’ll receive an email once your registration has been processed.',
-'Hotel:\nThe Summit will be held at the '+hotel+(addr? ', '+addr : '')+'.\n'+book+(r.rate? ' for the negotiated rate of '+r.rate+' plus tax.' : ' for the negotiated rate of [rate] plus tax.'),
+'Hotel:\nThe Summit will be held at the '+hotel+(addr? ', '+addr : '')+'.\n'+book+' for the negotiated rate of {rate} plus tax.',
+'Your Bio & Headshot:\nPlease send us your bio and headshot [here]({infoLink}). It takes a couple of minutes, and it’s what we use for the agenda, the event app and your session graphic.',
 'Promotion:\nI’ve attached an “I’m Speaking” graphic that you can post on LinkedIn.\nWe’ll be creating a session-specific graphic that we’ll provide once the event is closer. Promotion of your session will be on LinkedIn, in our monthly newsletter, MISMO Matters, in marketing emails and more!',
 'Session Planning & Prep:\nAbout six weeks out, we’ll reach out to schedule our first planning meetings for you and your fellow panelists.\nIn the meantime, please let us know of any questions you have.',
 'Summit Schedule Overview:\n'+seDay(0,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 12:00 p.m. – MISMO Workgroups\n1:00 p.m. – 5:00 p.m. – Workshop: '+wk+'\n5:00 p.m. – 6:00 p.m. – MISMO Welcome Reception',
@@ -25902,7 +25981,20 @@ seDay(2,true)+' and '+seDay(3,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast
   };
 }
 /* the speaker's own details, for the {placeholders} */
-function seVars(p){
+const seLinkOk=u=>/^https?:\/\/\S+$/i.test(String(u||'').trim());
+function seRoomBlock(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; const u=String(r.reservations||'').trim(); return seLinkOk(u)? u : ''; }
+function seRate(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; let x=String(r.rate||'').trim();
+  if(/^\d+(\.\d+)?$/.test(x)) x='$'+x; return x; }
+/* each speaker's own link to the bio and headshot form; the code only matches their row */
+function seTok(){ const a=new Uint8Array(9); try{ crypto.getRandomValues(a); }catch(e){ for(let i=0;i<9;i++) a[i]=Math.random()*256|0; }
+  return [...a].map(x=>(x%36).toString(36)).join('')+Date.now().toString(36).slice(-3); }
+function seInfoLink(p,tok){
+  if(!tok) return '';
+  let base='https://resources.mismo.org/summit-hq/'; try{ if(/^https?:/.test(location.protocol)) base=location.origin+location.pathname.replace(/[^/]*$/,''); }catch(e){}
+  const q=new URLSearchParams({t:tok, v:venueNow(), n:String(p.n||'').trim().split(/\s+/)[0]||'', s:venueInfo().name||'MISMO Summit', d:seDates()});
+  return base+'speaker.html?'+q.toString();
+}
+function seVars(p,tok){
   const st=stOf(p), ses=summitSessions();
   const mine=(st.ses||[]).map(k=>ses.find(x=>x.key===k)).filter(Boolean);
   const names=mine.map(x=>x.name);
@@ -25910,14 +26002,26 @@ function seVars(p){
   const days=[...new Set(mine.map(x=>{ const i=x.idx; return i>=0? seDay(i,false) : ''; }).filter(Boolean))];
   return {first:String(p.n||'').trim().split(/\s+/)[0]||'there', name:p.n||'', session: names.length? 'our '+join(names) : 'the General Sessions',
     sessionDate: days.length? join(days) : seDay(1,false), summit:venueInfo().name||'Summit', summitShort:seSummitShort(),
-    dates:seDates(), gsDate:seDay(1,false)};
+    dates:seDates(), gsDate:seDay(1,false),
+    roomBlock: seRoomBlock()||'[room block link — add it to Reservations on the Resume]',
+    rate: seRate()||'[rate — add the group guestroom rate on the Resume]',
+    infoLink: seInfoLink(p, tok || (seOpen&&seOpen.id===p.i&&seOpen.itok) || stOf(p).itok || '') || '[bio and headshot link]'};
 }
-const seFill=(t,v)=>String(t||'').replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? v[k] : m);
+const seFill=(t,v)=>String(t||'')
+  /* the first template said "here: [room block link]" and "[rate]" — those fill in too */
+  .replace(/here:\s*\[room block link\]/gi,'[here]({roomBlock})').replace(/\[room block link\]/gi,'{roomBlock}').replace(/\[rate\]/gi,'{rate}')
+  /* a link whose address is not known yet reads as the words and the reminder, not as brackets */
+  .replace(/\[([^\]]+)\]\(\{(\w+)\}\)/g,(m,a,k)=>v[k]!=null && !/^https?:\/\//i.test(String(v[k]))? a+' '+v[k] : m)
+  .replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? v[k] : m);
 /* the branded email: blank line = new paragraph, a short first line ending in ":" = heading,
    [words](link) = a link */
 function seHtml(subject, body){
   const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const inline=x=>e(x).replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,a,u)=>'<a href="'+u.replace(/"/g,'%22')+'" style="color:#0f6fa8;font-weight:700">'+a+'</a>');
+  const A=(u,a)=>'<a href="'+e(u).replace(/"/g,'%22')+'" style="color:#0f6fa8;font-weight:700">'+a+'</a>';
+  /* [words](link) is a link, and so is a bare web address */
+  const inline=x=>{ const parts=[]; let t=String(x).replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,a,u)=>{ parts.push(A(u,e(a))); return '\u0000'+(parts.length-1)+'\u0000'; });
+    t=e(t).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)\]]/g,u=>A(u.replace(/&amp;/g,'&'),u));
+    return t.replace(/\u0000(\d+)\u0000/g,(m,i)=>parts[+i]); };
   const paras=String(body||'').replace(/\r/g,'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(par=>{
     const lines=par.split('\n'); let h='';
     if(lines.length>1 && /:\s*$/.test(lines[0]) && lines[0].length<=60){ h=lines.shift().replace(/:\s*$/,''); }
@@ -25936,6 +26040,34 @@ function seHtml(subject, body){
    +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
    +'</tbody></table></td></tr></tbody></table>';
 }
+/* Amy, 2026-11-03: a link without typing the brackets — the words and the address, and it
+   goes in where the cursor is (or around the words picked) */
+function seLinkBar(ta,changed){
+  const w=el('div','se-linkbar');
+  const open=el('button','btn ghost se-addlink','Add a Link'); open.type='button';
+  const form=el('div','se-linkform'); form.hidden=true;
+  const words=document.createElement('input'); words.type='text'; words.placeholder='Words to show (here)';
+  const url=document.createElement('input'); url.type='url'; url.placeholder='https://…';
+  const ok=el('button','btn','Put It In'); ok.type='button';
+  const no=el('button','btn ghost','Cancel'); no.type='button';
+  let a=0,b=0;
+  open.addEventListener('mousedown',()=>{ a=ta.selectionStart||0; b=ta.selectionEnd||0; });
+  open.addEventListener('click',()=>{ words.value=ta.value.slice(a,b)||''; url.value=''; form.hidden=false; open.hidden=true; (words.value? url : words).focus(); });
+  const put=()=>{
+    let u=url.value.trim(); if(!u){ url.focus(); return; }
+    if(!/^https?:\/\//i.test(u) && !/^\{\w+\}$/.test(u)) u='https://'+u.replace(/^\/+/,'');
+    const t='['+(words.value.trim()||'here')+']('+u+')';
+    ta.value=ta.value.slice(0,a)+t+ta.value.slice(b); changed();
+    form.hidden=true; open.hidden=false;
+    try{ ta.focus(); ta.setSelectionRange(a+t.length,a+t.length); }catch(e){}
+  };
+  ok.addEventListener('click',put);
+  [words,url].forEach(i=>i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); put(); } if(e.key==='Escape'){ form.hidden=true; open.hidden=false; } }));
+  no.addEventListener('click',()=>{ form.hidden=true; open.hidden=false; });
+  form.appendChild(words); form.appendChild(url); form.appendChild(ok); form.appendChild(no);
+  w.appendChild(open); w.appendChild(form);
+  return w;
+}
 function seSave(fields,label){ saveColl('speaker-email',ST.semail,fields,label||'the speaker email'); }
 /* queue it for the flow; only the last few hours are kept, the flow takes what is new */
 async function seQueue(req){
@@ -25944,7 +26076,7 @@ async function seQueue(req){
   let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ throw e; }   /* a failed read must not wipe emails still waiting to go */
   const cut=Date.now()-60*60*1000;            /* the flow sends within minutes; an hour is plenty */
   const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
-  list.push(req);
+  (Array.isArray(req)? req : [req]).forEach(r=>list.push(r));
   await ref.set({updatedAt:new Date().toISOString(), requests:list});
 }
 let seOpen=null;
@@ -25952,8 +26084,9 @@ async function openSpeakerEmail(id){
   const p=byId(id); if(!p) return;
   const r=await seResume();
   const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
-  const v=seVars(p);
-  seOpen={id, mode:'one', to:p.e||'', cc:SE_AMY.email, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
+  const itok=stOf(p).itok||seTok();
+  const v=seVars(p,itok);
+  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_AMY.email, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
     tSubject:tpl.subject, tBody:tpl.body, sending:false};
   drawSpeakerEmail();
 }
@@ -25980,22 +26113,31 @@ function drawSpeakerEmail(){
   const fld=(lab,val,on,opt)=>{ const w=el('label','se-f'); w.appendChild(el('span',null,lab));
     const i=document.createElement(opt&&opt.area?'textarea':'input'); if(!opt||!opt.area) i.type='text'; i.value=val||'';
     if(opt&&opt.rows) i.rows=opt.rows; if(opt&&opt.ph) i.placeholder=opt.ph;
-    i.addEventListener('input',()=>{ on(i.value); paintPrev(); }); w.appendChild(i); L.appendChild(w); return i; };
+    i.addEventListener('input',()=>{ on(i.value); paintPrev(); }); w.appendChild(i); L.appendChild(w);
+    if(opt&&opt.area) L.appendChild(seLinkBar(i,()=>{ on(i.value); paintPrev(); }));
+    return i; };
+  /* what the Resume has not given the email yet */
+  const gaps=[!seRoomBlock()&&'the room block link (Reservations)', !seRate()&&'the group guestroom rate'].filter(Boolean);
+  if(gaps.length){ const w=el('div','se-warn');
+    w.appendChild(document.createTextNode('The Resume does not have '+gaps.join(' or ')+' yet, so the email shows a reminder in its place. '));
+    const go=el('button','se-lnk','Open the Resume'); go.type='button';
+    go.addEventListener('click',()=>{ seOpen=null; drawSpeakerEmail(); try{ window.__hqGo && window.__hqGo('resume'); }catch(e){} });
+    w.appendChild(go); L.appendChild(w); }
   const g=seDoc().graphic;
   if(seOpen.mode==='one'){
     fld('To',seOpen.to,v=>seOpen.to=v,{ph:'speaker@company.com'});
     fld('Cc',seOpen.cc,v=>seOpen.cc=v);
     fld('Subject',seOpen.subject,v=>seOpen.subject=v);
     fld('Message',seOpen.body,v=>seOpen.body=v,{area:true,rows:18});
-    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and [words](https://link) makes a link.'));
+    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and Add a Link (or [words](https://link)) makes a link. A web address on its own is a link too.'));
   } else {
     fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
     fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
-    L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}.'));
+    L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}. From the Resume: {roomBlock} (the Reservations link) and {rate}. And {infoLink} is the speaker’s own link to send their bio and headshot — it lands on their row in People.'));
     const row=el('div','se-acts');
     const sv=el('button','btn','Save the Template'); sv.type='button';
     sv.addEventListener('click',()=>{ seSave({subject:seOpen.tSubject, body:seOpen.tBody, savedAt:new Date().toISOString()},'the speaker email template');
-      const v=seVars(p); seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); seOpen.mode='one'; drawSpeakerEmail(); });
+      const v=seVars(p,seOpen.itok); seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); seOpen.mode='one'; drawSpeakerEmail(); });
     const rs=el('button','btn ghost','Start Over From the Standard Wording'); rs.type='button';
     rs.addEventListener('click',async()=>{ const d=seDefault(await seResume()); seOpen.tSubject=d.subject; seOpen.tBody=d.body; drawSpeakerEmail(); });
     row.appendChild(sv); row.appendChild(rs); L.appendChild(row);
@@ -26034,7 +26176,12 @@ function drawSpeakerEmail(){
         graphic: g2&&g2.name ? 'speaker-graphic-'+venueNow() : ''};
       try{ await seQueue(req); }
       catch(e){ seOpen.sending=false; drawSpeakerEmail(); alert('Summit HQ could not queue the email. Check you are signed in and try again.'); return; }
-      patchSt(p.i,{welcome:{at:new Date().toISOString(), by:who, to}},'a speaker email');
+      /* the email carried their bio and headshot link: that step is done, and the form's answer
+         finds them by the code in it */
+      const f={welcome:{at:new Date().toISOString(), by:who, to}};
+      if(String(seOpen.body||'').indexOf(seOpen.itok)>=0){ f.itok=seOpen.itok; f.iask=f.welcome.at;
+        const steps=Object.assign({},stOf(p).steps||{}); if(!steps.contacted) steps.contacted=today(); f.steps=steps; }
+      patchSt(p.i,f,'a speaker email');
       seOpen=null; drawSpeakerEmail(); render();
       try{ if(window.__hqFlash) window.__hqFlash('On its way to '+to+' — it goes out within a couple of minutes.'); }catch(e){}
     });
@@ -26045,7 +26192,7 @@ function drawSpeakerEmail(){
   const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks';
   R.appendChild(pf);
   function paintPrev(){
-    const v=seVars(p);
+    const v=seVars(p,seOpen.itok);
     const sub = seOpen.mode==='one'? seOpen.subject : seFill(seOpen.tSubject,v);
     const bod = seOpen.mode==='one'? seOpen.body : seFill(seOpen.tBody,v);
     pf.srcdoc='<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0">'+seHtml(sub,bod)+'</body></html>';
@@ -26053,6 +26200,206 @@ function drawSpeakerEmail(){
   body.appendChild(L); body.appendChild(R); box.appendChild(body);
   m.appendChild(box);
   paintPrev();
+}
+
+/* ============================================================
+   BIO & HEADSHOT FORM (Amy, 2026-11-03)
+   "automating the collection of info". The speaker email carries {infoLink}: each
+   speaker's own link to resources.mismo.org/summit-hq/speaker.html with a code only
+   their row knows. They type their bio, title and company, add their LinkedIn and a
+   headshot (made small on their side), and press Send. That posts to the
+   "Summit HQ - Speaker Info Answers" flow, which saves it to feeds/si-<code>. Summit HQ
+   looks for answers when People opens and every few minutes, and puts them on the row:
+   the bio, title, company and headshot fill in and "Bio & headshot in hand" ticks itself.
+   ============================================================ */
+const SI={busy:false, at:0, full:0};
+function siShrinkUrl(src,px,q){
+  return new Promise(res=>{ const img=new Image();
+    img.onload=()=>{ const k=Math.min(1,px/Math.max(img.width,img.height)); const c=document.createElement('canvas');
+      c.width=Math.max(1,Math.round(img.width*k)); c.height=Math.max(1,Math.round(img.height*k));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height); let o=''; try{ o=c.toDataURL('image/jpeg',q||0.8); }catch(e){} res(o); };
+    img.onerror=()=>res(''); img.src=src; });
+}
+async function siApplyOne(p,d){
+  const f={};
+  const txt=(x,n)=>String(x||'').replace(/\r/g,'').trim().slice(0,n);
+  const bio=txt(d.bio,5000); if(bio) f.bio=bio;
+  const t=txt(d.title,160); if(t) f.t=t;
+  const c=txt(d.company,160); if(c) f.c=c;
+  const li=txt(d.linkedin,300); if(/^https?:\/\/\S+$/i.test(li)) f.li=li;
+  const img=String(d.photo||'');
+  if(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(img)){
+    ST.photos.set(p.i,img);
+    if(ST.db){ try{ await ST.db.doc('photos/'+p.i).set({img}); }catch(e){} }
+    const th=String(d.thumb||'');
+    f.thumb=/^data:image\/(jpeg|png|webp);base64,/.test(th)? th : (await siShrinkUrl(img,96,0.8)) || img;
+  }
+  if(Object.keys(f).length) patch(p.i,f,'their bio and headshot from the form');
+  patchSt(p.i,{iat:d.at||new Date().toISOString()},'their bio and headshot from the form');
+  try{ window.__hqFlash && window.__hqFlash((p.n||'A speaker')+' sent their bio'+(f.thumb?' and headshot':'')); }catch(e){}
+}
+/* answered ones are looked at again only when People first opens (a speaker may send a
+   new photo with the same link); the rest every few minutes */
+async function siCheck(force){
+  if(!ST.db || SI.busy || !ST.ready || !ST.collsRead || !ST.collsRead.has('people')) return;
+  const nowMs=Date.now();
+  const full = force || nowMs-SI.full>30*60*1000;
+  if(!full && nowMs-SI.at<4*60*1000) return;
+  SI.busy=true; SI.at=nowMs; if(full) SI.full=nowMs;
+  let n=0;
+  try{
+    const ppl=all().filter(p=>{ const st=stOf(p); return st.itok && (full || !st.iat); }).slice(0,80);
+    for(const p of ppl){
+      const st=stOf(p);
+      let d=null; try{ const s=await ST.db.doc('feeds/si-'+st.itok).get(); d=s.exists? s.data() : null; }catch(e){ continue; }
+      if(!d || d.t!==st.itok) continue;
+      if(st.iat && String(st.iat)>=String(d.at||'')) continue;
+      await siApplyOne(p,d); n++;
+    }
+  }finally{ SI.busy=false; }
+  if(n) render();
+}
+function siStatus(p){
+  const st=stOf(p);
+  if(st.iat) return {k:'in', t:'Sent through the form '+localDay(st.iat)};
+  if(st.itok && st.iask) return {k:'wait', t:'Link sent '+localDay(st.iask)+' — not answered yet'};
+  return {k:'', t:'Goes out in the speaker email'};
+}
+/* the line on a speaker's row: where the form stands, and their link to copy */
+function siLine(p){
+  const w=el('div','si-line'), s=siStatus(p);
+  w.appendChild(el('span','si-k '+s.k, 'Bio & Headshot Form'));
+  w.appendChild(el('span','pnote',s.t));
+  const st=stOf(p);
+  if(st.itok){
+    const cp=el('button','se-lnk','Copy Their Link'); cp.type='button';
+    cp.title='Their own link to the bio and headshot form, to paste into an email of your own';
+    cp.addEventListener('click',async()=>{ const u=seInfoLink(p,st.itok);
+      try{ await navigator.clipboard.writeText(u); cp.textContent='Copied'; }catch(e){ prompt('Their link:',u); }
+      setTimeout(()=>{ cp.textContent='Copy Their Link'; },1600); });
+    w.appendChild(cp);
+  }
+  if(p.li){ const a=document.createElement('a'); a.className='se-lnk'; a.href=p.li; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; w.appendChild(a); }
+  return w;
+}
+
+/* ---------- many at once: everyone not sent yet, or a reminder for the bio ---------- */
+const SE_REMIND={subject:'Your Bio & Headshot for the MISMO {summitShort}',
+  body:['Hi {first},',
+    'A quick reminder to send us your bio and headshot for {session} at the MISMO {summitShort}. It takes a couple of minutes: [send them here]({infoLink}).',
+    'We use them for the agenda, the event app and your session graphic.',
+    'Thank you so much!'].join('\n\n')};
+function seWho(){ let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){} return who; }
+function seBulkList(kind){
+  const here=all().filter(isSpk).filter(p=>/@/.test(String(p.e||'')));
+  if(kind==='welcome') return here.filter(p=>!stOf(p).welcome);
+  return here.filter(p=>{ const st=stOf(p); return st.welcome && !st.iat && !(hasBio(p)&&hasShot(p)); });
+}
+let seBulk=null;
+async function openSpeakerBulk(kind){
+  const r=await seResume();
+  const tpl = kind==='welcome'
+    ? Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{})
+    : {subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
+  const list=seBulkList(kind);
+  seBulk={kind, subject:tpl.subject, body:tpl.body, pick:new Set(list.map(p=>p.i)), ids:list.map(p=>p.i), sending:false, prev:list[0]&&list[0].i};
+  drawSpeakerBulk();
+}
+function drawSpeakerBulk(){
+  let m=document.getElementById('se-bulk');
+  if(!seBulk){ if(m) m.remove(); return; }
+  if(!m){ m=el('div','se-modal'); m.id='se-bulk'; document.body.appendChild(m); }
+  m.textContent='';
+  const close=()=>{ seBulk=null; drawSpeakerBulk(); };
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+  const box=el('div','se-box'); box.setAttribute('role','dialog');
+  const hd=el('div','se-hd');
+  hd.appendChild(el('div','se-t', seBulk.kind==='welcome'? 'Send the Speaker Email to Everyone Not Sent Yet' : 'Remind Speakers About Their Bio & Headshot'));
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev');
+  const ppl=seBulk.ids.map(byId).filter(Boolean);
+  const lst=el('div','se-who');
+  lst.appendChild(el('div','se-whoh', seBulk.pick.size+' of '+ppl.length+' picked — each email is filled in for that speaker'));
+  if(!ppl.length) lst.appendChild(el('div','se-note', seBulk.kind==='welcome'? 'Every confirmed speaker with an email address has had the speaker email.' : 'Nobody to remind: everyone who had the speaker email has sent their bio and headshot, or has both on file.'));
+  ppl.forEach(p=>{
+    const row=el('label','se-whor'+(seBulk.prev===p.i?' on':''));
+    const c=document.createElement('input'); c.type='checkbox'; c.checked=seBulk.pick.has(p.i);
+    c.addEventListener('change',()=>{ if(c.checked) seBulk.pick.add(p.i); else seBulk.pick.delete(p.i); drawSpeakerBulk(); });
+    row.appendChild(c);
+    const tx=el('span',null,p.n||''); row.appendChild(tx);
+    row.appendChild(el('small',null,p.e||''));
+    const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',e=>{ e.preventDefault(); seBulk.prev=p.i; drawSpeakerBulk(); });
+    row.appendChild(pv);
+    lst.appendChild(row);
+  });
+  L.appendChild(lst);
+  const fld=(lab,val,on,area)=>{ const w=el('label','se-f'); w.appendChild(el('span',null,lab));
+    const i=document.createElement(area?'textarea':'input'); if(!area) i.type='text'; i.value=val||''; if(area) i.rows=12;
+    i.addEventListener('input',()=>{ on(i.value); paint(); }); w.appendChild(i); L.appendChild(w);
+    if(area) L.appendChild(seLinkBar(i,()=>{ on(i.value); paint(); }));
+    return i; };
+  const gaps=[!seRoomBlock()&&'the room block link (Reservations)', !seRate()&&'the group guestroom rate'].filter(Boolean);
+  if(gaps.length && seBulk.kind==='welcome'){ const w=el('div','se-warn');
+    w.appendChild(document.createTextNode('The Resume does not have '+gaps.join(' or ')+' yet, so the email shows a reminder in its place. Add '+(gaps.length>1?'them':'it')+' on the Resume (Event Details) before sending.'));
+    L.appendChild(w); }
+  fld('Subject',seBulk.subject,v=>seBulk.subject=v);
+  fld('Message',seBulk.body,v=>seBulk.body=v,true);
+  L.appendChild(el('div','se-note', seBulk.kind==='welcome'
+    ? 'This is the Template for Every Speaker. A change here is saved to the template when you send.'
+    : 'The reminder wording, kept for this summit. {infoLink} is each speaker’s own link to the form.'));
+  const acts=el('div','se-acts');
+  const go=el('button','btn', seBulk.sending? 'Sending…' : 'Send to '+seBulk.pick.size); go.type='button';
+  go.disabled=seBulk.sending || !seBulk.pick.size;
+  let armed=false;
+  go.addEventListener('click',async()=>{
+    if(!armed){ armed=true; go.textContent='Click Again to Send '+seBulk.pick.size+' Email'+(seBulk.pick.size===1?'':'s'); go.classList.add('armed'); return; }
+    seBulk.sending=true; drawSpeakerBulk();
+    const who=seWho(), at=new Date().toISOString(), g=seDoc().graphic;
+    const reqs=[], after=[];
+    [...seBulk.pick].map(byId).filter(Boolean).forEach((p,ix)=>{
+      const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
+      const subject=seFill(seBulk.subject,v), bd=seFill(seBulk.body,v);
+      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_AMY.email,
+        subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
+        graphic: seBulk.kind==='welcome' && g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
+      const f={};
+      if(seBulk.kind==='welcome') f.welcome={at, by:who, to:String(p.e).trim()}; else f.remind={at, by:who};
+      if(bd.indexOf(itok)>=0){ f.itok=itok; f.iask=st.iask||at; const steps=Object.assign({},st.steps||{}); if(!steps.contacted) steps.contacted=today(); f.steps=steps; }
+      after.push([p.i,f]);
+    });
+    try{ await seQueue(reqs); }
+    catch(e){ seBulk.sending=false; drawSpeakerBulk(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); return; }
+    after.forEach(([id,f])=>patchSt(id,f, seBulk.kind==='welcome'? 'a speaker email' : 'a bio and headshot reminder'));
+    if(seBulk.kind==='welcome') seSave({subject:seBulk.subject, body:seBulk.body, savedAt:at},'the speaker email template');
+    else seSave({remSubject:seBulk.subject, remBody:seBulk.body},'the bio and headshot reminder');
+    const n=reqs.length; seBulk=null; drawSpeakerBulk(); render();
+    try{ window.__hqFlash && window.__hqFlash(n+' email'+(n===1?'':'s')+' on the way — they go out within a couple of minutes.'); }catch(e){}
+  });
+  acts.appendChild(go);
+  L.appendChild(acts);
+  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; R.appendChild(pf);
+  function paint(){
+    const p=byId(seBulk.prev)||ppl[0]; if(!p){ pf.srcdoc=''; return; }
+    const v=seVars(p, stOf(p).itok||'preview');
+    pf.srcdoc='<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0">'+seHtml(seFill(seBulk.subject,v),seFill(seBulk.body,v))+'</body></html>';
+  }
+  body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box); paint();
+}
+/* the bar at the top of Confirmed Speakers */
+function seBulkBar(){
+  const a=seBulkList('welcome').length, b=seBulkList('remind').length;
+  const all0=all().filter(isSpk), noMail=all0.filter(p=>!/@/.test(String(p.e||''))&&!stOf(p).welcome).length;
+  const w=el('div','se-bulkbar');
+  const t=el('div','se-bulkt'); t.appendChild(el('b',null,'Speaker Emails'));
+  t.appendChild(el('span',null,[a? a+' not sent yet':'everyone with an email has had it', b? b+' still owe a bio or headshot':'', noMail? noMail+' need an email address':''].filter(Boolean).join(' · ')));
+  w.appendChild(t);
+  const s1=el('button','btn'+(a?'':' ghost'), a? 'Send to the '+a+' Not Sent' : 'All Sent'); s1.type='button'; s1.disabled=!a;
+  s1.addEventListener('click',()=>openSpeakerBulk('welcome')); w.appendChild(s1);
+  const s2=el('button','btn ghost', 'Remind About the Bio'+(b?' ('+b+')':'')); s2.type='button'; s2.disabled=!b;
+  s2.title='A short reminder with their own link, to the speakers who had the email and have not sent their bio and headshot';
+  s2.addEventListener('click',()=>openSpeakerBulk('remind')); w.appendChild(s2);
+  return w;
 }
 
 function addProspect(id){
@@ -26110,11 +26457,35 @@ function prospectRow(p){
     seg.appendChild(b);
   });
   row.appendChild(seg);
+  /* Amy, 2026-11-03: change their details right here */
+  const ed=el('button','btn ghost prow-ed', ST.prosEdit===p.i? 'Done' : 'Edit'); ed.type='button';
+  ed.title= ST.prosEdit===p.i? 'Close the details' : 'Change '+(p.n||'their')+' name, email, title, company or notes';
+  ed.setAttribute('aria-expanded', ST.prosEdit===p.i?'true':'false');
+  ed.addEventListener('click',()=>{ ST.prosEdit = ST.prosEdit===p.i? '' : p.i; render(); });
+  row.appendChild(ed);
   const x=el('button','prow-x','\u00d7'); x.type='button';
   x.title='Take '+(p.n||'them')+' off the prospect list';
   let armed=false;
   x.addEventListener('click',()=>{ if(!armed){ armed=true; x.classList.add('armed'); x.title='Click again to take them off the list'; setTimeout(()=>{ armed=false; x.classList.remove('armed'); },2500); return; } dropProspect(p.i); });
   row.appendChild(x);
+  if(ST.prosEdit===p.i){
+    const f=el('div','prow-edit');
+    const g=el('div','pgrid');
+    g.appendChild(textField('Name',p.n,v2=>{ if(v2){ patch(p.i,{n:v2},'a name'); renderSoon(); } }, p.i+':pn'));
+    g.appendChild(textField('Email',p.e,v2=>patch(p.i,{e:v2},'an email'), p.i+':pe'));
+    g.appendChild(textField('Title',p.t,v2=>{ patch(p.i,{t:v2},'a title'); renderSoon(); }, p.i+':pt'));
+    g.appendChild(textField('Company',p.c,v2=>{ patch(p.i,{c:v2},'a company'); renderSoon(); }, p.i+':pc'));
+    f.appendChild(g);
+    const nw=el('label','prow-note'); nw.appendChild(el('span',null,'Notes for This Summit'));
+    const nt=document.createElement('textarea'); nt.rows=2; nt.value=stOf(p).pnote||''; nt.dataset.keep=p.i+':pnote';
+    nt.placeholder='Who suggested them, the topic, when to follow up';
+    nt.addEventListener('change',()=>patchSt(p.i,{pnote:nt.value.trim()},'a prospect note'));
+    nw.appendChild(nt); f.appendChild(nw);
+    const op=el('button','se-lnk','Open Their Full Record'); op.type='button';
+    op.addEventListener('click',()=>{ ST.prosEdit=''; try{ window.__people && window.__people.open(p.i); }catch(e){} });
+    f.appendChild(op);
+    row.appendChild(f);
+  } else if(stOf(p).pnote){ row.querySelector('.prow-tx').appendChild(el('div','prow-s prow-pn',stOf(p).pnote)); }
   return row;
 }
 /* find somebody on the master list, or add somebody new, as a prospect */
@@ -26635,6 +27006,15 @@ function summitSessions(){
     list=list.filter(x=>!/^general-sessions/.test(String(x.key))).concat(segs.map(g=>({
       key:g.key, name:g.name, room:gs? gs.room : '', day, dayLabel:label, start:g.start, end:g.end, idx:days.indexOf(day)})));
   }
+  /* Amy, 2026-11-03: and the Workshop's sections, in place of the one Monday afternoon block */
+  let wsegs=null; try{ wsegs=window.__wkSegments ? window.__wkSegments(venueNow()) : null; }catch(e){ wsegs=null; }
+  if(wsegs && wsegs.length){
+    const wk=list.find(x=>/^workshop/.test(String(x.key)));
+    const day=wk? wk.day : 'mon';
+    const label=(feed.days.find(d=>d.id===day)||{}).label||'Monday';
+    list=list.filter(x=>!/^workshop/.test(String(x.key))).concat(wsegs.map(g=>({
+      key:g.key, name:g.name, room:wk? wk.room : '', day, dayLabel:label, start:g.start, end:g.end, idx:days.indexOf(day)})));
+  }
   return list;
 }
 /* the app writes the wall clock with a Z on the end, so this does the same */
@@ -26719,7 +27099,7 @@ async function appFile(){
     const o={
       'ID':p.rdid||'', 'First Name':first, 'Last Name':last,
       'Bio':textToHtml(p.bio), 'Company':p.c||'', 'Title':p.t||'',
-      'Email':p.e||'', 'URL for Photo':p.purl||'',
+      'Email':p.e||'', 'URL for Photo':p.purl||'', 'URL':p.li||'',
       'Featured':'False', 'Session Key':keys.join('|')
     };
     rows.push(RDM_SPK.map(h=>csvCell(o[h]==null?'':o[h])).join(','));
@@ -26815,6 +27195,8 @@ function init(){
             ST.docs.set(c.doc.id,Object.assign({i:c.doc.id},c.doc.data()));
         });
         render();
+        /* Amy, 2026-11-03: answers from the bio and headshot form */
+        if(!SI.first){ SI.first=true; setTimeout(()=>siCheck(true),1500); setInterval(()=>siCheck(),60000); }
       },()=>{ render(); });
     }catch(e){ render(); }
   })();
@@ -26836,7 +27218,8 @@ window.__people={
       if(!st.role) f.role='speaker';
       const steps=Object.assign({},st.steps||{}); if(!steps.agenda) steps.agenda=today(); f.steps=steps;
     }
-    patchSt(id,f,on?'a General Sessions speaker':'a General Sessions speaker taken off');
+    const what=/^wk-/.test(String(key))? 'a Workshop speaker' : 'a General Sessions speaker';
+    patchSt(id,f,on? what : what+' taken off');
     render(); return true;
   },
   add:o=>{
@@ -27499,192 +27882,192 @@ window.__people={
   font-family:var(--display);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .pp-grp:first-of-type{margin-top:6px}
 .pp-grp b{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0;color:var(--ink-3)}
-#app-gs .gs-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#app-gs .gs-strip{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 14px}
-#app-gs .gs-tile{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px;min-width:130px;
+:is(#app-gs,#app-wk) .gs-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+:is(#app-gs,#app-wk) .gs-strip{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 14px}
+:is(#app-gs,#app-wk) .gs-tile{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 14px;min-width:130px;
   display:flex;flex-direction:column;gap:2px}
-#app-gs .gs-tile b{font-family:var(--display);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1}
-#app-gs .gs-tile span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
-#app-gs .gs-tile.ok b{color:var(--good)} #app-gs .gs-tile.warn b{color:var(--warn-ink)} #app-gs .gs-tile.bad b{color:var(--bad-ink)}
-#app-gs .gs-tile input{font:inherit;font-family:var(--display);font-size:18px;font-weight:800;border:1px solid var(--line-2);
+:is(#app-gs,#app-wk) .gs-tile b{font-family:var(--display);font-size:20px;font-weight:800;color:var(--ink);line-height:1.1}
+:is(#app-gs,#app-wk) .gs-tile span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+:is(#app-gs,#app-wk) .gs-tile.ok b{color:var(--good)} :is(#app-gs,#app-wk) .gs-tile.warn b{color:var(--warn-ink)} :is(#app-gs,#app-wk) .gs-tile.bad b{color:var(--bad-ink)}
+:is(#app-gs,#app-wk) .gs-tile input{font:inherit;font-family:var(--display);font-size:18px;font-weight:800;border:1px solid var(--line-2);
   border-radius:3px;padding:1px 6px;width:140px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-empty{background:var(--surface);border:1px dashed var(--line-2);border-radius:8px;padding:28px;text-align:center;color:var(--ink-2)}
-#app-gs .gs-empty h3{font-size:18px;margin-bottom:6px;color:var(--ink)}
-#app-gs .gs-empty .gs-acts{justify-content:center;margin-top:14px}
-#app-gs .gs-list{display:flex;flex-direction:column}
-#app-gs .gs-ins{height:16px;display:flex;align-items:center;justify-content:center;position:relative}
-#app-gs .gs-ins button{opacity:0;transition:opacity .12s;font-size:11px;font-weight:600;color:var(--accent);background:var(--surface);
+:is(#app-gs,#app-wk) .gs-empty{background:var(--surface);border:1px dashed var(--line-2);border-radius:8px;padding:28px;text-align:center;color:var(--ink-2)}
+:is(#app-gs,#app-wk) .gs-empty h3{font-size:18px;margin-bottom:6px;color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-empty .gs-acts{justify-content:center;margin-top:14px}
+:is(#app-gs,#app-wk) .gs-list{display:flex;flex-direction:column}
+:is(#app-gs,#app-wk) .gs-ins{height:16px;display:flex;align-items:center;justify-content:center;position:relative}
+:is(#app-gs,#app-wk) .gs-ins button{opacity:0;transition:opacity .12s;font-size:11px;font-weight:600;color:var(--accent);background:var(--surface);
   border:1px dashed var(--accent);border-radius:3px;padding:0 10px;line-height:16px;cursor:pointer}
-#app-gs .gs-ins:hover button,#app-gs .gs-ins button:focus{opacity:1}
-#app-gs .gs-gap{margin:2px 0 2px 92px;font-size:11.5px;color:var(--ink-3);font-style:italic}
-#app-gs .gs-gap.bad{color:var(--bad-ink);font-style:normal;font-weight:600}
-#app-gs .gs-item{display:grid;grid-template-columns:22px 84px 1fr;gap:0 12px;background:var(--surface);border:1px solid var(--line);
+:is(#app-gs,#app-wk) .gs-ins:hover button,:is(#app-gs,#app-wk) .gs-ins button:focus{opacity:1}
+:is(#app-gs,#app-wk) .gs-gap{margin:2px 0 2px 92px;font-size:11.5px;color:var(--ink-3);font-style:italic}
+:is(#app-gs,#app-wk) .gs-gap.bad{color:var(--bad-ink);font-style:normal;font-weight:600}
+:is(#app-gs,#app-wk) .gs-item{display:grid;grid-template-columns:22px 84px 1fr;gap:0 12px;background:var(--surface);border:1px solid var(--line);
   border-left:4px solid var(--accent);border-radius:6px;padding:12px 14px 12px 8px}
-#app-gs .gs-item.soft{border-left-color:var(--line-2);background:var(--sunk)}
-#app-gs .gs-item.over{border-color:var(--bad);border-left-color:var(--bad)}
-#app-gs .gs-item.dragging{opacity:.45}
-#app-gs .gs-item.drop-above{box-shadow:0 -3px 0 0 var(--accent)}
-#app-gs .gs-item.drop-below{box-shadow:0 3px 0 0 var(--accent)}
-#app-gs .gs-handle{cursor:grab;color:var(--ink-3);font-size:16px;line-height:1;padding-top:4px;user-select:none;text-align:center}
-#app-gs .gs-handle:active{cursor:grabbing}
-#app-gs .gs-time{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);padding-top:4px;line-height:1.3}
-#app-gs .gs-time small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-3)}
-#app-gs .gs-time .pin{display:inline-block;margin-top:4px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+:is(#app-gs,#app-wk) .gs-item.soft{border-left-color:var(--line-2);background:var(--sunk)}
+:is(#app-gs,#app-wk) .gs-item.over{border-color:var(--bad);border-left-color:var(--bad)}
+:is(#app-gs,#app-wk) .gs-item.dragging{opacity:.45}
+:is(#app-gs,#app-wk) .gs-item.drop-above{box-shadow:0 -3px 0 0 var(--accent)}
+:is(#app-gs,#app-wk) .gs-item.drop-below{box-shadow:0 3px 0 0 var(--accent)}
+:is(#app-gs,#app-wk) .gs-handle{cursor:grab;color:var(--ink-3);font-size:16px;line-height:1;padding-top:4px;user-select:none;text-align:center}
+:is(#app-gs,#app-wk) .gs-handle:active{cursor:grabbing}
+:is(#app-gs,#app-wk) .gs-time{font-family:var(--mono);font-weight:700;font-size:14px;color:var(--ink);padding-top:4px;line-height:1.3}
+:is(#app-gs,#app-wk) .gs-time small{display:block;font-weight:500;font-size:11.5px;color:var(--ink-3)}
+:is(#app-gs,#app-wk) .gs-time .pin{display:inline-block;margin-top:4px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
   color:var(--accent);border:1px solid var(--accent);border-radius:3px;padding:0 4px}
-#app-gs .gs-main{min-width:0;display:flex;flex-direction:column;gap:8px}
-#app-gs .gs-row1{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#app-gs .gs-row1 select{font-size:12px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-title{flex:1 1 260px;min-width:0;font-family:var(--display);font-size:15px;font-weight:700;padding:5px 8px;border:1px solid transparent;
+:is(#app-gs,#app-wk) .gs-main{min-width:0;display:flex;flex-direction:column;gap:8px}
+:is(#app-gs,#app-wk) .gs-row1{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+:is(#app-gs,#app-wk) .gs-row1 select{font-size:12px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-title{flex:1 1 260px;min-width:0;font-family:var(--display);font-size:15px;font-weight:700;padding:5px 8px;border:1px solid transparent;
   border-radius:3px;background:transparent;color:var(--ink)}
-#app-gs .gs-title:hover{border-color:var(--line)} #app-gs .gs-title:focus{border-color:var(--accent);outline:none;background:var(--surface)}
-#app-gs .gs-dur{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:3px;overflow:hidden}
-#app-gs .gs-dur button{border:0;background:var(--sunk);color:var(--ink-2);width:24px;height:26px;font-size:14px;font-weight:700;cursor:pointer}
-#app-gs .gs-dur button:hover{background:var(--accent-soft)}
-#app-gs .gs-dur input{width:40px;border:0;text-align:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--surface);color:var(--ink);padding:3px 0}
-#app-gs .gs-dur span{font-size:11px;color:var(--ink-3);padding:0 6px 0 2px;background:var(--surface);line-height:26px}
-#app-gs .gs-pin{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-2)}
-#app-gs .gs-pin input[type=time]{font-size:12px;padding:2px 4px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-tools{display:flex;gap:2px;margin-left:auto}
-#app-gs .gs-tools button{border:0;background:transparent;color:var(--ink-3);font-size:13px;width:26px;height:26px;border-radius:3px;cursor:pointer}
-#app-gs .gs-tools button:hover{background:var(--accent-soft);color:var(--ink)}
-#app-gs .gs-tools button.armed{background:var(--bad);color:#fff}
-#app-gs .gs-desc{width:100%;min-height:34px;font:inherit;font-size:13px;line-height:1.45;padding:6px 8px;border:1px solid var(--line);
+:is(#app-gs,#app-wk) .gs-title:hover{border-color:var(--line)} :is(#app-gs,#app-wk) .gs-title:focus{border-color:var(--accent);outline:none;background:var(--surface)}
+:is(#app-gs,#app-wk) .gs-dur{display:flex;align-items:center;border:1px solid var(--line-2);border-radius:3px;overflow:hidden}
+:is(#app-gs,#app-wk) .gs-dur button{border:0;background:var(--sunk);color:var(--ink-2);width:24px;height:26px;font-size:14px;font-weight:700;cursor:pointer}
+:is(#app-gs,#app-wk) .gs-dur button:hover{background:var(--accent-soft)}
+:is(#app-gs,#app-wk) .gs-dur input{width:40px;border:0;text-align:center;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--surface);color:var(--ink);padding:3px 0}
+:is(#app-gs,#app-wk) .gs-dur span{font-size:11px;color:var(--ink-3);padding:0 6px 0 2px;background:var(--surface);line-height:26px}
+:is(#app-gs,#app-wk) .gs-pin{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-2)}
+:is(#app-gs,#app-wk) .gs-pin input[type=time]{font-size:12px;padding:2px 4px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-tools{display:flex;gap:2px;margin-left:auto}
+:is(#app-gs,#app-wk) .gs-tools button{border:0;background:transparent;color:var(--ink-3);font-size:13px;width:26px;height:26px;border-radius:3px;cursor:pointer}
+:is(#app-gs,#app-wk) .gs-tools button:hover{background:var(--accent-soft);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-tools button.armed{background:var(--bad);color:#fff}
+:is(#app-gs,#app-wk) .gs-desc{width:100%;min-height:34px;font:inherit;font-size:13px;line-height:1.45;padding:6px 8px;border:1px solid var(--line);
   border-radius:3px;background:var(--surface);color:var(--ink-2);resize:vertical}
-#app-gs .gs-desc:focus{border-color:var(--accent);outline:none}
-#app-gs .gs-spon{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--ink-3)}
-#app-gs .gs-spon-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
-#app-gs .gs-spon select{font:inherit;font-size:12px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);max-width:260px}
-#app-gs .gs-spon.on select{border-color:var(--accent);color:var(--accent);font-weight:700}
-#app-gs .gs-sponsored{display:inline-block;margin-top:4px;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#fff;background:var(--accent);border-radius:2px;padding:1px 5px}
-#app-gs .gs-ppl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-#app-gs .gs-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:3px;padding:2px 4px 2px 4px;
+:is(#app-gs,#app-wk) .gs-desc:focus{border-color:var(--accent);outline:none}
+:is(#app-gs,#app-wk) .gs-spon{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--ink-3)}
+:is(#app-gs,#app-wk) .gs-spon-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+:is(#app-gs,#app-wk) .gs-spon select{font:inherit;font-size:12px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);max-width:260px}
+:is(#app-gs,#app-wk) .gs-spon.on select{border-color:var(--accent);color:var(--accent);font-weight:700}
+:is(#app-gs,#app-wk) .gs-sponsored{display:inline-block;margin-top:4px;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#fff;background:var(--accent);border-radius:2px;padding:1px 5px}
+:is(#app-gs,#app-wk) .gs-ppl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+:is(#app-gs,#app-wk) .gs-chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line-2);border-radius:3px;padding:2px 4px 2px 4px;
   background:var(--surface);font-size:12.5px}
-#app-gs .gs-chip .av{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;
+:is(#app-gs,#app-wk) .gs-chip .av{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
-#app-gs .gs-chip .av img{width:100%;height:100%;object-fit:cover}
-#app-gs .gs-chip .nm{font-weight:600;color:var(--ink);cursor:pointer}
-#app-gs .gs-chip .co{color:var(--ink-3);font-size:11.5px}
-#app-gs .gs-chip select{font-size:11px;border:0;background:transparent;color:var(--ink-2);padding:0}
-#app-gs .gs-chip .miss{color:var(--warn-ink);font-size:11px;font-weight:700;cursor:help}
-#app-gs .gs-chip .x{border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-size:14px;line-height:1;padding:0 4px}
-#app-gs .gs-chip .x:hover{color:var(--bad)}
-#app-gs .gs-addp{font-size:12px;font-weight:600;color:var(--accent);border:1px dashed var(--accent);background:transparent;border-radius:3px;padding:3px 10px;cursor:pointer}
-#app-gs .gs-find{position:relative;flex:1 1 260px;max-width:420px}
-#app-gs .gs-find input{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-hits{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:2px;background:var(--surface);border:1px solid var(--line-2);
+:is(#app-gs,#app-wk) .gs-chip .av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-chip .nm{font-weight:600;color:var(--ink);cursor:pointer}
+:is(#app-gs,#app-wk) .gs-chip .co{color:var(--ink-3);font-size:11.5px}
+:is(#app-gs,#app-wk) .gs-chip select{font-size:11px;border:0;background:transparent;color:var(--ink-2);padding:0}
+:is(#app-gs,#app-wk) .gs-chip .miss{color:var(--warn-ink);font-size:11px;font-weight:700;cursor:help}
+:is(#app-gs,#app-wk) .gs-chip .x{border:0;background:transparent;color:var(--ink-3);cursor:pointer;font-size:14px;line-height:1;padding:0 4px}
+:is(#app-gs,#app-wk) .gs-chip .x:hover{color:var(--bad)}
+:is(#app-gs,#app-wk) .gs-addp{font-size:12px;font-weight:600;color:var(--accent);border:1px dashed var(--accent);background:transparent;border-radius:3px;padding:3px 10px;cursor:pointer}
+:is(#app-gs,#app-wk) .gs-find{position:relative;flex:1 1 260px;max-width:420px}
+:is(#app-gs,#app-wk) .gs-find input{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-hits{position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:2px;background:var(--surface);border:1px solid var(--line-2);
   border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:280px;overflow:auto}
-#app-gs .gs-hits button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:7px 10px;font-size:12.5px;color:var(--ink);cursor:pointer}
-#app-gs .gs-hits button:hover,#app-gs .gs-hits button.on{background:var(--accent-soft)}
-#app-gs .gs-hits button small{color:var(--ink-3);margin-left:6px}
-#app-gs .gs-hits .new{border-top:1px solid var(--line);color:var(--accent);font-weight:600}
-#app-gs .gs-newp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;align-items:end;width:100%;
+:is(#app-gs,#app-wk) .gs-hits button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:7px 10px;font-size:12.5px;color:var(--ink);cursor:pointer}
+:is(#app-gs,#app-wk) .gs-hits button:hover,:is(#app-gs,#app-wk) .gs-hits button.on{background:var(--accent-soft)}
+:is(#app-gs,#app-wk) .gs-hits button small{color:var(--ink-3);margin-left:6px}
+:is(#app-gs,#app-wk) .gs-hits .new{border-top:1px solid var(--line);color:var(--accent);font-weight:600}
+:is(#app-gs,#app-wk) .gs-newp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;gap:6px;align-items:end;width:100%;
   background:var(--sunk);border:1px solid var(--line);border-radius:4px;padding:8px}
-#app-gs .gs-newp label{display:flex;flex-direction:column;gap:2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
-#app-gs .gs-newp input{font-size:12.5px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
-#app-gs .gs-saved{font-size:11.5px;color:var(--ink-3)}
-#app-gs .gs-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
-#app-gs .gs-side{position:sticky;top:calc(var(--hq-h,64px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:6px;
+:is(#app-gs,#app-wk) .gs-newp label{display:flex;flex-direction:column;gap:2px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+:is(#app-gs,#app-wk) .gs-newp input{font-size:12.5px;padding:4px 6px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+:is(#app-gs,#app-wk) .gs-saved{font-size:11.5px;color:var(--ink-3)}
+:is(#app-gs,#app-wk) .gs-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
+:is(#app-gs,#app-wk) .gs-side{position:sticky;top:calc(var(--hq-h,64px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:6px;
   padding:12px;max-height:calc(100vh - var(--hq-h,64px) - 32px);display:flex;flex-direction:column;gap:8px}
-#app-gs .gs-side h3{font-size:14px;display:flex;align-items:baseline;gap:6px}
-#app-gs .gs-side h3 small{font-family:var(--ui);font-size:11px;font-weight:500;color:var(--ink-3)}
-#app-gs .gs-side .hint{font-size:11.5px;color:var(--ink-3);line-height:1.4}
-#app-gs .gs-side input[type=search]{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
-#app-gs .gs-seg{display:flex;gap:4px;flex-wrap:wrap}
-#app-gs .gs-seg button{font-size:11px;font-weight:600;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);border-radius:3px;padding:2px 9px;cursor:pointer}
-#app-gs .gs-seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
-#app-gs .gs-plist{overflow:auto;display:flex;flex-direction:column;gap:3px;min-height:60px}
-#app-gs .gs-pr{display:flex;align-items:center;gap:8px;padding:5px 6px;border:1px solid transparent;border-radius:4px;cursor:grab;user-select:none}
-#app-gs .gs-pr:hover{background:var(--accent-soft);border-color:var(--line)}
-#app-gs .gs-pr:active{cursor:grabbing}
-#app-gs .gs-pr .av{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10.5px;font-weight:700;
+:is(#app-gs,#app-wk) .gs-side h3{font-size:14px;display:flex;align-items:baseline;gap:6px}
+:is(#app-gs,#app-wk) .gs-side h3 small{font-family:var(--ui);font-size:11px;font-weight:500;color:var(--ink-3)}
+:is(#app-gs,#app-wk) .gs-side .hint{font-size:11.5px;color:var(--ink-3);line-height:1.4}
+:is(#app-gs,#app-wk) .gs-side input[type=search]{width:100%;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-gs,#app-wk) .gs-seg{display:flex;gap:4px;flex-wrap:wrap}
+:is(#app-gs,#app-wk) .gs-seg button{font-size:11px;font-weight:600;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);border-radius:3px;padding:2px 9px;cursor:pointer}
+:is(#app-gs,#app-wk) .gs-seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+:is(#app-gs,#app-wk) .gs-plist{overflow:auto;display:flex;flex-direction:column;gap:3px;min-height:60px}
+:is(#app-gs,#app-wk) .gs-pr{display:flex;align-items:center;gap:8px;padding:5px 6px;border:1px solid transparent;border-radius:4px;cursor:grab;user-select:none}
+:is(#app-gs,#app-wk) .gs-pr:hover{background:var(--accent-soft);border-color:var(--line)}
+:is(#app-gs,#app-wk) .gs-pr:active{cursor:grabbing}
+:is(#app-gs,#app-wk) .gs-pr .av{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10.5px;font-weight:700;
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
-#app-gs .gs-pr .av img{width:100%;height:100%;object-fit:cover}
-#app-gs .gs-pr .tx{min-width:0;flex:1}
-#app-gs .gs-pr .tx b{display:block;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app-gs .gs-pr .tx span{display:block;font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app-gs .gs-pr .n{font-size:10.5px;font-weight:700;color:var(--ink-3);border:1px solid var(--line-2);border-radius:3px;padding:0 6px;white-space:nowrap}
-#app-gs .gs-pr .n.on{color:var(--good);border-color:var(--good)}
-#app-gs .gs-lend{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#7a4d00;background:#ffe7a8;
+:is(#app-gs,#app-wk) .gs-pr .av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-pr .tx{min-width:0;flex:1}
+:is(#app-gs,#app-wk) .gs-pr .tx b{display:block;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(#app-gs,#app-wk) .gs-pr .tx span{display:block;font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(#app-gs,#app-wk) .gs-pr .n{font-size:10.5px;font-weight:700;color:var(--ink-3);border:1px solid var(--line-2);border-radius:3px;padding:0 6px;white-space:nowrap}
+:is(#app-gs,#app-wk) .gs-pr .n.on{color:var(--good);border-color:var(--good)}
+:is(#app-gs,#app-wk) .gs-lend{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#7a4d00;background:#ffe7a8;
   border:1px solid #e0b040;border-radius:3px;padding:0 4px;white-space:nowrap;cursor:pointer}
-:root[data-theme="dark"] #app-gs .gs-lend{color:#ffd77a;background:#3d3010;border-color:#8a6a1c}
-#app-gs .gs-chip.lender{border-color:#e0b040;background:#fff7e0}
-:root[data-theme="dark"] #app-gs .gs-chip.lender{background:#2e2610;border-color:#8a6a1c}
-#app-gs .gs-chip .lt{border:0;background:transparent;cursor:pointer;font-size:10px;font-weight:800;color:var(--ink-3);padding:0 3px;border-radius:3px}
-#app-gs .gs-chip .lt:hover{background:var(--accent-soft)}
-#app-gs .gs-item.has-lender{border-left-color:#e0b040}
-#app-gs .gs-item.droppable{outline:2px dashed var(--accent);outline-offset:2px}
-@media (max-width:1100px){ #app-gs .gs-layout{grid-template-columns:1fr} #app-gs .gs-side{position:static;max-height:none} #app-gs .gs-plist{max-height:300px} }
+:root[data-theme="dark"] :is(#app-gs,#app-wk) .gs-lend{color:#ffd77a;background:#3d3010;border-color:#8a6a1c}
+:is(#app-gs,#app-wk) .gs-chip.lender{border-color:#e0b040;background:#fff7e0}
+:root[data-theme="dark"] :is(#app-gs,#app-wk) .gs-chip.lender{background:#2e2610;border-color:#8a6a1c}
+:is(#app-gs,#app-wk) .gs-chip .lt{border:0;background:transparent;cursor:pointer;font-size:10px;font-weight:800;color:var(--ink-3);padding:0 3px;border-radius:3px}
+:is(#app-gs,#app-wk) .gs-chip .lt:hover{background:var(--accent-soft)}
+:is(#app-gs,#app-wk) .gs-item.has-lender{border-left-color:#e0b040}
+:is(#app-gs,#app-wk) .gs-item.droppable{outline:2px dashed var(--accent);outline-offset:2px}
+@media (max-width:1100px){ :is(#app-gs,#app-wk) .gs-layout{grid-template-columns:1fr} :is(#app-gs,#app-wk) .gs-side{position:static;max-height:none} :is(#app-gs,#app-wk) .gs-plist{max-height:300px} }
 @media (max-width:700px){
-  #app-gs .gs-item{grid-template-columns:18px 1fr}
-  #app-gs .gs-time{grid-column:2}
-  #app-gs .gs-main{grid-column:1 / -1;margin-top:6px}
-  #app-gs .gs-newp{grid-template-columns:1fr 1fr}
+  :is(#app-gs,#app-wk) .gs-item{grid-template-columns:18px 1fr}
+  :is(#app-gs,#app-wk) .gs-time{grid-column:2}
+  :is(#app-gs,#app-wk) .gs-main{grid-column:1 / -1;margin-top:6px}
+  :is(#app-gs,#app-wk) .gs-newp{grid-template-columns:1fr 1fr}
 }
 
 /* ── Jonna, 2026-10-31: the plus-up — every page leads with the same navy band as the Run of
    Show and Registration (and MISMO Media): figures in translucent tiles, white numbers ── */
-html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body #app-gs .gs-strip{
+html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body :is(#app-gs,#app-wk) .gs-strip{
   background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:14px;gap:10px;align-items:stretch!important;
   box-shadow:0 2px 10px rgba(6,32,47,.12);flex-wrap:wrap}
-:root[data-theme="dark"] body #app-grid .meters,:root[data-theme="dark"] body #app-specs .meters,:root[data-theme="dark"] body #app-people .meters,:root[data-theme="dark"] body #app-trunk .meters,:root[data-theme="dark"] body #app-resume .rz-status,:root[data-theme="dark"] body #app-gs .gs-strip{background:#14304A;border-color:#2E4F70}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #app-grid .meters,:root:not([data-theme="light"]) body #app-specs .meters,:root:not([data-theme="light"]) body #app-people .meters,:root:not([data-theme="light"]) body #app-trunk .meters,:root:not([data-theme="light"]) body #app-resume .rz-status,:root:not([data-theme="light"]) body #app-gs .gs-strip{background:#14304A;border-color:#2E4F70}}
-html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body #app-gs .gs-strip .gs-tile{
+:root[data-theme="dark"] body #app-grid .meters,:root[data-theme="dark"] body #app-specs .meters,:root[data-theme="dark"] body #app-people .meters,:root[data-theme="dark"] body #app-trunk .meters,:root[data-theme="dark"] body #app-resume .rz-status,:root[data-theme="dark"] body :is(#app-gs,#app-wk) .gs-strip{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #app-grid .meters,:root:not([data-theme="light"]) body #app-specs .meters,:root:not([data-theme="light"]) body #app-people .meters,:root:not([data-theme="light"]) body #app-trunk .meters,:root:not([data-theme="light"]) body #app-resume .rz-status,:root:not([data-theme="light"]) body :is(#app-gs,#app-wk) .gs-strip{background:#14304A;border-color:#2E4F70}}
+html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile{
   background:rgba(255,255,255,.07)!important;border:1px solid rgba(255,255,255,.16)!important;border-radius:8px!important;
   padding:10px 14px!important;color:#fff;flex:1 1 150px;min-width:0;box-shadow:none;transition:background .15s,border-color .15s,transform .15s}
-html body #app-grid .meters .meter:hover,html body #app-specs .meters .meter:hover,html body #app-people .meters .meter:hover,html body #app-trunk .meters .meter:hover,html body #app-resume .rz-status .rz-stat:hover,html body #app-gs .gs-strip .gs-tile:hover{
+html body #app-grid .meters .meter:hover,html body #app-specs .meters .meter:hover,html body #app-people .meters .meter:hover,html body #app-trunk .meters .meter:hover,html body #app-resume .rz-status .rz-stat:hover,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile:hover{
   background:rgba(255,255,255,.12)!important;border-color:#7fc6f0!important}
-html body #app-grid .meters .meter .n,html body #app-specs .meters .meter .n,html body #app-people .meters .meter .n,html body #app-trunk .meters .meter .n,html body #app-resume .rz-status .rz-stat .n,html body #app-gs .gs-strip .gs-tile b{
+html body #app-grid .meters .meter .n,html body #app-specs .meters .meter .n,html body #app-people .meters .meter .n,html body #app-trunk .meters .meter .n,html body #app-resume .rz-status .rz-stat .n,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile b{
   color:#fff!important;font-size:26px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}
-html body #app-grid .meters .meter .k,html body #app-specs .meters .meter .k,html body #app-people .meters .meter .k,html body #app-trunk .meters .meter .k,html body #app-resume .rz-status .rz-stat .k,html body #app-gs .gs-strip .gs-tile span{
+html body #app-grid .meters .meter .k,html body #app-specs .meters .meter .k,html body #app-people .meters .meter .k,html body #app-trunk .meters .meter .k,html body #app-resume .rz-status .rz-stat .k,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile span{
   color:#9fd2f2!important;font-weight:700}
-html body #app-grid .meters .meter .d,html body #app-specs .meters .meter .d,html body #app-people .meters .meter .d,html body #app-trunk .meters .meter .d,html body #app-resume .rz-status .rz-stat .d,html body #app-gs .gs-strip .gs-tile small{color:rgba(255,255,255,.74)!important}
+html body #app-grid .meters .meter .d,html body #app-specs .meters .meter .d,html body #app-people .meters .meter .d,html body #app-trunk .meters .meter .d,html body #app-resume .rz-status .rz-stat .d,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile small{color:rgba(255,255,255,.74)!important}
 html body #app-grid .meters .meter *,html body #app-specs .meters .meter *,html body #app-people .meters .meter *,html body #app-trunk .meters .meter *,html body #app-resume .rz-status .rz-stat *{border-color:rgba(255,255,255,.2)}
-html body #app-grid .meters .meter.is-good .n,html body #app-specs .meters .meter.is-good .n,html body #app-people .meters .meter.is-good .n,html body #app-trunk .meters .meter.is-good .n,html body #app-gs .gs-strip .gs-tile.ok b{color:#6fe0b5!important}
-html body #app-grid .meters .meter.is-warn .n,html body #app-specs .meters .meter.is-warn .n,html body #app-people .meters .meter.is-warn .n,html body #app-trunk .meters .meter.is-warn .n,html body #app-resume .rz-status .rz-stat.warn .n,html body #app-gs .gs-strip .gs-tile.warn b{color:#f3c87a!important}
-html body #app-grid .meters .meter.is-bad .n,html body #app-specs .meters .meter.is-bad .n,html body #app-people .meters .meter.is-bad .n,html body #app-trunk .meters .meter.is-bad .n,html body #app-gs .gs-strip .gs-tile.bad b{color:#ffa69c!important}
-html body #app-grid .meters .meter.is-warn,html body #app-specs .meters .meter.is-warn,html body #app-people .meters .meter.is-warn,html body #app-trunk .meters .meter.is-warn,html body #app-resume .rz-status .rz-stat.warn,html body #app-gs .gs-strip .gs-tile.warn{border-left:3px solid #e0a83c!important}
-html body #app-grid .meters .meter.is-bad,html body #app-specs .meters .meter.is-bad,html body #app-people .meters .meter.is-bad,html body #app-trunk .meters .meter.is-bad,html body #app-gs .gs-strip .gs-tile.bad{border-left:3px solid #ff8a7a!important}
-html body #app-gs .gs-strip .gs-tile input,html body #app-gs .gs-strip .gs-tile select{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;color-scheme:dark}
-html body #app-gs .gs-strip .gs-tile svg{color:#9fd2f2;stroke:currentColor}
+html body #app-grid .meters .meter.is-good .n,html body #app-specs .meters .meter.is-good .n,html body #app-people .meters .meter.is-good .n,html body #app-trunk .meters .meter.is-good .n,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile.ok b{color:#6fe0b5!important}
+html body #app-grid .meters .meter.is-warn .n,html body #app-specs .meters .meter.is-warn .n,html body #app-people .meters .meter.is-warn .n,html body #app-trunk .meters .meter.is-warn .n,html body #app-resume .rz-status .rz-stat.warn .n,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile.warn b{color:#f3c87a!important}
+html body #app-grid .meters .meter.is-bad .n,html body #app-specs .meters .meter.is-bad .n,html body #app-people .meters .meter.is-bad .n,html body #app-trunk .meters .meter.is-bad .n,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile.bad b{color:#ffa69c!important}
+html body #app-grid .meters .meter.is-warn,html body #app-specs .meters .meter.is-warn,html body #app-people .meters .meter.is-warn,html body #app-trunk .meters .meter.is-warn,html body #app-resume .rz-status .rz-stat.warn,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile.warn{border-left:3px solid #e0a83c!important}
+html body #app-grid .meters .meter.is-bad,html body #app-specs .meters .meter.is-bad,html body #app-people .meters .meter.is-bad,html body #app-trunk .meters .meter.is-bad,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile.bad{border-left:3px solid #ff8a7a!important}
+html body :is(#app-gs,#app-wk) .gs-strip .gs-tile input,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile select{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;color-scheme:dark}
+html body :is(#app-gs,#app-wk) .gs-strip .gs-tile svg{color:#9fd2f2;stroke:currentColor}
 html body #app-grid .meters .meter.tapme{cursor:pointer}
 
 /* General Sessions: the day as one ribbon */
-html body #app-gs .gs-day{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:14px 16px 12px;margin:-4px 0 16px;color:#fff}
-:root[data-theme="dark"] body #app-gs .gs-day{background:#14304A;border-color:#2E4F70}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body #app-gs .gs-day{background:#14304A;border-color:#2E4F70}}
-#app-gs .gs-dayh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
-#app-gs .gs-dayh b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
-#app-gs .gs-dayh small{font-size:12px;color:rgba(255,255,255,.62)}
-#app-gs .gs-daybar{position:relative;height:46px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
-#app-gs .gs-dseg{all:unset;box-sizing:border-box;position:absolute;top:5px;bottom:5px;border-radius:5px;background:linear-gradient(180deg,#5aaee0,#3b8fc6);
+html body :is(#app-gs,#app-wk) .gs-day{background:#0f314c;border:1px solid #0f314c;border-radius:12px;padding:14px 16px 12px;margin:-4px 0 16px;color:#fff}
+:root[data-theme="dark"] body :is(#app-gs,#app-wk) .gs-day{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body :is(#app-gs,#app-wk) .gs-day{background:#14304A;border-color:#2E4F70}}
+:is(#app-gs,#app-wk) .gs-dayh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+:is(#app-gs,#app-wk) .gs-dayh b{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
+:is(#app-gs,#app-wk) .gs-dayh small{font-size:12px;color:rgba(255,255,255,.62)}
+:is(#app-gs,#app-wk) .gs-daybar{position:relative;height:46px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12)}
+:is(#app-gs,#app-wk) .gs-dseg{all:unset;box-sizing:border-box;position:absolute;top:5px;bottom:5px;border-radius:5px;background:linear-gradient(180deg,#5aaee0,#3b8fc6);
   border:1px solid rgba(255,255,255,.35);cursor:pointer;overflow:hidden;padding:0 6px;display:flex;align-items:center;transition:transform .15s,filter .15s;margin-left:1px}
-#app-gs .gs-dseg:hover,#app-gs .gs-dseg:focus-visible{transform:translateY(-2px);filter:brightness(1.12);z-index:2}
-#app-gs .gs-dseg:focus-visible{outline:2px solid #fff;outline-offset:1px}
-#app-gs .gs-dseg span{font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app-gs .gs-dseg.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 6px,rgba(255,255,255,.06) 6px 12px);border-color:rgba(255,255,255,.25)}
-#app-gs .gs-dseg.spon{box-shadow:inset 0 -4px 0 #e0a83c}
-#app-gs .gs-dseg.over{background:linear-gradient(180deg,#ff8a7a,#e0614f)}
-#app-gs .gs-dayt{position:relative;height:16px;margin-top:5px}
-#app-gs .gs-dayt span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:rgba(255,255,255,.55);font-weight:700;white-space:nowrap}
-#app-gs .gs-dayt span:first-child{transform:none}
-#app-gs .gs-dayk{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:11.5px;color:rgba(255,255,255,.72)}
-#app-gs .gs-dayk span{display:inline-flex;align-items:center;gap:6px}
-#app-gs .gs-dayk i{width:14px;height:9px;border-radius:2px;background:#4a9fd4;display:inline-block}
-#app-gs .gs-dayk i.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.4) 0 3px,rgba(255,255,255,.12) 3px 6px)}
-#app-gs .gs-dayk i.spon{background:#4a9fd4;box-shadow:inset 0 -3px 0 #e0a83c}
-#app-gs .gs-dayk i.over{background:#ff8a7a}
-#app-gs .gs-flash{box-shadow:0 0 0 3px #74bfeb!important;transition:box-shadow .3s}
+:is(#app-gs,#app-wk) .gs-dseg:hover,:is(#app-gs,#app-wk) .gs-dseg:focus-visible{transform:translateY(-2px);filter:brightness(1.12);z-index:2}
+:is(#app-gs,#app-wk) .gs-dseg:focus-visible{outline:2px solid #fff;outline-offset:1px}
+:is(#app-gs,#app-wk) .gs-dseg span{font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(#app-gs,#app-wk) .gs-dseg.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 6px,rgba(255,255,255,.06) 6px 12px);border-color:rgba(255,255,255,.25)}
+:is(#app-gs,#app-wk) .gs-dseg.spon{box-shadow:inset 0 -4px 0 #e0a83c}
+:is(#app-gs,#app-wk) .gs-dseg.over{background:linear-gradient(180deg,#ff8a7a,#e0614f)}
+:is(#app-gs,#app-wk) .gs-dayt{position:relative;height:16px;margin-top:5px}
+:is(#app-gs,#app-wk) .gs-dayt span{position:absolute;transform:translateX(-50%);font-size:10.5px;color:rgba(255,255,255,.55);font-weight:700;white-space:nowrap}
+:is(#app-gs,#app-wk) .gs-dayt span:first-child{transform:none}
+:is(#app-gs,#app-wk) .gs-dayk{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:11.5px;color:rgba(255,255,255,.72)}
+:is(#app-gs,#app-wk) .gs-dayk span{display:inline-flex;align-items:center;gap:6px}
+:is(#app-gs,#app-wk) .gs-dayk i{width:14px;height:9px;border-radius:2px;background:#4a9fd4;display:inline-block}
+:is(#app-gs,#app-wk) .gs-dayk i.soft{background:repeating-linear-gradient(135deg,rgba(255,255,255,.4) 0 3px,rgba(255,255,255,.12) 3px 6px)}
+:is(#app-gs,#app-wk) .gs-dayk i.spon{background:#4a9fd4;box-shadow:inset 0 -3px 0 #e0a83c}
+:is(#app-gs,#app-wk) .gs-dayk i.over{background:#ff8a7a}
+:is(#app-gs,#app-wk) .gs-flash{box-shadow:0 0 0 3px #74bfeb!important;transition:box-shadow .3s}
 
 /* the bands run the full width, one row while there is room */
-html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body #app-gs .gs-strip{flex:1 1 100%;width:100%;box-sizing:border-box;flex-wrap:nowrap}
-html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body #app-gs .gs-strip .gs-tile{flex:1 1 0}
-@media(max-width:1000px){html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body #app-gs .gs-strip{flex-wrap:wrap}
-  html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body #app-gs .gs-strip .gs-tile{flex:1 1 150px}}
-html body #app-gs .gs-strip .gs-tile input{width:100%!important;max-width:150px;box-sizing:border-box}
+html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body :is(#app-gs,#app-wk) .gs-strip{flex:1 1 100%;width:100%;box-sizing:border-box;flex-wrap:nowrap}
+html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile{flex:1 1 0}
+@media(max-width:1000px){html body #app-grid .meters,html body #app-specs .meters,html body #app-people .meters,html body #app-trunk .meters,html body #app-resume .rz-status,html body :is(#app-gs,#app-wk) .gs-strip{flex-wrap:wrap}
+  html body #app-grid .meters .meter,html body #app-specs .meters .meter,html body #app-people .meters .meter,html body #app-trunk .meters .meter,html body #app-resume .rz-status .rz-stat,html body :is(#app-gs,#app-wk) .gs-strip .gs-tile{flex:1 1 150px}}
+html body :is(#app-gs,#app-wk) .gs-strip .gs-tile input{width:100%!important;max-width:150px;box-sizing:border-box}
 html body #app-grid .meters .meter select,html body #app-specs .meters .meter select,html body #app-people .meters .meter select,html body #app-trunk .meters .meter select{background:rgba(255,255,255,.1)!important;color:#fff!important;border:1px solid rgba(255,255,255,.28)!important;border-radius:4px;color-scheme:dark}
 html body #app-grid .meters .meter select option,html body #app-specs .meters .meter select option,html body #app-people .meters .meter select option,html body #app-trunk .meters .meter select option{color:#0d314c;background:#fff}
-#app-gs .gs-dayt span:last-child{transform:translateX(-100%)}
+:is(#app-gs,#app-wk) .gs-dayt span:last-child{transform:translateX(-100%)}
 
 
 /* ── the plus-up for the cards everywhere and the Schedule grid (Jonna, 2026-10-31) ── */
@@ -27750,26 +28133,26 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 #app-people .pp-sbar i{display:block;height:100%;background:linear-gradient(90deg,#74bfeb,#4fc79b);border-radius:3px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
 #app-people .pp-stepc{font-size:11px;color:rgba(255,255,255,.65);margin-top:4px}
 
-#app-gs .gs-luh{margin-top:16px}
-#app-gs .gs-lineup{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
-#app-gs .gs-lu{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 200px;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;
+:is(#app-gs,#app-wk) .gs-luh{margin-top:16px}
+:is(#app-gs,#app-wk) .gs-lineup{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}
+:is(#app-gs,#app-wk) .gs-lu{all:unset;box-sizing:border-box;cursor:pointer;flex:0 0 200px;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;
   background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-top:3px solid #74bfeb;border-radius:8px;padding:10px 12px;
   transition:background .15s,transform .15s;animation:gsLu .45s ease both}
-#app-gs .gs-lu:hover,#app-gs .gs-lu:focus-visible{background:rgba(255,255,255,.13);transform:translateY(-2px)}
-#app-gs .gs-lu:focus-visible{outline:2px solid #fff}
-#app-gs .gs-lu.spon{border-top-color:#e0a83c} #app-gs .gs-lu.over{border-top-color:#ff8a7a}
-#app-gs .gs-lut{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#9fd2f2}
-#app-gs .gs-lu b{font-size:14px;line-height:1.25;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px}
-#app-gs .gs-luf{display:flex;align-items:center}
-#app-gs .gs-av{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#2a5a80;color:#fff;font-size:11px;font-weight:700;border:2px solid #0f314c;margin-left:-6px;overflow:hidden}
-#app-gs .gs-av:first-child{margin-left:0}
-#app-gs .gs-av img{width:100%;height:100%;object-fit:cover}
-#app-gs .gs-av.more{background:rgba(255,255,255,.2)}
-#app-gs .gs-lunone{font-size:11.5px;color:rgba(255,255,255,.5)}
-#app-gs .gs-lus{font-size:11.5px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#app-gs .gs-lusp{font-size:10.5px;font-weight:700;color:#f3c87a}
+:is(#app-gs,#app-wk) .gs-lu:hover,:is(#app-gs,#app-wk) .gs-lu:focus-visible{background:rgba(255,255,255,.13);transform:translateY(-2px)}
+:is(#app-gs,#app-wk) .gs-lu:focus-visible{outline:2px solid #fff}
+:is(#app-gs,#app-wk) .gs-lu.spon{border-top-color:#e0a83c} :is(#app-gs,#app-wk) .gs-lu.over{border-top-color:#ff8a7a}
+:is(#app-gs,#app-wk) .gs-lut{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#9fd2f2}
+:is(#app-gs,#app-wk) .gs-lu b{font-size:14px;line-height:1.25;color:#fff;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:35px}
+:is(#app-gs,#app-wk) .gs-luf{display:flex;align-items:center}
+:is(#app-gs,#app-wk) .gs-av{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#2a5a80;color:#fff;font-size:11px;font-weight:700;border:2px solid #0f314c;margin-left:-6px;overflow:hidden}
+:is(#app-gs,#app-wk) .gs-av:first-child{margin-left:0}
+:is(#app-gs,#app-wk) .gs-av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-av.more{background:rgba(255,255,255,.2)}
+:is(#app-gs,#app-wk) .gs-lunone{font-size:11.5px;color:rgba(255,255,255,.5)}
+:is(#app-gs,#app-wk) .gs-lus{font-size:11.5px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:is(#app-gs,#app-wk) .gs-lusp{font-size:10.5px;font-weight:700;color:#f3c87a}
 @keyframes gsLu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){#app-gs .gs-lu{animation:none}}
+@media (prefers-reduced-motion:reduce){:is(#app-gs,#app-wk) .gs-lu{animation:none}}
 
 /* the grid comes alive: crosshair, find */
 #app-grid .board .rm.xh{background:linear-gradient(90deg,rgba(116,191,235,.35),transparent)!important;box-shadow:inset 3px 0 0 #3987e5}
@@ -27963,12 +28346,12 @@ html body #app-resume .rz-docbody > .rz-waiting.rzc-alert{grid-column:1/-1;order
    event app's speakers file ties them to it. Each segment is its own session in the
    event app's sessions file, in place of the one all-day General Sessions block.
    ============================================================ */
-(function(){
+function SessionDay(C){
 'use strict';
-const HOST=document.getElementById('gs-root'); if(!HOST) return;
+const HOST=document.getElementById(C.p+'-root'); if(!HOST) return;
 const $=id=>document.getElementById(id);
 const el=(t,c,x)=>{const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n;};
-const KINDS=['Welcome','Keynote','Presentation','Panel','Fireside Chat','Case Study','Workgroup Update','Q&A','Break','Lunch','Networking','Closing','Other'];
+const KINDS=C.kinds||['Welcome','Keynote','Presentation','Panel','Fireside Chat','Case Study','Workgroup Update','Q&A','Break','Lunch','Networking','Closing','Other'];
 const SOFT=new Set(['Break','Lunch','Networking']);
 const ROLES=['Speaker','Moderator','Panelist','Host'];
 const uid=()=>'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -27992,7 +28375,8 @@ const normCo=x=>String(x||'').toLowerCase().replace(/&/g,' and ').replace(/\b(in
 let LENDERS=null, lenderLoading=false;
 async function loadLenders(){
   if(LENDERS||lenderLoading) return; lenderLoading=true;
-  try{
+  /* one read of Member 360 serves the General Sessions and the Workshop both */
+  LENDERS = await (window.__hqLendersP = window.__hqLendersP || (async()=>{ let LENDERS=null; try{
     const tok=window.ResourcesSession&&window.ResourcesSession.token(); if(!tok) throw 0;
     const get=n=>fetch(RELAY+'/member-360/data/'+encodeURIComponent(n),{cache:'no-store',headers:{Authorization:'Bearer '+tok}}).then(r=>r.ok?r.json():null);
     const head=await get('orgsdata'); const c=head&&head.data&&head.data.chunked; if(!c||!c.n) throw 0;
@@ -28003,6 +28387,7 @@ async function loadLenders(){
     orgs.forEach(o=>{ if(!o) return; const ty=String(o.type||''); if(ty==='Lender' || (/lender/i.test(String(o.sector||'')) && !/non-?lender/i.test(ty))){ const k=normCo(o.name); if(k) set.add(k); } });
     LENDERS=set;
   }catch(e){ LENDERS=new Set(); }
+  return LENDERS; })());
   lenderLoading=false; render();
 }
 function isLender(p){
@@ -28022,13 +28407,13 @@ function addPersonTo(it,pid){
 function venue(){ try{ return (typeof V==='function') ? V() : null; }catch(e){ return null; } }
 function gsFn(){
   try{ const f=window.__resumeFunctions && window.__resumeFunctions(); if(!f) return null;
-    return (f.functions||[]).find(x=>x.sid==='general-sessions') || null; }catch(e){ return null; }
+    return (f.functions||[]).find(x=>x.sid===C.sid) || null; }catch(e){ return null; }
 }
 function tuesdayLabel(){
-  const v=venue(); if(!v) return 'Tuesday';
+  const v=venue(); if(!v) return C.dayName;
   let first=''; try{ first=(window.ResumeModel&&window.ResumeModel.firstDayFrom)?window.ResumeModel.firstDayFrom(v.dates||''):''; }catch(e){}
-  if(!first) return 'Tuesday';
-  const d=new Date(first+'T00:00:00'); d.setDate(d.getDate()+1);
+  if(!first) return C.dayName;
+  const d=new Date(first+'T00:00:00'); d.setDate(d.getDate()+C.dayOff);
   return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 }
 function people(){ try{ return window.__people ? window.__people.all() : []; }catch(e){ return []; } }
@@ -28061,13 +28446,13 @@ let gsRead=false;
 async function save(){
   if(!db||!doc) return;
   if(!gsRead){ paintSaved('Not saved \u2014 still loading, try again in a moment'); return; }   /* Jonna, 2026-10-31 */
-  try{ await db.doc('schedule/gs-'+vid).set(JSON.parse(JSON.stringify(doc))); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
+  try{ await db.doc('schedule/'+C.p+'-'+vid).set(JSON.parse(JSON.stringify(doc))); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
   catch(e){ paintSaved('Not saved — '+((e&&e.message)||'try again')); }
 }
-function paintSaved(t){ const n=$('gs-saved'); if(n) n.textContent=t; }
+function paintSaved(t){ const n=$(C.p+'-saved'); if(n) n.textContent=t; }
 
 /* ---------- linking speakers to the People tab ---------- */
-const segKey=it=>'gs-'+it.id;
+const segKey=it=>C.p+'-'+it.id;
 function linkPerson(pid,it,on){
   try{ if(window.__people && window.__people.link) window.__people.link(pid, segKey(it), on); }catch(e){}
 }
@@ -28076,7 +28461,7 @@ function onOtherItem(pid,it){ return doc.items.some(x=>x!==it && (x.people||[]).
    They Are In") puts them on that segment here too. It used to go one way only, so a
    speaker tagged from People never showed on the segment. */
 function personRole(it){ return it.kind==='Panel'?'Panelist':'Speaker'; }
-window.__gsPerson=function(pid,key,on){
+window['__'+C.p+'Person']=function(pid,key,on){
   if(!doc) return false;
   const it=doc.items.find(x=>segKey(x)===key); if(!it) return false;
   const has=(it.people||[]).some(r=>r.id===pid);
@@ -28107,17 +28492,17 @@ function sponsorNamesGS(){
 /* ---------- drawing ---------- */
 function render(){
   const v=venue();
-  $('gs-title').textContent=(v&&v.name)||'Summit';
+  $(C.p+'-title').textContent=(v&&v.name)||'Summit';
   const fn=gsFn();
-  $('gs-sub').textContent=[tuesdayLabel(), fn? fn.room : 'Room not set on the Schedule', (v&&v.city)||''].filter(Boolean).join(' · ');
-  const acts=$('gs-acts'); acts.textContent='';
+  $(C.p+'-sub').textContent=[tuesdayLabel(), fn? fn.room : 'Room not set on the Schedule', (v&&v.city)||''].filter(Boolean).join(' · ');
+  const acts=$(C.p+'-acts'); acts.textContent='';
   HOST.textContent='';
   if(!doc){
     const e=el('div','gs-empty');
-    e.appendChild(el('h3',null,'Nothing on the General Sessions Agenda Yet'));
-    e.appendChild(el('div',null,'Start from a typical Tuesday and change it, or start with a blank page.'));
+    e.appendChild(el('h3',null,'Nothing on the '+C.label+' Agenda Yet'));
+    e.appendChild(el('div',null,C.startNote));
     const a=el('div','gs-acts');
-    const t=el('button','btn','Start From a Typical Tuesday'); t.type='button'; t.addEventListener('click',()=>{ doc=template(); touch(); render(); });
+    const t=el('button','btn',C.startBtn); t.type='button'; t.addEventListener('click',()=>{ doc=template(); touch(); render(); });
     const b=el('button','btn ghost','Start Blank'); b.type='button'; b.addEventListener('click',()=>{ doc=blank(); doc.items.push(newItem('Welcome')); touch(); render(); });
     a.appendChild(t); a.appendChild(b); e.appendChild(a); HOST.appendChild(e);
     return;
@@ -28131,7 +28516,7 @@ function render(){
     if(!soArmed){ soArmed=true; so.classList.add('armed'); so.textContent='Click Again to Clear Everything'; setTimeout(()=>{ soArmed=false; so.classList.remove('armed'); so.textContent='Start Over'; },3000); return; }
     doc.items.forEach(it=>(it.people||[]).forEach(p=>linkPerson(p.id,it,false)));
     clearTimeout(saveT); dirty=false; doc=null;
-    try{ await db.doc('schedule/gs-'+vid).delete(); }catch(e){}
+    try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(e){}
     render();
   });
   acts.appendChild(add); acts.appendChild(pr); acts.appendChild(so);
@@ -28139,13 +28524,13 @@ function render(){
   /* the strip: when it starts and ends, how it lands against the room's hours */
   const tl=timeline();
   const end=tl.length? tl[tl.length-1].e : toM(doc.start);
-  const target=toM(doc.end) || (fn? fn.end : 16*60+30);
+  const target=toM(doc.end) || (fn? fn.end : toM(C.end));
   const strip=el('div','gs-strip');
   const tStart=el('div','gs-tile'); const si=document.createElement('input'); si.type='time'; si.value=doc.start||'09:00';
   si.addEventListener('change',()=>{ doc.start=si.value||'09:00'; touch(); render(); });
   tStart.appendChild(si); tStart.appendChild(el('span',null,'Starts')); strip.appendChild(tStart);
   const tEnd=el('div','gs-tile'); const ei=document.createElement('input'); ei.type='time'; ei.value=toHM(target);
-  ei.title='The time the General Sessions should be finished by';
+  ei.title='The time the '+C.label+' should be finished by';
   ei.addEventListener('change',()=>{ doc.end=ei.value; touch(); render(); });
   tEnd.appendChild(ei); tEnd.appendChild(el('span',null,'Should End By')); strip.appendChild(tEnd);
   const diff=end-target;
@@ -28179,7 +28564,7 @@ function render(){
   const lay=el('div','gs-layout'); const left=el('div'); left.appendChild(list); lay.appendChild(left); lay.appendChild(sidePanel()); HOST.appendChild(lay);
   const foot=el('div','gs-foot');
   foot.appendChild(el('span','gs-saved',''));
-  foot.lastChild.id='gs-saved';
+  foot.lastChild.id=C.p+'-saved';
   foot.lastChild.textContent= doc.updatedAt ? 'Last changed '+new Date(doc.updatedAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+(doc.updatedBy?' by '+doc.updatedBy:'') : '';
   HOST.appendChild(foot);
 }
@@ -28197,7 +28582,7 @@ function dayRibbon(tl,from,to){
     const who=(it.people||[]).length;
     seg.title=clock(row.s)+'\u2013'+clock(row.e)+' \u00b7 '+(it.title||it.kind||'Segment')+(who?' \u00b7 '+who+' speaker'+(who===1?'':'s'):'')+(it.sponsor?' \u00b7 Sponsored by '+it.sponsor:'');
     if((row.e-row.s)/span>0.06) seg.appendChild(el('span',null,it.title||it.kind||''));
-    seg.addEventListener('click',()=>{ const c=[...document.querySelectorAll('#app-gs .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } });
+    seg.addEventListener('click',()=>{ const c=[...document.querySelectorAll('#app-'+C.p+' .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } });
     bar.appendChild(seg);
   });
   w.appendChild(bar);
@@ -28208,7 +28593,7 @@ function dayRibbon(tl,from,to){
   [['','Session'],['soft','Break or Lunch'],['spon','Sponsored'],['over','Past the End Time']].forEach(([c,t])=>{ const k=el('span'); k.appendChild(el('i',c)); k.appendChild(document.createTextNode(t)); key.appendChild(k); });
   w.appendChild(key);
   /* the lineup: every session as a card, like a festival bill \u2014 who is on, when */
-  const go=it=>{ const c=[...document.querySelectorAll('#app-gs .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } };
+  const go=it=>{ const c=[...document.querySelectorAll('#app-'+C.p+' .gs-item')].find(n=>n.dataset.id===String(it.id)); if(c){ c.scrollIntoView({behavior:'smooth',block:'center'}); c.classList.add('gs-flash'); setTimeout(()=>c.classList.remove('gs-flash'),1400); } };
   const lu=el('div','gs-lineup');
   tl.filter(r=>!SOFT.has(r.it.kind)).forEach((row,ix)=>{
     const it=row.it;
@@ -28261,7 +28646,7 @@ function card(row, over){
   c.addEventListener('drop',e=>{ if(dragPerson){ e.preventDefault(); e.stopPropagation(); c.classList.remove('droppable'); const pid=dragPerson; dragPerson=null; addPersonTo(it,pid); } });
   const h=el('div','gs-handle','⋮⋮'); h.title='Drag to move'; h.draggable=true;
   h.addEventListener('dragstart',e=>{ dragId=it.id; c.classList.add('dragging'); try{ e.dataTransfer.setData('text/plain',it.id); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setDragImage(c,20,20); }catch(x){} });
-  h.addEventListener('dragend',()=>{ c.classList.remove('dragging'); dragId=null; document.querySelectorAll('#app-gs .drop-above,#app-gs .drop-below').forEach(n=>n.classList.remove('drop-above','drop-below')); });
+  h.addEventListener('dragend',()=>{ c.classList.remove('dragging'); dragId=null; document.querySelectorAll('#app-'+C.p+' .drop-above,#app-'+C.p+' .drop-below').forEach(n=>n.classList.remove('drop-above','drop-below')); });
   c.addEventListener('dragover',e=>{ if(dragPerson||!dragId||dragId===it.id) return; e.preventDefault(); const r=c.getBoundingClientRect(); const top=e.clientY<r.top+r.height/2;
     c.classList.toggle('drop-above',top); c.classList.toggle('drop-below',!top); });
   c.addEventListener('dragleave',()=>c.classList.remove('drop-above','drop-below'));
@@ -28339,7 +28724,7 @@ function card(row, over){
     const pp=el('div','gs-ppl');
     (it.people||[]).forEach(ref=>pp.appendChild(chip(it,ref)));
     if(finding===it.id) pp.appendChild(finder(it));
-    else { const ab=el('button','gs-addp','+ Add Speaker'); ab.type='button'; ab.addEventListener('click',()=>{ finding=it.id; newFor=null; render(); setTimeout(()=>{ const q=document.querySelector('#app-gs .gs-find input'); if(q) q.focus(); },0); }); pp.appendChild(ab); }
+    else { const ab=el('button','gs-addp','+ Add Speaker'); ab.type='button'; ab.addEventListener('click',()=>{ finding=it.id; newFor=null; render(); setTimeout(()=>{ const q=document.querySelector('#app-'+C.p+' .gs-find input'); if(q) q.focus(); },0); }); pp.appendChild(ab); }
     m.appendChild(pp);
     if(newFor===it.id) m.appendChild(newPersonForm(it));
   }
@@ -28381,7 +28766,7 @@ function finder(it){
     shown.forEach((p,i)=>{ const b=el('button',i===sel?'on':''); b.type='button'; b.appendChild(document.createTextNode(p.n)); b.appendChild(el('small',null,[p.c,p.e].filter(Boolean).join(' · ')));
       b.addEventListener('mousedown',e=>{ e.preventDefault(); pick(p.i); }); hits.appendChild(b); });
     const nb=el('button','new','+ Someone new'+(t?': “'+q.value.trim()+'”':'')); nb.type='button';
-    nb.addEventListener('mousedown',e=>{ e.preventDefault(); newFor=it.id; finding=null; render(); setTimeout(()=>{ const n=document.querySelector('#app-gs .gs-newp input'); if(n){ n.value=q.value.trim(); n.focus(); } },0); });
+    nb.addEventListener('mousedown',e=>{ e.preventDefault(); newFor=it.id; finding=null; render(); setTimeout(()=>{ const n=document.querySelector('#app-'+C.p+' .gs-newp input'); if(n){ n.value=q.value.trim(); n.focus(); } },0); });
     hits.appendChild(nb); hits.hidden=false;
   };
   const pick=pid=>{ it.people=(it.people||[]).concat({id:pid,role:it.kind==='Panel'?'Panelist':'Speaker'}); linkPerson(pid,it,true); finding=null; touch(); render(); };
@@ -28416,7 +28801,7 @@ function newPersonForm(it){
   a.appendChild(ok); a.appendChild(no); f.appendChild(a);
   return f;
 }
-function focusTitle(id){ setTimeout(()=>{ const t=document.querySelector('#app-gs [data-gs-title="'+id+'"]'); if(t) t.focus(); },0); }
+function focusTitle(id){ setTimeout(()=>{ const t=document.querySelector('#app-'+C.p+' [data-gs-title="'+id+'"]'); if(t) t.focus(); },0); }
 
 /* ---------- presenters to drag in ---------- */
 function sidePanel(){
@@ -28454,7 +28839,7 @@ function sidePanel(){
       if(isLender(p)){ const lb=el('span','gs-lend','Lender'); lb.style.cursor='grab'; r.appendChild(lb); }
       const n=count.get(p.i)||0; r.appendChild(el('span','n'+(n?' on':''), n? 'On '+n : 'Not placed'));
       r.addEventListener('dragstart',e=>{ dragPerson=p.i; dragId=null; try{ e.dataTransfer.setData('text/plain',p.n); e.dataTransfer.effectAllowed='copy'; }catch(x){} });
-      r.addEventListener('dragend',()=>{ dragPerson=null; document.querySelectorAll('#app-gs .droppable').forEach(x=>x.classList.remove('droppable')); });
+      r.addEventListener('dragend',()=>{ dragPerson=null; document.querySelectorAll('#app-'+C.p+' .droppable').forEach(x=>x.classList.remove('droppable')); });
       lst.appendChild(r);
     });
     if(!lst.childNodes.length) lst.appendChild(el('div','hint', t? 'Nobody matches \u201c'+q.value.trim()+'\u201d.' : sideMode==='lenders'? 'No lenders found yet. Mark someone as a lender from their chip on a session.' : sideMode==='unplaced'? 'Every speaker on this summit has a session.' : 'Nobody is on this summit yet. Search to find someone on the People list.'));
@@ -28466,23 +28851,13 @@ function sidePanel(){
 }
 
 /* ---------- starting points ---------- */
-function blank(){ const fn=gsFn(); return {start: fn? toHM(fn.start):'09:00', end: fn? toHM(fn.end):'16:30', items:[]}; }
-function newItem(kind){ const d={Welcome:15,Keynote:45,Presentation:30,Panel:60,'Fireside Chat':45,'Case Study':30,'Workgroup Update':20,'Q&A':15,Break:20,Lunch:75,Networking:30,Closing:15,Other:30}[kind]||30;
+function blank(){ const fn=gsFn(); return {start: fn? toHM(fn.start):C.start, end: fn? toHM(fn.end):C.end, items:[]}; }
+function newItem(kind){ const d={Welcome:15,Keynote:45,Presentation:30,Panel:60,'Fireside Chat':45,'Case Study':30,'Workgroup Update':20,'Q&A':15,Break:20,Lunch:75,Networking:30,Closing:15,Other:30,
+    Section:30,'Hands-On Exercise':45,Breakout:45,Demo:20,Discussion:30}[kind]||30;
   return {id:uid(), kind, title:'', desc:'', dur:d, at:'', people:[]}; }
 function template(){
   const d=blank();
-  const add=(k,t,dur,at)=>{ const it=newItem(k); it.title=t; it.dur=dur; if(at) it.at=at; d.items.push(it); };
-  add('Welcome','Welcome and Opening Remarks',15);
-  add('Keynote','',45);
-  add('Panel','',60);
-  add('Break','Networking Break',20);
-  add('Presentation','',40);
-  add('Lunch','Lunch',75,'12:00');
-  add('Keynote','',45);
-  add('Panel','',60);
-  add('Break','Afternoon Break',20);
-  add('Workgroup Update','',40);
-  add('Closing','Closing Remarks',15);
+  (C.tpl||[]).forEach(([k,t,dur,at])=>{ const it=newItem(k); it.title=t; it.dur=dur; if(at) it.at=at; d.items.push(it); });
   return d;
 }
 
@@ -28492,18 +28867,18 @@ function printAgenda(){
   const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const rows=tl.map(r=>{ const it=r.it; const ppl=(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return ''; return '<div class="p"><b>'+esc(p.n)+'</b>'+(p.t||p.c?', '+esc([p.t,p.c].filter(Boolean).join(', ')):'')+(ref.role&&ref.role!=='Speaker'?' <i>('+esc(ref.role)+')</i>':'')+'</div>'; }).join('');
     return '<tr class="'+(SOFT.has(it.kind)?'soft':'')+'"><td class="t">'+clockShort(r.s)+'–'+clockShort(r.e)+'</td><td><div class="k">'+esc(it.kind)+'</div><div class="h">'+esc(it.title||it.kind)+'</div>'+(it.desc?'<div class="d">'+esc(it.desc).replace(/\n/g,'<br>')+'</div>':'')+(it.sponsor?'<div class="sp">Sponsored by '+esc(it.sponsor)+'</div>':'')+ppl+'</td></tr>'; }).join('');
-  const html='<!doctype html><html><head><meta charset="utf-8"><title>General Sessions Agenda</title><style>'+
+  const html='<!doctype html><html><head><meta charset="utf-8"><title>'+C.label+' Agenda</title><style>'+
     'body{font-family:Arial,Helvetica,sans-serif;color:#0d314c;margin:28px 36px}h1{font-size:22px;margin:0}.s{color:#6c899f;font-size:13px;margin:4px 0 18px}'+
     'hr{border:0;border-top:3px solid #74bfeb;margin:0 0 14px}table{width:100%;border-collapse:collapse}td{vertical-align:top;padding:9px 10px;border-bottom:1px solid #e5eef5;font-size:13px}'+
     'td.t{width:120px;font-weight:700;white-space:nowrap}.k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#456179;font-weight:700}.h{font-weight:700;font-size:14px;margin:1px 0 3px}'+
     '.d{color:#344;margin:2px 0 5px;line-height:1.45}.sp{font-size:11.5px;color:#0f6fa8;font-weight:700;margin:2px 0 4px}.p{font-size:12.5px;margin-top:2px}tr.soft td{background:#f6fafd;color:#456179}tr.soft .h{font-weight:600}'+
-    '@page{margin:14mm}</style></head><body><h1>'+esc((v&&v.name)||'Summit')+' — General Sessions</h1><div class="s">'+esc([tuesdayLabel(), fn?fn.room:'', v&&v.city].filter(Boolean).join(' · '))+'</div><hr><table>'+rows+'</table></body></html>';
+    '@page{margin:14mm}</style></head><body><h1>'+esc((v&&v.name)||'Summit')+' — '+C.label+'</h1><div class="s">'+esc([tuesdayLabel(), fn?fn.room:'', v&&v.city].filter(Boolean).join(' · '))+'</div><hr><table>'+rows+'</table></body></html>';
   const f=document.createElement('iframe'); f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
   f.srcdoc=html; f.onload=()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){} setTimeout(()=>f.remove(),60000); };
 }
 
 /* ---------- the event app's sessions file reads these ---------- */
-window.__gsSegments=function(forVid){
+window['__'+C.p+'Segments']=function(forVid){
   if(!doc || forVid!==vid) return null;
   return timeline().map(r=>({key:segKey(r.it), name:(r.it.title||r.it.kind), kind:r.it.kind, start:r.s, end:r.e, desc:r.it.desc||'', sponsor:r.it.sponsor||'',
     people:(r.it.people||[]).map(p=>({id:p.id, role:p.role||'Speaker'}))}));
@@ -28516,7 +28891,7 @@ function attach(){
   if(dirty) save();
   if(unsub){ try{ unsub(); }catch(e){} unsub=null; }
   vid=id; doc=null; gsRead=false; finding=null; newFor=null; render(); loadLenders();
-  unsub=db.doc('schedule/gs-'+vid).onSnapshot(s=>{
+  unsub=db.doc('schedule/'+C.p+'-'+vid).onSnapshot(s=>{
     gsRead=true;
     const d=s.exists? s.data() : null;
     const busy=HOST.contains(document.activeElement) || dirty || dragId;
@@ -28527,16 +28902,28 @@ function attach(){
 }
 (async()=>{
   try{ db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ db=null; }
-  if(!db){ HOST.textContent='General Sessions saves through the shared Summit HQ data, which is not reachable here.'; return; }
+  if(!db){ HOST.textContent=C.label+' saves through the shared Summit HQ data, which is not reachable here.'; return; }
   const tryAttach=()=>{ try{ attach(); }catch(e){} };
   const pick=$('venue-pick'); if(pick) pick.addEventListener('change',()=>setTimeout(tryAttach,50));
   window.addEventListener('hq:schedule',tryAttach);
   let n=0; const iv=setInterval(()=>{ tryAttach(); if(vid || ++n>40) clearInterval(iv); },500);
   window.addEventListener('beforeunload',()=>{ if(dirty) save(); });
   /* coming to the tab redraws it, so the room and hours follow the Schedule */
-  const nb=document.querySelector('.hq nav button[data-hq="gs"]'); if(nb) nb.addEventListener('click',()=>setTimeout(()=>{ tryAttach(); render(); },30));
+  const nb=document.querySelector('.hq nav button[data-hq="'+C.p+'"]'); if(nb) nb.addEventListener('click',()=>setTimeout(()=>{ tryAttach(); render(); },30));
 })();
-})();
+}
+
+/* Amy, 2026-11-03: "a section that is Workshop like General Sessions" — the same page, run
+   twice. Each keeps its own running order (schedule/gs-<summit>, schedule/wk-<summit>),
+   and each segment is its own session in the event app, tagged gs-… or wk-…. */
+SessionDay({p:'gs', label:'General Sessions', sid:'general-sessions', dayOff:1, dayName:'Tuesday', start:'09:00', end:'16:30',
+  startBtn:'Start From a Typical Tuesday', startNote:'Start from a typical Tuesday and change it, or start with a blank page.',
+  tpl:[['Welcome','Welcome and Opening Remarks',15],['Keynote','',45],['Panel','',60],['Break','Networking Break',20],['Presentation','',40],
+    ['Lunch','Lunch',75,'12:00'],['Keynote','',45],['Panel','',60],['Break','Afternoon Break',20],['Workgroup Update','',40],['Closing','Closing Remarks',15]]});
+SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday', start:'13:30', end:'16:30',
+  kinds:['Welcome','Section','Presentation','Panel','Hands-On Exercise','Breakout','Demo','Case Study','Discussion','Q&A','Break','Networking','Closing','Other'],
+  startBtn:'Start From a Typical Workshop', startNote:'Start from a typical Monday afternoon workshop — welcome, sections, a break, a hands-on exercise and a wrap-up — and change it, or start with a blank page.',
+  tpl:[['Welcome','Welcome and What We Will Cover',10],['Section','',40],['Panel','',40],['Break','Break',15],['Hands-On Exercise','',45],['Q&A','Questions and Discussion',20],['Closing','Wrap-Up and Next Steps',10]]});
 </script>
 
 <!-- pdf.js 4.10.38 (Apache 2.0), carried as text so a contract PDF can be turned
