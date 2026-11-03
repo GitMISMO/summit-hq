@@ -26399,12 +26399,14 @@ function siLine(p){
    looks for the speaker's form answer: anybody who has already sent theirs is skipped, even
    when nobody has opened Summit HQ since. */
 const SE_CC='amoses@mismo.org; jcritchley@mismo.org';
-const SE_REMIND={subject:'Reminder: Your Bio & Headshot for the MISMO {summitShort}',
+/* Jonna, 2026-11-03: "a nice warm nudge" — not the speaker email again, just a friendly note */
+const SE_REMIND={subject:'A Friendly Nudge: Your Bio & Headshot for the MISMO {summitShort}',
   body:['Hi {first},',
-    'A friendly reminder that we still need your {missing} for {session} at the MISMO {summitShort}. It takes just a couple of minutes with the button below.',
+    'We’re so looking forward to having you with us for {session} at the MISMO {summitShort} on {sessionDate}!',
+    'When you have a couple of minutes, could you send us your {missing}? It’s the one piece we still need to introduce you on the agenda and in the event app, and to start sharing your session with our community.',
     '[[Send My Bio & Headshot]]({infoLink})',
-    'We use them for the agenda, the event app and your session graphic, so the sooner we have them, the sooner we can start promoting your session.',
-    'Thank you so much!'].join('\n\n')};
+    'If it’s already on its way to us, thank you, and please disregard this note. And if anything has come up or you have questions, just reply; I’m happy to help.',
+    'We can’t wait to see you there!'].join('\n\n')};
 function seWho(){ let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){} return who; }
 /* what they still owe us, in words */
 function seMissing(p){ const b=!hasBio(p), h=!hasShot(p); return b&&h? 'bio and headshot' : b? 'bio' : h? 'headshot' : ''; }
