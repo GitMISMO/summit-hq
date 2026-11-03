@@ -102,8 +102,9 @@
   /* the "Summit HQ - Speaker Info Answers" flow's address (When an HTTP request is received) */
   var ENDPOINT = "";
   var q = new URLSearchParams(location.search);
-  var get = function(k){ return (q.get(k) || "").trim(); };
-  var t=get("t"), v=get("v"), first=get("n"), summit=get("s")||"MISMO Summit", dates=get("d");
+  /* a link copied out of an email can pick up the ")." after it; that is not part of the link */
+  var get = function(k){ return (q.get(k) || "").trim().replace(/[)\].,;:!?'"\s]+$/,""); };
+  var t=(get("t").toLowerCase().match(/^[a-z0-9]+/)||[""])[0], v=get("v"), first=get("n"), summit=get("s")||"MISMO Summit", dates=get("d");
   var $ = function(id){ return document.getElementById(id); };
 
   $("title").textContent = "Your Bio & Headshot for the " + summit;

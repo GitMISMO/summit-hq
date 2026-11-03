@@ -5158,6 +5158,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-linkbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:-4px}
 .se-linkform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1 1 100%;background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:8px}
 .se-linkform[hidden]{display:none}
+.se-asbtn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);white-space:nowrap;cursor:pointer}
 .se-linkform input{flex:1 1 160px;min-width:0;font:13px/1.4 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px}
 .se-warn{font-size:12.5px;line-height:1.45;color:var(--warn-ink,var(--ink));background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 4px 4px 0;padding:8px 10px}
 .se-lnk{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline}
@@ -5171,7 +5172,68 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-whoh{position:sticky;top:0;background:var(--surface);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);padding:8px 10px;border-bottom:1px solid var(--line)}
 .se-whor{display:flex;gap:9px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line);font-size:13px;cursor:pointer}
 .se-whor:last-child{border-bottom:0} .se-whor.on{background:var(--accent-soft)}
-.se-whor span{font-weight:600;color:var(--ink)} .se-whor small{color:var(--ink-3);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.se-whor span{font-weight:600;color:var(--ink)}
+/* choosing who gets it (Amy, 2026-11-03) */
+.se-pick{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface)}
+.se-pickh{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.se-pickh b{font-size:13px;color:var(--ink)}
+.se-pqa{display:flex;gap:12px;font-size:12.5px}
+.se-pseg{display:flex;gap:4px;flex-wrap:wrap}
+.se-pseg button{display:inline-flex;align-items:center;gap:6px;font:600 12px var(--ui);color:var(--ink-2);background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:5px 9px;cursor:pointer}
+.se-pseg button em{font-style:normal;font-size:11px;color:var(--ink-3)}
+.se-pseg button.on{background:#0d314c;border-color:#0d314c;color:#fff} .se-pseg button.on em{color:#a9d8f3}
+.se-pq{font:13px/1.4 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:5px;padding:6px 9px}
+.se-pick .se-who{max-height:210px;border-radius:5px}
+.se-whon{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;line-height:1.25}
+.se-whos{font-size:11.5px;color:var(--ink-3);font-weight:500}
+.se-whos.on,.se-whos.off,.se-whos.end{color:var(--warn-ink,#8a5200)} .se-whos.in{color:var(--good)}
+.se-empty{padding:12px}
+/* the switch */
+.se-sw{display:inline-flex;align-items:center;gap:7px;background:none;border:0;padding:2px;cursor:pointer;font:600 12px var(--ui);color:var(--ink-3)}
+.se-sw i{position:relative;width:34px;height:19px;border-radius:10px;background:var(--line-2);transition:background .18s;flex:0 0 auto}
+.se-sw i::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .18s}
+.se-sw.on i{background:#0f7b5c} .se-sw.on i::after{transform:translateX(15px)} .se-sw.on span{color:#0f7b5c}
+.se-sw:disabled{opacity:.45;cursor:default}
+.se-sw:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:10px}
+/* Speaker Emails & Follow-Ups */
+#app-people .sef{border-bottom:1px solid var(--line);background:var(--surface)}
+#app-people .sef-hd{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 16px 10px;
+  background:linear-gradient(135deg,#06202f 0%,#0d314c 65%,#14486e 100%);color:#fff}
+#app-people .sef-ht{display:flex;flex-direction:column;gap:3px;min-width:0}
+#app-people .sef-ht b{font-size:15px;font-weight:700}
+#app-people .sef-ht span{font-size:12.5px;color:#cfe6f5;line-height:1.45}
+#app-people .sef-swall{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:0 0 auto}
+#app-people .sef-swall small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#a9d8f3}
+#app-people .sef-swall .se-sw span{color:#fff} #app-people .sef-swall .se-sw:not(.on) i{background:rgba(255,255,255,.3)}
+#app-people .sef-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+#app-people .sef-t{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-left:3px solid #74bfeb;border-radius:6px;padding:9px 11px;background:var(--surface);min-width:0}
+#app-people button.sef-t{cursor:pointer} #app-people button.sef-t:hover{border-color:var(--accent);background:var(--accent-soft)}
+#app-people .sef-t b{font-size:19px;font-weight:700;color:var(--ink);line-height:1.15}
+#app-people .sef-t span{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+#app-people .sef-t small{font-size:11.5px;color:var(--ink-2)}
+#app-people .sef-t.warn{border-left-color:var(--warn)} #app-people .sef-t.good{border-left-color:#0f7b5c}
+#app-people .sef-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 16px}
+#app-people .sef-warn{font-size:12px;color:var(--warn-ink,#8a5200)}
+#app-people .sef-rows{display:flex;flex-direction:column;border-top:1px solid var(--line);max-height:330px;overflow:auto}
+#app-people .sef-r{display:grid;grid-template-columns:auto minmax(120px,1.3fr) auto minmax(140px,1.4fr) auto;gap:12px;align-items:center;padding:7px 16px;border-bottom:1px solid var(--line);animation:sefIn .25s ease-out both}
+@keyframes sefIn{from{opacity:0;transform:translateY(3px)}}
+#app-people .sef-r:last-child{border-bottom:0}
+#app-people .sef-r.in{background:color-mix(in srgb,var(--good-soft,#e3f4ec) 55%,transparent)}
+#app-people .sef-n{all:unset;cursor:pointer;display:flex;flex-direction:column;min-width:0;line-height:1.25}
+#app-people .sef-n b{font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app-people .sef-n:hover b{color:var(--accent);text-decoration:underline}
+#app-people .sef-n small{font-size:11.5px;color:var(--ink-3)}
+#app-people .sef-need{display:flex;gap:10px}
+#app-people .sef-q{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--ink-3)}
+#app-people .sef-q i{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--line-2);display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;color:#fff}
+#app-people .sef-q.ok{color:var(--ink)} #app-people .sef-q.ok i{background:#0f7b5c;border-color:#0f7b5c}
+#app-people .sef-next{display:flex;flex-direction:column;min-width:0;font-size:12.5px;color:var(--ink-2);line-height:1.3}
+#app-people .sef-r.on .sef-next span{color:var(--ink);font-weight:600}
+#app-people .sef-next small{font-size:11px;color:var(--ink-3)}
+#app-people .si-fu{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px;font-size:12.5px}
+@media (max-width:760px){ #app-people .sef-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #app-people .sef-r{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px} #app-people .sef-need,#app-people .sef-next{grid-column:2/-1}
+  #app-people .sef-hd{flex-direction:column;align-items:flex-start} #app-people .sef-swall{align-items:flex-start} } .se-whor small{color:var(--ink-3);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .se-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .se-graphic{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2);padding:8px 10px;border:1px dashed var(--line-2);border-radius:4px}
 .se-gbtn{position:relative;overflow:hidden;cursor:pointer}
@@ -7028,8 +7090,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <h4>What You Do</h4>
         <ol class="hp-steps">
           <li><b>Open People.</b> The Confirmed Speakers wall shows every speaker ringed by how far along they are, with their next step under their name.</li>
-          <li><b>Send the speaker email.</b> Press <b>Send to the N Not Sent</b> at the top of Confirmed Speakers to send it to everyone at once, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
-          <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. <b>Remind About the Bio</b> nudges everyone who has not sent theirs. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
+          <li><b>Send the speaker email.</b> On the <b>Speaker Emails &amp; Follow-Ups</b> card on People, press <b>Choose Speakers to Email</b> and tick who gets it, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
+          <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. Anyone who has not sent theirs gets a reminder every week on the day their email went, until it is in; see <b>Speaker Emails &amp; Follow-Ups</b> on People to see who is next, or to switch the reminders off for someone. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
           <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
           <li><b>Use Only What&rsquo;s Outstanding</b> to see just the speakers who still owe you something.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
@@ -7350,9 +7412,15 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits. <b>Edit</b> on a row opens their name, email, title and company to change right there, with a <b>Notes for This Summit</b> box (who suggested them, the topic, when to follow up).</li>
         <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment or Workshop section too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. The search box at the top of the list narrows it as you type (a name, company, title or email). Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
-        <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the web address in <b>Reservations</b> under <b>Event Details</b>; it can sit beside the phone number) and {rate} (the dollar amount in <b>Group Guestroom Rate</b> under <b>Accommodations</b>); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
+        <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). Tick <b>Show as a button</b> to make it a navy button on a line of its own, the way the <b>Send My Bio &amp; Headshot</b> button looks; in the message box a button reads as the words in double square brackets followed by the link. A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the web address in <b>Reservations</b> under <b>Event Details</b>; it can sit beside the phone number) and {rate} (the dollar amount in <b>Group Guestroom Rate</b> under <b>Accommodations</b>); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
         <li><b>Bio and headshot, collected for you.</b> The speaker email carries each speaker&rsquo;s own link to a short MISMO form (resources.mismo.org/summit-hq/speaker.html): their bio, title, company, LinkedIn and a headshot, which the form makes the right size on their side. Sending the email ticks <b>Asked for bio &amp; headshot</b>. What they send lands on their row within a few minutes of People being open: the bio, title, company and headshot fill in, and <b>Bio &amp; headshot in hand</b> ticks itself. The <b>Bio &amp; Headshot Form</b> line on their row says whether the link went out and when they answered; <b>Copy Their Link</b> gives you their link to paste into an email of your own. They can use the same link again to change anything.</li>
-        <li><b>Speaker Emails</b>, at the top of Confirmed Speakers, sends to many at once. <b>Send to the N Not Sent</b> sends the speaker email to every confirmed speaker with an email address who has not had it, each filled in for them; untick anyone to leave them out, and press Preview to see a speaker&rsquo;s copy. <b>Remind About the Bio</b> sends a short reminder with their own link to everyone who had the email and has not sent their bio and headshot. Both ask you to click twice before anything goes, and both go out within a couple of minutes.</li>
+        <li><b>Speaker Emails &amp; Follow-Ups</b> is its own card on People. The tiles show how many speakers have been emailed, who is still waiting on a bio or headshot, the next follow-up and who is all in. Under them, every speaker has one line: whether their bio and headshot are in, their next follow-up, and their own <b>On/Off</b> switch.
+          <ul>
+            <li><b>Choose Speakers to Email</b> opens the email with a list of speakers to tick. Switch between <b>Not Emailed Yet</b>, <b>Waiting on Bio or Headshot</b> and <b>Everyone</b>, search for a name, or use <b>Pick All Shown</b> and <b>Clear</b>. Only the ones ticked get it, each filled in for them; press <b>Preview</b> to see anyone&rsquo;s copy. <b>Speaker Email</b> and <b>Reminder</b> at the top switch which email you are sending.</li>
+            <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
+            <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
+            <li>Amy and Jonna are copied on every speaker email and every reminder, and replies go to Amy.</li>
+          </ul></li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
@@ -7384,8 +7452,9 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
         <tbody>
           <tr><td>New Speakers to Register</td><td>Every weekday morning: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
-          <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email on People, <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
+          <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email or <b>Choose Speakers to Email</b> on People, copied to Amy and Jonna; <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
           <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
+          <tr><td>Weekly bio and headshot follow-ups</td><td>Every morning at 7:17 AM Mountain it sends the reminders due that day: every week on the day the speaker&rsquo;s email went, until their bio and headshot are in or the Summit starts. Anyone who has already sent theirs through the form is skipped</td><td>The speaker; copied to Amy and Jonna; replies go to Amy</td><td>Summit HQ - Speaker Reminders (reads feeds/speaker-reminders, notes each one sent in feeds/speaker-reminders-sent)</td></tr>
           <tr><td>Speaker bio and headshot answers</td><td>A speaker sends the form from the link in their speaker email</td><td>No email: the bio, title, company, LinkedIn and headshot land on their row on People</td><td>Summit HQ - Speaker Info Answers (saves each answer to feeds/si-&lt;their code&gt;)</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
@@ -25414,6 +25483,7 @@ function render(){
   $('pp-title').textContent=v.name||'Summit';
   $('pp-sub').textContent=[v.city,v.dates].filter(Boolean).join(' · ');
   meters();
+  try{ remSyncSoon(); }catch(e){}
 
   /* the role picker */
   /* Jonna, 2026-10-28: People is speakers only now, so there is no role to pick */
@@ -25552,7 +25622,6 @@ function render(){
   left.appendChild(section('Confirmed Speakers', note||'Speakers. Click a row to open it.',
     list.length,'lOpen',true,box=>{
     if(ST.step){ stepView(box,list); return; }
-    if(ST.ready && s.total) box.appendChild(seBulkBar());
     box.appendChild(addBlock());
     if(!ST.ready){ box.appendChild(el('div','blank','Loading…')); return; }
     if(!list.length){
@@ -25566,6 +25635,18 @@ function render(){
     /* Jonna, 2026-10-28: speakers only */
     list.forEach(p=>box.appendChild(personRow(p)));
   }));
+  /* Amy and Jonna, 2026-11-03: the speaker emails and the weekly follow-ups, a card of their own */
+  if(ST.ready && s.total){
+    let fuNote='', fuTone='';
+    try{ const mail=all().filter(isSpk).filter(p=>/@/.test(String(p.e||'')));
+      const notYet=mail.filter(p=>!seEmailed(p)).length, wait=mail.filter(seWaiting).length;
+      const nx=mail.map(remState).filter(r=>r.k==='on').map(r=>r.next).sort((a,b)=>a-b)[0];
+      fuNote=[notYet? notYet+' not emailed yet' : 'everyone emailed', wait? wait+' waiting on a bio or headshot' : '', nx&&remAllOn()? 'next follow-up '+seNice(nx) : (!remAllOn()? 'follow-ups off' : '')].filter(Boolean).join(' \u00b7 ');
+      fuTone= notYet||wait? 'warn' : ''; }catch(e){}
+    const fuSec=section('Speaker Emails & Follow-Ups', fuNote, all().filter(isSpk).filter(seWaiting).length,'sefOpen',false,box=>box.appendChild(seBulkBar()), fuTone);
+    try{ if(window.__pane) window.__pane.face(fuSec,{note:fuNote, tone:fuTone}); }catch(e){}
+    left.appendChild(fuSec);
+  }
   left.appendChild(boardSec);
 
   /* everyone on the master list who is not on this summit */
@@ -25973,8 +26054,10 @@ function seDefault(r){
 'A few details for you to begin planning and promoting your involvement with the Summit:',
 'Summit registration:\nThis week we’ll register you as our guest for the Summit. You’ll receive an email once your registration has been processed.',
 'Hotel:\nThe Summit will be held at the '+hotel+(addr? ', '+addr : '')+'.\n'+book+' for the negotiated rate of {rate} plus tax.',
-'Your Bio & Headshot:\nPlease send us your bio and headshot [here]({infoLink}). It takes a couple of minutes, and it’s what we use for the agenda, the event app and your session graphic.',
+'Your Bio & Headshot:\nPlease send us your bio and headshot with the button below. It takes a couple of minutes, and it’s what we use for the agenda, the event app and your session graphic.',
+'[[Send My Bio & Headshot]]({infoLink})',
 'Promotion:\nI’ve attached an “I’m Speaking” graphic that you can post on LinkedIn.\nWe’ll be creating a session-specific graphic that we’ll provide once the event is closer. Promotion of your session will be on LinkedIn, in our monthly newsletter, MISMO Matters, in marketing emails and more!',
+'Speaker Breakfast:\nOn the morning of the General Sessions, {gsDay}, we’ll host a hot breakfast just for our speakers before the program begins: a relaxed chance to settle in, meet your fellow speakers and get ready for the day. We’ll share the room and time closer to the Summit.',
 'Session Planning & Prep:\nAbout six weeks out, we’ll reach out to schedule our first planning meetings for you and your fellow panelists.\nIn the meantime, please let us know of any questions you have.',
 'Summit Schedule Overview:\n'+seDay(0,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 12:00 p.m. – MISMO Workgroups\n1:00 p.m. – 5:00 p.m. – Workshop: '+wk+'\n5:00 p.m. – 6:00 p.m. – MISMO Welcome Reception',
 seDay(1,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast provided\n9:00 a.m. – 5:00 p.m. – General Sessions\n5:00 p.m. – 6:00 p.m. – MISMO Matters Reception'+recSp,
@@ -26008,7 +26091,7 @@ function seVars(p,tok){
   const days=[...new Set(mine.map(x=>{ const i=x.idx; return i>=0? seDay(i,false) : ''; }).filter(Boolean))];
   return {first:String(p.n||'').trim().split(/\s+/)[0]||'there', name:p.n||'', session: names.length? 'our '+join(names) : 'the General Sessions',
     sessionDate: days.length? join(days) : seDay(1,false), summit:venueInfo().name||'Summit', summitShort:seSummitShort(),
-    dates:seDates(), gsDate:seDay(1,false),
+    dates:seDates(), gsDate:seDay(1,false), gsDay:seDay(1,true), missing:(typeof seMissing==='function'&&seMissing(p))||'bio and headshot',
     roomBlock: seRoomBlock()||'[room block link — add it to Reservations on the Resume]',
     rate: seRate()||'[rate — add the group guestroom rate on the Resume]',
     infoLink: seInfoLink(p, tok || (seOpen&&seOpen.id===p.i&&seOpen.itok) || stOf(p).itok || '') || '[bio and headshot link]'};
@@ -26017,7 +26100,7 @@ const seFill=(t,v)=>String(t||'')
   /* the first template said "here: [room block link]" and "[rate]" — those fill in too */
   .replace(/here:\s*\[room block link\]/gi,'[here]({roomBlock})').replace(/\[room block link\]/gi,'{roomBlock}').replace(/\[rate\]/gi,'{rate}')
   /* a link whose address is not known yet reads as the words and the reminder, not as brackets */
-  .replace(/\[([^\]]+)\]\(\{(\w+)\}\)/g,(m,a,k)=>v[k]!=null && !/^https?:\/\//i.test(String(v[k]))? a+' '+v[k] : m)
+  .replace(/\[\[?([^\]]+)\]\]?\(\{(\w+)\}\)/g,(m,a,k)=>v[k]!=null && !/^https?:\/\//i.test(String(v[k]))? a+' '+v[k] : m)
   .replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? v[k] : m);
 /* the branded email: blank line = new paragraph, a short first line ending in ":" = heading,
    [words](link) = a link */
@@ -26025,10 +26108,15 @@ function seHtml(subject, body){
   const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const A=(u,a)=>'<a href="'+e(u).replace(/"/g,'%22')+'" style="color:#0f6fa8;font-weight:700">'+a+'</a>';
   /* [words](link) is a link, and so is a bare web address */
-  const inline=x=>{ const parts=[]; let t=String(x).replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,a,u)=>{ parts.push(A(u,e(a))); return '\u0000'+(parts.length-1)+'\u0000'; });
+  /* Amy, 2026-11-03: [[words]](link) is a button, so nobody misses what to press */
+  const BTN=(u,a)=>'<table cellpadding="0" cellspacing="0" style="margin:4px 0 16px"><tbody><tr><td style="background:#0d314c;border-radius:6px;mso-padding-alt:12px 24px"><a href="'+e(u).replace(/"/g,'%22')+'" style="display:inline-block;padding:13px 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:6px">'+e(a)+' &rarr;</a></td></tr></tbody></table>';
+  const BTN_RE=/^\[\[([^\]]+)\]\]\((https?:[^)\s]+)\)$/;
+  const inline=x=>{ const parts=[]; let t=String(x).replace(/\[\[([^\]]+)\]\]\((https?:[^)\s]+)\)/g,(m,a,u)=>{ parts.push('<a href="'+e(u).replace(/"/g,'%22')+'" style="display:inline-block;background:#0d314c;color:#ffffff;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:6px">'+e(a)+'</a>'); return '\u0000'+(parts.length-1)+'\u0000'; })
+      .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,(m,a,u)=>{ parts.push(A(u,e(a))); return '\u0000'+(parts.length-1)+'\u0000'; });
     t=e(t).replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)\]]/g,u=>A(u.replace(/&amp;/g,'&'),u));
     return t.replace(/\u0000(\d+)\u0000/g,(m,i)=>parts[+i]); };
   const paras=String(body||'').replace(/\r/g,'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(par=>{
+    const bm=BTN_RE.exec(par); if(bm) return BTN(bm[2],bm[1]);
     const lines=par.split('\n'); let h='';
     if(lines.length>1 && /:\s*$/.test(lines[0]) && lines[0].length<=60){ h=lines.shift().replace(/:\s*$/,''); }
     else if(lines.length===1 && /:\s*$/.test(lines[0]) && lines[0].length<=40){ return '<div style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#0d314c;margin:22px 0 6px">'+e(lines[0].replace(/:\s*$/,''))+'</div>'; }
@@ -26054,6 +26142,7 @@ function seLinkBar(ta,changed){
   const form=el('div','se-linkform'); form.hidden=true;
   const words=document.createElement('input'); words.type='text'; words.placeholder='Words to show (here)';
   const url=document.createElement('input'); url.type='url'; url.placeholder='https://…';
+  const asBtn=el('label','se-asbtn'); const ab=document.createElement('input'); ab.type='checkbox'; asBtn.appendChild(ab); asBtn.appendChild(document.createTextNode('Show as a button'));
   const ok=el('button','btn','Put It In'); ok.type='button';
   const no=el('button','btn ghost','Cancel'); no.type='button';
   let a=0,b=0;
@@ -26062,7 +26151,7 @@ function seLinkBar(ta,changed){
   const put=()=>{
     let u=url.value.trim(); if(!u){ url.focus(); return; }
     if(!/^https?:\/\//i.test(u) && !/^\{\w+\}$/.test(u)) u='https://'+u.replace(/^\/+/,'');
-    const t='['+(words.value.trim()||'here')+']('+u+')';
+    const t= ab.checked ? '\n\n[['+(words.value.trim()||'Open')+']]('+u+')\n\n' : '['+(words.value.trim()||'here')+']('+u+')';
     ta.value=ta.value.slice(0,a)+t+ta.value.slice(b); changed();
     form.hidden=true; open.hidden=false;
     try{ ta.focus(); ta.setSelectionRange(a+t.length,a+t.length); }catch(e){}
@@ -26070,7 +26159,7 @@ function seLinkBar(ta,changed){
   ok.addEventListener('click',put);
   [words,url].forEach(i=>i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); put(); } if(e.key==='Escape'){ form.hidden=true; open.hidden=false; } }));
   no.addEventListener('click',()=>{ form.hidden=true; open.hidden=false; });
-  form.appendChild(words); form.appendChild(url); form.appendChild(ok); form.appendChild(no);
+  form.appendChild(words); form.appendChild(url); form.appendChild(asBtn); form.appendChild(ok); form.appendChild(no);
   w.appendChild(open); w.appendChild(form);
   return w;
 }
@@ -26092,7 +26181,7 @@ async function openSpeakerEmail(id){
   const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
   const itok=stOf(p).itok||seTok();
   const v=seVars(p,itok);
-  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_AMY.email, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
+  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_CC, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
     tSubject:tpl.subject, tBody:tpl.body, sending:false};
   drawSpeakerEmail();
 }
@@ -26135,7 +26224,7 @@ function drawSpeakerEmail(){
     fld('Cc',seOpen.cc,v=>seOpen.cc=v);
     fld('Subject',seOpen.subject,v=>seOpen.subject=v);
     fld('Message',seOpen.body,v=>seOpen.body=v,{area:true,rows:18});
-    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and Add a Link (or [words](https://link)) makes a link. A web address on its own is a link too.'));
+    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and Add a Link (or [words](https://link)) makes a link; tick Show as a Button for a button ([[words]](https://link) on a line of its own). A web address on its own is a link too.'));
   } else {
     fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
     fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
@@ -26188,7 +26277,7 @@ function drawSpeakerEmail(){
       if(String(seOpen.body||'').indexOf(seOpen.itok)>=0){ f.itok=seOpen.itok; f.iask=f.welcome.at;
         const steps=Object.assign({},stOf(p).steps||{}); if(!steps.contacted) steps.contacted=today(); f.steps=steps; }
       patchSt(p.i,f,'a speaker email');
-      seOpen=null; drawSpeakerEmail(); render();
+      seOpen=null; drawSpeakerEmail(); render(); remSyncSoon();
       try{ if(window.__hqFlash) window.__hqFlash('On its way to '+to+' — it goes out within a couple of minutes.'); }catch(e){}
     });
     acts.appendChild(go);
@@ -26286,60 +26375,190 @@ function siLine(p){
     w.appendChild(cp);
   }
   if(p.li){ const a=document.createElement('a'); a.className='se-lnk'; a.href=p.li; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; w.appendChild(a); }
-  return w;
+  /* the weekly follow-ups for this one speaker */
+  const rs=remState(p), can=seEmailed(p) && !seAllIn(p) && remAllOn();
+  const fw=el('div','si-fu');
+  fw.appendChild(el('span','si-k '+(rs.k==='on'?'wait':rs.k==='in'?'in':''),'Weekly Follow-Ups'));
+  fw.appendChild(seSwitch(can && !st.remOff,'Weekly follow-ups for '+(p.n||'them'),on=>{ patchSt(p.i,{remOff:!on},on?'follow-ups on':'follow-ups off'); render(); remSyncSoon(); },
+    can? 'Turn the weekly reminder on or off for '+(p.n||'them') : 'Starts once their speaker email goes, and stops when their bio and headshot are in'));
+  if(!can) fw.lastChild.disabled=true;
+  fw.appendChild(el('span','pnote', rs.t + (rs.sent.length? ' \u00b7 '+rs.sent.length+' sent' : '')));
+  const out=el('div'); out.appendChild(w); out.appendChild(fw);
+  return out;
 }
 
-/* ---------- many at once: everyone not sent yet, or a reminder for the bio ---------- */
-const SE_REMIND={subject:'Your Bio & Headshot for the MISMO {summitShort}',
+/* ---------- many at once, and the weekly follow-ups (Amy and Jonna, 2026-11-03) ----------
+   "select who she sends several emails at a time to"; "if she sent them an email it marks
+   the date and sends follow ups every week same day … until they give us what we need or
+   it's the summit"; "she should have the ability to turn the follow ups off"; Amy and Jonna
+   are copied on every one.
+   Summit HQ cannot send on a schedule, so it keeps a list of each speaker's coming
+   follow-ups in feeds/speaker-reminders, each one written out in full. The "Summit HQ -
+   Speaker Reminders" flow looks at 7:17 AM Mountain every day, sends the ones that are due,
+   and notes each in feeds/speaker-reminders-sent so nothing goes twice. Before it sends, it
+   looks for the speaker's form answer: anybody who has already sent theirs is skipped, even
+   when nobody has opened Summit HQ since. */
+const SE_CC='amoses@mismo.org; jcritchley@mismo.org';
+const SE_REMIND={subject:'Reminder: Your Bio & Headshot for the MISMO {summitShort}',
   body:['Hi {first},',
-    'A quick reminder to send us your bio and headshot for {session} at the MISMO {summitShort}. It takes a couple of minutes: [send them here]({infoLink}).',
-    'We use them for the agenda, the event app and your session graphic.',
+    'A friendly reminder that we still need your {missing} for {session} at the MISMO {summitShort}. It takes just a couple of minutes with the button below.',
+    '[[Send My Bio & Headshot]]({infoLink})',
+    'We use them for the agenda, the event app and your session graphic, so the sooner we have them, the sooner we can start promoting your session.',
     'Thank you so much!'].join('\n\n')};
 function seWho(){ let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){} return who; }
-function seBulkList(kind){
-  const here=all().filter(isSpk).filter(p=>/@/.test(String(p.e||'')));
-  if(kind==='welcome') return here.filter(p=>!stOf(p).welcome);
-  return here.filter(p=>{ const st=stOf(p); return st.welcome && !st.iat && !(hasBio(p)&&hasShot(p)); });
+/* what they still owe us, in words */
+function seMissing(p){ const b=!hasBio(p), h=!hasShot(p); return b&&h? 'bio and headshot' : b? 'bio' : h? 'headshot' : ''; }
+const seEmailed=p=>!!(stOf(p).welcome&&stOf(p).welcome.at);
+const seWaiting=p=>seEmailed(p) && !stOf(p).iat && !!seMissing(p);
+const seAllIn=p=>!seMissing(p) || !!stOf(p).iat;
+const seMailable=()=>all().filter(isSpk).filter(p=>/@/.test(String(p.e||'')));
+
+/* ---------- the follow-up calendar ---------- */
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+/* the day, in Washington, of a moment — the flow counts its days the same way */
+function seEastDay(t){ const d=t? new Date(t) : new Date(); if(isNaN(d)) return null;
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+  const [y,m,dd]=parts.split('-').map(Number); return new Date(y,m-1,dd); }
+const seNice=d=>WDAYS[d.getDay()].slice(0,3)+', '+MONTHS[d.getMonth()].slice(0,3)+' '+d.getDate();
+const remAllOn=()=>!seDoc().remOff;
+const remOn=p=>remAllOn() && !stOf(p).remOff;
+/* every weekly follow-up from the day the email went, up to the Summit */
+function remDates(p){
+  const st=stOf(p); if(!seEmailed(p)) return [];
+  const sent=seEastDay(st.welcome.at), last=seFirstDay(); if(!sent||!last) return [];
+  const out=[]; const d=new Date(sent);
+  for(let i=0;i<30;i++){ d.setDate(d.getDate()+7); if(d>=last) break; out.push(new Date(d)); }
+  return out;
 }
+/* the follow-ups already sent, from the flow's notes */
+function remSent(p){ const ids=(ST.remSent&&ST.remSent.ids)||[]; const pre='rem-'+p.i+'-';
+  return ids.filter(x=>String(x).indexOf(pre)===0).map(x=>String(x).slice(pre.length)).sort(); }
+/* where a speaker stands: the next follow-up, or why there is none */
+function remState(p){
+  const sent=remSent(p);
+  if(!seEmailed(p)) return {k:'none', t:'Not emailed yet', sent};
+  if(seAllIn(p)) return {k:'in', t: stOf(p).iat? 'Sent theirs '+localDay(stOf(p).iat) : 'Bio and headshot on file', sent};
+  if(!remOn(p)) return {k:'off', t: remAllOn()? 'Follow-ups off for them' : 'Follow-ups off for this summit', sent};
+  const today=seEastDay(); const next=remDates(p).find(d=>ymd(d)>=ymd(today) && sent.indexOf(ymd(d))<0);
+  if(!next) return {k:'end', t:'No more follow-ups before the Summit', sent};
+  return {k:'on', t:'Next follow-up '+seNice(next), next, sent};
+}
+/* the list the flow sends from: this summit's coming follow-ups written out, the other
+   summits' left as they are. Kept small: the nearest ones first. */
+let remT=null, remBusy=false;
+function remSyncSoon(){ clearTimeout(remT); remT=setTimeout(remSync,4000); }
+async function remSync(){
+  if(!ST.db || remBusy || !ST.collsRead || !ST.collsRead.has('people') || !ST.collsRead.has('speaker-email')) return;
+  try{ if(window.ResourcesSession && window.ResourcesSession.canEdit && !window.ResourcesSession.canEdit()) return; }catch(e){}
+  remBusy=true;
+  try{
+    const v=venueNow(); await seResume();
+    const today=ymd(seEastDay()), floor=ymd(new Date(seEastDay().getTime()-6*864e5));
+    const tpl={subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
+    const mine=[]; const needTok=[];
+    seMailable().forEach(p=>{
+      if(!seWaiting(p) || !remOn(p)) return;
+      const st=stOf(p); let tok=st.itok; if(!tok){ tok=seTok(); needTok.push([p.i,tok]); }
+      const sent=remSent(p);
+      remDates(p).map(ymd).filter(d=>d>=floor && sent.indexOf(d)<0).slice(0,3).forEach(d=>{
+        const vv=Object.assign(seVars(p,tok),{missing:seMissing(p)});
+        const subject=seFill(tpl.subject,vv), bd=seFill(tpl.body,vv);
+        mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email,
+          subject, html:seHtml(subject,bd), person:p.i, summit:v, graphic:''});
+      });
+    });
+    needTok.forEach(([id,tok])=>patchSt(id,{itok:tok},'a bio and headshot link'));
+    let cur={}; try{ const s=await ST.db.doc('feeds/speaker-reminders').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
+    const others=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>r && r.summit!==v && String(r.on||'')>=floor);
+    /* nearest first, and never so big the flow cannot read it in one go */
+    let list=others.concat(mine).sort((a,b)=>String(a.on).localeCompare(String(b.on)));
+    while(list.length && JSON.stringify(list).length>650000) list.pop();
+    const sig=JSON.stringify(list.map(r=>[r.id,r.to,r.subject,r.html.length]));
+    if(sig===ST.remSig) return;
+    const was=JSON.stringify((cur.requests||[]).map(r=>[r.id,r.to,r.subject,(r.html||'').length]));
+    if(sig!==was) await ST.db.doc('feeds/speaker-reminders').set({updatedAt:new Date().toISOString(), today, requests:list});
+    ST.remSig=sig;
+  }catch(e){}
+  finally{ remBusy=false; }
+}
+
+/* ---------- choosing who gets an email ---------- */
 let seBulk=null;
-async function openSpeakerBulk(kind){
+async function openSpeakerBulk(kind, only){
   const r=await seResume();
   const tpl = kind==='welcome'
     ? Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{})
     : {subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
-  const list=seBulkList(kind);
-  seBulk={kind, subject:tpl.subject, body:tpl.body, pick:new Set(list.map(p=>p.i)), ids:list.map(p=>p.i), sending:false, prev:list[0]&&list[0].i};
+  const pool=seMailable();
+  const want = only? pool.filter(p=>only.indexOf(p.i)>=0)
+    : kind==='welcome'? pool.filter(p=>!seEmailed(p)) : pool.filter(seWaiting);
+  seBulk={kind, subject:tpl.subject, body:tpl.body, pick:new Set(want.map(p=>p.i)), show: kind==='welcome'? 'new' : 'wait', q:'',
+    sending:false, prev:(want[0]||pool[0]||{}).i};
   drawSpeakerBulk();
 }
 function drawSpeakerBulk(){
   let m=document.getElementById('se-bulk');
   if(!seBulk){ if(m) m.remove(); return; }
+  const keepQ=m && m.querySelector('.se-pq') && document.activeElement===m.querySelector('.se-pq');
   if(!m){ m=el('div','se-modal'); m.id='se-bulk'; document.body.appendChild(m); }
   m.textContent='';
   const close=()=>{ seBulk=null; drawSpeakerBulk(); };
   const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
   const box=el('div','se-box'); box.setAttribute('role','dialog');
   const hd=el('div','se-hd');
-  hd.appendChild(el('div','se-t', seBulk.kind==='welcome'? 'Send the Speaker Email to Everyone Not Sent Yet' : 'Remind Speakers About Their Bio & Headshot'));
+  hd.appendChild(el('div','se-t', seBulk.kind==='welcome'? 'Send the Speaker Email' : 'Send a Bio & Headshot Reminder'));
+  const tabs=el('div','se-tabs');
+  [['welcome','Speaker Email'],['remind','Reminder']].forEach(([k,lab])=>{ const b=el('button',seBulk.kind===k?'on':'',lab); b.type='button';
+    b.addEventListener('click',()=>{ if(seBulk.kind!==k){ const keep=[...seBulk.pick]; openSpeakerBulk(k, keep.length? keep : null); } }); tabs.appendChild(b); });
+  hd.appendChild(tabs);
   const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
   box.appendChild(hd);
   const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev');
-  const ppl=seBulk.ids.map(byId).filter(Boolean);
+  /* who: filters, search, tick boxes */
+  const pool=seMailable();
+  const groups={new:pool.filter(p=>!seEmailed(p)), wait:pool.filter(seWaiting), all:pool};
+  const pick=el('div','se-pick');
+  const ph=el('div','se-pickh');
+  ph.appendChild(el('b',null,seBulk.pick.size+' of '+pool.length+' speakers picked'));
+  const qa=el('span','se-pqa');
+  const sAll=el('button','se-lnk','Pick All Shown'); sAll.type='button';
+  const sNone=el('button','se-lnk','Clear'); sNone.type='button';
+  qa.appendChild(sAll); qa.appendChild(sNone); ph.appendChild(qa);
+  pick.appendChild(ph);
+  const seg=el('div','se-pseg');
+  [['new','Not Emailed Yet'],['wait','Waiting on Bio or Headshot'],['all','Everyone']].forEach(([k,lab])=>{
+    const b=el('button',seBulk.show===k?'on':''); b.type='button';
+    b.appendChild(document.createTextNode(lab)); b.appendChild(el('em',null,String(groups[k].length)));
+    b.addEventListener('click',()=>{ seBulk.show=k; drawSpeakerBulk(); }); seg.appendChild(b); });
+  pick.appendChild(seg);
+  const q=document.createElement('input'); q.type='search'; q.className='se-pq'; q.placeholder='Find a speaker'; q.value=seBulk.q||'';
+  pick.appendChild(q);
   const lst=el('div','se-who');
-  lst.appendChild(el('div','se-whoh', seBulk.pick.size+' of '+ppl.length+' picked — each email is filled in for that speaker'));
-  if(!ppl.length) lst.appendChild(el('div','se-note', seBulk.kind==='welcome'? 'Every confirmed speaker with an email address has had the speaker email.' : 'Nobody to remind: everyone who had the speaker email has sent their bio and headshot, or has both on file.'));
-  ppl.forEach(p=>{
-    const row=el('label','se-whor'+(seBulk.prev===p.i?' on':''));
-    const c=document.createElement('input'); c.type='checkbox'; c.checked=seBulk.pick.has(p.i);
-    c.addEventListener('change',()=>{ if(c.checked) seBulk.pick.add(p.i); else seBulk.pick.delete(p.i); drawSpeakerBulk(); });
-    row.appendChild(c);
-    const tx=el('span',null,p.n||''); row.appendChild(tx);
-    row.appendChild(el('small',null,p.e||''));
-    const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',e=>{ e.preventDefault(); seBulk.prev=p.i; drawSpeakerBulk(); });
-    row.appendChild(pv);
-    lst.appendChild(row);
-  });
-  L.appendChild(lst);
+  const shown=()=>{ const t=String(seBulk.q||'').trim().toLowerCase(); return groups[seBulk.show].filter(p=>!t||hay(p).indexOf(t)>=0); };
+  const drawList=()=>{
+    lst.textContent='';
+    const ppl=shown();
+    if(!ppl.length) lst.appendChild(el('div','se-note se-empty', seBulk.show==='new'? 'Every confirmed speaker with an email address has had the speaker email.' : seBulk.show==='wait'? 'Nobody is waiting: everyone emailed has sent their bio and headshot, or has both on file.' : 'Nobody matches.'));
+    ppl.forEach(p=>{
+      const row=el('label','se-whor'+(seBulk.prev===p.i?' on':''));
+      const c=document.createElement('input'); c.type='checkbox'; c.checked=seBulk.pick.has(p.i);
+      c.addEventListener('change',()=>{ if(c.checked) seBulk.pick.add(p.i); else seBulk.pick.delete(p.i); ph.querySelector('b').textContent=seBulk.pick.size+' of '+pool.length+' speakers picked'; paintGo(); });
+      row.appendChild(c);
+      const tx=el('span','se-whon'); tx.appendChild(el('span',null,p.n||''));
+      const rs=remState(p);
+      tx.appendChild(el('small','se-whos '+rs.k, !seEmailed(p)? 'Not emailed yet' : seAllIn(p)? 'All in' : 'Emailed '+localDay(stOf(p).welcome.at).replace(/ at .*/,'')+' · needs '+seMissing(p)));
+      row.appendChild(tx);
+      const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',e=>{ e.preventDefault(); seBulk.prev=p.i; drawList(); paint(); });
+      row.appendChild(pv);
+      lst.appendChild(row);
+    });
+  };
+  q.addEventListener('input',()=>{ seBulk.q=q.value; drawList(); });
+  sAll.addEventListener('click',()=>{ shown().forEach(p=>seBulk.pick.add(p.i)); drawSpeakerBulk(); });
+  sNone.addEventListener('click',()=>{ seBulk.pick.clear(); drawSpeakerBulk(); });
+  pick.appendChild(lst);
+  L.appendChild(pick);
+  drawList();
   const fld=(lab,val,on,area)=>{ const w=el('label','se-f'); w.appendChild(el('span',null,lab));
     const i=document.createElement(area?'textarea':'input'); if(!area) i.type='text'; i.value=val||''; if(area) i.rows=12;
     i.addEventListener('input',()=>{ on(i.value); paint(); }); w.appendChild(i); L.appendChild(w);
@@ -26352,21 +26571,22 @@ function drawSpeakerBulk(){
   fld('Subject',seBulk.subject,v=>seBulk.subject=v);
   fld('Message',seBulk.body,v=>seBulk.body=v,true);
   L.appendChild(el('div','se-note', seBulk.kind==='welcome'
-    ? 'This is the Template for Every Speaker. A change here is saved to the template when you send.'
-    : 'The reminder wording, kept for this summit. {infoLink} is each speaker’s own link to the form.'));
+    ? 'This is the Template for Every Speaker. A change here is saved to the template when you send. Amy and Jonna are copied on every email.'
+    : 'The reminder wording for this summit; the weekly follow-ups use it too. {missing} reads bio, headshot, or bio and headshot, whatever they still owe. {infoLink} is each speaker’s own link to the form. Amy and Jonna are copied.'));
   const acts=el('div','se-acts');
-  const go=el('button','btn', seBulk.sending? 'Sending…' : 'Send to '+seBulk.pick.size); go.type='button';
-  go.disabled=seBulk.sending || !seBulk.pick.size;
+  const go=el('button','btn'); go.type='button';
   let armed=false;
+  const paintGo=()=>{ armed=false; go.classList.remove('armed'); go.textContent= seBulk.sending? 'Sending…' : 'Send to '+seBulk.pick.size+' Speaker'+(seBulk.pick.size===1?'':'s'); go.disabled=seBulk.sending || !seBulk.pick.size; };
+  paintGo();
   go.addEventListener('click',async()=>{
     if(!armed){ armed=true; go.textContent='Click Again to Send '+seBulk.pick.size+' Email'+(seBulk.pick.size===1?'':'s'); go.classList.add('armed'); return; }
-    seBulk.sending=true; drawSpeakerBulk();
+    seBulk.sending=true; paintGo();
     const who=seWho(), at=new Date().toISOString(), g=seDoc().graphic;
     const reqs=[], after=[];
     [...seBulk.pick].map(byId).filter(Boolean).forEach((p,ix)=>{
-      const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
+      const st=stOf(p), itok=st.itok||seTok(), v=Object.assign(seVars(p,itok),{missing:seMissing(p)||'bio and headshot'});
       const subject=seFill(seBulk.subject,v), bd=seFill(seBulk.body,v);
-      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_AMY.email,
+      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email,
         subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: seBulk.kind==='welcome' && g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const f={};
@@ -26375,36 +26595,93 @@ function drawSpeakerBulk(){
       after.push([p.i,f]);
     });
     try{ await seQueue(reqs); }
-    catch(e){ seBulk.sending=false; drawSpeakerBulk(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); return; }
+    catch(e){ seBulk.sending=false; paintGo(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); return; }
     after.forEach(([id,f])=>patchSt(id,f, seBulk.kind==='welcome'? 'a speaker email' : 'a bio and headshot reminder'));
     if(seBulk.kind==='welcome') seSave({subject:seBulk.subject, body:seBulk.body, savedAt:at},'the speaker email template');
     else seSave({remSubject:seBulk.subject, remBody:seBulk.body},'the bio and headshot reminder');
-    const n=reqs.length; seBulk=null; drawSpeakerBulk(); render();
+    const n=reqs.length; seBulk=null; drawSpeakerBulk(); render(); remSyncSoon();
     try{ window.__hqFlash && window.__hqFlash(n+' email'+(n===1?'':'s')+' on the way — they go out within a couple of minutes.'); }catch(e){}
   });
   acts.appendChild(go);
   L.appendChild(acts);
   const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; R.appendChild(pf);
   function paint(){
-    const p=byId(seBulk.prev)||ppl[0]; if(!p){ pf.srcdoc=''; return; }
-    const v=seVars(p, stOf(p).itok||'preview');
+    const p=byId(seBulk.prev)||pool[0]; if(!p){ pf.srcdoc=''; return; }
+    const v=Object.assign(seVars(p, stOf(p).itok||'preview'),{missing:seMissing(p)||'bio and headshot'});
     pf.srcdoc='<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0">'+seHtml(seFill(seBulk.subject,v),seFill(seBulk.body,v))+'</body></html>';
   }
   body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box); paint();
+  if(keepQ){ const qq=m.querySelector('.se-pq'); if(qq){ qq.focus(); try{ qq.setSelectionRange(qq.value.length,qq.value.length); }catch(e){} } }
 }
-/* the bar at the top of Confirmed Speakers */
+
+/* ---------- the Speaker Emails & Follow-Ups board, at the top of Confirmed Speakers ---------- */
+function seSwitch(on,label,onToggle,title){
+  const b=el('button','se-sw'+(on?' on':'')); b.type='button'; b.setAttribute('role','switch'); b.setAttribute('aria-checked',on?'true':'false');
+  b.setAttribute('aria-label',label); if(title) b.title=title;
+  b.appendChild(el('i')); b.appendChild(el('span',null,on?'On':'Off'));
+  b.addEventListener('click',e=>{ e.stopPropagation(); onToggle(!on); });
+  return b;
+}
 function seBulkBar(){
-  const a=seBulkList('welcome').length, b=seBulkList('remind').length;
-  const all0=all().filter(isSpk), noMail=all0.filter(p=>!/@/.test(String(p.e||''))&&!stOf(p).welcome).length;
-  const w=el('div','se-bulkbar');
-  const t=el('div','se-bulkt'); t.appendChild(el('b',null,'Speaker Emails'));
-  t.appendChild(el('span',null,[a? a+' not sent yet':'everyone with an email has had it', b? b+' still owe a bio or headshot':'', noMail? noMail+' need an email address':''].filter(Boolean).join(' · ')));
-  w.appendChild(t);
-  const s1=el('button','btn'+(a?'':' ghost'), a? 'Send to the '+a+' Not Sent' : 'All Sent'); s1.type='button'; s1.disabled=!a;
-  s1.addEventListener('click',()=>openSpeakerBulk('welcome')); w.appendChild(s1);
-  const s2=el('button','btn ghost', 'Remind About the Bio'+(b?' ('+b+')':'')); s2.type='button'; s2.disabled=!b;
-  s2.title='A short reminder with their own link, to the speakers who had the email and have not sent their bio and headshot';
-  s2.addEventListener('click',()=>openSpeakerBulk('remind')); w.appendChild(s2);
+  const pool=all().filter(isSpk), mail=pool.filter(p=>/@/.test(String(p.e||'')));
+  const emailed=mail.filter(seEmailed), waiting=mail.filter(seWaiting), allin=pool.filter(seAllIn);
+  const noMail=pool.filter(p=>!/@/.test(String(p.e||''))).length;
+  const nexts=waiting.map(remState).filter(r=>r.k==='on').map(r=>r.next).sort((a,b)=>a-b);
+  const nextDay=nexts[0], nextN=nextDay? nexts.filter(d=>ymd(d)===ymd(nextDay)).length : 0;
+  const sentN=mail.reduce((n,p)=>n+remSent(p).length,0);
+  const w=el('div','sef');
+  /* the head: what this is, and the one switch for the whole summit */
+  const hd=el('div','sef-hd');
+  const ht=el('div','sef-ht'); ht.appendChild(el('b',null,'Speaker Emails & Follow-Ups'));
+  ht.appendChild(el('span',null, remAllOn()? 'Anyone who still owes a bio or headshot gets a reminder every week, on the same day their email went, until it is in or the Summit starts. Amy and Jonna are copied.' : 'Weekly follow-ups are off for this summit. Nothing goes out on its own.'));
+  hd.appendChild(ht);
+  const swW=el('div','sef-swall'); swW.appendChild(el('small',null,'Weekly Follow-Ups'));
+  swW.appendChild(seSwitch(remAllOn(),'Weekly follow-ups for this summit',on=>{ seSave({remOff:!on},on?'weekly follow-ups on':'weekly follow-ups off'); render(); remSyncSoon(); },
+    'Turns the weekly bio and headshot follow-ups on or off for everybody on this summit'));
+  hd.appendChild(swW);
+  w.appendChild(hd);
+  /* the numbers */
+  const tiles=el('div','sef-tiles');
+  const tile=(n,k,s,cls,go)=>{ const t=el(go?'button':'div','sef-t '+(cls||'')); if(go){ t.type='button'; t.addEventListener('click',go); }
+    t.appendChild(el('b',null,String(n))); t.appendChild(el('span',null,k)); if(s) t.appendChild(el('small',null,s)); tiles.appendChild(t); };
+  tile(emailed.length+'/'+mail.length,'Emailed', mail.length-emailed.length? (mail.length-emailed.length)+' to go' : 'everyone', mail.length-emailed.length?'warn':'good',
+    mail.length-emailed.length? ()=>openSpeakerBulk('welcome') : null);
+  tile(waiting.length,'Waiting on Bio or Headshot', waiting.length? 'press to remind now' : 'nobody', waiting.length?'warn':'good', waiting.length? ()=>openSpeakerBulk('remind') : null);
+  tile(nextDay? seNice(nextDay) : '—','Next Follow-Up', nextDay? nextN+' speaker'+(nextN===1?'':'s') : (remAllOn()? 'none due' : 'follow-ups off'), nextDay?'':'');
+  tile(allin.length+'/'+pool.length,'All In', sentN? sentN+' follow-up'+(sentN===1?'':'s')+' sent' : 'bio and headshot', allin.length===pool.length&&pool.length?'good':'');
+  w.appendChild(tiles);
+  /* the actions */
+  const acts=el('div','sef-acts');
+  const a1=el('button','btn','Choose Speakers to Email'); a1.type='button'; a1.addEventListener('click',()=>openSpeakerBulk('welcome'));
+  const a2=el('button','btn ghost','Send a Reminder Now'); a2.type='button'; a2.disabled=!waiting.length; a2.addEventListener('click',()=>openSpeakerBulk('remind'));
+  acts.appendChild(a1); acts.appendChild(a2);
+  if(noMail) acts.appendChild(el('span','sef-warn', noMail+' speaker'+(noMail===1?' needs':'s need')+' an email address first'));
+  w.appendChild(acts);
+  /* everybody, one line each: where they stand and their own switch */
+  const rows=el('div','sef-rows');
+  const order={on:0,off:1,end:2,none:3,in:4};
+  pool.slice().sort((a,b)=>(order[remState(a).k]-order[remState(b).k]) || String(a.n).localeCompare(String(b.n))).forEach(p=>{
+    const rs=remState(p), st=stOf(p);
+    const r=el('div','sef-r '+rs.k);
+    r.appendChild(avatar(p));
+    const nm=el('button','sef-n'); nm.type='button'; nm.appendChild(el('b',null,p.n||'')); nm.title='Open '+(p.n||'them');
+    nm.appendChild(el('small',null, !/@/.test(String(p.e||''))? 'No email address yet' : !seEmailed(p)? 'Not emailed yet' : 'Emailed '+localDay(st.welcome.at).replace(/ at .*/,'')));
+    nm.addEventListener('click',()=>{ try{ window.__people.open(p.i); }catch(e){} });
+    r.appendChild(nm);
+    const need=el('div','sef-need');
+    [['Bio',hasBio(p)],['Headshot',hasShot(p)]].forEach(([k,ok])=>{ const s=el('span','sef-q'+(ok?' ok':'')); s.appendChild(el('i',null,ok?'✓':'')); s.appendChild(document.createTextNode(k)); need.appendChild(s); });
+    r.appendChild(need);
+    const nx=el('div','sef-next'); nx.appendChild(el('span',null,rs.t));
+    if(rs.sent.length) nx.appendChild(el('small',null,rs.sent.length+' follow-up'+(rs.sent.length===1?'':'s')+' sent, last '+seNice(new Date(rs.sent[rs.sent.length-1]+'T12:00:00'))));
+    r.appendChild(nx);
+    const can=seEmailed(p) && !seAllIn(p) && remAllOn();
+    const sw=seSwitch(can && !st.remOff,'Weekly follow-ups for '+(p.n||'them'),on=>{ patchSt(p.i,{remOff:!on},on?'follow-ups on':'follow-ups off'); render(); remSyncSoon(); },
+      can? 'Weekly follow-ups for '+(p.n||'them') : !seEmailed(p)? 'Starts once their speaker email goes' : seAllIn(p)? 'Nothing to follow up: their bio and headshot are in' : 'Follow-ups are off for the whole summit');
+    if(!can) sw.disabled=true;
+    r.appendChild(sw);
+    rows.appendChild(r);
+  });
+  w.appendChild(rows);
   return w;
 }
 
@@ -27202,7 +27479,10 @@ function init(){
         });
         render();
         /* Amy, 2026-11-03: answers from the bio and headshot form */
-        if(!SI.first){ SI.first=true; setTimeout(()=>siCheck(true),1500); setInterval(()=>siCheck(),60000); }
+        if(!SI.first){ SI.first=true; setTimeout(()=>siCheck(true),1500); setInterval(()=>siCheck(),60000);
+          /* the follow-ups the flow has sent, so each speaker shows how many and when */
+          const remLoad=async()=>{ try{ const s=await ST.db.doc('feeds/speaker-reminders-sent').get(); ST.remSent=(s.exists&&s.data())||{ids:[]}; render(); }catch(e){} remSyncSoon(); };
+          setTimeout(remLoad,2500); setInterval(remLoad,10*60*1000); }
       },()=>{ render(); });
     }catch(e){ render(); }
   })();
