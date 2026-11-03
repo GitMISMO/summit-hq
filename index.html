@@ -7350,7 +7350,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits. <b>Edit</b> on a row opens their name, email, title and company to change right there, with a <b>Notes for This Summit</b> box (who suggested them, the topic, when to follow up).</li>
         <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment or Workshop section too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. The search box at the top of the list narrows it as you type (a name, company, title or email). Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
-        <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the Reservations link) and {rate} (the group guestroom rate); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
+        <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the web address in <b>Reservations</b> under <b>Event Details</b>; it can sit beside the phone number) and {rate} (the dollar amount in <b>Group Guestroom Rate</b> under <b>Accommodations</b>); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
         <li><b>Bio and headshot, collected for you.</b> The speaker email carries each speaker&rsquo;s own link to a short MISMO form (resources.mismo.org/summit-hq/speaker.html): their bio, title, company, LinkedIn and a headshot, which the form makes the right size on their side. Sending the email ticks <b>Asked for bio &amp; headshot</b>. What they send lands on their row within a few minutes of People being open: the bio, title, company and headshot fill in, and <b>Bio &amp; headshot in hand</b> ticks itself. The <b>Bio &amp; Headshot Form</b> line on their row says whether the link went out and when they answered; <b>Copy Their Link</b> gives you their link to paste into an email of your own. They can use the same link again to change anything.</li>
         <li><b>Speaker Emails</b>, at the top of Confirmed Speakers, sends to many at once. <b>Send to the N Not Sent</b> sends the speaker email to every confirmed speaker with an email address who has not had it, each filled in for them; untick anyone to leave them out, and press Preview to see a speaker&rsquo;s copy. <b>Remind About the Bio</b> sends a short reminder with their own link to everyone who had the email and has not sent their bio and headshot. Both ask you to click twice before anything goes, and both go out within a couple of minutes.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
@@ -25949,7 +25949,10 @@ async function seResume(){
   let d={}; try{ const s=ST.db? await ST.db.doc('resume/'+venueNow()).get() : null; d=(s&&s.exists&&s.data())||{}; }catch(e){ d={}; }
   /* Jonna, 2026-11-03: the Resume keeps its fields under details — the hotel, the booking
      link and the group rate the email fills in were never being read from there */
-  d=Object.assign({}, d, d.details||{});
+  /* and what the Resume shows when a box was never typed in comes from the contract, the
+     same way the Resume itself fills it (the group rate, for one) */
+  let base={}; try{ const f=window.__resumeFunctions? window.__resumeFunctions() : null; if(f && window.ResumeModel) base=window.ResumeModel.defaults(f)||{}; }catch(e){ base={}; }
+  d=Object.assign({}, base, d, d.details||{});
   ST.seResume={v:venueNow(), d}; return d;
 }
 function seDefault(r){
@@ -25982,9 +25985,12 @@ seDay(2,true)+' and '+seDay(3,true)+'\n7:30 a.m. – 9:00 a.m. – Hot breakfast
 }
 /* the speaker's own details, for the {placeholders} */
 const seLinkOk=u=>/^https?:\/\/\S+$/i.test(String(u||'').trim());
-function seRoomBlock(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; const u=String(r.reservations||'').trim(); return seLinkOk(u)? u : ''; }
-function seRate(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; let x=String(r.rate||'').trim();
-  if(/^\d+(\.\d+)?$/.test(x)) x='$'+x; return x; }
+/* Reservations can say "1-800-… or https://…": the email takes the web address out of it.
+   The rate can say "$229.00 run of house, single/double": the email takes the $229. */
+function seRoomBlock(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; const m=/https?:\/\/[^\s,;)]+/i.exec(String(r.reservations||'')); return m? m[0].replace(/[.]+$/,'') : ''; }
+function seRate(){ const r=(ST.seResume&&ST.seResume.v===venueNow()&&ST.seResume.d)||{}; const x=String(r.rate||'').trim();
+  if(/^\d+(\.\d+)?$/.test(x)) return '$'+x.replace(/\.00$/,'');
+  const m=/\$\s?\d[\d,]*(\.\d{2})?/.exec(x); return m? m[0].replace(/\s/g,'').replace(/\.00$/,'') : x; }
 /* each speaker's own link to the bio and headshot form; the code only matches their row */
 function seTok(){ const a=new Uint8Array(9); try{ crypto.getRandomValues(a); }catch(e){ for(let i=0;i<9;i++) a[i]=Math.random()*256|0; }
   return [...a].map(x=>(x%36).toString(36)).join('')+Date.now().toString(36).slice(-3); }
@@ -26117,7 +26123,7 @@ function drawSpeakerEmail(){
     if(opt&&opt.area) L.appendChild(seLinkBar(i,()=>{ on(i.value); paintPrev(); }));
     return i; };
   /* what the Resume has not given the email yet */
-  const gaps=[!seRoomBlock()&&'the room block link (Reservations)', !seRate()&&'the group guestroom rate'].filter(Boolean);
+  const gaps=[!seRoomBlock()&&'the room block link (Reservations, under Event Details)', !seRate()&&'the group guestroom rate (under Accommodations)'].filter(Boolean);
   if(gaps.length){ const w=el('div','se-warn');
     w.appendChild(document.createTextNode('The Resume does not have '+gaps.join(' or ')+' yet, so the email shows a reminder in its place. '));
     const go=el('button','se-lnk','Open the Resume'); go.type='button';
@@ -26341,7 +26347,7 @@ function drawSpeakerBulk(){
     return i; };
   const gaps=[!seRoomBlock()&&'the room block link (Reservations)', !seRate()&&'the group guestroom rate'].filter(Boolean);
   if(gaps.length && seBulk.kind==='welcome'){ const w=el('div','se-warn');
-    w.appendChild(document.createTextNode('The Resume does not have '+gaps.join(' or ')+' yet, so the email shows a reminder in its place. Add '+(gaps.length>1?'them':'it')+' on the Resume (Event Details) before sending.'));
+    w.appendChild(document.createTextNode('The Resume does not have '+gaps.join(' or ')+' yet, so the email shows a reminder in its place. The link goes in Reservations under Event Details, and the rate under Accommodations, on the Resume.'));
     L.appendChild(w); }
   fld('Subject',seBulk.subject,v=>seBulk.subject=v);
   fld('Message',seBulk.body,v=>seBulk.body=v,true);
