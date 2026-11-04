@@ -52,6 +52,13 @@
   .msg{border-left:3px solid var(--sky);background:var(--wash);padding:12px 14px;border-radius:6px;margin:0 0 16px;font-size:15px}
   .msg.err{border-color:var(--err)}
   .ft{background:#0d314c;color:#a9d8f3;font-size:12px;padding:14px 24px}
+  .drop{margin-top:10px;border:1.5px dashed var(--line);border-radius:8px;padding:12px 14px;font-size:14px;color:var(--ink2);background:var(--card);cursor:pointer;transition:border-color .15s,background .15s}
+  .drop b{color:var(--ink)} .drop .hint{display:block}
+  .drop.over{border-color:#74bfeb;background:var(--wash)}
+  .lnk{color:#0f6fa8;font-weight:700;text-decoration:underline;cursor:pointer;position:relative}
+  .lnk input{position:absolute;width:1px;height:1px;opacity:0;left:0;top:0}
+  #bmsg{margin-top:10px;font-size:14px}
+  #bmsg button{background:none;border:0;padding:0;font:inherit;font-weight:700;color:#0f6fa8;text-decoration:underline;cursor:pointer;margin-left:6px}
   [hidden]{display:none !important}
 </style>
 </head>
@@ -74,6 +81,12 @@
           <label class="lab" for="bio">Your Bio</label>
           <textarea id="bio" maxlength="5000" placeholder="A short paragraph or two, in the third person, the way you would like it to appear on the agenda and the event app"></textarea>
           <div class="count" id="cnt"></div>
+          <!-- Amy, 2026-11-04: a bio file instead of pasting -->
+          <div class="drop" id="bdrop" tabindex="0" role="button" aria-label="Add your bio as a file">
+            <b>Have your bio in a file?</b> Drop it here, or <label class="lnk">choose it<input type="file" id="bf" accept=".docx,.pdf,.txt,.doc,.rtf,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"></label>.
+            <span class="hint">Word, PDF or text. We&rsquo;ll put the words in the box above so you can check them, and keep your file too.</span>
+          </div>
+          <div class="msg" id="bmsg" hidden></div>
         </div>
         <div class="blk">
           <label class="lab">Your Headshot</label>
@@ -97,6 +110,7 @@
     <div class="ft">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</div>
   </div>
 </div>
+<script src="lib/biotext.js"></script>
 <script>
 (function(){
   /* the "Summit HQ - Speaker Info Answers" flow's address (When an HTTP request is received) */
@@ -117,6 +131,49 @@
   var bio=$("bio");
   var count=function(){ var n=bio.value.trim().split(/\s+/).filter(Boolean).length; $("cnt").textContent = n? n+" word"+(n===1?"":"s") : ""; };
   bio.addEventListener("input",count); count();
+
+  /* the bio as a file: its words go in the box, and the file comes with it */
+  var bioFile=null;
+  var drop=$("bdrop"), bmsg=$("bmsg");
+  var say=function(html,err){ bmsg.className="msg"+(err?" err":""); bmsg.textContent=""; bmsg.hidden=false;
+    if(typeof html==="string") bmsg.textContent=html; else bmsg.appendChild(html); };
+  var takeBio=function(f){
+    if(!f) return;
+    if(f.size>10*1024*1024){ say("That file is very large. Please paste your bio into the box instead.",true); return; }
+    /* the file itself comes along when it is small (most bios are); a big one sends its words */
+    var keep=f.size<=500*1024;
+    say("Reading "+f.name+"…");
+    var fr=new FileReader();
+    fr.onload=function(){
+      bioFile= keep? {name:f.name.slice(0,120), type:f.type||"application/octet-stream", b64:String(fr.result).replace(/^data:[^,]*,/,"")} : null;
+      var go=window.BioText? window.BioText.read(f,f.name) : Promise.resolve("");
+      go.then(function(t){
+        var w=document.createElement("span");
+        if(t){
+          var had=bio.value.trim();
+          bio.value=t.slice(0,5000); count();
+          w.appendChild(document.createTextNode("We\u2019ve put the words from "+f.name+" in the box above"+(had?" in place of what was there":"")+". Please give them a quick read."+(keep?" Your file comes along too.":"")));
+        } else if(!keep){
+          say("That file is too large to send, and its words couldn\u2019t be read. Please paste your bio into the box, or save a smaller copy.",true); return;
+        } else {
+          w.appendChild(document.createTextNode("We\u2019ll take your bio from "+f.name+". If you\u2019d like, you can paste it into the box above as well."));
+        }
+        var x=document.createElement("button"); x.type="button"; x.textContent="Remove the file";
+        x.addEventListener("click",function(){ bioFile=null; bmsg.hidden=true; $("bf").value=""; });
+        w.appendChild(x); say(w);
+      });
+    };
+    fr.onerror=function(){ say("That file couldn\u2019t be read. Please try again, or paste your bio into the box.",true); };
+    fr.readAsDataURL(f);
+  };
+  $("bf").addEventListener("change",function(){ takeBio(this.files&&this.files[0]); });
+  drop.addEventListener("click",function(e){ if(!e.target.closest("label")) $("bf").click(); });
+  ["dragenter","dragover"].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave","drop"].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop",function(e){ var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; takeBio(f); });
+  drop.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("bf").click(); } });
+  /* a file dropped anywhere on the page is not opened by the browser in place of the form */
+  ["dragover","drop"].forEach(function(ev){ window.addEventListener(ev,function(e){ if(!drop.contains(e.target)) e.preventDefault(); }); });
 
   /* the headshot: made small here so it sends quickly */
   var photo="", thumb="";
@@ -154,11 +211,12 @@
     e.preventDefault();
     var err=$("err"); err.hidden=true;
     var b=bio.value.trim();
-    if(!b && !photo){ err.textContent="Please add your bio, your headshot, or both."; err.hidden=false; return; }
+    if(!b && !photo && !bioFile){ err.textContent="Please add your bio, your headshot, or both."; err.hidden=false; return; }
     var li=$("li").value.trim();
     if(li && !/^https?:\/\//i.test(li)) li="https://"+li.replace(/^\/+/,"");
     var payload={t:t, v:v, bio:b.slice(0,5000), title:$("ti").value.trim().slice(0,160), company:$("co").value.trim().slice(0,160),
-      linkedin:li.slice(0,300), photo:photo, thumb:thumb};
+      linkedin:li.slice(0,300), photo:photo, thumb:thumb,
+      bioFileName:bioFile?bioFile.name:"", bioFileType:bioFile?bioFile.type:"", bioFile:bioFile?bioFile.b64:""};
     var btn=$("go"); btn.disabled=true; btn.textContent="Sending…";
     /* the flow's address is kept beside this page in speaker-endpoint.txt */
     var where = ENDPOINT ? Promise.resolve(ENDPOINT)
@@ -171,7 +229,7 @@
       .then(function(){
         $("f").hidden=true;
         var d=$("done"); d.hidden=false;
-        d.textContent = "Thank you" + (first? ", "+first : "") + "! We have your " + [b?"bio":"", photo?"headshot":""].filter(Boolean).join(" and ")
+        d.textContent = "Thank you" + (first? ", "+first : "") + "! We have your " + [(b||bioFile)?"bio":"", photo?"headshot":""].filter(Boolean).join(" and ")
           + ". If you’d like to change anything, use this same link again.";
       })
       .catch(function(){

@@ -5162,6 +5162,11 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-linkform input{flex:1 1 160px;min-width:0;font:13px/1.4 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px}
 .se-warn{font-size:12.5px;line-height:1.45;color:var(--warn-ink,var(--ink));background:var(--warn-soft);border-left:3px solid var(--warn);border-radius:0 4px 4px 0;padding:8px 10px}
 .se-lnk{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--accent);cursor:pointer;text-decoration:underline}
+.se-lnk:disabled{color:var(--ink-3);cursor:default;text-decoration:none}
+#app-people .bio-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:12.5px}
+.se-acts a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.bio-body.one{grid-template-columns:1fr} .bio-body.one .se-prev{display:none}
+.bio-text{width:100%;box-sizing:border-box;font:14px/1.6 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:6px;padding:10px 12px;resize:vertical;min-height:300px}
 #app-people .si-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-4px 0 12px;font-size:12.5px}
 #app-people .si-k{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);border-left:3px solid var(--line-2);padding-left:7px}
 #app-people .si-k.wait{border-left-color:var(--warn)} #app-people .si-k.in{border-left-color:var(--good);color:var(--good)}
@@ -7415,7 +7420,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Sessions They Are In</b> on a speaker&rsquo;s row puts them on that General Sessions segment or Workshop section too.</li>
         <li><b>Master List of Speakers</b> is everyone who has spoken or been added before. The search box at the top of the list narrows it as you type (a name, company, title or email). Press <b>+ Add as Speaker</b> to put someone on this Summit.</li>
         <li><b>The speaker email.</b> <b>Send Speaker Email</b> on a speaker opens the email to check and send. <b>This Email</b> changes just this one; <b>Template for Every Speaker</b> changes the wording for everyone on this Summit. <b>Add a Link</b> under the message puts in a link: type the words to show and the web address (or select words first). Tick <b>Show as a button</b> to make it a navy button on a line of its own, the way the <b>Send My Bio &amp; Headshot</b> button looks; in the message box a button reads as the words in double square brackets followed by the link. A web address typed on its own is a link too. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}; from the Resume, {roomBlock} (the web address in <b>Reservations</b> under <b>Event Details</b>; it can sit beside the phone number) and {rate} (the dollar amount in <b>Group Guestroom Rate</b> under <b>Accommodations</b>); and {infoLink}, the speaker&rsquo;s own link to send their bio and headshot. If the Resume does not have the booking link or the rate yet, the email says so in yellow and shows a reminder in its place.</li>
-        <li><b>Bio and headshot, collected for you.</b> The speaker email carries each speaker&rsquo;s own link to a short MISMO form (resources.mismo.org/summit-hq/speaker.html): their bio, title, company, LinkedIn and a headshot, which the form makes the right size on their side. Sending the email ticks <b>Asked for bio &amp; headshot</b>. What they send lands on their row within a few minutes of People being open: the bio, title, company and headshot fill in, and <b>Bio &amp; headshot in hand</b> ticks itself. The <b>Bio &amp; Headshot Form</b> line on their row says whether the link went out and when they answered; <b>Copy Their Link</b> gives you their link to paste into an email of your own. They can use the same link again to change anything.</li>
+        <li><b>Bio and headshot, collected for you.</b> The speaker email carries each speaker&rsquo;s own link to a short MISMO form (resources.mismo.org/summit-hq/speaker.html): their bio, title, company, LinkedIn and a headshot, which the form makes the right size on their side. Instead of pasting their bio, they can drop it in as a Word, PDF or text file; the form puts the words in the bio box for them to check and sends the file too. On their record in People, <b>Their bio file</b> shows under the Bio with <b>Review the File</b>, which opens the words to read and copy (<b>Copy All</b>, or select any part), <b>Use This as Their Bio</b>, the PDF itself when it is one, and <b>Download the File</b>. <b>Copy the Bio</b> copies whatever is in their Bio box. Sending the email ticks <b>Asked for bio &amp; headshot</b>. What they send lands on their row within a few minutes of People being open: the bio, title, company and headshot fill in, and <b>Bio &amp; headshot in hand</b> ticks itself. The <b>Bio &amp; Headshot Form</b> line on their row says whether the link went out and when they answered; <b>Copy Their Link</b> gives you their link to paste into an email of your own. They can use the same link again to change anything.</li>
         <li><b>Speaker Emails &amp; Follow-Ups</b> is its own card on People. The tiles show how many speakers have been emailed, who is still waiting on a bio or headshot, the next follow-up and who is all in. Under them, every speaker has one line: whether their bio and headshot are in, their next follow-up, and their own <b>On/Off</b> switch.
           <ul>
             <li><b>Choose Speakers to Email</b> opens the email with a list of speakers to tick. Switch between <b>Not Emailed Yet</b>, <b>Waiting on Bio or Headshot</b> and <b>Everyone</b>, search for a name, or use <b>Pick All Shown</b> and <b>Clear</b>. Only the ones ticked get it, each filled in for them; press <b>Preview</b> to see anyone&rsquo;s copy. <b>Speaker Email</b> and <b>Reminder</b> at the top switch which email you are sending.</li>
@@ -25371,6 +25376,16 @@ function personBody(p, off){
   ta.dataset.keep=p.i+':bio';
   ta.addEventListener('change',()=>{ patch(p.i,{bio:ta.value},'a bio'); render(); });
   bioWrap.appendChild(ta);
+  /* Amy, 2026-11-04: copy it in one go, and see the file they sent */
+  const bt=el('div','bio-tools');
+  const cb=el('button','se-lnk','Copy the Bio'); cb.type='button'; cb.disabled=!String(p.bio||'').trim();
+  cb.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(ta.value); cb.textContent='Copied'; }catch(e){ ta.select(); document.execCommand('copy'); cb.textContent='Copied'; } setTimeout(()=>{ cb.textContent='Copy the Bio'; },1500); });
+  bt.appendChild(cb);
+  if(p.biofile && p.biofile.tok){
+    bt.appendChild(el('span','pnote','Their bio file: '+p.biofile.name+(p.biofile.at?' \u00b7 sent '+localDay(p.biofile.at):'')));
+    const vb=el('button','se-lnk','Review the File'); vb.type='button'; vb.addEventListener('click',()=>openBioFile(p.i)); bt.appendChild(vb);
+  }
+  bioWrap.appendChild(bt);
   b.appendChild(bioWrap);
 
   /* which sessions they are speaking in \u2014 this is what fills the app's Session ID */
@@ -26334,6 +26349,8 @@ async function siApplyOne(p,d){
     const th=String(d.thumb||'');
     f.thumb=/^data:image\/(jpeg|png|webp);base64,/.test(th)? th : (await siShrinkUrl(img,96,0.8)) || img;
   }
+  /* a bio sent as a file: noted on their record; the file itself stays with their answer */
+  if(d.bioFile && String(d.bioFile).length>10) f.biofile={name:txt(d.bioFileName,120)||'bio', type:txt(d.bioFileType,100), tok:d.t, at:d.at||'', size:Math.round(String(d.bioFile).length*0.75)};
   if(Object.keys(f).length) patch(p.i,f,'their bio and headshot from the form');
   patchSt(p.i,{iat:d.at||new Date().toISOString()},'their bio and headshot from the form');
   try{ window.__hqFlash && window.__hqFlash((p.n||'A speaker')+' sent their bio'+(f.thumb?' and headshot':'')); }catch(e){}
@@ -26343,7 +26360,7 @@ async function siApplyOne(p,d){
 async function siCheck(force){
   if(!ST.db || SI.busy || !ST.ready || !ST.collsRead || !ST.collsRead.has('people')) return;
   const nowMs=Date.now();
-  const full = force || nowMs-SI.full>30*60*1000;
+  const full = force || nowMs-SI.full>6*60*60*1000;
   if(!full && nowMs-SI.at<4*60*1000) return;
   SI.busy=true; SI.at=nowMs; if(full) SI.full=nowMs;
   let n=0;
@@ -26358,6 +26375,54 @@ async function siCheck(force){
     }
   }finally{ SI.busy=false; }
   if(n) render();
+}
+
+/* ---------- a bio file a speaker sent: read it, copy from it, use it ---------- */
+async function bioFileBlob(p){
+  const f=p.biofile; if(!f||!f.tok) return null;
+  const s=await ST.db.doc('feeds/si-'+f.tok).get(); const d=s.exists? s.data() : null;
+  if(!d || !d.bioFile) return null;
+  const bin=atob(String(d.bioFile)); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  return new Blob([u],{type:f.type||d.bioFileType||'application/octet-stream'});
+}
+async function openBioFile(id){
+  const p=byId(id); if(!p||!p.biofile) return;
+  let m=document.getElementById('bio-modal'); if(m) m.remove();
+  m=el('div','se-modal'); m.id='bio-modal'; document.body.appendChild(m);
+  const close=()=>{ m.remove(); };
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+  const box=el('div','se-box bio-box'); box.setAttribute('role','dialog');
+  const hd=el('div','se-hd'); hd.appendChild(el('div','se-t','Bio File — '+(p.n||'')+' · '+p.biofile.name));
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const body=el('div','se-body bio-body'); const L=el('div','se-edit'), R=el('div','se-prev');
+  L.appendChild(el('div','se-note','Reading the file…')); body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box);
+  let blob=null, text='';
+  try{ blob=await bioFileBlob(p); }catch(e){}
+  if(!blob){ L.textContent=''; L.appendChild(el('div','se-warn','The file could not be opened just now. Try again in a moment.')); return; }
+  try{ text = window.BioText? await window.BioText.read(blob, p.biofile.name) : ''; }catch(e){ text=''; }
+  L.textContent='';
+  L.appendChild(el('div','se-note', text? 'The words from their file. Select any part to copy it, or copy it all.' : 'This kind of file cannot be read here. Download it to open it in Word.'));
+  const tx=document.createElement('textarea'); tx.className='bio-text'; tx.value=text; tx.readOnly=false; tx.rows=16;
+  if(text) L.appendChild(tx);
+  const acts=el('div','se-acts');
+  if(text){
+    const c=el('button','btn','Copy All'); c.type='button';
+    c.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(tx.value); }catch(e){ tx.select(); document.execCommand('copy'); } c.textContent='Copied'; setTimeout(()=>{ c.textContent='Copy All'; },1500); });
+    const u=el('button','btn ghost','Use This as Their Bio'); u.type='button';
+    u.title='Puts this text in their Bio box on People (you can still change it there)';
+    u.addEventListener('click',()=>{ patch(p.i,{bio:tx.value.trim()},'a bio from their file'); u.textContent='Done — It’s Their Bio Now'; render(); });
+    acts.appendChild(c); acts.appendChild(u);
+  }
+  const url=URL.createObjectURL(blob);
+  const dl=document.createElement('a'); dl.className='btn ghost'; dl.href=url; dl.download=p.biofile.name||'bio'; dl.textContent='Download the File';
+  acts.appendChild(dl);
+  L.appendChild(acts);
+  if(/pdf/i.test(blob.type) || /\.pdf$/i.test(p.biofile.name)){
+    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Their bio file'; fr.src=url; R.appendChild(fr);
+  } else {
+    body.classList.add('one');
+  }
 }
 function siStatus(p){
   const st=stOf(p);
@@ -29323,6 +29388,7 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
   tpl:[['Welcome','Welcome and What We Will Cover',10],['Section','',40],['Panel','',40],['Break','Break',15],['Hands-On Exercise','',45],['Q&A','Questions and Discussion',20],['Closing','Wrap-Up and Next Steps',10]]});
 </script>
 
+<script src="lib/biotext.js" defer></script>
 <!-- pdf.js 4.10.38 (Apache 2.0), carried as text so a contract PDF can be turned
      into pages here. Neither block runs on load: Add A Summit makes a module out of
      each one the first time a PDF is dropped. -->
