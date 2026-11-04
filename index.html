@@ -5230,6 +5230,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .sef-next{display:flex;flex-direction:column;min-width:0;font-size:12.5px;color:var(--ink-2);line-height:1.3}
 #app-people .sef-r.on .sef-next span{color:var(--ink);font-weight:600}
 #app-people .sef-next small{font-size:11px;color:var(--ink-3)}
+#app-people .sef-lk{display:flex;gap:12px;font-size:12px;margin-top:2px}
+#app-people .sef-r.due .sef-next > span:first-child{color:#0f6fa8;font-weight:600}
 #app-people .si-fu{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px;font-size:12.5px}
 @media (max-width:760px){ #app-people .sef-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   #app-people .sef-r{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px} #app-people .sef-need,#app-people .sef-next{grid-column:2/-1}
@@ -7417,6 +7419,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Speaker Emails &amp; Follow-Ups</b> is its own card on People. The tiles show how many speakers have been emailed, who is still waiting on a bio or headshot, the next follow-up and who is all in. Under them, every speaker has one line: whether their bio and headshot are in, their next follow-up, and their own <b>On/Off</b> switch.
           <ul>
             <li><b>Choose Speakers to Email</b> opens the email with a list of speakers to tick. Switch between <b>Not Emailed Yet</b>, <b>Waiting on Bio or Headshot</b> and <b>Everyone</b>, search for a name, or use <b>Pick All Shown</b> and <b>Clear</b>. Only the ones ticked get it, each filled in for them; press <b>Preview</b> to see anyone&rsquo;s copy. <b>Speaker Email</b> and <b>Reminder</b> at the top switch which email you are sending.</li>
+            <li><b>The speaker email goes out on its own.</b> With <b>Send Automatically</b> on, a confirmed speaker&rsquo;s email goes out by itself ten minutes after they are placed in a session (from <b>Sessions They Are In</b> on People, or by dragging them onto General Sessions or the Workshop). The ten minutes are there so a slip can be undone; their line on the card shows the time it will go, with <b>Send Now</b> and <b>Hold</b>. It uses the Template for Every Speaker and needs an email address on their record. Speakers who were already in a session when this was switched on (November 4, 2026) are not sent anything on their own: send theirs from <b>Choose Speakers to Email</b>. Summit HQ sends it the next time anyone has People open, so it can wait until someone opens Summit HQ.</li>
+            <li><b>Send a Test to Me</b>, beside the send button on any speaker email or reminder, sends that exact email to you only, from Amy and marked [Test], so you can check it in your inbox. Its bio and headshot button goes to a practice copy of the form, so trying it does not change the speaker&rsquo;s record.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
             <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
@@ -25414,7 +25418,7 @@ function personBody(p, off){
         sel.addEventListener('change',()=>{
           if(!sel.value) return;
           const k=sel.value;
-          patchSt(p.i,{ses:picked.concat(k)},'a session');
+          patchSt(p.i,{ses:picked.concat(k), sesAt:new Date().toISOString()},'a session');
           if(/^gs-/.test(k)) try{ if(window.__gsPerson) window.__gsPerson(p.i,k,true); }catch(e){}
           if(/^wk-/.test(k)) try{ if(window.__wkPerson) window.__wkPerson(p.i,k,true); }catch(e){}
           render();
@@ -26171,7 +26175,7 @@ async function seQueue(req){
   let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ throw e; }   /* a failed read must not wipe emails still waiting to go */
   const cut=Date.now()-60*60*1000;            /* the flow sends within minutes; an hour is plenty */
   const list=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>Date.parse(r.requestedAt||0)>cut);
-  (Array.isArray(req)? req : [req]).forEach(r=>list.push(r));
+  (Array.isArray(req)? req : [req]).forEach(r=>{ if(!list.some(x=>x&&x.id===r.id)) list.push(r); });
   await ref.set({updatedAt:new Date().toISOString(), requests:list});
 }
 let seOpen=null;
@@ -26281,6 +26285,7 @@ function drawSpeakerEmail(){
       try{ if(window.__hqFlash) window.__hqFlash('On its way to '+to+' — it goes out within a couple of minutes.'); }catch(e){}
     });
     acts.appendChild(go);
+    acts.appendChild(seTestBtn(()=>({subject:seOpen.subject, body:seOpen.body, itok:seOpen.itok})));
     if(sent) acts.appendChild(el('span','se-note','Last sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'')+'.'));
     L.appendChild(acts);
   }
@@ -26458,6 +26463,8 @@ async function remSync(){
   remBusy=true;
   try{
     const v=venueNow(); await seResume();
+    /* the speaker email itself, sent on its own once a speaker is in a session */
+    try{ await autoSend(); }catch(e){}
     const today=ymd(seEastDay()), floor=ymd(new Date(seEastDay().getTime()-6*864e5));
     const tpl={subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
     const mine=[]; const needTok=[];
@@ -26485,6 +26492,76 @@ async function remSync(){
     ST.remSig=sig;
   }catch(e){}
   finally{ remBusy=false; }
+}
+
+
+/* ---------- the speaker email, on its own (Amy, 2026-11-04) ----------
+   "she wants it automated". Once a confirmed speaker with an email address is placed in a
+   session (on People, General Sessions or the Workshop), their speaker email goes out by
+   itself ten minutes later, so a slip of the mouse can be undone first. It goes from Amy,
+   copied to Amy and Jonna, filled in from the Template for Every Speaker, and starts their
+   weekly follow-ups. Speakers already in a session when this was switched on are left for
+   Amy to send from Choose Speakers, so nobody is emailed by surprise. Anyone can be held,
+   and the whole thing can be switched off for the summit. */
+const AUTO_WAIT=10*60*1000;
+const autoOn=()=>!seDoc().autoOff;
+const hm=t=>{ const d=new Date(t); return isNaN(d)? '' : d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); };
+function autoState(p){
+  const st=stOf(p);
+  if(seEmailed(p)) return null;
+  if(!/@/.test(String(p.e||''))) return {k:'mail', t:'Needs an email address before it can go'};
+  if(!(st.ses||[]).length) return {k:'ses', t:'Goes out on its own once they are in a session'};
+  if(!autoOn()) return {k:'off', t:'Ready: send it from Choose Speakers'};
+  if(st.autoHold) return {k:'hold', t:'Held: it will not go on its own'};
+  const since=seDoc().autoSince||'';
+  if(!since || !st.sesAt || String(st.sesAt)<String(since)) return {k:'old', t:'Ready: send it from Choose Speakers'};
+  const due=Date.parse(st.sesAt)+AUTO_WAIT;
+  return {k:'due', due, t: Date.now()>=due? 'Going out now' : 'Goes out on its own at '+hm(due)};
+}
+let autoBusy=false;
+async function autoSend(){
+  if(autoBusy || !autoOn()) return;
+  if(!seDoc().autoSince){ seSave({autoSince:new Date().toISOString()},'automatic speaker emails on'); return; }
+  const ready=seMailable().filter(p=>{ const a=autoState(p); return a && a.k==='due' && Date.now()>=a.due; });
+  if(!ready.length) return;
+  autoBusy=true;
+  try{
+    const r=await seResume();
+    const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
+    const at=new Date().toISOString(), g=seDoc().graphic, reqs=[], after=[];
+    ready.forEach(p=>{
+      const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
+      const subject=seFill(tpl.subject,v), bd=seFill(tpl.body,v);
+      reqs.push({id:'auto-'+venueNow()+'-'+p.i, requestedAt:at, requestedBy:'Summit HQ (automatic)', to:String(p.e).trim(), cc:SE_CC,
+        replyTo:SE_AMY.email, from:SE_FROM, subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
+        graphic: g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
+      const steps=Object.assign({},st.steps||{}); if(!steps.contacted && bd.indexOf(itok)>=0) steps.contacted=today();
+      after.push([p.i,{welcome:{at, by:'Summit HQ (automatic)', to:String(p.e).trim(), auto:true}, itok, iask:st.iask||at, steps}]);
+    });
+    await seQueue(reqs);
+    after.forEach(([id,f])=>patchSt(id,f,'a speaker email (automatic)'));
+    render();
+    try{ window.__hqFlash && window.__hqFlash('Speaker email on its way to '+ready.map(p=>p.n).join(', ')); }catch(e){}
+  }catch(e){}
+  finally{ autoBusy=false; }
+}
+/* a copy to whoever is signed in, so the wording can be checked; its form link is a
+   throwaway one, so trying the form does not touch the speaker's record */
+function seTestBtn(get){
+  const b=el('button','btn ghost','Send a Test to Me'); b.type='button';
+  let me=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); me=(s&&s.email)||''; }catch(e){}
+  b.title= me? 'Sends this email to '+me+' only, from Amy, marked [Test]' : 'Sign in to send yourself a test';
+  b.disabled=!me;
+  b.addEventListener('click',async()=>{
+    const x=get(); const tok='test'+seTok().slice(0,10);
+    const swap=t=>String(t||'').split(x.itok||'\u0000').join(tok);
+    const subject='[Test] '+swap(x.subject), body=swap(x.body);
+    b.disabled=true; b.textContent='Sending…';
+    try{ await seQueue({id:'se-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:me, to:me, cc:'',
+      replyTo:SE_AMY.email, from:SE_FROM, subject, html:seHtml(subject,body), person:'', summit:venueNow(), graphic:''}); b.textContent='Test on Its Way to You'; }
+    catch(e){ b.textContent='Could not send the test'; b.disabled=false; }
+  });
+  return b;
 }
 
 /* ---------- choosing who gets an email ---------- */
@@ -26608,6 +26685,9 @@ function drawSpeakerBulk(){
     try{ window.__hqFlash && window.__hqFlash(n+' email'+(n===1?'':'s')+' on the way — they go out within a couple of minutes.'); }catch(e){}
   });
   acts.appendChild(go);
+  acts.appendChild(seTestBtn(()=>{ const p=byId(seBulk.prev)||pool[0]; const tk=(p&&stOf(p).itok)||'preview';
+    const v=Object.assign(p? seVars(p,tk) : {}, {missing:(p&&seMissing(p))||'bio and headshot'});
+    return {subject:seFill(seBulk.subject,v), body:seFill(seBulk.body,v), itok:tk}; }));
   L.appendChild(acts);
   const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; R.appendChild(pf);
   function paint(){
@@ -26638,12 +26718,18 @@ function seBulkBar(){
   /* the head: what this is, and the one switch for the whole summit */
   const hd=el('div','sef-hd');
   const ht=el('div','sef-ht'); ht.appendChild(el('b',null,'Speaker Emails & Follow-Ups'));
-  ht.appendChild(el('span',null, remAllOn()? 'Anyone who still owes a bio or headshot gets a reminder every week, on the same day their email went, until it is in or the Summit starts. Amy and Jonna are copied.' : 'Weekly follow-ups are off for this summit. Nothing goes out on its own.'));
+  ht.appendChild(el('span',null, [autoOn()? 'A speaker\u2019s email goes out from Amy on its own ten minutes after they are placed in a session.' : 'Speaker emails go out only when you send them.',
+    remAllOn()? 'Anyone who still owes a bio or headshot gets a reminder every week, on the same day their email went, until it is in or the Summit starts.' : 'Weekly follow-ups are off.',
+    'Amy and Jonna are copied.'].join(' ')));
   hd.appendChild(ht);
   const swW=el('div','sef-swall'); swW.appendChild(el('small',null,'Weekly Follow-Ups'));
   swW.appendChild(seSwitch(remAllOn(),'Weekly follow-ups for this summit',on=>{ seSave({remOff:!on},on?'weekly follow-ups on':'weekly follow-ups off'); render(); remSyncSoon(); },
     'Turns the weekly bio and headshot follow-ups on or off for everybody on this summit'));
   hd.appendChild(swW);
+  const swA=el('div','sef-swall'); swA.appendChild(el('small',null,'Send Automatically'));
+  swA.appendChild(seSwitch(autoOn(),'Send the speaker email automatically',on=>{ seSave({autoOff:!on},on?'automatic speaker emails on':'automatic speaker emails off'); render(); remSyncSoon(); },
+    'When on, a speaker\u2019s email goes out by itself ten minutes after they are placed in a session'));
+  hd.insertBefore(swA, swW);
   w.appendChild(hd);
   /* the numbers */
   const tiles=el('div','sef-tiles');
@@ -26676,7 +26762,16 @@ function seBulkBar(){
     const need=el('div','sef-need');
     [['Bio',hasBio(p)],['Headshot',hasShot(p)]].forEach(([k,ok])=>{ const s=el('span','sef-q'+(ok?' ok':'')); s.appendChild(el('i',null,ok?'✓':'')); s.appendChild(document.createTextNode(k)); need.appendChild(s); });
     r.appendChild(need);
-    const nx=el('div','sef-next'); nx.appendChild(el('span',null,rs.t));
+    const nx=el('div','sef-next');
+    const as=autoState(p);
+    if(as){ nx.appendChild(el('span',null,as.t));
+      if(as.k==='due' || as.k==='hold'){ const ln=el('span','sef-lk');
+        if(as.k==='due'){ const sn=el('button','se-lnk','Send Now'); sn.type='button'; sn.addEventListener('click',()=>openSpeakerBulk('welcome',[p.i])); ln.appendChild(sn); }
+        const hb=el('button','se-lnk', as.k==='hold'? 'Let It Go Automatically' : 'Hold'); hb.type='button';
+        hb.addEventListener('click',()=>{ patchSt(p.i, as.k==='hold'? {autoHold:false, sesAt:new Date().toISOString()} : {autoHold:true}, as.k==='hold'?'speaker email released':'speaker email held'); render(); });
+        ln.appendChild(hb); nx.appendChild(ln); }
+      if(as.k==='due') r.classList.add('due'); }
+    else nx.appendChild(el('span',null,rs.t));
     if(rs.sent.length) nx.appendChild(el('small',null,rs.sent.length+' follow-up'+(rs.sent.length===1?'':'s')+' sent, last '+seNice(new Date(rs.sent[rs.sent.length-1]+'T12:00:00'))));
     r.appendChild(nx);
     const can=seEmailed(p) && !seAllIn(p) && remAllOn();
@@ -27487,7 +27582,7 @@ function init(){
         if(!SI.first){ SI.first=true; setTimeout(()=>siCheck(true),1500); setInterval(()=>siCheck(),60000);
           /* the follow-ups the flow has sent, so each speaker shows how many and when */
           const remLoad=async()=>{ try{ const s=await ST.db.doc('feeds/speaker-reminders-sent').get(); ST.remSent=(s.exists&&s.data())||{ids:[]}; render(); }catch(e){} remSyncSoon(); };
-          setTimeout(remLoad,2500); setInterval(remLoad,10*60*1000); }
+          setTimeout(remLoad,2500); setInterval(remLoad,10*60*1000); setInterval(()=>{ try{ remSyncSoon(); }catch(e){} },60000); }
       },()=>{ render(); });
     }catch(e){ render(); }
   })();
@@ -27505,7 +27600,7 @@ window.__people={
     const st=stOf(p);
     const f={ses:(st.ses||[]).filter(k=>k!==key)};
     if(on){
-      f.ses.push(key); f.on=true;
+      f.ses.push(key); f.on=true; f.sesAt=new Date().toISOString();
       if(!st.role) f.role='speaker';
       const steps=Object.assign({},st.steps||{}); if(!steps.agenda) steps.agenda=today(); f.steps=steps;
     }
