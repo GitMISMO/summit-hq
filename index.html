@@ -5235,6 +5235,9 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .sef-next{display:flex;flex-direction:column;min-width:0;font-size:12.5px;color:var(--ink-2);line-height:1.3}
 #app-people .sef-r.on .sef-next span{color:var(--ink);font-weight:600}
 #app-people .sef-next small{font-size:11px;color:var(--ink-3)}
+#app-people .se-swl{display:inline-flex;align-items:center;gap:8px;margin-left:auto}
+#app-people .se-swl small{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+#app-people .sef-r.skip .sef-next span{color:var(--ink-3)}
 #app-people .sef-lk{display:flex;gap:12px;font-size:12px;margin-top:2px}
 #app-people .sef-r.due .sef-next > span:first-child{color:#0f6fa8;font-weight:600}
 #app-people .si-fu{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-6px 0 12px;font-size:12.5px}
@@ -7425,6 +7428,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <ul>
             <li><b>Choose Speakers to Email</b> opens the email with a list of speakers to tick. Switch between <b>Not Emailed Yet</b>, <b>Waiting on Bio or Headshot</b> and <b>Everyone</b>, search for a name, or use <b>Pick All Shown</b> and <b>Clear</b>. Only the ones ticked get it, each filled in for them; press <b>Preview</b> to see anyone&rsquo;s copy. <b>Speaker Email</b> and <b>Reminder</b> at the top switch which email you are sending.</li>
             <li><b>The speaker email goes out on its own.</b> With <b>Send Automatically</b> on, a confirmed speaker&rsquo;s email goes out by itself ten minutes after they are placed in a session (from <b>Sessions They Are In</b> on People, or by dragging them onto General Sessions or the Workshop). The ten minutes are there so a slip can be undone; their line on the card shows the time it will go, with <b>Send Now</b> and <b>Hold</b>. It uses the Template for Every Speaker and needs an email address on their record. Speakers who were already in a session when this was switched on (November 4, 2026) are not sent anything on their own: send theirs from <b>Choose Speakers to Email</b>. Summit HQ sends it the next time anyone has People open, so it can wait until someone opens Summit HQ.</li>
+            <li><b>Someone who should not get the speaker email</b> (their sponsor or an assistant is sending the bio and headshot, say): turn off <b>Send Them the Speaker Email</b> on their record, or their switch on the Speaker Emails &amp; Follow-Ups card. Nothing goes to them on its own, they are left out of <b>Not Emailed Yet</b>, and no reminders start. <b>Copy Their Link</b> on their record gives you their bio and headshot form link to pass to whoever is sending it.</li>
+            <li><b>Returning speakers.</b> A speaker who has spoken at an earlier Summit and whose bio and headshot are already on file is told so in their email and asked only whether they want to send an updated one; they get no reminders. In the Template for Every Speaker, a paragraph that starts <b>[New speakers]</b> goes only to everyone else, and one that starts <b>[Returning speakers]</b> goes only to them. {lastSummit} fills in the last Summit they spoke at.</li>
             <li><b>Send a Test to Me</b>, beside the send button on any speaker email or reminder, sends that exact email to you only, from Amy and marked [Test], so you can check it in your inbox. Its bio and headshot button goes to a practice copy of the form, so trying it does not change the speaker&rsquo;s record.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
@@ -25262,7 +25267,10 @@ function personBody(p, off){
     b0.title='Opens the speaker email — check it, change anything, and send';
     b0.addEventListener('click',()=>openSpeakerEmail(p.i));
     sw.appendChild(b0);
-    sw.appendChild(el('span','pnote', sent? 'Sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'') : (p.e? 'Goes to '+p.e : 'Add their email below first')));
+    sw.appendChild(el('span','pnote', sent? 'Sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'') : st.noEmail? 'Set to not get it: their bio and headshot come another way' : (p.e? 'Goes to '+p.e : 'Add their email below first')));
+    if(!sent){ const s0=seSwitch(!st.noEmail,'Send them the speaker email',on=>{ patchSt(p.i,{noEmail:!on},on?'speaker email on':'speaker email off'); render(); },
+        'Turn off if they should not get the speaker email, for example when their sponsor or an assistant is sending the bio and headshot');
+      const sl=el('span','se-swl'); sl.appendChild(el('small',null,'Send Them the Speaker Email')); sl.appendChild(s0); sw.appendChild(sl); }
     b.appendChild(sw);
     b.appendChild(siLine(p));
   }
@@ -26073,8 +26081,10 @@ function seDefault(r){
 'A few details for you to begin planning and promoting your involvement with the Summit:',
 'Summit registration:\nThis week we’ll register you as our guest for the Summit. You’ll receive an email once your registration has been processed.',
 'Hotel:\nThe Summit will be held at the '+hotel+(addr? ', '+addr : '')+'.\n'+book+' for the negotiated rate of {rate} plus tax.',
-'Your Bio & Headshot:\nPlease send us your bio and headshot with the button below. It takes a couple of minutes, and it’s what we use for the agenda, the event app and your session graphic.',
-'[[Send My Bio & Headshot]]({infoLink})',
+'[New speakers] Your Bio & Headshot:\nPlease send us your bio and headshot with the button below. It takes a couple of minutes, and it’s what we use for the agenda, the event app and your session graphic.',
+'[New speakers] [[Send My Bio & Headshot]]({infoLink})',
+'[Returning speakers] Your Bio & Headshot:\nWelcome back! We already have the bio and headshot you shared for the {lastSummit}. If you’d like to send an updated version, just use the button below. If not, there’s nothing you need to do.',
+'[Returning speakers] [[Send an Updated Bio & Headshot]]({infoLink})',
 'Promotion:\nI’ve attached an “I’m Speaking” graphic that you can post on LinkedIn.\nWe’ll be creating a session-specific graphic that we’ll provide once the event is closer. Promotion of your session will be on LinkedIn, in our monthly newsletter, MISMO Matters, in marketing emails and more!',
 'Speaker Breakfast:\nOn the morning of the General Sessions, {gsDay}, we’ll host a hot breakfast just for our speakers before the program begins: a relaxed chance to settle in, meet your fellow speakers and get ready for the day. We’ll share the room and time closer to the Summit.',
 'Session Planning & Prep:\nAbout six weeks out, we’ll reach out to schedule our first planning meetings for you and your fellow panelists.\nIn the meantime, please let us know of any questions you have.',
@@ -26111,11 +26121,25 @@ function seVars(p,tok){
   return {first:String(p.n||'').trim().split(/\s+/)[0]||'there', name:p.n||'', session: names.length? 'our '+join(names) : 'the General Sessions',
     sessionDate: days.length? join(days) : seDay(1,false), summit:venueInfo().name||'Summit', summitShort:seSummitShort(),
     dates:seDates(), gsDate:seDay(1,false), gsDay:seDay(1,true), missing:(typeof seMissing==='function'&&seMissing(p))||'bio and headshot',
+    lastSummit:seLastSummit(p), _group: seReturning(p)? 'returning' : 'new',
     roomBlock: seRoomBlock()||'[room block link — add it to Reservations on the Resume]',
     rate: seRate()||'[rate — add the group guestroom rate on the Resume]',
     infoLink: seInfoLink(p, tok || (seOpen&&seOpen.id===p.i&&seOpen.itok) || stOf(p).itok || '') || '[bio and headshot link]'};
 }
-const seFill=(t,v)=>String(t||'')
+/* Amy, 2026-11-04: a speaker who has spoken before and whose bio and headshot are on file
+   is told so, and only asked for an update. A paragraph that starts [New speakers] or
+   [Returning speakers] goes only to that group. */
+function seLastSummit(p){ const hit=PAST.find(([k])=>(p.h||[]).indexOf(k)>=0); return hit? hit[1].replace(/^(\d{4}) (\w+)$/,'$2 $1')+' Summit' : ''; }
+const seReturning=p=>!!((p.h||[]).length && hasBio(p) && hasShot(p));
+function seGroup(t,v){
+  if(!v || !v._group || !/\[(New|Returning) speakers\]/i.test(String(t||''))) return String(t||'');
+  return String(t||'').replace(/\r/g,'').split(/\n\s*\n/).map(par=>{
+    const m=/^\s*\[(New|Returning) speakers\]\s*/i.exec(par);
+    if(!m) return par;
+    return m[1].toLowerCase()===v._group? par.slice(m[0].length) : null;
+  }).filter(x=>x!=null).join('\n\n');
+}
+const seFill=(t,v)=>seGroup(t,v)
   /* the first template said "here: [room block link]" and "[rate]" — those fill in too */
   .replace(/here:\s*\[room block link\]/gi,'[here]({roomBlock})').replace(/\[room block link\]/gi,'{roomBlock}').replace(/\[rate\]/gi,'{rate}')
   /* a link whose address is not known yet reads as the words and the reminder, not as brackets */
@@ -26247,7 +26271,7 @@ function drawSpeakerEmail(){
   } else {
     fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
     fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
-    L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}. From the Resume: {roomBlock} (the Reservations link) and {rate}. And {infoLink} is the speaker’s own link to send their bio and headshot — it lands on their row in People.'));
+    L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}, {gsDay}, {lastSummit}. Start a paragraph with [New speakers] or [Returning speakers] to send it to only that group. From the Resume: {roomBlock} (the Reservations link) and {rate}. And {infoLink} is the speaker’s own link to send their bio and headshot — it lands on their row in People.'));
     const row=el('div','se-acts');
     const sv=el('button','btn','Save the Template'); sv.type='button';
     sv.addEventListener('click',()=>{ seSave({subject:seOpen.tSubject, body:seOpen.tBody, savedAt:new Date().toISOString()},'the speaker email template');
@@ -26574,6 +26598,7 @@ const hm=t=>{ const d=new Date(t); return isNaN(d)? '' : d.toLocaleTimeString('e
 function autoState(p){
   const st=stOf(p);
   if(seEmailed(p)) return null;
+  if(st.noEmail) return {k:'skip', t:'Not emailing them: their bio and headshot come another way'};
   if(!/@/.test(String(p.e||''))) return {k:'mail', t:'Needs an email address before it can go'};
   if(!(st.ses||[]).length) return {k:'ses', t:'Goes out on its own once they are in a session'};
   if(!autoOn()) return {k:'off', t:'Ready: send it from Choose Speakers'};
@@ -26638,7 +26663,7 @@ async function openSpeakerBulk(kind, only){
     : {subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
   const pool=seMailable();
   const want = only? pool.filter(p=>only.indexOf(p.i)>=0)
-    : kind==='welcome'? pool.filter(p=>!seEmailed(p)) : pool.filter(seWaiting);
+    : kind==='welcome'? pool.filter(p=>!seEmailed(p) && !stOf(p).noEmail) : pool.filter(seWaiting);
   seBulk={kind, subject:tpl.subject, body:tpl.body, pick:new Set(want.map(p=>p.i)), show: kind==='welcome'? 'new' : 'wait', q:'',
     sending:false, prev:(want[0]||pool[0]||{}).i};
   drawSpeakerBulk();
@@ -26663,7 +26688,7 @@ function drawSpeakerBulk(){
   const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev');
   /* who: filters, search, tick boxes */
   const pool=seMailable();
-  const groups={new:pool.filter(p=>!seEmailed(p)), wait:pool.filter(seWaiting), all:pool};
+  const groups={new:pool.filter(p=>!seEmailed(p) && !stOf(p).noEmail), wait:pool.filter(seWaiting), all:pool};
   const pick=el('div','se-pick');
   const ph=el('div','se-pickh');
   ph.appendChild(el('b',null,seBulk.pick.size+' of '+pool.length+' speakers picked'));
@@ -26693,7 +26718,7 @@ function drawSpeakerBulk(){
       row.appendChild(c);
       const tx=el('span','se-whon'); tx.appendChild(el('span',null,p.n||''));
       const rs=remState(p);
-      tx.appendChild(el('small','se-whos '+rs.k, !seEmailed(p)? 'Not emailed yet' : seAllIn(p)? 'All in' : 'Emailed '+localDay(stOf(p).welcome.at).replace(/ at .*/,'')+' · needs '+seMissing(p)));
+      tx.appendChild(el('small','se-whos '+rs.k, stOf(p).noEmail? 'Set to not get the speaker email' : !seEmailed(p)? 'Not emailed yet' : seAllIn(p)? 'All in' : 'Emailed '+localDay(stOf(p).welcome.at).replace(/ at .*/,'')+' · needs '+seMissing(p)));
       row.appendChild(tx);
       const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',e=>{ e.preventDefault(); seBulk.prev=p.i; drawList(); paint(); });
       row.appendChild(pv);
@@ -26773,7 +26798,7 @@ function seSwitch(on,label,onToggle,title){
   return b;
 }
 function seBulkBar(){
-  const pool=all().filter(isSpk), mail=pool.filter(p=>/@/.test(String(p.e||'')));
+  const pool=all().filter(isSpk), mail=pool.filter(p=>/@/.test(String(p.e||'')) && (!stOf(p).noEmail || seEmailed(p)));
   const emailed=mail.filter(seEmailed), waiting=mail.filter(seWaiting), allin=pool.filter(seAllIn);
   const noMail=pool.filter(p=>!/@/.test(String(p.e||''))).length;
   const nexts=waiting.map(remState).filter(r=>r.k==='on').map(r=>r.next).sort((a,b)=>a-b);
@@ -26835,10 +26860,16 @@ function seBulkBar(){
         const hb=el('button','se-lnk', as.k==='hold'? 'Let It Go Automatically' : 'Hold'); hb.type='button';
         hb.addEventListener('click',()=>{ patchSt(p.i, as.k==='hold'? {autoHold:false, sesAt:new Date().toISOString()} : {autoHold:true}, as.k==='hold'?'speaker email released':'speaker email held'); render(); });
         ln.appendChild(hb); nx.appendChild(ln); }
-      if(as.k==='due') r.classList.add('due'); }
+      if(as.k==='due') r.classList.add('due'); if(as.k==='skip') r.classList.add('skip'); }
     else nx.appendChild(el('span',null,rs.t));
     if(rs.sent.length) nx.appendChild(el('small',null,rs.sent.length+' follow-up'+(rs.sent.length===1?'':'s')+' sent, last '+seNice(new Date(rs.sent[rs.sent.length-1]+'T12:00:00'))));
     r.appendChild(nx);
+    if(!seEmailed(p)){
+      /* Amy, 2026-11-04: someone whose bio comes from their sponsor or an admin gets no speaker email at all */
+      const sw0=seSwitch(!st.noEmail,'Speaker email for '+(p.n||'them'),on=>{ patchSt(p.i,{noEmail:!on},on?'speaker email on':'speaker email off'); render(); remSyncSoon(); },
+        st.noEmail? 'They will not get the speaker email. Turn on to send it.' : 'Turn off if they should not get the speaker email (their bio and headshot come another way)');
+      sw0.classList.add('sef-sw0'); r.appendChild(sw0); rows.appendChild(r); return;
+    }
     const can=seEmailed(p) && !seAllIn(p) && remAllOn();
     const sw=seSwitch(can && !st.remOff,'Weekly follow-ups for '+(p.n||'them'),on=>{ patchSt(p.i,{remOff:!on},on?'follow-ups on':'follow-ups off'); render(); remSyncSoon(); },
       can? 'Weekly follow-ups for '+(p.n||'them') : !seEmailed(p)? 'Starts once their speaker email goes' : seAllIn(p)? 'Nothing to follow up: their bio and headshot are in' : 'Follow-ups are off for the whole summit');
