@@ -28680,9 +28680,13 @@ async function loadLenders(){
       if(ty==='Lender' || (/lender/i.test(String(o.sector||'')) && !/non-?lender/i.test(ty))) set.add(k); else known.add(k); });
     set.known=known;
     LENDERS=set;
-  }catch(e){ LENDERS=new Set(); }
+  }catch(e){ LENDERS=null; }
   return LENDERS; })());
-  lenderLoading=false; render();
+  lenderLoading=false;
+  /* a read that failed (often the sign-in was not back yet) is tried again, not kept as "no lenders" */
+  if(!LENDERS){ window.__hqLendersP=null; window.__hqLendersTries=(window.__hqLendersTries||0)+1;
+    if(window.__hqLendersTries<5) setTimeout(loadLenders,15000); else LENDERS=new Set(); }
+  render();
 }
 function isLender(p){
   if(!p) return false;
