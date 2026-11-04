@@ -7419,7 +7419,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>Choose Speakers to Email</b> opens the email with a list of speakers to tick. Switch between <b>Not Emailed Yet</b>, <b>Waiting on Bio or Headshot</b> and <b>Everyone</b>, search for a name, or use <b>Pick All Shown</b> and <b>Clear</b>. Only the ones ticked get it, each filled in for them; press <b>Preview</b> to see anyone&rsquo;s copy. <b>Speaker Email</b> and <b>Reminder</b> at the top switch which email you are sending.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
-            <li>Amy and Jonna are copied on every speaker email and every reminder, and replies go to Amy.</li>
+            <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
           </ul></li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
@@ -26267,7 +26267,7 @@ function drawSpeakerEmail(){
       const g2=seDoc().graphic;
       let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
       const req={id:'se-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:who,
-        to, cc:String(seOpen.cc||'').trim(), subject:seOpen.subject, html:seHtml(seOpen.subject, seOpen.body), person:p.i, summit:venueNow(),
+        to, cc:String(seOpen.cc||'').trim(), from:SE_FROM, replyTo:SE_AMY.email, subject:seOpen.subject, html:seHtml(seOpen.subject, seOpen.body), person:p.i, summit:venueNow(),
         graphic: g2&&g2.name ? 'speaker-graphic-'+venueNow() : ''};
       try{ await seQueue(req); }
       catch(e){ seOpen.sending=false; drawSpeakerEmail(); alert('Summit HQ could not queue the email. Check you are signed in and try again.'); return; }
@@ -26399,6 +26399,9 @@ function siLine(p){
    looks for the speaker's form answer: anybody who has already sent theirs is skipped, even
    when nobody has opened Summit HQ since. */
 const SE_CC='amoses@mismo.org; jcritchley@mismo.org';
+/* Amy, 2026-11-04: the speaker emails and the follow-ups go out from Amy herself; the flow
+   sends "as" this address (Jonna's Outlook needs Send As or Send on Behalf for Amy's mailbox) */
+const SE_FROM='amoses@mismo.org';
 /* Jonna, 2026-11-03: "a nice warm nudge" — not the speaker email again, just a friendly note */
 const SE_REMIND={subject:'A Friendly Nudge: Your Bio & Headshot for the MISMO {summitShort}',
   body:['Hi {first},',
@@ -26465,7 +26468,7 @@ async function remSync(){
       remDates(p).map(ymd).filter(d=>d>=floor && sent.indexOf(d)<0).slice(0,3).forEach(d=>{
         const vv=Object.assign(seVars(p,tok),{missing:seMissing(p)});
         const subject=seFill(tpl.subject,vv), bd=seFill(tpl.body,vv);
-        mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email,
+        mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email, from:SE_FROM,
           subject, html:seHtml(subject,bd), person:p.i, summit:v, graphic:''});
       });
     });
@@ -26588,7 +26591,7 @@ function drawSpeakerBulk(){
     [...seBulk.pick].map(byId).filter(Boolean).forEach((p,ix)=>{
       const st=stOf(p), itok=st.itok||seTok(), v=Object.assign(seVars(p,itok),{missing:seMissing(p)||'bio and headshot'});
       const subject=seFill(seBulk.subject,v), bd=seFill(seBulk.body,v);
-      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email,
+      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email, from:SE_FROM,
         subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: seBulk.kind==='welcome' && g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const f={};
