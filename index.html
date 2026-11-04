@@ -7334,7 +7334,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Start from the <b>Typical Tuesday</b> template, or <b>Start Blank</b>. <b>Start Over</b> clears it.</li>
         <li>Add a segment, give it a type (fireside chat, case study, presentation, panel, lunch and so on), a title, a description and a length. Drag segments to reorder them, or use the arrows. The times recalculate from the start time; pin a time when a segment must start at a set time and any gap or clash is flagged.</li>
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
-        <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 is marked automatically, and you can mark one by hand. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
+        <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
       </ul>
       <h4>The Workshop</h4>
@@ -28672,7 +28672,13 @@ async function loadLenders(){
     const txt=(await Promise.all(parts)).map(p=>(p&&p.data&&p.data.s)||'').join('');
     const orgs=(JSON.parse(txt).orgs)||[];
     const set=new Set();
-    orgs.forEach(o=>{ if(!o) return; const ty=String(o.type||''); if(ty==='Lender' || (/lender/i.test(String(o.sector||'')) && !/non-?lender/i.test(ty))){ const k=normCo(o.name); if(k) set.add(k); } });
+    /* Jonna, 2026-11-04: every organization Member 360 knows is kept too, so a company it
+       lists by its exact name as not a lender (First American, the title company) is not
+       marked a lender just because "First American Bank" is one */
+    const known=new Set();
+    orgs.forEach(o=>{ if(!o) return; const ty=String(o.type||''); const k=normCo(o.name); if(!k) return;
+      if(ty==='Lender' || (/lender/i.test(String(o.sector||'')) && !/non-?lender/i.test(ty))) set.add(k); else known.add(k); });
+    set.known=known;
     LENDERS=set;
   }catch(e){ LENDERS=new Set(); }
   return LENDERS; })());
@@ -28683,6 +28689,7 @@ function isLender(p){
   const m=doc&&doc.lenders; if(m && m[p.i]!=null) return !!m[p.i];
   const k=normCo(p.c); if(!k||!LENDERS) return false;
   if(LENDERS.has(k)) return true;
+  if(LENDERS.known && LENDERS.known.has(k)) return false;   /* Member 360 has this exact company, and it is not a lender */
   for(const L of LENDERS){ if(Math.min(k.length,L.length)>5 && (k.startsWith(L)||L.startsWith(k))) return true; }
   return false;
 }
