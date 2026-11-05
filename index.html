@@ -5155,6 +5155,9 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-f textarea{resize:vertical;min-height:260px}
 .se-note{font-size:11.5px;color:var(--ink-3);line-height:1.45}
 /* Amy, 2026-11-03: Add a Link, and what the Resume still has to give the email */
+.se-savebar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--accent-soft);position:sticky;top:-14px;z-index:2}
+.se-savebar .se-save{min-width:max-content}
+.se-sst{font-size:12.5px;font-weight:600;color:var(--ink-3)} .se-sst.dirty{color:var(--warn-ink,#8a5200)} .se-sst.ok{color:var(--good)}
 .se-linkbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:-4px}
 .se-linkform{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1 1 100%;background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:8px}
 .se-linkform[hidden]{display:none}
@@ -7430,6 +7433,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>The speaker email goes out on its own.</b> With <b>Send Automatically</b> on, a confirmed speaker&rsquo;s email goes out by itself ten minutes after they are placed in a session (from <b>Sessions They Are In</b> on People, or by dragging them onto General Sessions or the Workshop). The ten minutes are there so a slip can be undone; their line on the card shows the time it will go, with <b>Send Now</b> and <b>Hold</b>. It uses the Template for Every Speaker and needs an email address on their record. Speakers who were already in a session when this was switched on (November 4, 2026) are not sent anything on their own: send theirs from <b>Choose Speakers to Email</b>. Summit HQ sends it the next time anyone has People open, so it can wait until someone opens Summit HQ.</li>
             <li><b>Someone who should not get the speaker email</b> (their sponsor or an assistant is sending the bio and headshot, say): turn off <b>Send Them the Speaker Email</b> on their record, or their switch on the Speaker Emails &amp; Follow-Ups card. Nothing goes to them on its own, they are left out of <b>Not Emailed Yet</b>, and no reminders start. <b>Copy Their Link</b> on their record gives you their bio and headshot form link to pass to whoever is sending it.</li>
             <li><b>Returning speakers.</b> A speaker who has spoken at an earlier Summit and whose bio and headshot are already on file is told so in their email and asked only whether they want to send an updated one; they get no reminders. In the Template for Every Speaker, a paragraph that starts <b>[New speakers]</b> goes only to everyone else, and one that starts <b>[Returning speakers]</b> goes only to them. {lastSummit} fills in the last Summit they spoke at.</li>
+            <li><b>Saving your changes.</b> In a speaker&rsquo;s email, <b>Save</b> sits at the top. On <b>This Email</b> it keeps your changes for that one speaker: their own saved email is what goes to them, whether you send it or it goes on its own, and <b>Go Back to the Template Wording</b> drops it. On <b>Template for Every Speaker</b>, <b>Save for Every Speaker</b> saves the wording everyone gets and checks the saved copy before it says <b>Saved &#10003;</b>. Until you save, it says <b>Changes not saved yet</b>, and closing asks whether to save. Changes typed in <b>Choose Speakers to Email</b> go in those emails only and do not change the template.</li>
             <li><b>Send a Test to Me</b>, beside the send button on any speaker email or reminder, sends that exact email to you only, from Amy and marked [Test], so you can check it in your inbox. Its bio and headshot button goes to a practice copy of the form, so trying it does not change the speaker&rsquo;s record.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
@@ -26180,6 +26184,57 @@ function seHtml(subject, body){
    +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
    +'</tbody></table></td></tr></tbody></table>';
 }
+
+/* saving, and checking it took: the template goes to the shared copy and is read back from
+   the server; a speaker's own email is kept on their record */
+async function seSaveNow(p){
+  if(!seOpen) return false;
+  const when=()=>new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  if(seOpen.mode==='one'){
+    patchSt(p.i,{seDraft:{subject:seOpen.subject, body:seOpen.body, at:new Date().toISOString()}},'their speaker email');
+    seOpen.draft=true; seOpen.dirtyOne=false; seOpen.saved='Saved ✓ '+when()+' — this is what '+(String(p.n||'').split(/\s+/)[0]||'they')+' will get';
+    return true;
+  }
+  const want={subject:seOpen.tSubject, body:seOpen.tBody, savedAt:new Date().toISOString()};
+  seSave(want,'the speaker email template');
+  /* read it back from the server, the way every other computer will see it */
+  let ok=false;
+  for(let i=0;i<8 && !ok;i++){
+    await new Promise(r=>setTimeout(r,i?1500:900));
+    try{ const tok=window.ResourcesSession&&window.ResourcesSession.token();
+      const j=await fetch('https://rgvdi67cg27o5kcmiytcqbqnrm0hmztx.lambda-url.us-east-1.on.aws/summit-hq/data/speaker-email',{cache:'no-store',headers:{Authorization:'Bearer '+tok}}).then(r=>r.json());
+      const d=((j&&j.data&&j.data.docs)||{})['speaker-email/'+venueNow()]||{};
+      ok= d.body===want.body && d.subject===want.subject; }catch(e){}
+  }
+  if(ok){ seOpen.dirtyTpl=false; seOpen.saved='Saved ✓ '+when()+' — every speaker gets this wording';
+    /* this speaker's email follows, unless it has its own saved copy */
+    if(!seOpen.draft){ const v=seVars(p,seOpen.itok); seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); } }
+  else seOpen.saved='';
+  if(!ok) alert('Summit HQ could not confirm the template saved. Check you are signed in, then press Save again.');
+  return ok;
+}
+/* closing: ask first when something is not saved */
+function seClose(){
+  if(!seOpen){ drawSpeakerEmail(); return; }
+  if(!seOpen.dirtyOne && !seOpen.dirtyTpl){ seOpen=null; drawSpeakerEmail(); return; }
+  const w=document.createElement('div'); w.className='hqg'; w.setAttribute('role','alertdialog'); w.setAttribute('aria-label','Unsaved changes');
+  w.innerHTML='<div class="hqg-scrim"></div><div class="hqg-box"><div class="hqg-ic">!</div><b>Save your changes?</b>'
+    +'<p>You changed '+(seOpen.dirtyTpl&&seOpen.dirtyOne? 'this email and the template' : seOpen.dirtyTpl? 'the Template for Every Speaker' : 'this speaker’s email')+' and didn’t press Save.</p>'
+    +'<div class="hqg-acts"><button type="button" class="btn hqg-save">Save Changes</button>'
+    +'<button type="button" class="btn ghost hqg-drop">Discard Changes</button>'
+    +'<button type="button" class="hqg-keep">Keep Editing</button></div></div>';
+  w.style.zIndex='30000';
+  const done=()=>w.remove();
+  w.querySelector('.hqg-save').addEventListener('click',async()=>{ done(); const p=byId(seOpen.id); const keep=seOpen.mode;
+    if(seOpen.dirtyTpl){ seOpen.mode='tpl'; await seSaveNow(p); }
+    if(seOpen.dirtyOne){ seOpen.mode='one'; await seSaveNow(p); }
+    if(!seOpen.dirtyOne && !seOpen.dirtyTpl){ seOpen=null; } else seOpen.mode=keep;
+    drawSpeakerEmail(); });
+  w.querySelector('.hqg-drop').addEventListener('click',()=>{ done(); seOpen=null; drawSpeakerEmail(); });
+  w.querySelector('.hqg-keep').addEventListener('click',done);
+  w.querySelector('.hqg-scrim').addEventListener('click',done);
+  document.body.appendChild(w);
+}
 /* Amy, 2026-11-03: a link without typing the brackets — the words and the address, and it
    goes in where the cursor is (or around the words picked) */
 function seLinkBar(ta,changed){
@@ -26227,8 +26282,9 @@ async function openSpeakerEmail(id){
   const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
   const itok=stOf(p).itok||seTok();
   const v=seVars(p,itok);
-  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_CC, subject:seFill(tpl.subject,v), body:seFill(tpl.body,v),
-    tSubject:tpl.subject, tBody:tpl.body, sending:false};
+  const dr=stOf(p).seDraft;
+  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_CC, subject: dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), body: dr&&dr.body!=null? dr.body : seFill(tpl.body,v),
+    tSubject:tpl.subject, tBody:tpl.body, sending:false, dirtyOne:false, dirtyTpl:false, saved:'', draft:!!dr};
   drawSpeakerEmail();
 }
 function drawSpeakerEmail(){
@@ -26237,7 +26293,7 @@ function drawSpeakerEmail(){
   const p=byId(seOpen.id); if(!p){ seOpen=null; if(m) m.remove(); return; }
   if(!m){ m=el('div','se-modal'); m.id='se-modal'; document.body.appendChild(m); }
   m.textContent='';
-  const scrim=el('div','se-scrim'); scrim.addEventListener('click',()=>{ seOpen=null; drawSpeakerEmail(); }); m.appendChild(scrim);
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',()=>seClose()); m.appendChild(scrim);
   const box=el('div','se-box'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Speaker email');
   const hd=el('div','se-hd');
   hd.appendChild(el('div','se-t','Speaker Email — '+(p.n||'')));
@@ -26246,17 +26302,38 @@ function drawSpeakerEmail(){
     const b=el('button',seOpen.mode===k?'on':'',lab); b.type='button';
     b.addEventListener('click',()=>{ seOpen.mode=k; drawSpeakerEmail(); }); tabs.appendChild(b); });
   hd.appendChild(tabs);
-  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',()=>{ seOpen=null; drawSpeakerEmail(); });
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',()=>seClose());
   hd.appendChild(x);
   box.appendChild(hd);
   const body=el('div','se-body');
   const L=el('div','se-edit'), R=el('div','se-prev');
+  /* Jonna, 2026-11-05: "put a save button, make sure it works". Every change is marked
+     unsaved until Save is pressed, Save checks the saved copy really took, and closing with
+     unsaved changes asks first. */
+  const bar=el('div','se-savebar');
+  const st0=el('span','se-sst');
+  const paintBar=()=>{ const dirty= seOpen.mode==='one'? seOpen.dirtyOne : seOpen.dirtyTpl;
+    st0.className='se-sst '+(dirty?'dirty':seOpen.saved?'ok':'');
+    st0.textContent= dirty? 'Changes not saved yet' : seOpen.saved? seOpen.saved : (seOpen.mode==='one'? (seOpen.draft? 'Their own saved email' : 'From the Template for Every Speaker') : 'Saved'); };
   const fld=(lab,val,on,opt)=>{ const w=el('label','se-f'); w.appendChild(el('span',null,lab));
     const i=document.createElement(opt&&opt.area?'textarea':'input'); if(!opt||!opt.area) i.type='text'; i.value=val||'';
     if(opt&&opt.rows) i.rows=opt.rows; if(opt&&opt.ph) i.placeholder=opt.ph;
-    i.addEventListener('input',()=>{ on(i.value); paintPrev(); }); w.appendChild(i); L.appendChild(w);
-    if(opt&&opt.area) L.appendChild(seLinkBar(i,()=>{ on(i.value); paintPrev(); }));
+    const mark=()=>{ if(seOpen.mode==='one') seOpen.dirtyOne=true; else seOpen.dirtyTpl=true; seOpen.saved=''; paintBar(); };
+    i.addEventListener('input',()=>{ on(i.value); mark(); paintPrev(); }); w.appendChild(i); L.appendChild(w);
+    if(opt&&opt.area) L.appendChild(seLinkBar(i,()=>{ on(i.value); mark(); paintPrev(); }));
     return i; };
+  const sv=el('button','btn se-save', seOpen.mode==='one'? 'Save' : 'Save for Every Speaker'); sv.type='button';
+  sv.title= seOpen.mode==='one'? 'Keeps your changes to '+(p.n||'this speaker')+'\u2019s email; it is what goes to them, whether you send it or it goes on its own' : 'Saves the wording every speaker on this summit gets';
+  sv.addEventListener('click',async()=>{ sv.disabled=true; sv.textContent='Saving\u2026'; await seSaveNow(p); sv.disabled=false; drawSpeakerEmail(); });
+  bar.appendChild(sv); bar.appendChild(st0);
+  if(seOpen.mode==='one' && seOpen.draft){
+    const dd=el('button','se-lnk','Go Back to the Template Wording'); dd.type='button';
+    dd.title='Drops the email saved just for '+(p.n||'them')+' and uses the Template for Every Speaker again';
+    dd.addEventListener('click',()=>{ patchSt(p.i,{seDraft:null},'their own speaker email dropped'); const v=seVars(p,seOpen.itok);
+      seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); seOpen.draft=false; seOpen.dirtyOne=false; seOpen.saved=''; drawSpeakerEmail(); });
+    bar.appendChild(dd);
+  }
+  L.appendChild(bar); paintBar();
   /* what the Resume has not given the email yet */
   const gaps=[!seRoomBlock()&&'the room block link (Reservations, under Event Details)', !seRate()&&'the group guestroom rate (under Accommodations)'].filter(Boolean);
   if(gaps.length){ const w=el('div','se-warn');
@@ -26270,18 +26347,15 @@ function drawSpeakerEmail(){
     fld('Cc',seOpen.cc,v=>seOpen.cc=v);
     fld('Subject',seOpen.subject,v=>seOpen.subject=v);
     fld('Message',seOpen.body,v=>seOpen.body=v,{area:true,rows:18});
-    L.appendChild(el('div','se-note','Changes here are for this email only. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and Add a Link (or [words](https://link)) makes a link; tick Show as a Button for a button ([[words]](https://link) on a line of its own). A web address on its own is a link too.'));
+    L.appendChild(el('div','se-note','Changes here are for '+(p.n||'this speaker')+' only: press Save and they stay, and it is this email that goes to them. To change the wording for everyone, use Template for Every Speaker. A blank line starts a new paragraph, a short line ending in a colon becomes a heading, and Add a Link (or [words](https://link)) makes a link; tick Show as a Button for a button ([[words]](https://link) on a line of its own). A web address on its own is a link too.'));
   } else {
     fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
     fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
     L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}, {gsDay}, {lastSummit}. Start a paragraph with [New speakers] or [Returning speakers] to send it to only that group. From the Resume: {roomBlock} (the Reservations link) and {rate}. And {infoLink} is the speaker’s own link to send their bio and headshot — it lands on their row in People.'));
     const row=el('div','se-acts');
-    const sv=el('button','btn','Save the Template'); sv.type='button';
-    sv.addEventListener('click',()=>{ seSave({subject:seOpen.tSubject, body:seOpen.tBody, savedAt:new Date().toISOString()},'the speaker email template');
-      const v=seVars(p,seOpen.itok); seOpen.subject=seFill(seOpen.tSubject,v); seOpen.body=seFill(seOpen.tBody,v); seOpen.mode='one'; drawSpeakerEmail(); });
     const rs=el('button','btn ghost','Start Over From the Standard Wording'); rs.type='button';
-    rs.addEventListener('click',async()=>{ const d=seDefault(await seResume()); seOpen.tSubject=d.subject; seOpen.tBody=d.body; drawSpeakerEmail(); });
-    row.appendChild(sv); row.appendChild(rs); L.appendChild(row);
+    rs.addEventListener('click',async()=>{ const d=seDefault(await seResume()); seOpen.tSubject=d.subject; seOpen.tBody=d.body; seOpen.dirtyTpl=true; seOpen.saved=''; drawSpeakerEmail(); });
+    row.appendChild(rs); L.appendChild(row);
   }
   /* the graphic */
   const gw=el('div','se-graphic');
@@ -26319,7 +26393,7 @@ function drawSpeakerEmail(){
       catch(e){ seOpen.sending=false; drawSpeakerEmail(); alert('Summit HQ could not queue the email. Check you are signed in and try again.'); return; }
       /* the email carried their bio and headshot link: that step is done, and the form's answer
          finds them by the code in it */
-      const f={welcome:{at:new Date().toISOString(), by:who, to}};
+      const f={welcome:{at:new Date().toISOString(), by:who, to}, seDraft:null};
       if(String(seOpen.body||'').indexOf(seOpen.itok)>=0){ f.itok=seOpen.itok; f.iask=f.welcome.at;
         const steps=Object.assign({},stOf(p).steps||{}); if(!steps.contacted) steps.contacted=today(); f.steps=steps; }
       patchSt(p.i,f,'a speaker email');
@@ -26624,12 +26698,13 @@ async function autoSend(){
     const at=new Date().toISOString(), g=seDoc().graphic, reqs=[], after=[];
     ready.forEach(p=>{
       const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
-      const subject=seFill(tpl.subject,v), bd=seFill(tpl.body,v);
+      const dr=st.seDraft;
+      const subject= dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), bd= dr&&dr.body!=null? dr.body : seFill(tpl.body,v);
       reqs.push({id:'auto-'+venueNow()+'-'+p.i, requestedAt:at, requestedBy:'Summit HQ (automatic)', to:String(p.e).trim(), cc:SE_CC,
         replyTo:SE_AMY.email, from:SE_FROM, subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const steps=Object.assign({},st.steps||{}); if(!steps.contacted && bd.indexOf(itok)>=0) steps.contacted=today();
-      after.push([p.i,{welcome:{at, by:'Summit HQ (automatic)', to:String(p.e).trim(), auto:true}, itok, iask:st.iask||at, steps}]);
+      after.push([p.i,{welcome:{at, by:'Summit HQ (automatic)', to:String(p.e).trim(), auto:true}, itok, iask:st.iask||at, steps, seDraft:null}]);
     });
     await seQueue(reqs);
     after.forEach(([id,f])=>patchSt(id,f,'a speaker email (automatic)'));
@@ -26746,7 +26821,7 @@ function drawSpeakerBulk(){
   fld('Subject',seBulk.subject,v=>seBulk.subject=v);
   fld('Message',seBulk.body,v=>seBulk.body=v,true);
   L.appendChild(el('div','se-note', seBulk.kind==='welcome'
-    ? 'This is the Template for Every Speaker. A change here is saved to the template when you send. Amy and Jonna are copied on every email.'
+    ? 'The Template for Every Speaker. A change here goes in these emails only; to change the template itself, open any speaker\u2019s email and use Template for Every Speaker. A speaker with their own saved email gets that one. Amy and Jonna are copied.'
     : 'The reminder wording for this summit; the weekly follow-ups use it too. {missing} reads bio, headshot, or bio and headshot, whatever they still owe. {infoLink} is each speaker’s own link to the form. Amy and Jonna are copied.'));
   const acts=el('div','se-acts');
   const go=el('button','btn'); go.type='button';
@@ -26760,20 +26835,20 @@ function drawSpeakerBulk(){
     const reqs=[], after=[];
     [...seBulk.pick].map(byId).filter(Boolean).forEach((p,ix)=>{
       const st=stOf(p), itok=st.itok||seTok(), v=Object.assign(seVars(p,itok),{missing:seMissing(p)||'bio and headshot'});
-      const subject=seFill(seBulk.subject,v), bd=seFill(seBulk.body,v);
+      const own= seBulk.kind==='welcome' && st.seDraft;
+      const subject= own&&own.subject!=null? own.subject : seFill(seBulk.subject,v), bd= own&&own.body!=null? own.body : seFill(seBulk.body,v);
       reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email, from:SE_FROM,
         subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: seBulk.kind==='welcome' && g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const f={};
-      if(seBulk.kind==='welcome') f.welcome={at, by:who, to:String(p.e).trim()}; else f.remind={at, by:who};
+      if(seBulk.kind==='welcome'){ f.welcome={at, by:who, to:String(p.e).trim()}; f.seDraft=null; } else f.remind={at, by:who};
       if(bd.indexOf(itok)>=0){ f.itok=itok; f.iask=st.iask||at; const steps=Object.assign({},st.steps||{}); if(!steps.contacted) steps.contacted=today(); f.steps=steps; }
       after.push([p.i,f]);
     });
     try{ await seQueue(reqs); }
     catch(e){ seBulk.sending=false; paintGo(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); return; }
     after.forEach(([id,f])=>patchSt(id,f, seBulk.kind==='welcome'? 'a speaker email' : 'a bio and headshot reminder'));
-    if(seBulk.kind==='welcome') seSave({subject:seBulk.subject, body:seBulk.body, savedAt:at},'the speaker email template');
-    else seSave({remSubject:seBulk.subject, remBody:seBulk.body},'the bio and headshot reminder');
+    if(seBulk.kind!=='welcome') seSave({remSubject:seBulk.subject, remBody:seBulk.body},'the bio and headshot reminder');
     const n=reqs.length; seBulk=null; drawSpeakerBulk(); render(); remSyncSoon();
     try{ window.__hqFlash && window.__hqFlash(n+' email'+(n===1?'':'s')+' on the way — they go out within a couple of minutes.'); }catch(e){}
   });
