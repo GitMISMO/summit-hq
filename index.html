@@ -26485,7 +26485,7 @@ async function siCheck(force){
       if(!at || String(st.mat||'')>=String(at)) continue;
       let m=null; try{ const s=await ST.db.doc('feeds/sm-'+st.itok).get(); m=s.exists? s.data() : null; }catch(e){ continue; }
       if(!m || m.t!==st.itok) continue;
-      await smApplyOne(p,m); n++;
+      await smApplyOne(p,m,at); n++;
     }
   }finally{ SI.busy=false; }
   if(n) render();
@@ -26536,8 +26536,8 @@ async function smBioText(m){
   if(!m.file || !window.BioText) return '';
   try{ return String(await window.BioText.read(smBlob(m.file,m.fileType), m.fileName||'bio')||'').trim().slice(0,5000); }catch(e){ return ''; }
 }
-async function smApplyOne(p,m){
-  const st=stOf(p), f={}, sf={mat:m.at||new Date().toISOString()}, got=[], held=Object.assign({},st.mHold||{});
+async function smApplyOne(p,m,at){
+  const st=stOf(p), f={}, sf={mat:at||m.at||new Date().toISOString()}, got=[], held=Object.assign({},st.mHold||{});
   const pic=String(m.photo||'');
   if(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(pic) && String(m.photoAt||'')>String(st.mPhotoAt||'')){
     sf.mPhotoAt=m.photoAt||sf.mat;
@@ -26553,6 +26553,7 @@ async function smApplyOne(p,m){
     else if(text) held.bio=m.fileAt||sf.mat;
     else if(!got.includes('bio')) got.push('bio file');
   }
+  if(m.photoMissed && !pic) got.push('a photo Summit HQ could not open (save it from their email)');
   sf.mHold=held;
   sf.mWhat=[hasBio(p)||f.bio||f.biofile? 'their bio':'', hasShot(p)||f.thumb||held.photo? 'headshot':''].filter(Boolean).join(' and ').replace(/^headshot$/,'their headshot');
   if(Object.keys(f).length) patch(p.i,f,'their bio and headshot from their email');
