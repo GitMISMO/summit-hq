@@ -5172,6 +5172,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .bio-text{width:100%;box-sizing:border-box;font:14px/1.6 var(--ui);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:6px;padding:10px 12px;resize:vertical;min-height:300px}
 #app-people .si-line{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:-4px 0 12px;font-size:12.5px}
 #app-people .si-k{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--ink-3);border-left:3px solid var(--line-2);padding-left:7px}
+#app-people .sm-held{background:var(--accent-soft);border-radius:6px;padding:8px 10px;margin:-4px 0 12px} #app-people .sm-held .btn{padding:5px 11px;font-size:12px}
 #app-people .si-k.wait{border-left-color:var(--warn)} #app-people .si-k.in{border-left-color:var(--good);color:var(--good)}
 #app-people .se-bulkbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--accent-soft)}
 #app-people .se-bulkt{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -7433,6 +7434,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>The speaker email goes out on its own.</b> With <b>Send Automatically</b> on, a confirmed speaker&rsquo;s email goes out by itself ten minutes after they are placed in a session (from <b>Sessions They Are In</b> on People, or by dragging them onto General Sessions or the Workshop). The ten minutes are there so a slip can be undone; their line on the card shows the time it will go, with <b>Send Now</b> and <b>Hold</b>. It uses the Template for Every Speaker and needs an email address on their record. Speakers who were already in a session when this was switched on (November 4, 2026) are not sent anything on their own: send theirs from <b>Choose Speakers to Email</b>. Summit HQ sends it the next time anyone has People open, so it can wait until someone opens Summit HQ.</li>
             <li><b>Someone who should not get the speaker email</b> (their sponsor or an assistant is sending the bio and headshot, say): turn off <b>Send Them the Speaker Email</b> on their record, or their switch on the Speaker Emails &amp; Follow-Ups card. Nothing goes to them on its own, they are left out of <b>Not Emailed Yet</b>, and no reminders start. <b>Copy Their Link</b> on their record gives you their bio and headshot form link to pass to whoever is sending it.</li>
             <li><b>Returning speakers.</b> A speaker who has spoken at an earlier Summit and whose bio and headshot are already on file is told so in their email and asked only whether they want to send an updated one; they get no reminders. In the Template for Every Speaker, a paragraph that starts <b>[New speakers]</b> goes only to everyone else, and one that starts <b>[Returning speakers]</b> goes only to them. {lastSummit} fills in the last Summit they spoke at.</li>
+            <li><b>Bio and headshot by email.</b> When a speaker emails their headshot or bio instead of using the form, you do not need to put it in. Jonna is copied on every speaker email, and a flow watches her inbox: an email with attachments from a speaker&rsquo;s address goes straight onto their record &mdash; the biggest photo becomes their headshot, and a Word, PDF or text file becomes their bio file, with its words put in as their bio. If it came only to Amy, forward it to Jonna (keep their email address in what you forward) and it is matched the same way. It shows on their line as <b>Emailed</b> with the day, and the follow-ups stop once both are in. If they already had a headshot or bio, the new one waits on their row under <b>Came by Email</b>: <b>Use the New Headshot</b>, <b>Use the New Bio</b>, or <b>Keep What We Have</b>. A bio typed into the body of an email still needs copying in by hand.</li>
             <li><b>Saving your changes.</b> In a speaker&rsquo;s email, <b>Save</b> sits at the top. On <b>This Email</b> it keeps your changes for that one speaker: their own saved email is what goes to them, whether you send it or it goes on its own, and <b>Go Back to the Template Wording</b> drops it. On <b>Template for Every Speaker</b>, <b>Save for Every Speaker</b> saves the wording everyone gets and checks the saved copy before it says <b>Saved &#10003;</b>. Until you save, it says <b>Changes not saved yet</b>, and closing asks whether to save. Changes typed in <b>Choose Speakers to Email</b> go in those emails only and do not change the template.</li>
             <li><b>Send a Test to Me</b>, beside the send button on any speaker email or reminder, sends that exact email to you only, from Amy and marked [Test], so you can check it in your inbox. Its bio and headshot button goes to a practice copy of the form, so trying it does not change the speaker&rsquo;s record.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
@@ -7473,6 +7475,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email or <b>Choose Speakers to Email</b> on People, copied to Amy and Jonna; <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
           <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
           <tr><td>Weekly bio and headshot follow-ups</td><td>Every morning at 7:17 AM Mountain it sends the reminders due that day: every week on the day the speaker&rsquo;s email went, until their bio and headshot are in or the Summit starts. Anyone who has already sent theirs through the form is skipped</td><td>The speaker; copied to Amy and Jonna; replies go to Amy</td><td>Summit HQ - Speaker Reminders (reads feeds/speaker-reminders, notes each one sent in feeds/speaker-reminders-sent)</td></tr>
+          <tr><td>Speaker bio and headshot by email</td><td>An email with attachments from a speaker (or forwarded with their address in it) lands in Jonna&rsquo;s inbox</td><td>No email: the headshot and bio file land on their row on People</td><td>Summit HQ - Speaker Emailed Files (reads feeds/speaker-mail-map; saves to feeds/sm-&lt;their code&gt; and feeds/speaker-mail-in)</td></tr>
           <tr><td>Speaker bio and headshot answers</td><td>A speaker sends the form from the link in their speaker email</td><td>No email: the bio, title, company, LinkedIn and headshot land on their row on People</td><td>Summit HQ - Speaker Info Answers (saves each answer to feeds/si-&lt;their code&gt;)</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
@@ -26474,16 +26477,121 @@ async function siCheck(force){
       if(st.iat && String(st.iat)>=String(d.at||'')) continue;
       await siApplyOne(p,d); n++;
     }
+    /* headshots and bio files that came by email (see smApplyOne) */
+    let idx=null; try{ const s=await ST.db.doc('feeds/speaker-mail-in').get(); idx=s.exists? s.data() : null; }catch(e){}
+    const items=(idx&&idx.items)||{};
+    for(const p of all()){
+      const st=stOf(p), at=st.itok && items[st.itok];
+      if(!at || String(st.mat||'')>=String(at)) continue;
+      let m=null; try{ const s=await ST.db.doc('feeds/sm-'+st.itok).get(); m=s.exists? s.data() : null; }catch(e){ continue; }
+      if(!m || m.t!==st.itok) continue;
+      await smApplyOne(p,m); n++;
+    }
   }finally{ SI.busy=false; }
   if(n) render();
+}
+
+/* ============================================================
+   BIO & HEADSHOT BY EMAIL (Jonna, 2026-11-05)
+   "if they don't use the link ... they email us the stuff like Seth did, I put it in
+   manually myself, but don't want to have to". Summit HQ keeps a short list of each
+   speaker's email address and their code (feeds/speaker-mail-map). The flow
+   "Summit HQ - Speaker Emailed Files" watches Jonna's inbox (she is copied on every speaker
+   email): a new email with attachments from a speaker's address — or forwarded (FW:) with
+   their address in it, when it came to Amy — has its biggest photo made small (through
+   OneDrive) and its bio file (Word, PDF or text) saved to feeds/sm-<code>, and the time
+   noted in feeds/speaker-mail-in. Summit HQ then puts them on the speaker: the headshot,
+   the bio file, and the words read out of it as their bio. Anything that would replace a
+   headshot or bio already on file waits on their row for a yes.
+   ============================================================ */
+const VENUE_ORDER=['nola','slc','bethesda'];
+async function mailMapSync(){
+  if(!ST.db) return;
+  const v=venueNow(), mine=[], needTok=[];
+  seMailable().forEach(p=>{
+    const st=stOf(p); let tok=st.itok; if(!tok){ tok=seTok(); needTok.push([p.i,tok]); }
+    String(p.e||'').split(/[;,\s]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(x))
+      .forEach(e=>{ if(!mine.some(m=>m.e===e)) mine.push({e, t:tok, v}); });
+  });
+  needTok.forEach(([id,tok])=>patchSt(id,{itok:tok},'a bio and headshot link'));
+  let cur={}; try{ const s=await ST.db.doc('feeds/speaker-mail-map').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
+  const others=(Array.isArray(cur.speakers)?cur.speakers:[]).filter(x=>x && x.v!==v);
+  const rank=x=>{ const i=VENUE_ORDER.indexOf(x.v); return i<0? 99 : i; };
+  const list=others.concat(mine).sort((a,b)=>rank(a)-rank(b) || a.e.localeCompare(b.e));
+  const sig=JSON.stringify(list);
+  if(sig===JSON.stringify(cur.speakers||[])) return;
+  await ST.db.doc('feeds/speaker-mail-map').set({updatedAt:new Date().toISOString(), speakers:list});
+}
+function smBlob(b64,type){
+  const bin=atob(String(b64)); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  return new Blob([u],{type:type||'application/octet-stream'});
+}
+async function smPhoto(p,src){
+  const img=(await siShrinkUrl(src,600,0.85))||src, th=(await siShrinkUrl(src,96,0.8))||img;
+  ST.photos.set(p.i,img);
+  if(ST.db){ try{ await ST.db.doc('photos/'+p.i).set({img}); }catch(e){} }
+  return th;
+}
+async function smBioText(m){
+  if(!m.file || !window.BioText) return '';
+  try{ return String(await window.BioText.read(smBlob(m.file,m.fileType), m.fileName||'bio')||'').trim().slice(0,5000); }catch(e){ return ''; }
+}
+async function smApplyOne(p,m){
+  const st=stOf(p), f={}, sf={mat:m.at||new Date().toISOString()}, got=[], held=Object.assign({},st.mHold||{});
+  const pic=String(m.photo||'');
+  if(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(pic) && String(m.photoAt||'')>String(st.mPhotoAt||'')){
+    sf.mPhotoAt=m.photoAt||sf.mat;
+    if(!hasShot(p)){ f.thumb=await smPhoto(p,pic); got.push('headshot'); delete held.photo; }
+    else held.photo=m.photoAt||sf.mat;
+  }
+  if(m.fileName && String(m.fileAt||'')>String(st.mFileAt||'')){
+    sf.mFileAt=m.fileAt||sf.mat;
+    f.biofile={name:String(m.fileName).slice(0,120), type:String(m.fileType||'').slice(0,100), tok:m.t, at:m.fileAt||sf.mat,
+      size:m.file? Math.round(String(m.file).length*0.75) : (m.fileSize||0), src:'email', big:!m.file};
+    const text=await smBioText(m);
+    if(text && !hasBio(p)){ f.bio=text; got.push('bio'); delete held.bio; }
+    else if(text) held.bio=m.fileAt||sf.mat;
+    else if(!got.includes('bio')) got.push('bio file');
+  }
+  sf.mHold=held;
+  sf.mWhat=[hasBio(p)||f.bio||f.biofile? 'their bio':'', hasShot(p)||f.thumb||held.photo? 'headshot':''].filter(Boolean).join(' and ').replace(/^headshot$/,'their headshot');
+  if(Object.keys(f).length) patch(p.i,f,'their bio and headshot from their email');
+  patchSt(p.i,sf,'their bio and headshot from their email');
+  const wait=[held.photo&&'headshot',held.bio&&'bio'].filter(Boolean);
+  try{ window.__hqFlash && window.__hqFlash((p.n||'A speaker')+' emailed their '+(got.length? got.join(' and ')+' — it’s on their record' : wait.join(' and '))+(wait.length? (got.length?'. A new ':' — a new ')+wait.join(' and ')+' is waiting on their row for you to use or keep the one on file':'')); }catch(e){}
+}
+/* a new headshot or bio emailed in when one is already on file: their row asks */
+function smHeldLine(p){
+  const st=stOf(p), h=st.mHold||{};
+  if(!h.photo && !h.bio) return null;
+  const w=el('div','si-line sm-held');
+  w.appendChild(el('span','si-k wait','Came by Email'));
+  w.appendChild(el('span','pnote','A new '+[h.photo&&'headshot',h.bio&&'bio'].filter(Boolean).join(' and ')+' — '+localDay(h.photo||h.bio)));
+  const busy=b=>{ b.disabled=true; b.textContent='Working…'; };
+  const get=async()=>{ const s=await ST.db.doc('feeds/sm-'+st.itok).get(); return s.exists? s.data() : null; };
+  if(h.photo){ const b=el('button','btn','Use the New Headshot'); b.type='button';
+    b.addEventListener('click',async()=>{ busy(b); const m=await get().catch(()=>null);
+      if(m && m.photo){ const th=await smPhoto(p,m.photo); patch(p.i,{thumb:th},'their emailed headshot'); }
+      const nh=Object.assign({},h); delete nh.photo; patchSt(p.i,{mHold:nh},'their emailed headshot'); render(); });
+    w.appendChild(b); }
+  if(h.bio){ const b=el('button','btn','Use the New Bio'); b.type='button';
+    b.addEventListener('click',async()=>{ busy(b); const m=await get().catch(()=>null); const t=m? await smBioText(m) : '';
+      if(t) patch(p.i,{bio:t},'their emailed bio');
+      const nh=Object.assign({},h); delete nh.bio; patchSt(p.i,{mHold:nh},'their emailed bio'); render(); });
+    w.appendChild(b); }
+  const k=el('button','btn ghost','Keep What We Have'); k.type='button';
+  k.addEventListener('click',()=>{ patchSt(p.i,{mHold:{}},'kept their headshot and bio'); render(); });
+  w.appendChild(k);
+  return w;
 }
 
 /* ---------- a bio file a speaker sent: read it, copy from it, use it ---------- */
 async function bioFileBlob(p){
   const f=p.biofile; if(!f||!f.tok) return null;
-  const s=await ST.db.doc('feeds/si-'+f.tok).get(); const d=s.exists? s.data() : null;
-  if(!d || !d.bioFile) return null;
-  const bin=atob(String(d.bioFile)); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  const s=await ST.db.doc((f.src==='email'?'feeds/sm-':'feeds/si-')+f.tok).get(); const d=s.exists? s.data() : null;
+  const b64= d && (f.src==='email'? d.file : d.bioFile);
+  if(!b64) return null;
+  const bin=atob(String(b64)); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
   return new Blob([u],{type:f.type||d.bioFileType||'application/octet-stream'});
 }
 async function openBioFile(id){
@@ -26528,6 +26636,7 @@ async function openBioFile(id){
 function siStatus(p){
   const st=stOf(p);
   if(st.iat) return {k:'in', t:'Sent through the form '+localDay(st.iat)};
+  if(st.mat) return {k:seMissing(p)?'wait':'in', t:'Emailed '+(st.mWhat||'theirs')+' '+localDay(st.mat)+(seMissing(p)?' — still need their '+seMissing(p):'')};
   if(st.itok && st.iask) return {k:'wait', t:'Link sent '+localDay(st.iask)+' — not answered yet'};
   return {k:'', t:'Goes out in the speaker email'};
 }
@@ -26546,6 +26655,7 @@ function siLine(p){
     w.appendChild(cp);
   }
   if(p.li){ const a=document.createElement('a'); a.className='se-lnk'; a.href=p.li; a.target='_blank'; a.rel='noopener'; a.textContent='LinkedIn'; w.appendChild(a); }
+  const held=smHeldLine(p);
   /* the weekly follow-ups for this one speaker */
   const rs=remState(p), can=seEmailed(p) && !seAllIn(p) && remAllOn();
   const fw=el('div','si-fu');
@@ -26554,7 +26664,7 @@ function siLine(p){
     can? 'Turn the weekly reminder on or off for '+(p.n||'them') : 'Starts once their speaker email goes, and stops when their bio and headshot are in'));
   if(!can) fw.lastChild.disabled=true;
   fw.appendChild(el('span','pnote', rs.t + (rs.sent.length? ' \u00b7 '+rs.sent.length+' sent' : '')));
-  const out=el('div'); out.appendChild(w); out.appendChild(fw);
+  const out=el('div'); out.appendChild(w); if(held) out.appendChild(held); out.appendChild(fw);
   return out;
 }
 
@@ -26631,6 +26741,7 @@ async function remSync(){
     const v=venueNow(); await seResume();
     /* the speaker email itself, sent on its own once a speaker is in a session */
     try{ await autoSend(); }catch(e){}
+    try{ await mailMapSync(); }catch(e){}
     const today=ymd(seEastDay()), floor=ymd(new Date(seEastDay().getTime()-6*864e5));
     const tpl={subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
     const mine=[]; const needTok=[];
