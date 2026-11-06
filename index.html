@@ -5332,7 +5332,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .tt-em{display:block;width:100%;max-width:260px;margin-top:3px;font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink-2)}
 #app-people .tt-ok{color:var(--accent);font-weight:600}
 #app-people .tt-note{font-style:italic}
-#app-people .tt-dates{display:flex;gap:8px;flex-wrap:wrap;flex:1 1 100%;padding-left:24px}
+#app-people .tt-dates{display:flex;gap:8px;flex-wrap:wrap;flex:0 1 auto}
+#app-people .tt-row .bd-l{flex:1 1 170px} #app-people .tt-row .bd-ck{margin-top:2px}
 #app-people .tt-d{display:flex;flex-direction:column;gap:2px;font-size:10px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
 #app-people .tt-d input,#app-people .tt-d select{font:inherit;font-family:var(--sans,inherit);text-transform:none;letter-spacing:0;font-size:12.5px;padding:4px 6px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);color:var(--ink)}
 #app-people .tt-x{background:none;border:0;color:var(--ink-3);cursor:pointer;font-size:13px;padding:2px 6px}
@@ -5454,7 +5455,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-gbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .se-prev{min-height:0;background:#f1f6fa}
 .se-frame{width:100%;height:100%;border:0;background:#f1f6fa}
-#bd-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .bn-box{width:min(620px,96vw);height:auto;max-height:94vh} .bn-edit{flex:1;min-height:0;overflow:auto} #bd-notify .se-who{max-height:min(560px,calc(100vh - 330px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
+#bd-ask .se-who,#tt-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .bn-box{width:min(620px,96vw);height:auto;max-height:94vh} .bn-edit{flex:1;min-height:0;overflow:auto} #bd-notify .se-who{max-height:min(560px,calc(100vh - 330px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
 @media (max-width:760px){ .se-body{grid-template-columns:1fr;grid-template-rows:auto 420px} .se-edit{border-right:0;border-bottom:1px solid var(--line)} }
 #app-reg .ws-title.ws-edit{cursor:text}
 #app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
@@ -7301,7 +7302,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Build the week on the Schedule.</b> Drag sessions into rooms, use <b>Arrangement Options</b> for a clean week, and follow the Schedule Timeline for the Chair Survey and the finalized grid.</li>
           <li><b>Build Tuesday on General Sessions</b>: the running order, who is on each segment and who sponsors it.</li>
           <li><b>Add speakers on People.</b> Each one you add goes on Bernie&rsquo;s next morning list to register on its own.</li>
-          <li><b>Send the MISMO team their travel form</b> from <b>MISMO Team at the Summit</b> on People: mark who is going, press <b>Send the Travel Form</b>, and when the dates are in, <b>Send to Bernie to Register</b>.</li>
+          <li><b>Ask the MISMO team for their travel dates</b> from <b>MISMO Team at the Summit</b> on People: press <b>Ask for Travel Dates</b>, check the email and send it, and when the dates are in, check who goes to Bernie and press <b>Send to Bernie</b>.</li>
           <li><b>Watch Ready for the Hotel</b> on Hotel Specs and the readiness on the Resume, and issue each new resume version from <b>Versions &amp; Changes</b>.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
           <li><b>Keep this Help page current</b> whenever the way of working changes.</li>
@@ -7655,7 +7656,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           </ul></li>
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
-        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
+        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: anyone with dates who needs a room is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
@@ -7685,13 +7686,13 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
         <tbody>
           <tr><td>New Speakers to Register</td><td>Every weekday morning: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
-          <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email or <b>Choose Speakers to Email</b> on People, copied to Amy and Jonna; <b>Send the Travel Form</b> and <b>Send to Bernie to Register</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
+          <tr><td>Speaker email, travel form, MISMO Team to Register, trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email or <b>Choose Speakers to Email</b> on People, copied to Amy and Jonna; <b>Ask for Travel Dates</b> and <b>Send to Bernie</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
           <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
           <tr><td>Weekly bio and headshot follow-ups</td><td>Every morning at 7:17 AM Mountain it sends the reminders due that day: every week on the day the speaker&rsquo;s email went, until their bio and headshot are in or the Summit starts. Anyone who has already sent theirs through the form is skipped</td><td>The speaker; copied to Amy and Jonna; replies go to Amy</td><td>Summit HQ - Speaker Reminders (reads feeds/speaker-reminders, notes each one sent in feeds/speaker-reminders-sent)</td></tr>
           <tr><td>Speaker bio and headshot by email</td><td>An email with attachments from a speaker (or forwarded with their address in it) lands in Jonna&rsquo;s inbox</td><td>No email: the headshot and bio file land on their row on People</td><td>Summit HQ - Speaker Emailed Files (reads feeds/speaker-mail-map; saves to feeds/sm-&lt;their code&gt; and feeds/speaker-mail-in)</td></tr>
           <tr><td>Speaker bio and headshot answers</td><td>A speaker sends the form from the link in their speaker email</td><td>No email: the bio, title, company, LinkedIn and headshot land on their row on People</td><td>Summit HQ - Speaker Info Answers (saves each answer to feeds/si-&lt;their code&gt;)</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
-          <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
+          <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna and Amy</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
           <tr><td>Registration List to Sponsors</td><td>Mondays at 9:00 AM Eastern, from seven weeks before each Summit until it opens</td><td>Every approved sponsor&rsquo;s contact, sent on Kelly&rsquo;s behalf; the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
           <tr><td>Sponsorship invoice, logo request, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase</td><td>Invoice: Bernie. Logo: Vanessa. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
@@ -23101,6 +23102,34 @@ startClock();
     o[parts[parts.length-1]]=val;
     queueSave();
   }
+  /* Jonna, 2026-11-06: the MISMO Team's dates "should then auto update the Guestroom and Rate
+     Assignments on the resume". Anyone on the MISMO Team card with an arrival and departure
+     who needs a room gets a row here (staff rate, R&T to Master; guests at the group rate);
+     their Arrives – Departs comes from the card by name. A row added this way comes off
+     again if they no longer need a room or are taken off the card. */
+  let autoT=null, autoTries=0;
+  function autoTeamRoomsSoon(){ clearTimeout(autoT); autoT=setTimeout(autoTeamRooms,1500); }
+  function autoTeamRooms(){
+    if(!ST.db || !ST.loaded || ST.canWrite===false || !ST.venue) return;
+    const T=window.__teamTravel; if(!T) return;
+    const team=T.list(ST.venue);
+    /* the team list may still be on its way in */
+    if(!team.length){ if(autoTries++<8){ clearTimeout(autoT); autoT=setTimeout(autoTeamRooms,4000); } return; }
+    autoTries=0;
+    const nk=x=>String(x||'').toLowerCase().replace(/[^a-z]+/g,' ').trim();
+    const byName=new Map(team.map(t=>[nk(t.n),t]));
+    const cur=details().people||[];
+    const seen=new Set(); let changed=false;
+    const keep=cur.filter(p=>{
+      const k=nk(p.name);
+      if(p.auto){ const t=byName.get(k);
+        if(!t || t.room==='no' || seen.has(k)){ changed=true; return false; } }
+      seen.add(k); return true; });
+    team.forEach(t=>{ const k=nk(t.n);
+      if(!t.n || t.room==='no' || !(t.arr && t.dep) || seen.has(k)) return;
+      keep.push({name:t.n, rate:t.role==='guest'?'group':'staff', billing:'R&T to Master', vip:false, auto:true}); seen.add(k); changed=true; });
+    if(changed){ setDetail('people', JSON.parse(JSON.stringify(keep))); rerenderSoon(); }
+  }
   function getDetail(path){
     return path.split('.').reduce((o,k)=>o==null?undefined:o[k], details());
   }
@@ -23627,19 +23656,10 @@ startClock();
         if(stay){ const sn=mk('div','note',stay); sn.style.margin='-2px 0 6px'; tbl.appendChild(sn); }
       });
       s.inn.appendChild(tbl);
-      /* the MISMO Team card: anyone going who needs a room and has no row here yet */
-      try{
-        const T=window.__teamTravel, nk=x=>String(x||'').toLowerCase().replace(/[^a-z]+/g,' ').trim();
-        const have=new Set((d.people||[]).map(p=>nk(p.name)));
-        const need=(T? T.list() : []).filter(t=>t.go==='yes' && t.room!=='no' && !have.has(nk(t.n)));
-        if(need.length){
-          const w=mk('div','note'); w.style.marginTop='10px';
-          w.appendChild(document.createTextNode('Going and needing a room on the MISMO Team card in People, not listed here yet: '+need.map(t=>t.n).join(', ')+'. '));
-          const ab=mk('button','rz-btn ghost small','Add Them'); ab.type='button';
-          ab.addEventListener('click',()=>{ const l=list(); need.forEach(t=>l.push({name:t.n, rate:t.role==='guest'?'group':'staff', billing:'R&T to Master', vip:false})); setDetail('people', l); renderDoc(); });
-          w.appendChild(ab); s.inn.appendChild(w);
-        }
-      }catch(e){}
+      /* the MISMO Team card adds its people here on its own (see autoTeamRooms) */
+      try{ const T=window.__teamTravel; const wait=(T? T.list(ST.venue) : []).filter(t=>t.room!=='no' && !(t.arr&&t.dep));
+        if(wait.length){ const w=mk('div','note'); w.style.marginTop='10px';
+          w.textContent='On the MISMO Team card in People without dates yet: '+wait.map(t=>t.n).join(', ')+'. They are added here as soon as their arrival and departure are in.'; s.inn.appendChild(w); } }catch(e){}
       const add=mk('button','rz-btn ghost small','+ Add a person'); add.type='button';
       add.addEventListener('click',()=>{ const l=list(); l.push({name:'', rate:'staff', billing:'R&T to Master', vip:false});
         setDetail('people', l); renderDoc();
@@ -24231,6 +24251,7 @@ startClock();
       ST.loaded=true;
       rzBase();
       rerenderSoon();
+      autoTeamRoomsSoon();
     },()=>{}));
     /* what Add A Summit read out of the contract for this summit — the defaults
        under everything typed on the page */
@@ -24273,7 +24294,7 @@ startClock();
     /* the panel's Save: write anything still waiting now */
     window.addEventListener('hq:save',()=>{ try{ if(saveT){ flushSave(); flash('Saved'); } }catch(e){} });
     /* the MISMO Team card's dates show in the guest rooms */
-    window.addEventListener('hq:team-travel',()=>rerenderSoon());
+    window.addEventListener('hq:team-travel',()=>{ rerenderSoon(); autoTeamRoomsSoon(); });
     rerenderSoon();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
@@ -25323,7 +25344,7 @@ const PP_SAY={
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
   prosOpen: n=>n? n+' prospect'+(n===1?'':'s') : 'No prospects yet',
   boardOpen:n=>n? n+' still to register' : 'Everyone is registered',
-  ttOpen:   n=>n? n+' going under the MISMO banner' : 'Nobody marked going yet',
+  ttOpen:   n=>n? n+' still need travel dates' : 'Everyone\u2019s dates are in',
   fOpen:    n=>n? n+' still outstanding' : 'Everyone has what they need'
 };
 function section(title,note,count,key,openDefault,build,tone){
@@ -26336,7 +26357,9 @@ let bnPick=null;
 /* what is checked on the card, per summit; starts with everyone ready for Bernie */
 function bnSel(){ const v=venueNow();
   if(!ST.collsRead || !ST.collsRead.has('board')) return new Set();   /* not until the Board is read */
-  if(!ST.bnSel || ST.bnSel.v!==v){ ST.bnSel={v, s:new Set(bnReady().map(b=>b.i))}; }
+  if(!ST.bnSel || ST.bnSel.v!==v){ ST.bnSel={v, s:new Set(), seen:new Set()}; }
+  /* anyone who answers later is checked once; unchecking them sticks */
+  bnReady().forEach(b=>{ if(!ST.bnSel.seen.has(b.i)){ ST.bnSel.seen.add(b.i); ST.bnSel.s.add(b.i); } });
   return ST.bnSel.s; }
 function openBoardNotify(){ bnPick={pick:new Set(bnReady().map(b=>b.i)), show:'ready', sending:false}; drawBoardNotify(); }
 function drawBoardNotify(){
@@ -26382,7 +26405,7 @@ function drawBoardNotify(){
   sAll.addEventListener('click',()=>{ groups[bnPick.show].forEach(b=>bnPick.pick.add(b.i)); drawBoardNotify(); });
   sNone.addEventListener('click',()=>{ bnPick.pick.clear(); drawBoardNotify(); });
   pick.appendChild(lst); L.appendChild(pick);
-  L.appendChild(el('div','se-note','Bernie gets one email listing the board members you tick, with In Person or Virtual beside each, copied to Jonna. It goes out within about 20 minutes. Press Registered on their row once he has registered them.'));
+  L.appendChild(el('div','se-note','Bernie gets one email listing the board members you tick, with In Person or Virtual beside each, copied to Jonna and Amy. It goes out within about 20 minutes. Press Registered on their row once he has registered them.'));
   const acts=el('div','se-acts');
   const go=el('button','btn'); go.type='button';
   let armed=false;
@@ -27781,7 +27804,7 @@ function prospectAdd(){
 /* ============================================================
    MISMO TEAM AT THE SUMMIT (Jonna, 2026-10-31)
    Everyone going under the MISMO banner — staff, Ros and Bernie, the facilitators, the
-   architect, and guests added if there is room. Each is ticked Going or not; Send the
+   architect, and guests added if there is room. Everyone listed is going; Ask for Travel Dates
    Travel Form emails the ones she selects a branded note with their own link to
    resources.mismo.org/summit-hq/travel.html, where they put their arrival and departure,
    whether they need a room and (when the hotel includes it) parking. Their answer comes
@@ -27812,7 +27835,7 @@ function ttList(){
   Object.keys(ppl).forEach(k=>{ if(ord.indexOf(k)<0) ord.push(k); });
   return ord.map(k=>Object.assign({id:k},ppl[k]));
 }
-function ttSave(fields,label){ saveColl('team-travel',ST.travel,fields,label); }
+function ttSave(fields,label){ saveColl('team-travel',ST.travel,fields,label); try{ window.dispatchEvent(new Event('hq:team-travel')); }catch(e){} }
 function ttSet(id,fields,label){
   const ppl=Object.assign({},ttDoc().ppl||{}); ppl[id]=Object.assign({},ppl[id]||{},fields);
   ttSave({ppl},label||'the MISMO team'); render();
@@ -27851,17 +27874,30 @@ function ttSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').re
 /* nights at the hotel: everyone going who needs a room, night by night */
 function ttNights(){
   const out=[]; for(let i=-3;i<=4;i++) out.push({iso:ttDay(i), n:0, who:[]});
-  ttList().filter(p=>p.go==='yes' && p.room!=='no' && p.arr && p.dep).forEach(p=>{
+  ttList().filter(p=>p.room!=='no' && p.arr && p.dep).forEach(p=>{
     out.forEach(x=>{ if(x.iso>=p.arr && x.iso<p.dep){ x.n++; x.who.push(p.n); } });
   });
   return out.filter(x=>x.n || (x.iso>=ttDay(-1) && x.iso<=ttDay(3)));
 }
+/* Jonna, 2026-11-06: "I don't need to know if they are or are not coming ... I need to know
+   when they're arriving and departing, it's for hotel registration". Everyone on the list is
+   going; what matters is their dates. */
+const ttHasDates=p=>!!(p.arr && p.dep);
 function ttStat(){
-  const l=ttList(), go=l.filter(p=>p.go==='yes');
-  return {total:l.length, go:go.length, no:l.filter(p=>p.go==='no').length, open:l.filter(p=>!p.go).length,
-    rooms:go.filter(p=>p.room==='yes').length, park:go.filter(p=>p.park==='yes').length,
-    waiting:l.filter(p=>p.sentAt && !p.respAt).length, missing:go.filter(p=>!p.arr||!p.dep).length};
+  const l=ttList(), dated=l.filter(ttHasDates);
+  return {total:l.length, dated:dated.length, go:dated.length,
+    rooms:dated.filter(p=>p.room!=='no').length, park:dated.filter(p=>p.park==='yes').length,
+    waiting:l.filter(p=>p.sentAt && !ttHasDates(p)).length, notAsked:l.filter(p=>!p.sentAt && !ttHasDates(p)).length,
+    missing:l.filter(p=>!ttHasDates(p)).length};
 }
+/* ready for Bernie: dates in, not sent to him yet */
+const ttReady=()=>ttList().filter(p=>ttHasDates(p) && !p.sentB);
+function ttBSel(){ const v=venueNow();
+  if(!ST.travelLoaded) return new Set();
+  if(!ST.ttBSel || ST.ttBSel.v!==v) ST.ttBSel={v, s:new Set(), seen:new Set()};
+  /* anyone who becomes ready is checked once; unchecking them sticks */
+  ttReady().forEach(p=>{ if(!ST.ttBSel.seen.has(p.id)){ ST.ttBSel.seen.add(p.id); ST.ttBSel.s.add(p.id); } });
+  return ST.ttBSel.s; }
 /* the branded note, from Jonna */
 function ttHtml(subject, paras, button, sign){
   const SG=sign||TT_JONNA;
@@ -27897,21 +27933,27 @@ async function ttQueue(reqs){
   await ref.set({updatedAt:new Date().toISOString(), requests:list});
 }
 const ttWho=()=>{ try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); return (s&&(s.name||s.email))||''; }catch(e){ return ''; } };
+function ttEmail(p,tok){
+  const v=venueInfo(), first=String(p.n||'').split(/\s+/)[0]||'there';
+  const r=(ST.seResume && ST.seResume.v===venueNow() && ST.seResume.d)||{}, hotel=String(r.hotelName||'').trim();
+  const subject='Your Travel Dates for the '+(v.name||'Summit');
+  const paras=['Hi '+first+',',
+    'You’re on the list to attend the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+(hotel?' at the '+hotel:v.city?' in '+v.city:'')+' with the MISMO team.',
+    'So we can register you with the hotel and give them our rooming list, please tell us when you’re arriving and when you’re leaving'
+      +(ttDoc().park?', whether you need a room and whether you’ll need parking.':' and whether you need a room.')+' It takes about a minute.'];
+  if(p.role==='guest') paras.push('We’ll confirm your room once we know we have space in our block.');
+  paras.push('If anything changes, use the same link again.');
+  return {subject, html:ttHtml(subject, paras, {url:ttLink(p,tok), label:'Enter My Travel Dates'})};
+}
 async function ttSendForms(ids){
-  const v=venueInfo(), now=new Date().toISOString(), who=ttWho();
+  const now=new Date().toISOString(), who=ttWho();
   const ppl=Object.assign({},ttDoc().ppl||{}), reqs=[];
   ids.forEach((id,i)=>{
     const p=Object.assign({id},ppl[id]||{}); if(!/@/.test(p.e||'')) return;
     const tok=p.tok||ttTok();
-    const first=String(p.n||'').split(/\s+/)[0]||'there';
-    const subject='Your Travel Dates for the '+(v.name||'Summit');
-    const paras=['Hi '+first+',',
-      'You’re on the list to attend the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+(v.city?' in '+v.city:'')+' with the MISMO team.',
-      'So we can get you registered and give the hotel our rooming list, please tell us when you’re arriving and leaving'
-        +(ttDoc().park?', whether you need a room and whether you’ll need parking.':' and whether you need a room.')+' It takes about a minute.'];
-    if(p.role==='guest') paras.push('We’ll confirm your room once we know we have space in our block.');
+    const em=ttEmail(p,tok);
     reqs.push({id:'tt-'+Date.now().toString(36)+'-'+i, requestedAt:now, requestedBy:who, to:p.e, cc:'', replyTo:TT_JONNA.email,
-      subject, html:ttHtml(subject, paras, {url:ttLink(p,tok), label:'Enter My Travel Dates'}), person:'', summit:venueNow(), graphic:''});
+      subject:em.subject, html:em.html, person:'', summit:venueNow(), graphic:''});
     ppl[id]=Object.assign({},ppl[id],{tok, sentAt:now});
   });
   if(!reqs.length) return 0;
@@ -27921,8 +27963,8 @@ async function ttSendForms(ids){
   return reqs.length;
 }
 /* the team to Bernie for registration — staff are registered separately from speakers */
-async function ttSendBernie(){
-  const v=venueInfo(), go=ttList().filter(p=>p.go==='yes');
+async function ttSendBernie(ids){
+  const v=venueInfo(), go=ttList().filter(p=>(ids||[]).indexOf(p.id)>=0);
   if(!go.length) return 0;
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const td='padding:10px 8px;border-bottom:1px solid #e3e8ee;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.4;color:#1b2733;vertical-align:top';
@@ -27937,8 +27979,10 @@ async function ttSendBernie(){
     'Here is the MISMO team going to the '+(v.name||'Summit')+' under the MISMO banner. Please register them. Their arrival and departure dates are below for the rooming list.',
     {html:table}]);
   await ttQueue([{id:'ttb-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:ttWho(),
-    to:'bjordan@mba.org', cc:TT_JONNA.email, replyTo:TT_JONNA.email, subject, html, person:'', summit:venueNow(), graphic:''}]);
-  ttSave({bernie:{at:new Date().toISOString(), n:go.length}},'the MISMO team sent to Bernie');
+    to:'bjordan@mba.org', cc:TT_JONNA.email+'; '+SE_AMY.email, replyTo:TT_JONNA.email, subject, html, person:'', summit:venueNow(), graphic:''}]);
+  const at=new Date().toISOString(), ppl=Object.assign({},ttDoc().ppl||{});
+  go.forEach(p=>{ ppl[p.id]=Object.assign({},ppl[p.id],{sentB:at}); });
+  ttSave({ppl, bernie:{at, n:go.length}},'the MISMO team sent to Bernie');
   render(); return go.length;
 }
 /* answers from the travel form */
@@ -27958,7 +28002,7 @@ function ttApply(){
         notes:String(a.notes||'').slice(0,500), respAt:a.at||new Date().toISOString()});
       changed=true;
     });
-    if(changed){ const nd=Object.assign({},d,{ppl}); ST.travel.set(v,nd); try{ ST.db.doc('team-travel/'+v).set(JSON.parse(JSON.stringify(nd))); }catch(e){} }
+    if(changed){ const nd=Object.assign({},d,{ppl}); ST.travel.set(v,nd); try{ ST.db.doc('team-travel/'+v).set(JSON.parse(JSON.stringify(nd))); }catch(e){} try{ window.dispatchEvent(new Event('hq:team-travel')); }catch(e){} }
   });
   render();
 }
@@ -27981,14 +28025,46 @@ const ttIsTeam=p=>{ if(!p) return false;
 function ttSection(){
   const s=ttStat(), l=ttList();
   return section('MISMO Team at the Summit',
-    s.total? [s.go+' going', s.open&&s.open+' not decided', s.waiting&&s.waiting+' waiting on the form'].filter(Boolean).join(' · ')
+    s.total? [s.dated+' of '+s.total+' have dates', s.waiting&&s.waiting+' waiting on the form', s.notAsked&&s.notAsked+' not asked yet'].filter(Boolean).join(' · ')
            : 'Staff, Ros and Bernie, facilitators, the architect and guests',
-    s.go,'ttOpen',false,box=>{
-    ST.ttSel=ST.ttSel||new Set();
+    s.missing,'ttOpen',false,box=>{
     if(!l.length){ if(ST.travelLoaded) setTimeout(ttSeed,0); box.appendChild(el('div','blank', ST.travelLoaded? 'Starting the list…' : 'Loading…')); return; }
+    /* the actions, the way the Board card has them: ask for dates, then check who goes to Bernie */
+    const sel=ttBSel(), selN=[...sel].filter(id=>l.some(p=>p.id===id)).length;
+    const top=el('div','bd-top tt-acts');
+    const nb=el('button','btn'+(selN?'':' ghost'), selN? 'Send to Bernie ('+selN+' Checked)' : 'Send to Bernie'); nb.type='button';
+    nb.disabled=!selN;
+    nb.title=selN? 'Emails Bernie the '+selN+' you checked, with their dates, to register' : 'Check the people below that Bernie should register';
+    let nbArmed=false;
+    nb.addEventListener('click',async()=>{
+      if(!nbArmed){ nbArmed=true; nb.textContent='Click Again to Email Bernie '+selN; nb.classList.add('armed'); return; }
+      nb.disabled=true; nb.textContent='Sending…';
+      const ids=[...sel].filter(id=>l.some(p=>p.id===id));
+      try{ const n=await ttSendBernie(ids); ids.forEach(i=>sel.delete(i));
+        try{ window.__hqFlash && window.__hqFlash('Bernie gets '+n+' to register within a couple of minutes, with you and Amy copied.'); }catch(e){} }
+      catch(e){ alert('Summit HQ could not queue the email to Bernie. Try again.'); }
+      render();
+    });
+    top.appendChild(nb);
+    const ckl=el('span','bd-ckl');
+    const ca=el('button','se-lnk','Check Everyone Ready'); ca.type='button';
+    ca.title='Checks everyone whose arrival and departure are in and who has not been sent to Bernie yet';
+    ca.addEventListener('click',()=>{ ttReady().forEach(p=>sel.add(p.id)); render(); });
+    const cc=el('button','se-lnk','Clear'); cc.type='button'; cc.addEventListener('click',()=>{ sel.clear(); render(); });
+    ckl.appendChild(ca); ckl.appendChild(cc); top.appendChild(ckl);
+    const askN=l.filter(p=>!p.sentAt && !ttHasDates(p) && /@/.test(p.e||'')).length;
+    const ak=el('button','btn'+(askN?'':' ghost'),'Ask for Travel Dates'+(askN?' ('+askN+')':'')); ak.type='button';
+    ak.title='Opens the travel-dates email to check and pick who gets it, before anything goes out';
+    ak.addEventListener('click',()=>openTravelAsk());
+    top.appendChild(ak);
+    const bn=ttDoc().bernie;
+    top.appendChild(el('div','pnote', 'Check the people Bernie should register, then press Send to Bernie (you and Amy are copied). '
+      +(bn&&bn.at? 'Last sent to him '+localDay(bn.at)+'. ' : '')+'Everyone whose dates are in and who has not gone to him yet starts checked.'));
+    box.appendChild(top);
     /* the tally */
     const tl=el('div','bd-tally');
-    [[s.go,'Going','in'],[s.open,'Not Decided','none'],[s.rooms,'Rooms','virt'],[ttDoc().park? s.park : s.waiting, ttDoc().park?'Parking':'Waiting on Form','reg']]
+    [[s.dated+'/'+s.total,'Dates In','in'],[s.waiting,'Waiting on Form','none'],[s.notAsked,'Not Asked Yet','none'],[s.rooms,'Rooms Needed','virt'],
+     ttDoc().park? [s.park,'Parking','reg'] : [l.filter(p=>p.sentB).length,'Sent to Bernie','reg']]
       .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
     box.appendChild(tl);
     /* rooms night by night, for the hotel */
@@ -27999,80 +28075,40 @@ function ttSection(){
     nts.forEach(x=>{ const c=el('div','tt-n'+(x.n?' on':'')); c.title=x.who.join(', ')||'Nobody yet';
       c.appendChild(el('span',null,ttNice(x.iso))); c.appendChild(el('b',null,String(x.n))); ng.appendChild(c); });
     nw.appendChild(ng);
-    nw.appendChild(el('div','pnote','Counts everyone going who needs a room, from the night they arrive to the night before they leave. The dates also fill in the Resume’s guest rooms.'));
+    nw.appendChild(el('div','pnote','Counts everyone who needs a room, from the night they arrive to the night before they leave. Their dates fill in the Resume’s Guestroom and Rate Assignments on their own.'));
     box.appendChild(nw);
     /* parking */
     const pk=el('label','tt-park'); const pc=document.createElement('input'); pc.type='checkbox'; pc.checked=!!ttDoc().park;
     pc.addEventListener('change',()=>{ ttSave({park:pc.checked},'parking on the travel form'); render(); });
     pk.appendChild(pc); pk.appendChild(el('span',null,'Parking is included at this hotel — ask about it on the form'));
     box.appendChild(pk);
-    /* the actions */
-    const top=el('div','bd-top tt-acts');
-    const sel=[...ST.ttSel].filter(id=>l.some(p=>p.id===id));
-    const sendable=sel.filter(id=>{ const p=l.find(x=>x.id===id); return p && /@/.test(p.e||''); });
-    const sb=el('button','btn','Send the Travel Form'+(sendable.length?' ('+sendable.length+')':'')); sb.type='button';
-    sb.disabled=!sendable.length;
-    sb.title=sendable.length? 'Emails the '+sendable.length+' selected their own link to enter their dates' : 'Tick the people to send it to';
-    let armed=false;
-    sb.addEventListener('click',async()=>{
-      if(!armed){ armed=true; sb.textContent='Click Again to Email '+sendable.length; sb.classList.add('armed'); return; }
-      sb.disabled=true; sb.textContent='Sending…';
-      try{ const n=await ttSendForms(sendable); ST.ttSel.clear(); render();
-        try{ window.__hqFlash && window.__hqFlash('The travel form is on its way to '+n+' — it goes out within a couple of minutes.'); }catch(e){} }
-      catch(e){ alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); render(); }
-    });
-    top.appendChild(sb);
-    const pickGo=el('button','btn ghost','Select Everyone Going Not Yet Sent'); pickGo.type='button';
-    pickGo.addEventListener('click',()=>{ l.filter(p=>p.go==='yes' && !p.sentAt).forEach(p=>ST.ttSel.add(p.id)); render(); });
-    top.appendChild(pickGo);
-    const bb=el('button','btn ghost','Send to Bernie to Register'+(s.go?' ('+s.go+')':'')); bb.type='button';
-    bb.disabled=!s.go; let bArmed=false;
-    bb.addEventListener('click',async()=>{
-      if(!bArmed){ bArmed=true; bb.textContent='Click Again to Email Bernie'; bb.classList.add('armed'); return; }
-      bb.disabled=true;
-      try{ const n=await ttSendBernie(); try{ window.__hqFlash && window.__hqFlash('Bernie gets the '+n+' to register within a couple of minutes.'); }catch(e){} }
-      catch(e){ alert('Summit HQ could not queue the email to Bernie. Try again.'); render(); }
-    });
-    top.appendChild(bb);
-    const bn=ttDoc().bernie;
-    top.appendChild(el('div','pnote', (bn&&bn.at? 'Bernie was sent '+bn.n+' to register on '+localDay(bn.at)+'. ' : '')
-      +(s.missing? s.missing+' going still without dates. ' : '')+'The form and Bernie’s list come from you; replies come to you.'));
-    box.appendChild(top);
     /* the people, by group */
     TT_ROLES.forEach(([rk,rl])=>{
       const grp=l.filter(p=>(p.role||'staff')===rk); if(!grp.length) return;
-      const gh=el('div','bd-grp tt-grp');
-      const all=el('input'); all.type='checkbox'; all.title='Select all '+rl;
-      all.checked=grp.every(p=>ST.ttSel.has(p.id));
-      all.addEventListener('change',()=>{ grp.forEach(p=>all.checked? ST.ttSel.add(p.id) : ST.ttSel.delete(p.id)); render(); });
-      gh.appendChild(all); gh.appendChild(document.createTextNode(' '+rl+(rk==='guest'?' — added if we have room':'')));
-      box.appendChild(gh);
+      box.appendChild(el('div','bd-grp tt-grp', rl+(rk==='guest'?' — added if we have room':'')));
       grp.forEach(p=>box.appendChild(ttRow(p)));
     });
     box.appendChild(ttAdd());
-  }, s.missing||s.open? 'warn':'');
+  }, s.missing? 'warn':'');
 }
 function ttRow(p){
-  const row=el('div','bdrow tt-row'+(p.go==='no'?' done':''));
-  const ck=el('input'); ck.type='checkbox'; ck.className='tt-ck'; ck.checked=ST.ttSel.has(p.id);
-  ck.title='Select '+p.n; ck.addEventListener('change',()=>{ ck.checked? ST.ttSel.add(p.id) : ST.ttSel.delete(p.id); render(); });
-  row.appendChild(ck);
+  const row=el('div','bdrow tt-row'+(p.sentB?' done':''));
+  const ckw=el('label','bd-ck');
+  const ck=el('input'); ck.type='checkbox'; ck.checked=ttBSel().has(p.id);
+  ck.setAttribute('aria-label','Send '+p.n+' to Bernie to register'); ck.title='Check to send '+p.n+' to Bernie to register';
+  ck.addEventListener('change',()=>{ ck.checked? ttBSel().add(p.id) : ttBSel().delete(p.id); render(); });
+  ckw.appendChild(ck); row.appendChild(ckw);
   const L=el('div','bd-l');
   L.appendChild(el('div','bd-n',p.n||''));
   const em=el('input'); em.type='email'; em.className='tt-em'; em.value=p.e||''; em.placeholder='Email';
   em.dataset.keep='tt-e:'+p.id;
   em.addEventListener('change',()=>ttSet(p.id,{e:em.value.trim()},'an email on the MISMO team'));
   L.appendChild(em);
-  const st=p.respAt? 'Answered '+localDay(p.respAt) : p.sentAt? 'Form sent '+localDay(p.sentAt)+' — waiting' : '';
-  if(st) L.appendChild(el('div','sp-me'+(p.respAt?' tt-ok':''),st));
+  const st=[p.respAt? 'Dates in '+localDay(p.respAt).replace(/ at .*/,'') : p.sentAt? (ttHasDates(p)? 'Form sent '+localDay(p.sentAt).replace(/ at .*/,'') : 'Form sent '+localDay(p.sentAt).replace(/ at .*/,'')+' — waiting') : (ttHasDates(p)? '' : 'Not asked yet'),
+    p.sentB? 'Sent to Bernie '+localDay(p.sentB).replace(/ at .*/,'') : ''].filter(Boolean).join(' · ');
+  if(st) L.appendChild(el('div','sp-me'+(ttHasDates(p)?' tt-ok':''),st));
   if(p.notes) L.appendChild(el('div','sp-me tt-note','“'+p.notes+'”'));
   row.appendChild(L);
-  /* going */
-  const seg=el('div','bd-seg');
-  [['yes','Going'],['no','Not Going']].forEach(([k,lab])=>{
-    const x=el('button','bd-opt'+(p.go===k?' on':''),lab); x.type='button';
-    x.addEventListener('click',()=>ttSet(p.id,{go:p.go===k?'':k},'who is going')); seg.appendChild(x); });
-  row.appendChild(seg);
   /* dates and the room, which they fill in themselves and can be fixed here */
   const dw=el('div','tt-dates');
   const dt=(lab,k)=>{ const w=el('label','tt-d'); w.appendChild(el('span',null,lab));
@@ -28088,9 +28124,99 @@ function ttRow(p){
   row.appendChild(dw);
   const x=el('button','tt-x','✕'); x.type='button'; x.title='Take '+p.n+' off this summit’s team list';
   x.addEventListener('click',()=>{ if(!confirm('Take '+p.n+' off the team list for this summit?')) return;
-    const ppl=Object.assign({},ttDoc().ppl||{}); delete ppl[p.id]; ST.ttSel.delete(p.id); ttSave({ppl},'someone off the MISMO team'); render(); });
+    const ppl=Object.assign({},ttDoc().ppl||{}); delete ppl[p.id]; ttBSel().delete(p.id); ttSave({ppl},'someone off the MISMO team'); render(); });
   row.appendChild(x);
   return row;
+}
+/* ---------- asking for travel dates: pick who, see the email, test it, then send ---------- */
+let ttAsk=null;
+async function openTravelAsk(){
+  try{ await seResume(); }catch(e){}
+  const not=ttList().filter(p=>!p.sentAt && !ttHasDates(p) && /@/.test(p.e||'')).map(p=>p.id);
+  ttAsk={pick:new Set(not), show:'new', prev:not[0]||(ttList()[0]||{}).id, sending:false};
+  drawTravelAsk();
+}
+function drawTravelAsk(){
+  let m=document.getElementById('tt-ask');
+  if(!ttAsk){ if(m) m.remove(); return; }
+  if(!m){ m=el('div','se-modal'); m.id='tt-ask'; document.body.appendChild(m); }
+  m.textContent='';
+  const close=()=>{ ttAsk=null; drawTravelAsk(); };
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+  const box=el('div','se-box'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Ask for travel dates');
+  const hd=el('div','se-hd'); hd.appendChild(el('div','se-t','Ask the MISMO Team for Travel Dates'));
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev bd-prev');
+  const l=ttList().filter(p=>/@/.test(p.e||''));
+  const groups={new:l.filter(p=>!p.sentAt && !ttHasDates(p)), wait:l.filter(p=>p.sentAt && !ttHasDates(p)), all:l};
+  const pick=el('div','se-pick'), ph=el('div','se-pickh');
+  const cnt=()=>ttAsk.pick.size+' of '+l.length+' picked';
+  ph.appendChild(el('b',null,cnt()));
+  const qa=el('span','se-pqa');
+  const sAll=el('button','se-lnk','Pick All Shown'); sAll.type='button';
+  const sNone=el('button','se-lnk','Clear'); sNone.type='button';
+  qa.appendChild(sAll); qa.appendChild(sNone); ph.appendChild(qa); pick.appendChild(ph);
+  const seg=el('div','se-pseg');
+  [['new','Not Asked Yet'],['wait','Waiting on Form'],['all','Everyone']].forEach(([k,lab])=>{ const b=el('button',ttAsk.show===k?'on':''); b.type='button';
+    b.appendChild(document.createTextNode(lab)); b.appendChild(el('em',null,String(groups[k].length)));
+    b.addEventListener('click',()=>{ ttAsk.show=k; drawTravelAsk(); }); seg.appendChild(b); });
+  pick.appendChild(seg);
+  const lst=el('div','se-who');
+  if(!groups[ttAsk.show].length) lst.appendChild(el('div','se-note se-empty','Nobody here.'));
+  groups[ttAsk.show].forEach(p=>{
+    const row=el('label','se-whor'+(ttAsk.prev===p.id?' on':''));
+    const c=document.createElement('input'); c.type='checkbox'; c.checked=ttAsk.pick.has(p.id);
+    c.addEventListener('change',()=>{ if(c.checked) ttAsk.pick.add(p.id); else ttAsk.pick.delete(p.id); ph.querySelector('b').textContent=cnt(); paintGo(); });
+    row.appendChild(c);
+    const tx=el('span','se-whon'); tx.appendChild(el('span',null,p.n));
+    tx.appendChild(el('small','se-whos', ttHasDates(p)? 'Dates in: '+ttNice(p.arr)+' – '+ttNice(p.dep) : p.sentAt? 'Form sent '+localDay(p.sentAt).replace(/ at .*/,'')+' · no dates yet' : 'Not asked yet · '+p.e));
+    row.appendChild(tx);
+    const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',ev=>{ ev.preventDefault(); ttAsk.prev=p.id; drawTravelAsk(); });
+    row.appendChild(pv);
+    lst.appendChild(row);
+  });
+  sAll.addEventListener('click',()=>{ groups[ttAsk.show].forEach(p=>ttAsk.pick.add(p.id)); drawTravelAsk(); });
+  sNone.addEventListener('click',()=>{ ttAsk.pick.clear(); drawTravelAsk(); });
+  pick.appendChild(lst); L.appendChild(pick);
+  L.appendChild(el('div','se-note','Each person gets their own email from you, with replies to you and their own link to enter when they arrive and leave'+(ttDoc().park?', whether they need a room and parking.':' and whether they need a room.')+' Their answer fills in their row on the MISMO Team card and the Resume’s Guestroom and Rate Assignments. Nothing goes until you press Send.'));
+  const acts=el('div','se-acts');
+  const go=el('button','btn'); go.type='button';
+  let armed=false;
+  const paintGo=()=>{ armed=false; go.classList.remove('armed'); const n=ttAsk.pick.size;
+    go.textContent= ttAsk.sending? 'Sending…' : 'Send to '+n+' '+(n===1?'Person':'People'); go.disabled=ttAsk.sending || !n; };
+  paintGo();
+  go.addEventListener('click',async()=>{
+    const n=ttAsk.pick.size;
+    if(!armed){ armed=true; go.textContent='Click Again to Send '+n+' Email'+(n===1?'':'s'); go.classList.add('armed'); return; }
+    ttAsk.sending=true; paintGo();
+    try{ const sent=await ttSendForms([...ttAsk.pick]); ttAsk=null; drawTravelAsk();
+      try{ window.__hqFlash && window.__hqFlash('The travel form is on its way to '+sent+' — it goes out within a couple of minutes.'); }catch(e){} }
+    catch(e){ ttAsk.sending=false; paintGo(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); }
+  });
+  acts.appendChild(go);
+  const tb=el('button','btn ghost','Send a Test to Me'); tb.type='button';
+  let me=''; try{ const s0=window.ResourcesSession&&window.ResourcesSession.current(); me=(s0&&s0.email)||''; }catch(e){}
+  tb.disabled=!me; tb.title= me? 'Sends the email shown to '+me+' only, marked [Test]' : 'Sign in to send yourself a test';
+  tb.addEventListener('click',async()=>{
+    const p=ttList().find(z=>z.id===ttAsk.prev)||ttList()[0]; if(!p) return;
+    tb.disabled=true; tb.textContent='Sending…';
+    try{ const em=ttEmail(p,'test'+ttTok().slice(0,10));
+      await ttQueue([{id:'tt-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:me, to:me, cc:'', replyTo:TT_JONNA.email,
+        subject:'[Test] '+em.subject, html:em.html, person:'', summit:venueNow(), graphic:''}]);
+      tb.textContent='Test on Its Way to You'; }
+    catch(e){ tb.textContent='Could not send the test'; tb.disabled=false; }
+  });
+  acts.appendChild(tb);
+  L.appendChild(acts);
+  const pp=ttList().find(z=>z.id===ttAsk.prev)||ttList()[0];
+  if(pp){
+    R.appendChild(el('div','bd-prevh','Preview — '+pp.n+' · to '+(pp.e||'no email yet')));
+    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview';
+    fr.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+ttEmail(pp,pp.tok||'preview').html+'</body>';
+    R.appendChild(fr);
+  }
+  body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box);
 }
 function ttAdd(){
   const f=el('div','addform tt-add');

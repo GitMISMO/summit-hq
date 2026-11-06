@@ -58,13 +58,6 @@
       <div id="bad" class="msg err" hidden>This link is missing its code. Please use the link in your email from MISMO.</div>
       <form id="f" hidden novalidate>
         <p id="hi"></p>
-        <fieldset>
-          <legend>Are you going?</legend>
-          <div class="opts">
-            <label><input type="radio" name="going" value="yes" checked> Yes, I&rsquo;m going</label>
-            <label><input type="radio" name="going" value="no"> No, not this time</label>
-          </div>
-        </fieldset>
         <div id="trip">
           <div class="row">
             <div><label class="lab" for="arr">Arriving</label><input type="date" id="arr" required><div class="hint" id="arrNice"></div></div>
@@ -127,10 +120,8 @@
   arr.addEventListener("input",paint); dep.addEventListener("input",paint); paint();
 
   var pick=function(n){ var x=document.querySelector('input[name="'+n+'"]:checked'); return x? x.value : ""; };
-  var going=function(){ return pick("going"); };
-  document.querySelectorAll('input[name="going"]').forEach(function(r){
-    r.addEventListener("change",function(){ $("trip").hidden = going()==="no"; });
-  });
+  /* Jonna, 2026-11-06: everyone asked is going; the form only asks when */
+  var going=function(){ return "yes"; };
 
   $("f").addEventListener("submit",function(e){
     e.preventDefault();
