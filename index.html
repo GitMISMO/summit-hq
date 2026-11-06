@@ -5307,6 +5307,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .bd-opt:hover{background:var(--sunk)}
 #app-people .bd-opt.on{background:var(--accent);color:#fff;font-weight:600}
 #app-people .bd-tally{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+#app-people .bd-tally.tt-tally{grid-template-columns:repeat(4,minmax(0,1fr))}
 #app-people .bd-ask{font-size:11.5px;color:var(--ink-3);margin-top:2px} #app-people .bd-ask.ok{color:var(--good)}
 #app-people .bd-top{flex-wrap:wrap}
 #app-people .bd-t{border:1px solid var(--line);border-radius:5px;padding:7px 10px;background:var(--surface)}
@@ -7349,7 +7350,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Every weekday morning</b> the <b>New Speakers to Register</b> email lists the speakers added since the last one, with their sessions. Register each one.</li>
           <li><b>Mark them registered</b> on People: open the speaker and tick <b>Registered for the event</b>. Anyone registered before the email goes drops off the next list.</li>
           <li><b>The Board</b>: when someone presses Notify Bernie, the <b>Board Members to Register</b> email lists who is still to register. Register them, then press <b>Registered</b> on their row on the Board of Directors card.</li>
-          <li><b>The MISMO team</b>: the <b>MISMO Team to Register</b> email lists everyone going under the MISMO banner, with their arrival and departure dates and whether they need a room.</li>
+          <li><b>The MISMO team</b>: the <b>MISMO Team to Register</b> email lists everyone going under the MISMO banner, with their arrival and departure dates.</li>
           <li><b>Sponsors are never registered by you</b>; they use their comp code. You get each sponsorship invoice to send when the portal approves it.</li>
         </ol>
         <h4>Packing the Trunk</h4>
@@ -7411,7 +7412,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <div class="hp-whohd"><b>Everyone Going Under the MISMO Banner</b><span>MISMO staff, the facilitators, the architect, and guests when there is room.</span></div>
         <div class="hp-go"><span>Your pages</span><button type="button" data-go="grid">Schedule</button><button type="button" data-go="ros">Run of Show</button></div>
         <ol class="hp-steps">
-          <li><b>Fill in the travel form</b> when the email arrives: when you arrive and leave, whether you need a room, and parking when the hotel includes it. Use the same link again if anything changes.</li>
+          <li><b>Fill in the travel form</b> when the email arrives: when you arrive and leave, and parking when the hotel includes it. Use the same link again if anything changes.</li>
           <li><b>Facilitators</b>: the Schedule shows each of your workgroups in its room and time, colored by facilitator.</li>
           <li><b>Your tasks</b> are on Run of Show, and the Monday email lists what is due that week.</li>
         </ol>
@@ -7656,7 +7657,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           </ul></li>
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
-        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: anyone with dates who needs a room is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
+        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
@@ -23104,9 +23105,9 @@ startClock();
   }
   /* Jonna, 2026-11-06: the MISMO Team's dates "should then auto update the Guestroom and Rate
      Assignments on the resume". Anyone on the MISMO Team card with an arrival and departure
-     who needs a room gets a row here (staff rate, R&T to Master; guests at the group rate);
+     gets a row here (staff rate, R&T to Master; guests at the group rate);
      their Arrives – Departs comes from the card by name. A row added this way comes off
-     again if they no longer need a room or are taken off the card. */
+     again if they are taken off the card. */
   let autoT=null, autoTries=0;
   function autoTeamRoomsSoon(){ clearTimeout(autoT); autoT=setTimeout(autoTeamRooms,1500); }
   function autoTeamRooms(){
@@ -23123,10 +23124,10 @@ startClock();
     const keep=cur.filter(p=>{
       const k=nk(p.name);
       if(p.auto){ const t=byName.get(k);
-        if(!t || t.room==='no' || seen.has(k)){ changed=true; return false; } }
+        if(!t || seen.has(k)){ changed=true; return false; } }
       seen.add(k); return true; });
     team.forEach(t=>{ const k=nk(t.n);
-      if(!t.n || t.room==='no' || !(t.arr && t.dep) || seen.has(k)) return;
+      if(!t.n || !(t.arr && t.dep) || seen.has(k)) return;
       keep.push({name:t.n, rate:t.role==='guest'?'group':'staff', billing:'R&T to Master', vip:false, auto:true}); seen.add(k); changed=true; });
     if(changed){ setDetail('people', JSON.parse(JSON.stringify(keep))); rerenderSoon(); }
   }
@@ -23652,12 +23653,12 @@ startClock();
         tbl.appendChild(r);
         const stay=(()=>{ try{ const T=window.__teamTravel, t=T&&T.stay(p.name); if(!t) return '';
           if(t.go==='no') return 'MISMO Team card: not going';
-          return t.arr||t.dep? 'Arrives '+(t.arr?T.nice(t.arr):'?')+' \u00b7 departs '+(t.dep?T.nice(t.dep):'?')+(t.room==='no'?' \u00b7 no room needed':'') : 'MISMO Team card: no dates yet'; }catch(e){ return ''; } })();
+          return t.arr||t.dep? 'Arrives '+(t.arr?T.nice(t.arr):'?')+' \u00b7 departs '+(t.dep?T.nice(t.dep):'?')  : 'MISMO Team card: no dates yet'; }catch(e){ return ''; } })();
         if(stay){ const sn=mk('div','note',stay); sn.style.margin='-2px 0 6px'; tbl.appendChild(sn); }
       });
       s.inn.appendChild(tbl);
       /* the MISMO Team card adds its people here on its own (see autoTeamRooms) */
-      try{ const T=window.__teamTravel; const wait=(T? T.list(ST.venue) : []).filter(t=>t.room!=='no' && !(t.arr&&t.dep));
+      try{ const T=window.__teamTravel; const wait=(T? T.list(ST.venue) : []).filter(t=>!(t.arr&&t.dep));
         if(wait.length){ const w=mk('div','note'); w.style.marginTop='10px';
           w.textContent='On the MISMO Team card in People without dates yet: '+wait.map(t=>t.n).join(', ')+'. They are added here as soon as their arrival and departure are in.'; s.inn.appendChild(w); } }catch(e){}
       const add=mk('button','rz-btn ghost small','+ Add a person'); add.type='button';
@@ -27807,7 +27808,7 @@ function prospectAdd(){
    architect, and guests added if there is room. Everyone listed is going; Ask for Travel Dates
    Travel Form emails the ones she selects a branded note with their own link to
    resources.mismo.org/summit-hq/travel.html, where they put their arrival and departure,
-   whether they need a room and (when the hotel includes it) parking. Their answer comes
+   and (when the hotel includes it) parking. Their answer comes
    back through the "Summit HQ - Team Travel Answers" flow into feeds/team-travel-answers
    and lands on their row. The dates feed the Resume's guest rooms, the nights tally is
    what to tell the hotel, and Send to Bernie emails him the team to register — they are
@@ -27874,7 +27875,7 @@ function ttSlug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').re
 /* nights at the hotel: everyone going who needs a room, night by night */
 function ttNights(){
   const out=[]; for(let i=-3;i<=4;i++) out.push({iso:ttDay(i), n:0, who:[]});
-  ttList().filter(p=>p.room!=='no' && p.arr && p.dep).forEach(p=>{
+  ttList().filter(p=>p.arr && p.dep).forEach(p=>{
     out.forEach(x=>{ if(x.iso>=p.arr && x.iso<p.dep){ x.n++; x.who.push(p.n); } });
   });
   return out.filter(x=>x.n || (x.iso>=ttDay(-1) && x.iso<=ttDay(3)));
@@ -27886,7 +27887,7 @@ const ttHasDates=p=>!!(p.arr && p.dep);
 function ttStat(){
   const l=ttList(), dated=l.filter(ttHasDates);
   return {total:l.length, dated:dated.length, go:dated.length,
-    rooms:dated.filter(p=>p.room!=='no').length, park:dated.filter(p=>p.park==='yes').length,
+    rooms:dated.length, park:dated.filter(p=>p.park==='yes').length,
     waiting:l.filter(p=>p.sentAt && !ttHasDates(p)).length, notAsked:l.filter(p=>!p.sentAt && !ttHasDates(p)).length,
     missing:l.filter(p=>!ttHasDates(p)).length};
 }
@@ -27940,7 +27941,7 @@ function ttEmail(p,tok){
   const paras=['Hi '+first+',',
     'You’re on the list to attend the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+(hotel?' at the '+hotel:v.city?' in '+v.city:'')+' with the MISMO team.',
     'So we can register you with the hotel and give them our rooming list, please tell us when you’re arriving and when you’re leaving'
-      +(ttDoc().park?', whether you need a room and whether you’ll need parking.':' and whether you need a room.')+' It takes about a minute.'];
+      +(ttDoc().park?', and whether you’ll need parking.':'.')+' It takes about a minute.'];
   if(p.role==='guest') paras.push('We’ll confirm your room once we know we have space in our block.');
   paras.push('If anything changes, use the same link again.');
   return {subject, html:ttHtml(subject, paras, {url:ttLink(p,tok), label:'Enter My Travel Dates'})};
@@ -27972,8 +27973,8 @@ async function ttSendBernie(ids){
   const rows=go.map(p=>'<tr><td style="'+td+'"><b style="color:#0d314c">'+e(p.n)+'</b><br><span style="color:#55657a;font-size:12.5px">'+e(TT_ROLE[p.role]||'')+'</span>'
     +(p.e?'<br><a href="mailto:'+e(p.e)+'" style="color:#0f6fa8;font-size:12.5px">'+e(p.e)+'</a>':'')+'</td>'
     +'<td style="'+td+'">'+e(ttNice(p.arr)||'Not given yet')+'</td><td style="'+td+'">'+e(ttNice(p.dep)||'Not given yet')+'</td>'
-    +'<td style="'+td+'">'+(p.room==='yes'?'Yes':p.room==='no'?'No':'—')+(ttDoc().park?'<br><span style="color:#55657a;font-size:12px">Parking: '+(p.park==='yes'?'Yes':p.park==='no'?'No':'—')+'</span>':'')+'</td></tr>').join('');
-  const table='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:6px 0 16px"><tbody><tr><td style="'+th+'">Name</td><td style="'+th+'">Arrives</td><td style="'+th+'">Departs</td><td style="'+th+'">Room</td></tr>'+rows+'</tbody></table>';
+    +(ttDoc().park?'<td style="'+td+'">'+(p.park==='yes'?'Yes':p.park==='no'?'No':'—')+'</td>':'')+'</tr>').join('');
+  const table='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:6px 0 16px"><tbody><tr><td style="'+th+'">Name</td><td style="'+th+'">Arrives</td><td style="'+th+'">Departs</td>'+(ttDoc().park?'<td style="'+th+'">Parking</td>':'')+'</tr>'+rows+'</tbody></table>';
   const subject='MISMO Team to Register — '+(v.name||'Summit')+' ('+go.length+')';
   const html=ttHtml('MISMO Team to Register',['Hi Bernie,',
     'Here is the MISMO team going to the '+(v.name||'Summit')+' under the MISMO banner. Please register them. Their arrival and departure dates are below for the rooming list.',
@@ -28062,8 +28063,8 @@ function ttSection(){
       +(bn&&bn.at? 'Last sent to him '+localDay(bn.at)+'. ' : '')+'Everyone whose dates are in and who has not gone to him yet starts checked.'));
     box.appendChild(top);
     /* the tally */
-    const tl=el('div','bd-tally');
-    [[s.dated+'/'+s.total,'Dates In','in'],[s.waiting,'Waiting on Form','none'],[s.notAsked,'Not Asked Yet','none'],[s.rooms,'Rooms Needed','virt'],
+    const tl=el('div','bd-tally tt-tally');
+    [[s.dated+'/'+s.total,'Dates In','in'],[s.waiting,'Waiting on Form','none'],[s.notAsked,'Not Asked Yet','none'],
      ttDoc().park? [s.park,'Parking','reg'] : [l.filter(p=>p.sentB).length,'Sent to Bernie','reg']]
       .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
     box.appendChild(tl);
@@ -28075,7 +28076,7 @@ function ttSection(){
     nts.forEach(x=>{ const c=el('div','tt-n'+(x.n?' on':'')); c.title=x.who.join(', ')||'Nobody yet';
       c.appendChild(el('span',null,ttNice(x.iso))); c.appendChild(el('b',null,String(x.n))); ng.appendChild(c); });
     nw.appendChild(ng);
-    nw.appendChild(el('div','pnote','Counts everyone who needs a room, from the night they arrive to the night before they leave. Their dates fill in the Resume’s Guestroom and Rate Assignments on their own.'));
+    nw.appendChild(el('div','pnote','Counts everyone with dates, from the night they arrive to the night before they leave. Their dates fill in the Resume’s Guestroom and Rate Assignments on their own.'));
     box.appendChild(nw);
     /* parking */
     const pk=el('label','tt-park'); const pc=document.createElement('input'); pc.type='checkbox'; pc.checked=!!ttDoc().park;
@@ -28115,9 +28116,6 @@ function ttRow(p){
     const i=el('input'); i.type='date'; i.value=p[k]||''; i.min=ttDay(-5); i.max=ttDay(7); i.dataset.keep='tt-'+k+':'+p.id;
     i.addEventListener('change',()=>ttSet(p.id,{[k]:i.value},'travel dates')); w.appendChild(i); return w; };
   dw.appendChild(dt('Arrives','arr')); dw.appendChild(dt('Departs','dep'));
-  const rm=el('label','tt-d'); rm.appendChild(el('span',null,'Room'));
-  const rs=el('select'); [['','—'],['yes','Yes'],['no','No']].forEach(([v,t])=>rs.appendChild(new Option(t,v))); rs.value=p.room||'';
-  rs.addEventListener('change',()=>ttSet(p.id,{room:rs.value},'a room')); rm.appendChild(rs); dw.appendChild(rm);
   if(ttDoc().park){ const pk=el('label','tt-d'); pk.appendChild(el('span',null,'Parking'));
     const ps=el('select'); [['','—'],['yes','Yes'],['no','No']].forEach(([v,t])=>ps.appendChild(new Option(t,v))); ps.value=p.park||'';
     ps.addEventListener('change',()=>ttSet(p.id,{park:ps.value},'parking')); pk.appendChild(ps); dw.appendChild(pk); }
@@ -28179,7 +28177,7 @@ function drawTravelAsk(){
   sAll.addEventListener('click',()=>{ groups[ttAsk.show].forEach(p=>ttAsk.pick.add(p.id)); drawTravelAsk(); });
   sNone.addEventListener('click',()=>{ ttAsk.pick.clear(); drawTravelAsk(); });
   pick.appendChild(lst); L.appendChild(pick);
-  L.appendChild(el('div','se-note','Each person gets their own email from you, with replies to you and their own link to enter when they arrive and leave'+(ttDoc().park?', whether they need a room and parking.':' and whether they need a room.')+' Their answer fills in their row on the MISMO Team card and the Resume’s Guestroom and Rate Assignments. Nothing goes until you press Send.'));
+  L.appendChild(el('div','se-note','Each person gets their own email from you, with replies to you and their own link to enter when they arrive and leave'+(ttDoc().park?', and parking.':'.')+' Their answer fills in their row on the MISMO Team card and the Resume’s Guestroom and Rate Assignments. Nothing goes until you press Send.'));
   const acts=el('div','se-acts');
   const go=el('button','btn'); go.type='button';
   let armed=false;

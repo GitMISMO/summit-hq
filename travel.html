@@ -63,14 +63,7 @@
             <div><label class="lab" for="arr">Arriving</label><input type="date" id="arr" required><div class="hint" id="arrNice"></div></div>
             <div><label class="lab" for="dep">Departing</label><input type="date" id="dep" required><div class="hint" id="depNice"></div></div>
           </div>
-          <fieldset>
-            <legend>Do you need a hotel room?</legend>
-            <div class="opts">
-              <label><input type="radio" name="room" value="yes" checked> Yes</label>
-              <label><input type="radio" name="room" value="no"> No</label>
-            </div>
-            <div class="hint" id="guestNote" hidden>We&rsquo;ll confirm your room once we know we have space in our block.</div>
-          </fieldset>
+          <div class="hint" id="guestNote" hidden style="margin:-6px 0 18px">We&rsquo;ll confirm your room once we know we have space in our block.</div>
           <fieldset id="parkSet" hidden>
             <legend>Will you need parking?</legend>
             <div class="opts">
@@ -132,7 +125,7 @@
       if(dep.value<arr.value){ err.textContent="Your departure is before your arrival — please check the dates."; err.hidden=false; return; }
     }
     var payload={t:t, v:v, going:g, arr:g==="yes"?arr.value:"", dep:g==="yes"?dep.value:"",
-      room:g==="yes"?pick("room"):"", park:(g==="yes" && get("p")==="1")?pick("park"):"", notes:$("notes").value.slice(0,500)};
+      room:"yes", park:(g==="yes" && get("p")==="1")?pick("park"):"", notes:$("notes").value.slice(0,500)};
     var btn=$("go"); btn.disabled=true; btn.textContent="Sending…";
     /* the flow's address is kept beside this page in travel-endpoint.txt */
     var where = ENDPOINT ? Promise.resolve(ENDPOINT)
