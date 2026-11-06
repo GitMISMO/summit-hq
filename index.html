@@ -5304,12 +5304,15 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .bd-opt + .bd-opt{border-left:1px solid var(--line-2)}
 #app-people .bd-opt:hover{background:var(--sunk)}
 #app-people .bd-opt.on{background:var(--accent);color:#fff;font-weight:600}
-#app-people .bd-tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+#app-people .bd-tally{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:12px 16px 4px}
+#app-people .bd-ask{font-size:11.5px;color:var(--ink-3);margin-top:2px} #app-people .bd-ask.ok{color:var(--good)}
+#app-people .bd-top{flex-wrap:wrap}
 #app-people .bd-t{border:1px solid var(--line);border-radius:5px;padding:7px 10px;background:var(--surface)}
 #app-people .bd-t b{display:block;font-family:var(--mono);font-size:18px;line-height:1.1;color:var(--ink)}
 #app-people .bd-t span{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
 #app-people .bd-t.in{border-color:var(--accent)} #app-people .bd-t.in b{color:var(--accent)}
 #app-people .bd-hc{padding:4px 16px 10px;border-bottom:1px solid var(--line)}
+@media (max-width:640px){ #app-people .bd-tally{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:480px){ #app-people .bd-tally{grid-template-columns:repeat(2,minmax(0,1fr))} }
 #app-people .bd-src{padding-top:10px}
 #app-people .tt-nights{padding:10px 16px;border-bottom:1px solid var(--line)}
@@ -5449,6 +5452,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-gbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .se-prev{min-height:0;background:#f1f6fa}
 .se-frame{width:100%;height:100%;border:0;background:#f1f6fa}
+#bd-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
 @media (max-width:760px){ .se-body{grid-template-columns:1fr;grid-template-rows:auto 420px} .se-edit{border-right:0;border-bottom:1px solid var(--line)} }
 #app-reg .ws-title.ws-edit{cursor:text}
 #app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
@@ -7647,7 +7651,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
             <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
           </ul></li>
-        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b> or <b>Virtual</b>; the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
+        <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. Brian Vieaux and staff are not on the list.</li>
+        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
@@ -24935,33 +24940,33 @@ const ROLE_SHORT={speaker:'Speaker',sponsor:'Sponsor',board:'Board'};
    Board card keeps a Registered tick per summit and can email him who is still to do.
    The two ex-officio members sit with the Board; Brian Vieaux is staff and is left off. */
 const BOARD=[
-  {i:'timothy-j-bowler',n:'Timothy J. Bowler',t:'Chief Innovation Officer, Fixed Income and Data Services',c:'ICE Mortgage Technology',r:'Chair'},
-  {i:'mike-hogan',n:'Mike Hogan',t:'Chief Information Officer',c:'Pennymac',r:'Vice Chair'},
-  {i:'michele-bodda',n:'Michele Bodda',t:'President, Mortgage and Employer Services',c:'Experian',r:''},
-  {i:'gemma-currier',n:'Gemma Currier',t:'Senior Vice President',c:'Guild',r:''},
-  {i:'lisa-dorsey',n:'Lisa Dorsey',t:'Vice President, Data Governance',c:'Fannie Mae',r:''},
-  {i:'tim-elkins',n:'Tim Elkins',t:'Chief Strategic Officer',c:'Supreme Lending',r:''},
-  {i:'suzanne-garwood',n:'Suzanne Garwood',t:'Executive Director and Associate General Counsel',c:'JPMorgan Chase',r:''},
-  {i:'peter-grace',n:'Peter Grace',t:'Senior Vice President for Strategy and Member Services',c:'MBA',r:''},
-  {i:'patrick-hartford',n:'Patrick Hartford',t:'Vice President, Architecture and Engineering',c:'Rocket Mortgage',r:''},
-  {i:'anthony-hutchinson',n:'Anthony Hutchinson',t:'Executive Vice President',c:'VantageScore',r:''},
-  {i:'aravind-jagannathan',n:'Aravind \u201cJag\u201d Jagannathan',t:'Senior Vice President and Single-Family Data Officer',c:'Freddie Mac',r:''},
-  {i:'neenu-kainth',n:'Neenu Kainth',t:'Senior Vice President and Chief Customer Experience Officer',c:'Enact',r:''},
-  {i:'jay-kingsley',n:'Jay Kingsley',t:'President',c:'Cotality',r:''},
-  {i:'eric-lapin',n:'Eric Lapin',t:'Vice President',c:'FICO',r:''},
-  {i:'giuseppe-lucido',n:'Giuseppe \u201cJoe\u201d Lucido',t:'Senior Vice President, Operations',c:'United Wholesale Mortgage',r:''},
-  {i:'greg-mcelroy',n:'Greg McElroy',t:'Managing Director, Chief Operating Officer',c:'Amerihome Mortgage Company',r:''},
-  {i:'todd-mcgowan',n:'Todd McGowan',t:'President, Lender Division',c:'First American',r:''},
-  {i:'teri-pansing',n:'Teri Pansing',t:'Senior Vice President, Corporate Closing',c:'Fairway Independent Mortgage Corporation',r:''},
-  {i:'leslie-peeler',n:'Leslie Peeler',t:'Executive Vice President and Chief Operating Officer',c:'Cenlar FSB',r:''},
-  {i:'kevin-peranio',n:'Kevin Peranio',t:'Chief Lending Officer',c:'PRMG',r:''},
-  {i:'aaron-perlis',n:'Aaron Perlis',t:'Executive Vice President, Special Asset Management',c:'Walker and Dunlop',r:''},
-  {i:'ike-suri',n:'Ike Suri',t:'Chairman and Chief Executive Officer',c:'FundingShield',r:''},
-  {i:'courtney-thompson',n:'Courtney Thompson',t:'Founder and Chief Executive Officer',c:'Consigliera',r:''},
-  {i:'matt-tully',n:'Matt Tully, CMB',t:'Chief of Staff',c:'Sagent',r:''},
-  {i:'matt-vanfossen',n:'Matt VanFossen',t:'Chief Executive Officer',c:'Absolute Home and Mortgage Automation Technologies',r:''},
-  {i:'rusty-emory',n:'Rusty Emory',t:'Vice President, Manager Investor Delivery',c:'PrimeLending',r:'Ex-Officio'},
-  {i:'brian-hunt',n:'Brian Hunt',t:'Senior Director, Multifamily Technology Management',c:'Fannie Mae',r:'Ex-Officio'}
+  {i:'timothy-j-bowler',n:'Timothy J. Bowler',t:'Chief Innovation Officer, Fixed Income and Data Services',c:'ICE Mortgage Technology',r:'Chair',e:'timothy.bowler@ice.com',cc:'jennifer.stover@ice.com',via:'Scheduling through Jennifer Stover'},
+  {i:'mike-hogan',n:'Mike Hogan',t:'Chief Information Officer',c:'Pennymac',r:'Vice Chair',e:'mike.hogan@pennymac.com; mike.hogan@pnmac.com'},
+  {i:'michele-bodda',n:'Michele Bodda',t:'President, Mortgage and Employer Services',c:'Experian',r:'',e:'michele.bodda@experian.com',cc:'katrina.arakawa@experian.com',via:'Scheduling through Katrina Arakawa'},
+  {i:'gemma-currier',n:'Gemma Currier',t:'Senior Vice President',c:'Guild',r:'',e:'gemmac@guildmortgage.net'},
+  {i:'lisa-dorsey',n:'Lisa Dorsey',t:'Vice President, Data Governance',c:'Fannie Mae',r:'',e:'lisa_dorsey@fanniemae.com'},
+  {i:'tim-elkins',n:'Tim Elkins',t:'Chief Strategic Officer',c:'Supreme Lending',r:'',e:'tim.elkins@supremelending.com'},
+  {i:'suzanne-garwood',n:'Suzanne Garwood',t:'Executive Director and Associate General Counsel',c:'JPMorgan Chase',r:'',e:'suzanne.garwood@jpmchase.com'},
+  {i:'peter-grace',n:'Peter Grace',t:'Senior Vice President for Strategy and Member Services',c:'MBA',r:'',e:'pgrace@mba.org',cc:'mmcgrath@mba.org',via:'Scheduling through Megan McGrath'},
+  {i:'patrick-hartford',n:'Patrick Hartford',t:'Vice President, Architecture and Engineering',c:'Rocket Mortgage',r:'',e:'patrickhartford@rocket.com'},
+  {i:'anthony-hutchinson',n:'Anthony Hutchinson',t:'Executive Vice President',c:'VantageScore',r:'',e:'tony@vantagescore.com'},
+  {i:'aravind-jagannathan',n:'Aravind \u201cJag\u201d Jagannathan',t:'Senior Vice President and Single-Family Data Officer',c:'Freddie Mac',r:'',e:'aravind_jagannathan@freddiemac.com'},
+  {i:'neenu-kainth',n:'Neenu Kainth',t:'Senior Vice President and Chief Customer Experience Officer',c:'Enact',r:'',e:'neenu.kainth@enactmi.com'},
+  {i:'jay-kingsley',n:'Jay Kingsley',t:'President',c:'Cotality',r:'',e:'jkingsley@cotality.com'},
+  {i:'eric-lapin',n:'Eric Lapin',t:'Vice President',c:'FICO',r:'',e:'ericlapin@fico.com'},
+  {i:'giuseppe-lucido',n:'Giuseppe \u201cJoe\u201d Lucido',t:'Senior Vice President, Operations',c:'United Wholesale Mortgage',r:'',e:'glucido@uwm.com'},
+  {i:'greg-mcelroy',n:'Greg McElroy',t:'Managing Director, Chief Operating Officer',c:'Amerihome Mortgage Company',r:'',e:'greg.mcelroy@amerihome.com'},
+  {i:'todd-mcgowan',n:'Todd McGowan',t:'President, Lender Division',c:'First American',r:'',e:'toddmcgowan@firstam.com'},
+  {i:'teri-pansing',n:'Teri Pansing',t:'Senior Vice President, Corporate Closing',c:'Fairway Independent Mortgage Corporation',r:'',e:'teri.pansing@fairwaymc.com'},
+  {i:'leslie-peeler',n:'Leslie Peeler',t:'Executive Vice President and Chief Operating Officer',c:'Cenlar FSB',r:'',e:'lapeeler@cenlar.com'},
+  {i:'kevin-peranio',n:'Kevin Peranio',t:'Chief Lending Officer',c:'PRMG',r:'',e:'kperanio@prmg.net'},
+  {i:'aaron-perlis',n:'Aaron Perlis',t:'Executive Vice President, Special Asset Management',c:'Walker and Dunlop',r:'',e:'aperlis@walkerdunlop.com'},
+  {i:'ike-suri',n:'Ike Suri',t:'Chairman and Chief Executive Officer',c:'FundingShield',r:'',e:'ike@fundingshield.com'},
+  {i:'courtney-thompson',n:'Courtney Thompson',t:'Founder and Chief Executive Officer',c:'Consigliera',r:'',e:'courtney@consigliera.com'},
+  {i:'matt-tully',n:'Matt Tully, CMB',t:'Chief of Staff',c:'Sagent',r:'',e:'matthew.tully@sagentlending.com'},
+  {i:'matt-vanfossen',n:'Matt VanFossen',t:'Chief Executive Officer',c:'Absolute Home and Mortgage Automation Technologies',r:'',e:'matthewv@ahmcloans.com'},
+  {i:'rusty-emory',n:'Rusty Emory',t:'Vice President, Manager Investor Delivery',c:'PrimeLending',r:'Ex-Officio',e:'remory@primelending.com'},
+  {i:'brian-hunt',n:'Brian Hunt',t:'Senior Director, Multifamily Technology Management',c:'Fannie Mae',r:'Ex-Officio',e:'brian_hunt@fanniemae.com'}
 ];
 const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25f','2025 Fall'],
   ['25s','2025 Spring'],['25w','2025 Winter'],['24f','2024 Fall'],['24s','2024 Spring'],['24w','2024 Winter']];
@@ -25863,6 +25868,12 @@ function render(){
       notifyBernie();
     });
     top.appendChild(nb);
+    /* Jonna, 2026-11-06: ask the Board themselves, In Person or Virtually */
+    const askN=BOARD.filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).length;
+    const ak=el('button','btn'+(askN?'':' ghost'),'Ask In Person or Virtual'+(askN?' ('+askN+')':'')); ak.type='button';
+    ak.title='Emails board members a branded note from Jonna with In Person and Virtually buttons; their answer marks them here';
+    ak.addEventListener('click',()=>openBoardAsk());
+    top.appendChild(ak);
     const nt=boardDoc().notified;
     top.appendChild(el('div','pnote', nt&&nt.at
       ? 'Bernie was notified '+localDay(nt.at)+' about '+nt.n+' board member'+(nt.n===1?'':'s')
@@ -25871,7 +25882,7 @@ function render(){
     box.appendChild(top);
     /* where we are: in person, virtual, not marked yet, registered */
     const tl=el('div','bd-tally');
-    [[bs.inP,'In Person','in'],[bs.virt,'Virtual','virt'],[bs.unmarked,'Not Marked','none'],[bs.reg+'/'+bs.total,'Registered','reg']]
+    [[bs.inP,'In Person','in'],[bs.virt,'Virtual','virt'],[bs.no,'Not Attending','no'],[bs.unmarked,'No Answer Yet','none'],[bs.reg+'/'+bs.need,'Registered','reg']]
       .forEach(([n,k,c])=>{ const d=el('div','bd-t '+c); d.appendChild(el('b',null,String(n))); d.appendChild(el('span',null,k)); tl.appendChild(d); });
     box.appendChild(tl);
     let hc=null; try{ hc=window.__boardHeadcount? window.__boardHeadcount(venueNow()) : null; }catch(e){}
@@ -25886,13 +25897,17 @@ function render(){
         const nm=el('div','bd-n',m.n); if(m.r && m.r!=='Ex-Officio') nm.appendChild(el('span','bd-r',m.r));
         L.appendChild(nm);
         L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
+        const ask=bdAsk(m.i);
+        if(ask || m.via){ const an=el('div','bd-ask'+(ask&&ask.respAt?' ok':''),
+          [ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'')+(ask.note?': \u201c'+ask.note+'\u201d':'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' \u00b7 no answer yet') : '', m.via||''].filter(Boolean).join(' \u00b7 '));
+          L.appendChild(an); }
         row.appendChild(L);
         const av=boardAtt(m.i), seg=el('div','bd-seg');
         seg.setAttribute('role','group'); seg.setAttribute('aria-label','How '+m.n+' is attending');
-        [['in','In Person'],['virt','Virtual']].forEach(([k,lab])=>{
+        [['in','In Person'],['virt','Virtual'],['no','Not Attending']].forEach(([k,lab])=>{
           const x=el('button','bd-opt'+(av===k?' on':''),lab); x.type='button';
           x.setAttribute('aria-pressed',av===k?'true':'false');
-          x.title= av===k? 'Marked '+lab.toLowerCase()+'. Click to clear it.' : 'Mark '+m.n+' as attending '+lab.toLowerCase();
+          x.title= av===k? 'Marked '+lab.toLowerCase()+'. Click to clear it.' : k==='no'? 'Mark '+m.n+' as not attending' : 'Mark '+m.n+' as attending '+lab.toLowerCase();
           x.addEventListener('click',()=>setBoardAtt(m.i, av===k?'':k));
           seg.appendChild(x);
         });
@@ -26265,7 +26280,10 @@ const boardAtt=id=>(boardDoc().att||{})[id]||'';
 function boardStat(){
   const reg=BOARD.filter(b=>boardReg(b.i)).length;
   const inP=BOARD.filter(b=>boardAtt(b.i)==='in').length, virt=BOARD.filter(b=>boardAtt(b.i)==='virt').length;
-  return {total:BOARD.length, reg, left:BOARD.length-reg, inP, virt, unmarked:BOARD.length-inP-virt};
+  const no=BOARD.filter(b=>boardAtt(b.i)==='no').length;
+  /* someone not coming has nothing to register */
+  const left=BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no').length;
+  return {total:BOARD.length, reg, left, inP, virt, no, unmarked:BOARD.length-inP-virt-no, need:BOARD.length-no};
 }
 /* the in-person number is the Board meeting's headcount on Hotel Specs */
 function pushBoardHeadcount(){
@@ -26283,7 +26301,7 @@ function setBoard(fields,label){ saveColl('board',ST.board,fields,label); }
    and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
    every 15 minutes for a request made 5 to 20 minutes earlier, so each press sends once. */
 async function notifyBernie(){
-  const v=venueInfo(), left=BOARD.filter(b=>!boardReg(b.i));
+  const v=venueInfo(), left=BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no');
   if(!left.length) return;
   let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -26303,6 +26321,167 @@ async function notifyBernie(){
   setBoard({notified:{at, by:who, n:left.length}},'Bernie notified about the Board');
   render();
 }
+/* ============================================================
+   ASK THE BOARD: IN PERSON OR VIRTUAL (Jonna, 2026-11-06)
+   "ask Board if they're going to be attending in person or virtually so we know how to
+   register them, they are comped registration, nice branded email". Each board member gets
+   their own email from Jonna (through the Speaker Emails flow, like the team travel form)
+   with In Person and Virtually buttons. The buttons open board.html with their own code,
+   where they confirm (nothing is recorded just by opening the link, so a mail scanner
+   cannot answer for them). The answer goes through the Team Travel Answers flow to
+   feeds/team-travel-answers, and Summit HQ marks them on the Board card. Assistants who
+   do a board member's scheduling are copied.
+   ============================================================ */
+const BD_FORM='https://resources.mismo.org/summit-hq/board.html';
+const bdAsk=id=>(boardDoc().ask||{})[id]||null;
+const bdFirst=m=>{ const f=String(m.n||'').replace(/[“"][^”"]*[”"]/g,'').trim().split(/\s+/)[0]||'there';
+  return {'timothy':'Tim','giuseppe':'Joe','aravind':'Jag','anthony':'Tony','matthew':'Matt'}[f.toLowerCase()]||f; };
+function bdLink(m,tok,a){
+  const v=venueInfo(), q=new URLSearchParams({t:tok, v:venueNow(), n:bdFirst(m), s:v.name||'Summit', d:seDates()||'', a});
+  return BD_FORM+'?'+q.toString();
+}
+async function bdEmail(m,tok){
+  const r=await seResume(), v=venueInfo();
+  const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const hotel=String(r.hotelName||'').trim(), city=v.city||'';
+  const subject='Will You Join Us In Person or Virtually?';
+  const btn=(url,label)=>'<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" bgcolor="#0d314c" style="background:#0d314c;border-radius:6px;padding:12px 22px;mso-padding-alt:12px 22px"><a href="'+e(url)+'" target="_blank" style="display:inline-block;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;line-height:18px;color:#ffffff;text-decoration:none;white-space:nowrap">'+e(label)+'</a></td></tr></table>';
+  const buttons='<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 6px"><tr>'
+    +'<td style="padding:0 10px 10px 0">'+btn(bdLink(m,tok,'in'),'I’ll Be There In Person')+'</td>'
+    +'<td style="padding:0 0 10px 0">'+btn(bdLink(m,tok,'virt'),'I’ll Join Virtually')+'</td></tr></table>'
+    +'<p style="margin:0 0 16px;font-size:13px;color:#55657a">Not able to make this one? <a href="'+e(bdLink(m,tok,'no'))+'" target="_blank" style="color:#0f6fa8">Let us know here</a>.</p>';
+  const paras=['Hi '+bdFirst(m)+',',
+    'The MISMO '+seSummitShort()+' is '+(seDates()||'coming up')+(hotel? ' at the '+hotel : city? ' in '+city : '')+', and we hope you’ll be with us. As a member of the MISMO Board of Directors, your registration is complimentary, and we’ll take care of registering you.',
+    'So we register you the right way, please let us know whether you’ll join us in person or virtually by clicking one of the buttons below.',
+    {html:buttons},
+    'If your plans change, just use the same buttons again.',
+    'Thank you,'];
+  return {subject, html:ttHtml(subject, paras, null, TT_JONNA)};
+}
+let bdBulk=null;
+function openBoardAsk(){
+  const not=BOARD.filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).map(b=>b.i);
+  bdBulk={pick:new Set(not), show:'open', prev:(not[0]||BOARD[0].i), sending:false};
+  drawBoardAsk();
+}
+function drawBoardAsk(){
+  let m=document.getElementById('bd-ask');
+  if(!bdBulk){ if(m) m.remove(); return; }
+  if(!m){ m=el('div','se-modal'); m.id='bd-ask'; document.body.appendChild(m); }
+  m.textContent='';
+  const close=()=>{ bdBulk=null; drawBoardAsk(); };
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+  const box=el('div','se-box'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Ask the Board');
+  const hd=el('div','se-hd'); hd.appendChild(el('div','se-t','Ask the Board: In Person or Virtual'));
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev');
+  const groups={open:BOARD.filter(b=>!boardAtt(b.i)), all:BOARD};
+  const pick=el('div','se-pick'), ph=el('div','se-pickh');
+  const cnt=()=>bdBulk.pick.size+' of '+BOARD.length+' board members picked';
+  ph.appendChild(el('b',null,cnt()));
+  const qa=el('span','se-pqa');
+  const sAll=el('button','se-lnk','Pick All Shown'); sAll.type='button';
+  const sNone=el('button','se-lnk','Clear'); sNone.type='button';
+  qa.appendChild(sAll); qa.appendChild(sNone); ph.appendChild(qa); pick.appendChild(ph);
+  const seg=el('div','se-pseg');
+  [['open','No Answer Yet'],['all','Everyone']].forEach(([k,lab])=>{ const b=el('button',bdBulk.show===k?'on':''); b.type='button';
+    b.appendChild(document.createTextNode(lab)); b.appendChild(el('em',null,String(groups[k].length)));
+    b.addEventListener('click',()=>{ bdBulk.show=k; drawBoardAsk(); }); seg.appendChild(b); });
+  pick.appendChild(seg);
+  const lst=el('div','se-who');
+  groups[bdBulk.show].forEach(b=>{
+    const row=el('label','se-whor'+(bdBulk.prev===b.i?' on':''));
+    const c=document.createElement('input'); c.type='checkbox'; c.checked=bdBulk.pick.has(b.i);
+    c.addEventListener('change',()=>{ if(c.checked) bdBulk.pick.add(b.i); else bdBulk.pick.delete(b.i); ph.querySelector('b').textContent=cnt(); paintGo(); });
+    row.appendChild(c);
+    const tx=el('span','se-whon'); tx.appendChild(el('span',null,b.n));
+    const a=bdAsk(b.i), at=boardAtt(b.i);
+    tx.appendChild(el('small','se-whos', at? (at==='in'?'In person':at==='virt'?'Virtual':'Not attending')+(a&&a.respAt?' (their answer)':'')
+      : a? 'Asked '+localDay(a.at).replace(/ at .*/,'')+' · no answer yet' : 'Not asked yet'+(b.cc? ' · copies '+b.cc : '')));
+    row.appendChild(tx);
+    const pv=el('button','se-lnk','Preview'); pv.type='button'; pv.addEventListener('click',ev=>{ ev.preventDefault(); bdBulk.prev=b.i; drawBoardAsk(); });
+    row.appendChild(pv);
+    lst.appendChild(row);
+  });
+  sAll.addEventListener('click',()=>{ groups[bdBulk.show].forEach(b=>bdBulk.pick.add(b.i)); drawBoardAsk(); });
+  sNone.addEventListener('click',()=>{ bdBulk.pick.clear(); drawBoardAsk(); });
+  pick.appendChild(lst); L.appendChild(pick);
+  L.appendChild(el('div','se-note','Each board member gets their own email from Jonna, with replies to Jonna. Their In Person or Virtually button marks them on the Board card, and the In Person count becomes the board meeting headcount on Hotel Specs. Assistants who do a board member’s scheduling are copied. Brian Vieaux and MISMO and MBA staff are not on this list.'));
+  const acts=el('div','se-acts');
+  const go=el('button','btn'); go.type='button';
+  let armed=false;
+  const paintGo=()=>{ armed=false; go.classList.remove('armed'); const n=bdBulk.pick.size;
+    go.textContent= bdBulk.sending? 'Sending…' : 'Send to '+n+' Board Member'+(n===1?'':'s'); go.disabled=bdBulk.sending || !n; };
+  paintGo();
+  go.addEventListener('click',async()=>{
+    const n=bdBulk.pick.size;
+    if(!armed){ armed=true; go.textContent='Click Again to Send '+n+' Email'+(n===1?'':'s'); go.classList.add('armed'); return; }
+    bdBulk.sending=true; paintGo();
+    try{ const sent=await bdSend([...bdBulk.pick]);
+      bdBulk=null; drawBoardAsk(); try{ window.__hqFlash && window.__hqFlash(sent+' board email'+(sent===1?'':'s')+' on the way, from Jonna'); }catch(e){} }
+    catch(e){ bdBulk.sending=false; paintGo(); alert('Summit HQ could not queue the emails. Check you are signed in and try again.'); }
+  });
+  acts.appendChild(go);
+  /* a test: this board member's email, to whoever is signed in */
+  const tb=el('button','btn ghost','Send a Test to Me'); tb.type='button';
+  let me=''; try{ const s0=window.ResourcesSession&&window.ResourcesSession.current(); me=(s0&&s0.email)||''; }catch(e){}
+  tb.disabled=!me; tb.title= me? 'Sends the email shown to '+me+' only, marked [Test]' : 'Sign in to send yourself a test';
+  tb.addEventListener('click',async()=>{
+    const b=BOARD.find(z=>z.i===bdBulk.prev)||BOARD[0];
+    tb.disabled=true; tb.textContent='Sending…';
+    try{ const em=await bdEmail(b,'test'+ttTok().slice(0,10));
+      await ttQueue([{id:'bd-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:me, to:me, cc:'', replyTo:TT_JONNA.email,
+        subject:'[Test] '+em.subject, html:em.html, person:'', summit:venueNow(), graphic:''}]);
+      tb.textContent='Test on Its Way to You'; }
+    catch(e){ tb.textContent='Could not send the test'; tb.disabled=false; }
+  });
+  acts.appendChild(tb);
+  L.appendChild(acts);
+  const prevB=BOARD.find(z=>z.i===bdBulk.prev)||BOARD[0];
+  R.classList.add('bd-prev');
+  R.appendChild(el('div','bd-prevh','Preview — '+prevB.n+' · to '+prevB.e+(prevB.cc?' · copy to '+prevB.cc:'')));
+  const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview';
+  R.appendChild(fr);
+  bdEmail(prevB,(bdAsk(prevB.i)||{}).tok||'preview').then(em=>{ fr.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+em.html+'</body>'; });
+  body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box);
+}
+async function bdSend(ids){
+  const now=new Date().toISOString(), who=ttWho(), ask=Object.assign({},boardDoc().ask||{}), reqs=[];
+  for(const [ix,id] of ids.entries()){
+    const b=BOARD.find(z=>z.i===id); if(!b || !/@/.test(b.e||'')) continue;
+    const tok=(ask[id]&&ask[id].tok)||ttTok();
+    const em=await bdEmail(b,tok);
+    reqs.push({id:'bd-'+Date.now().toString(36)+'-'+ix, requestedAt:now, requestedBy:who, to:b.e, cc:b.cc||'', replyTo:TT_JONNA.email,
+      subject:em.subject, html:em.html, person:'', summit:venueNow(), graphic:''});
+    ask[id]=Object.assign({},ask[id],{tok, at:now, by:who});
+  }
+  if(!reqs.length) return 0;
+  await ttQueue(reqs);
+  setBoard({ask},'the Board asked in person or virtual');
+  render();
+  return reqs.length;
+}
+/* their answers, from the same feed the team travel form uses */
+function boardApply(){
+  const f=ST.travelAnswers; if(!f || !Array.isArray(f.answers)) return;
+  if(!ST.collsRead || !ST.collsRead.has('board')) return;
+  const v=venueNow(), d=boardDoc(), ask=Object.assign({},d.ask||{}), att=Object.assign({},d.att||{});
+  let changed=false;
+  Object.keys(ask).forEach(id=>{
+    const a=ask[id]; if(!a||!a.tok) return;
+    const got=f.answers.filter(x=>x && x.t===a.tok && x.v===v && /^(in|virt|no)$/.test(String(x.going||'')))
+      .sort((p,q)=>String(q.at||'').localeCompare(String(p.at||'')))[0];
+    if(!got || (a.respAt && String(a.respAt)>=String(got.at||''))) return;
+    att[id]=got.going;
+    ask[id]=Object.assign({},a,{respAt:got.at||new Date().toISOString(), ans:got.going, note:String(got.notes||'').slice(0,300)});
+    changed=true;
+  });
+  if(!changed) return;
+  setBoard({att, ask},'board answers');
+  pushBoardHeadcount(); render();
+}
+
 /* add somebody as a speaker on this summit; work already done for them as a speaker stands */
 
 /* ============================================================
@@ -28117,6 +28296,7 @@ function init(){
         db.collection(coll).onSnapshot(s=>{
           ST.collsRead.add(coll);
           s.docChanges().forEach(c=>{ if(c.type==='removed') map.delete(c.doc.id); else map.set(c.doc.id,Object.assign({},c.doc.data())); });
+          if(coll==='board'){ try{ boardApply(); }catch(e){} }
           render();
         },()=>{});
       });
@@ -28126,7 +28306,7 @@ function init(){
         ST.travelLoaded=true; ttSeed(); ttApply(); render();
         try{ window.dispatchEvent(new Event('hq:team-travel')); }catch(e){}
       },()=>{});
-      db.doc('feeds/team-travel-answers').onSnapshot(s=>{ ST.travelAnswers=s.exists?(s.data()||null):null; if(ST.travelLoaded) ttApply(); },()=>{});
+      db.doc('feeds/team-travel-answers').onSnapshot(s=>{ ST.travelAnswers=s.exists?(s.data()||null):null; if(ST.travelLoaded) ttApply(); try{ boardApply(); }catch(e){} },()=>{});
       db.collection('people').onSnapshot(s=>{
         ST.collsRead.add('people');
         s.docChanges().forEach(c=>{
