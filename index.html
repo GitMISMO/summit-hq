@@ -69,6 +69,9 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
    Saving: every save sends the version (sha) it last read. If someone else saved
    in between, the relay answers 409; the change is re-applied on top of theirs and
    sent again, so two people editing different things never overwrite each other.
+   Since November 5, 2026 the change re-applied is only what was changed here (the
+   fields and rows that differ from the copy the change started from), not the whole
+   document as this page had it — see "saving without overwriting anyone".
    Saves made within a moment of each other go out as one commit.
 
    Seeing other people's changes: the relay has no push, so open files are
@@ -122,6 +125,162 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   function shard(coll, id) { return fname(coll + '-' + (parseInt(hash8(id), 36) % SHARDS[coll])); }
   function err(code, message, status) { var e = new Error(message || code); e.code = code; e.status = status || 0; return e; }
   function now() { return Date.now(); }
+
+  /* ---- saving without overwriting anyone (November 5, 2026) ----------------------------
+     A save used to send the whole record exactly as this page had it. If the page had
+     been open a while, or someone else saved in the moment before, their change was
+     quietly put back. Now a save carries only what was changed here: it is laid over the
+     newest copy at the moment it is written (and again if the relay says someone saved
+     first), and everything this page did not change keeps its newest value.
+       - Records inside a list are matched by their id, so two people changing different
+         rows both keep their change, a row added by either is kept, and a row someone
+         else removed stays removed unless it was changed here.
+       - Running notes kept as text (log, notes) keep both people's additions.
+       - When both changed the very same value, the newer save (this one) wins, unless
+         the person saving says to keep theirs when asked. */
+  var MG_LOGS = { log: true, notes: true };
+  var MG_QUIET = /^(updatedAt|updatedBy|savedAt|savedBy|createdAt|createdBy|updated)$/;   /* when it was saved, and by whom */
+  function mgObj(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+  function mgHas(o, k) { return !!o && Object.prototype.hasOwnProperty.call(o, k); }
+  function mgCopy(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
+  /* "", null and nothing are the same; 5 and "5" are the same */
+  function mgNorm(v) {
+    if (v === undefined || v === null || v === '') return '';
+    if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+    if (typeof v === 'string') return v;
+    return JSON.stringify(v);
+  }
+  function mgSame(x, y) {
+    if (x === y) return true;
+    if (mgObj(x) && mgObj(y)) {
+      var k, seen = {};
+      for (k in x) if (mgHas(x, k)) { seen[k] = 1; if (!mgSame(x[k], y[k])) return false; }
+      for (k in y) if (mgHas(y, k) && !seen[k] && !mgSame(x[k], y[k])) return false;
+      return true;
+    }
+    if (Array.isArray(x) && Array.isArray(y)) {
+      if (x.length !== y.length) return false;
+      for (var i = 0; i < x.length; i++) if (!mgSame(x[i], y[i])) return false;
+      return true;
+    }
+    if ((x && typeof x === 'object') || (y && typeof y === 'object')) return false;
+    return mgNorm(x) === mgNorm(y);
+  }
+  /* what a row in a list is called in a question, and how it is matched */
+  function mgName(x, i) {
+    if (mgObj(x)) { var n = x.title || x.name || x.task || x.text || x.nm || x.full || x.email || x.id; if (n) return String(n).slice(0, 40); }
+    return typeof x === 'string' ? x.slice(0, 40) : '#' + (i + 1);
+  }
+  function mgIdKey(x) { return mgObj(x) && x.id !== undefined && x.id !== null && x.id !== '' ? 'i:' + x.id : null; }
+  function mgJsonKey(x) { return x === undefined ? null : 'j:' + JSON.stringify(x); }
+  function mgIndex(lists, keyFn) {
+    var out = [];
+    for (var a = 0; a < lists.length; a++) {
+      var m = {}, order = [];
+      for (var i = 0; i < lists[a].length; i++) {
+        var k = keyFn(lists[a][i]);
+        if (k === null || mgHas(m, k)) return null;
+        m[k] = lists[a][i]; order.push(k);
+      }
+      out.push({ m: m, order: order });
+    }
+    return out;
+  }
+  function mgList(C, M, B, path, ctx) {
+    var common = function (x, y) { return x.order.filter(function (k) { return mgHas(y.m, k); }).join('\u0001'); };
+    var reordered = common(M, B) !== common(B, M);      /* the order was changed here: this order stands */
+    var lead = reordered ? M : C, rest = reordered ? C : M, out = [], keys = [], done = {};
+    var one = function (k) {
+      done[k] = 1;
+      var b = mgHas(B.m, k), m = mgHas(M.m, k), c = mgHas(C.m, k), src = c ? C.m[k] : M.m[k];
+      if (b && m && c) return { v: mgValue(C.m[k], M.m[k], B.m[k], path.concat(mgName(src, 0)), ctx) };
+      if (b && m) return mgSame(M.m[k], B.m[k]) ? null : { v: mgCopy(M.m[k]) };   /* removed there: back only if changed here */
+      if (b) return null;                                                         /* removed here */
+      if (m && c) return { v: mgValue(C.m[k], M.m[k], undefined, path.concat(mgName(src, 0)), ctx) };
+      return { v: mgCopy(src) };                                                  /* added on one side */
+    };
+    lead.order.forEach(function (k) { var r = one(k); if (r) { out.push(r.v); keys.push(k); } });
+    rest.order.forEach(function (k, i) {
+      if (done[k]) return;
+      var r = one(k); if (!r) return;
+      /* a row added at the end goes at the end; one added in between goes after the row
+         it followed on its own side */
+      var at = out.length, between = false;
+      for (var q = i + 1; q < rest.order.length && !between; q++) between = keys.indexOf(rest.order[q]) >= 0;
+      if (between) {
+        at = 0;
+        for (var j = i - 1; j >= 0; j--) { var p = keys.indexOf(rest.order[j]); if (p >= 0) { at = p + 1; break; } }
+      }
+      out.splice(at, 0, r.v); keys.splice(at, 0, k);
+    });
+    return out;
+  }
+  function mgValue(cur, mine, base, path, ctx) {
+    if (mgSame(mine, base)) return mgCopy(cur);                     /* not changed here: the newest value stands */
+    if (mgSame(cur, base) || mgSame(cur, mine)) return mgCopy(mine);
+    var last = path.length ? String(path[path.length - 1]) : '';
+    if (MG_LOGS[last] && typeof cur === 'string' && typeof mine === 'string' && (base == null || typeof base === 'string')) {
+      var b0 = base || '';
+      if (mine.indexOf(b0) === 0 && cur.indexOf(b0) === 0) {                                      /* both added to the end */
+        var add = mine.slice(b0.length);
+        return cur + (cur && !/\s$/.test(cur) && !/^\s/.test(add) ? '\n' : '') + add;
+      }
+    }
+    if (mgObj(cur) && mgObj(mine) && (mgObj(base) || base == null)) {
+      var b = mgObj(base) ? base : {}, out = mgCopy(cur), keys = {}, k;
+      for (k in mine) if (mgHas(mine, k)) keys[k] = 1;
+      for (k in b) if (mgHas(b, k)) keys[k] = 1;
+      Object.keys(keys).forEach(function (k) {
+        if (mgSame(mine[k], b[k])) return;
+        if (!mgHas(mine, k)) { delete out[k]; return; }                               /* taken out here */
+        if (!mgHas(cur, k) && mgHas(b, k)) { out[k] = mgCopy(mine[k]); return; }      /* taken out there, changed here */
+        var v = mgValue(cur[k], mine[k], b[k], path.concat(k), ctx);
+        if (v === undefined) delete out[k]; else out[k] = v;
+      });
+      return out;
+    }
+    if (Array.isArray(cur) && Array.isArray(mine) && (Array.isArray(base) || base == null)) {
+      var bl = Array.isArray(base) ? base : [], ix = mgIndex([cur, mine, bl], mgIdKey);
+      if (ix && (cur.length || mine.length)) return mgList(ix[0], ix[1], ix[2], path, ctx);
+      /* plain values (names, ticks, pairs) are a set: what was added or taken out on each side */
+      var plain = function (a) { return a.every(function (x) { return !mgObj(x); }); };
+      if (plain(cur) && plain(mine) && plain(bl) && (ix = mgIndex([cur, mine, bl], mgJsonKey))) return mgList(ix[0], ix[1], ix[2], path, ctx);
+      if (cur.length === mine.length && mine.length === bl.length)
+        return cur.map(function (c, i) { return mgValue(c, mine[i], bl[i], path.concat(mgName(c, i)), ctx); });
+      ix = mgIndex([cur, mine, bl], mgJsonKey);
+      if (ix) return mgList(ix[0], ix[1], ix[2], path, ctx);
+    }
+    /* both changed this very value */
+    var key = path.join(' › ');
+    if (ctx && ctx.theirs && ctx.theirs[key]) return mgCopy(cur);
+    if (ctx && ctx.clashes && !MG_QUIET.test(last) && !(ctx.quiet && ctx.quiet.test(key)))
+      ctx.clashes.push({ key: key, theirs: cur, mine: mine });
+    return mgCopy(mine);
+  }
+  /* one whole document: `base` is the copy the change started from (undefined: not known,
+     so it is written as sent, the way it always was) */
+  function mgDoc(cur, mine, base, ctx) {
+    if (base === undefined || base === null || mine === null || mine === undefined) return mgCopy(mine);
+    if (cur === null || cur === undefined) return mgSame(mine, base) ? null : mgCopy(mine);   /* removed by someone else */
+    if (mgSame(cur, base)) return mgCopy(mine);                                                 /* nobody else saved: exactly as sent */
+    return mgValue(cur, mine, base, [], ctx);
+  }
+  /* the question asked when both people changed the same thing; true keeps this page's */
+  function mgShow(v) { var t = mgObj(v) || Array.isArray(v) ? JSON.stringify(v) : mgNorm(v); return t === '' ? '(blank)' : t.slice(0, 80); }
+  function mgWord(k) { return String(k).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, function (c) { return c.toUpperCase(); }); }
+  function mgAsk(what, clashes, labels) {
+    var word = function (k) { return labels && labels[k] ? labels[k] : mgWord(k); };
+    var list = clashes.slice(0, 8).map(function (c) {
+      return '• ' + c.key.split(' › ').map(word).join(' › ') + ' — theirs: ' + mgShow(c.theirs) + '   ·   yours: ' + mgShow(c.mine);
+    }).join('\n') + (clashes.length > 8 ? '\n• and ' + (clashes.length - 8) + ' more' : '');
+    var msg = 'While you had ' + what + ' open, someone else saved a different value in the same ' +
+      (clashes.length === 1 ? 'place' : 'places') + ':\n\n' + list +
+      '\n\nOK keeps yours. Cancel keeps theirs for ' + (clashes.length === 1 ? 'this one' : 'these') +
+      ' — your other changes still save.';
+    try { return window.confirm(msg); } catch (e) { return true; }
+  }
+  /* Summit HQ's own: which summit a person last had open is theirs, not a clash */
+  var MG_NOASK = /^activeVenue$/;
 
   /* ---------- where a document is filed ---------- */
   function place(path) {
@@ -218,19 +377,49 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   }
   function ensure(f) { return f.loaded ? Promise.resolve(f) : load(f); }
 
-  function applyOps(f, content, ops) {
+  /* Each change is laid over the copy it is applied to (November 5, 2026): `op.base` is the
+     document as this page had it when the change was made, so only what was changed here is
+     written and everything else keeps the newest value. A change with no base (nothing was
+     loaded yet) is written as sent, the way it always was. `writing` is true when the result
+     is about to be saved, so any clash with someone else's save is noted for asking. */
+  function applyOps(f, content, ops, writing) {
     ops.forEach(function (op) {
-      if (f.own) {
-        if (op.kind === 'set') content.doc = clone(op.data);
-        else if (op.kind === 'update') content.doc = Object.assign({}, content.doc || {}, clone(op.data));
-        else if (op.kind === 'delete') content.doc = null;
-      } else {
-        if (op.kind === 'set') content.docs[op.path] = clone(op.data);
-        else if (op.kind === 'update') content.docs[op.path] = Object.assign({}, content.docs[op.path] || {}, clone(op.data));
-        else if (op.kind === 'delete') delete content.docs[op.path];
-      }
+      var cur = f.own ? content.doc : content.docs[op.path], next;
+      if (cur === undefined) cur = null;
+      var ctx = { clashes: [], theirs: op.theirs || {}, quiet: MG_NOASK };
+      if (op.kind === 'set') next = mgDoc(cur, op.data, op.base, ctx);
+      else if (op.kind === 'update') {
+        if (op.base && cur === null) next = null;           /* removed by someone else since: not put back */
+        else if (op.base) next = mgDoc(cur, Object.assign(clone(op.base), clone(op.data)), op.base, ctx);
+        else next = Object.assign({}, cur || {}, clone(op.data));
+      } else if (op.kind === 'delete') next = null;
+      else return;
+      if (writing) op.clashes = ctx.clashes;
+      if (f.own) content.doc = next === undefined ? null : next;
+      else if (next === null || next === undefined) delete content.docs[op.path];
+      else content.docs[op.path] = next;
     });
     return content;
+  }
+  /* both people changed the same thing: ask once (OK keeps this page's, Cancel keeps theirs
+     for those, and everything else still saves). True when the answer changes what is sent. */
+  function askClashes(batch) {
+    var redo = false;
+    batch.forEach(function (op) {
+      if (!op.clashes || !op.clashes.length || /^(feeds|photos)\//.test(op.path)) return;
+      op.asked = op.asked || {};
+      var fresh = op.clashes.filter(function (c) { return !op.asked[c.key]; });
+      if (!fresh.length) return;
+      fresh.forEach(function (c) { op.asked[c.key] = 1; });
+      var d = Object.assign({}, mgObj(op.base) ? op.base : {}, mgObj(op.data) ? op.data : {}), nm = d.task || d.title || d.name || d.text;
+      if (!mgAsk(nm ? '\u201c' + String(nm).slice(0, 60) + '\u201d' : 'this page', fresh,
+          { desc: 'Description', details: 'Instructions', dur: 'Minutes', nm: 'Name', att: 'Headcount' })) {
+        op.theirs = op.theirs || {};
+        fresh.forEach(function (c) { op.theirs[c.key] = 1; });
+        redo = true;
+      }
+    });
+    return redo;
   }
   function viewOf(f) {
     if (!f.loaded) return null;
@@ -243,12 +432,16 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     return d === undefined ? null : d;
   }
   /* ---------- saving ---------- */
-  function queue(path, kind, data) {
+  /* `base`: the document as the change started from it. Left out, it is the copy this page
+     holds right now; a tab that keeps its own copy open for a while passes the one it opened
+     with, so a value it never took in is not sent back as a change (November 5, 2026). */
+  function queue(path, kind, data, base) {
     var p = place(path), f = file(p.file, p.own);
     return new Promise(function (res, rej) {
       var go = function () {
         if (kind === 'update' && f.loaded && docIn(f, path) === null) { rej(err('not-found', 'No document to update: ' + path)); return; }
-        var op = { kind: kind, path: path, data: data, res: res, rej: rej, lockGrid: path === 'schedule/summits' && !gridOwner() };
+        var from = base !== undefined ? clone(base) : (f.loaded && kind !== 'delete' ? clone(docIn(f, path)) : undefined);
+        var op = { kind: kind, path: path, data: data, base: from, res: res, rej: rej, lockGrid: path === 'schedule/summits' && !gridOwner() };
         f.pending.push(op); f.view = null;
         if (p.own) register(path, kind !== 'delete');
         notify(f, true);
@@ -302,7 +495,8 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     var batch = f.pending.slice(), tries = 0;
     var attempt = function () {
       return ensure(f).then(function () {
-        var next = applyOps(f, clone(f.server), batch);
+        var next = applyOps(f, clone(f.server), batch, true);
+        if (askClashes(batch)) { next = applyOps(f, clone(f.server), batch, true); f.view = null; }
         lockGrid(f, next, batch);
         if (!f.own && JSON.stringify(next).length > MAX_FILE) throw err('TOO_BIG', 'This part of Summit HQ has grown too big to save in one piece.');
         return putContent(f, next).then(function (b) {
@@ -516,8 +710,9 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
         var fresh = f.loaded && !f.loading && (hasListener(f) || f.pending.length || now() - f.loadedAt < 15000);
         return (fresh ? Promise.resolve(f) : load(f)).then(function () { return docSnap(path, docIn(f, path), f.pending.length > 0); });
       },
-      set: function (data) { return queue(path, 'set', data); },
-      update: function (patch) { return queue(path, 'update', patch); },
+      /* opts.base: the copy this change started from (see queue) */
+      set: function (data, opts) { return queue(path, 'set', data, opts ? opts.base : undefined); },
+      update: function (patch, opts) { return queue(path, 'update', patch, opts ? opts.base : undefined); },
       delete: function () { return queue(path, 'delete', null); },
       onSnapshot: function (cb, errCb) {
         var l = { path: path, cb: cb, primed: false, sig: null }; docL.push(l);
@@ -760,7 +955,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       return Promise.resolve(null);      /* 'sample' — asking Claude from the page — is not available here */
     }
   };
-  window.__hqRelay = { files: F, place: place, poll: function () { poll(true); }, pending: anyPending, status: status,
+  window.__hqRelay = { files: F, place: place, poll: function () { poll(true); }, pending: anyPending, status: status, same: mgSame,
     why: function () { return WHY[status.lastError] || status.lastError || ''; },
     config: { RELAY_URL: RELAY_URL, PROJECT: PROJECT, POLL_MS: POLL_MS } };
 
@@ -5901,14 +6096,21 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
       saveTs[target]=null;
       if(!ST.ready || ST.readOk===false) return;      /* never over a list that was not read */
       const db=await store(); if(!db) return;
+      /* November 5, 2026: the Trunk is read once when it opens. Each save now sends only what
+         was changed here since then (seen), so a teammate's ticks and lines saved in the
+         meantime stay. */
+      const sendFrom=(key, body)=>{ const from=ST.seen? ST.seen[key] : undefined;
+        ST.seen=ST.seen||{}; ST.seen[key]=JSON.parse(JSON.stringify(body)); return {base:from}; };
       try{
-        if(target==='standing') await db.doc('trunk/standing').set(JSON.parse(JSON.stringify(standing())));
+        if(target==='standing'){ const body=JSON.parse(JSON.stringify(standing()));
+          await db.doc('trunk/standing').set(body, sendFrom('standing', body)); }
         else {
           /* the review is written by the team from their own screens — never write an older
              copy of it over theirs */
           try{ const cur=await db.doc('trunk/'+ST.sid).get(); const rr=cur && cur.exists && cur.data() && cur.data().review;
             const lr=summit().review; if(rr && (!lr || (rr.v||0)>(lr.v||0))) summit().review=own(rr); }catch(e){}
-          await db.doc('trunk/'+ST.sid).set(JSON.parse(JSON.stringify(summit())));
+          const body=JSON.parse(JSON.stringify(summit()));
+          await db.doc('trunk/'+ST.sid).set(body, sendFrom('s:'+ST.sid, body));
         }
       }catch(e){}
     },300);
@@ -5925,9 +6127,12 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
          really not there yet gets Bernie's sheet put in, and nothing is written over a list
          that could not be read */
       let readA=false, readB=false;
+      ST.seen={};
       try{ const a=await db.doc('trunk/standing').get(); readA=true;
+        ST.seen.standing=(a && a.exists && a.data())? JSON.parse(JSON.stringify(a.data())) : null;
         if(a && a.exists && a.data()) ST.standing=takeStanding(a.data()); }catch(e){}
       try{ const b=await db.doc('trunk/'+ST.sid).get(); readB=true;
+        ST.seen['s:'+ST.sid]=(b && b.exists && b.data())? JSON.parse(JSON.stringify(b.data())) : null;
         if(b && b.exists && b.data()) ST.summit=takeSummit(b.data()); }catch(e){}
       ST.readOk = readA && readB;
       if(!ST.standing && readA){ standing(); save('standing'); }
@@ -5941,6 +6146,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     ST.sid=sid; ST.summit=null;
     const db=await store();
     if(db){ try{ const b=await db.doc('trunk/'+sid).get();
+      ST.seen=ST.seen||{}; ST.seen['s:'+sid]=(b && b.exists && b.data())? JSON.parse(JSON.stringify(b.data())) : null;
       if(b && b.exists && b.data()) ST.summit=takeSummit(b.data()); }catch(e){} }
     render();
   }
@@ -7785,7 +7991,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
 
   async function watch(sid){
     if(ST.unsub){ try{ ST.unsub(); }catch(e){} ST.unsub=null; }
-    ST.sid=sid; ST.doc=null; ST.ready=false; ST.readOk=false; ST.openWeek=null; ST.tool=null; ST.pick=null;
+    ST.sid=sid; ST.doc=null; ST.seen=undefined; ST.ready=false; ST.readOk=false; ST.openWeek=null; ST.tool=null; ST.pick=null;
     render();
     const db=await store();
     if(!db){ ST.ready=true; render(); return; }
@@ -7793,6 +7999,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
     const got=s=>{ if(sid!==ST.sid) return;
       /* our own save comes back a moment later — do not let an older copy overwrite it */
       if(ST.ready && ST.writeSid===sid && Date.now()-ST.lastWrite<4000) return;
+      /* November 5, 2026: what this page took in, so a save sends only what was changed here */
+      ST.seen=(s && s.exists && s.data())? JSON.parse(JSON.stringify(s.data())) : null;
       ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; ST.readOk=true; render(); };
     if(typeof ref.onSnapshot==='function'){
       try{ ST.unsub=ref.onSnapshot(got, ()=>{ if(sid===ST.sid){ ST.ready=true; render(); } }); return; }catch(e){}
@@ -7809,7 +8017,9 @@ textarea,input,select{font-family:var(--ui,inherit)}
     clearTimeout(saveT);
     saveT=setTimeout(async()=>{
       const db=await store(); if(!db) return;
-      try{ await db.doc('registration/'+sid).set(data); ST.lastWrite=Date.now(); }
+      const from=sid===ST.sid? ST.seen : undefined;
+      if(sid===ST.sid) ST.seen=JSON.parse(JSON.stringify(data));
+      try{ await db.doc('registration/'+sid).set(data, {base:from}); ST.lastWrite=Date.now(); }
       catch(e){ flash('The registration numbers did not save: '+((e&&e.message)||e)); }
     },300);
   }
@@ -11676,6 +11886,19 @@ let ASK_SETTLED_OPEN=false, ROS_SETTLED_OPEN=false;
 let highlight=new Set(), highlightBlks=null;
 let selected=null, options=[], appliedOpt=null, myArrangement=null;
 let dbRef=null, saveTimer=null;
+/* November 5, 2026: the Schedule as this page last took it in from the data store. A save
+   sends only what differs from it, so a change someone else saved that this page has not
+   taken in yet is never sent back as if it had been undone here. */
+let gridSeen;
+function gridBody(){
+  return {venues, activeVenue, schedules, extraRules, heldRules, staffAsks, asksSeeded, sessionEdits, customSessions,
+    removedVenues, updatedAt:new Date().toISOString()};
+}
+function gridPut(){
+  const body=JSON.parse(JSON.stringify(gridBody())), from=gridSeen;
+  gridSeen=JSON.parse(JSON.stringify(body));
+  return dbRef.set(body, {base:from});
+}
 
 const $ = id => document.getElementById(id);
 /* store snapshots come back frozen — never hold one, always take a copy */
@@ -18507,15 +18730,20 @@ async function loadPlanDocs(vid){
   try{
     const snap=await planDb.doc('schedule/plans-'+vid).get();
     planDocs[vid] = (snap.exists && snap.data()) ? snap.data() : {};
+    planSeen[vid] = (snap.exists && snap.data()) ? clone(snap.data()) : null;   /* November 5, 2026 */
     planRead[vid]=true;
   }catch(e){ planDocs[vid]=undefined; setTimeout(()=>loadPlanDocs(vid), 4000); return; }   /* a failed read is not an empty folder */
   render();
 }
 const planRead={};
+/* November 5, 2026: the plans as this page read them (then as it last saved them), so a save
+   sends only the pages added or taken out here and keeps anyone else's */
+const planSeen={};
 async function savePlanDocs(vid){
   if(!planDb) return;
   if(!planRead[vid]){ notice('Still loading the floor plans \u2014 try again in a moment.'); return; }
-  try{ await planDb.doc('schedule/plans-'+vid).set(planDocs[vid]||{}); }
+  const body=planDocs[vid]||{}, from=planSeen[vid]; planSeen[vid]=clone(body);
+  try{ await planDb.doc('schedule/plans-'+vid).set(body, {base:from}); }
   catch(e){ notice('That could not be saved \u2014 the file may be too large. Try a smaller image.'); }
 }
 /* scaled to something a document can hold, and kept as WebP where the browser can */
@@ -19007,9 +19235,7 @@ function flushSave(){
   clearTimeout(saveTimer);
   if(!dbRef){ mark('local'); return; }
   if(!window.__scheduleLoaded) return;          /* never before the real Schedule is in */
-  dbRef.set({venues, activeVenue, schedules, extraRules, heldRules, staffAsks, asksSeeded, sessionEdits, customSessions,
-    removedVenues, updatedAt:new Date().toISOString()})
-    .then(()=>mark('saved')).catch(e=>mark('error', e));
+  gridPut().then(()=>mark('saved')).catch(e=>mark('error', e));
 }
 function mark(state, e){
   const m=$('savemark'); if(!m) return;
@@ -19031,8 +19257,7 @@ function save(){
   mark('pending');
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
-    try{ await dbRef.set({venues, activeVenue, schedules, extraRules, heldRules, staffAsks, asksSeeded, sessionEdits, customSessions,
-      removedVenues, updatedAt:new Date().toISOString()});
+    try{ await gridPut();
       mark('saved'); }
     catch(e){ mark('error', e); }
   },600);
@@ -19202,6 +19427,7 @@ prevState = snapState();
     if(!snap){ $('savestate').textContent='\u00b7 could not load \u2014 reload the page'; return; }
     if(snap.exists && snap.data()){
       const d=snap.data();
+      gridSeen=clone(d);
       if(Array.isArray(d.removedVenues)) removedVenues=clone(d.removedVenues);
       if(Array.isArray(d.venues)&&d.venues.length) venues=clone(d.venues);
       addMissingVenues();
@@ -19227,12 +19453,18 @@ prevState = snapState();
         if(Array.isArray(old.data().extraRules)) extraRules=old.data().extraRules;
         render(); $('savestate').textContent='· restored';
       }
+      gridSeen=null;                 /* there was no Schedule to start from */
       window.__scheduleLoaded=true; render();
     }
     dbRef.onSnapshot(s=>{
       if(!s.exists||s.metadata.hasPendingWrites) return;
       const d=s.data(); if(!d) return;
-      if(JSON.stringify(d.schedules)===JSON.stringify(schedules) && JSON.stringify(d.venues)===JSON.stringify(venues)) return;
+      /* November 5, 2026: rules, staff requests and session edits saved by someone else count
+         too — this used to look only at the grid and the summits, so those were never taken in */
+      const SAME=k=>JSON.stringify(d[k])===JSON.stringify(k==='schedules'?schedules:k==='venues'?venues:k==='extraRules'?extraRules:
+        k==='heldRules'?heldRules:k==='staffAsks'?staffAsks:k==='asksSeeded'?asksSeeded:k==='sessionEdits'?sessionEdits:customSessions);
+      if(['schedules','venues','extraRules','heldRules','staffAsks','asksSeeded','sessionEdits','customSessions'].every(k=>d[k]===undefined||SAME(k))) return;
+      gridSeen=clone(d);
       /* merge into the objects already in play rather than swapping the arrays —
          anything holding a reference to a venue must keep pointing at the live one */
       if(Array.isArray(d.venues)&&d.venues.length){
@@ -19832,6 +20064,29 @@ function patchLabel(patch){
   return "edit";
 }
 
+/* November 5, 2026: a task or agenda item open in the drawer remembers how it looked when it
+   was opened. A change made there is sent against that copy, so if someone else changed the
+   same box in the meantime the person saving is asked which to keep, and the drawer says so
+   when someone else saves the item while it is open. */
+const ROS_OPENED={};
+function rosOpened(id,rec){ if(rec) ROS_OPENED[id]=JSON.parse(JSON.stringify(rec)); }
+function rosFrom(id,patch){
+  if(!(S.open===id||S.openDisc===id)||!ROS_OPENED[id]) return undefined;
+  const from=JSON.parse(JSON.stringify(ROS_OPENED[id]));
+  Object.assign(ROS_OPENED[id],JSON.parse(JSON.stringify(patch)));
+  return {base:from};
+}
+setInterval(()=>{
+  const id=S.open||S.openDisc, was=id&&ROS_OPENED[id]; if(!was) return;
+  const now=(S.open?S.tasks:S.disc).get(id); if(!now) return;
+  const R=window.__hqRelay, strip=o=>{ const c=Object.assign({},o); delete c.updatedAt; return c; };
+  if(!R||!R.same||R.same(strip(now),strip(was))) return;
+  const host=document.querySelector("#rs-drawer-host .drawer"); if(!host||host.querySelector(".dr-stale")) return;
+  const n=el("div","dr-stale","Someone else just saved this record. Saving keeps their changes and adds yours.");
+  n.setAttribute("role","status");
+  n.style.cssText="margin:8px 16px 0;padding:7px 10px;border-radius:6px;font-size:12.5px;line-height:1.4;background:var(--warn-soft,#FBF0DC);color:var(--warn-ink,#6B4000)";
+  const hd=host.querySelector("header"); if(hd) hd.after(n); else host.prepend(n);
+},3000);
 async function save(id,patch,opts){
   if(!db)return;
   const t=S.tasks.get(id);
@@ -19846,7 +20101,7 @@ async function save(id,patch,opts){
   if(t)Object.assign(t,patch);
   renderAll();flash("Saving…",true);
   try{ if(S.open===id) taskRailRefresh(); }catch(e){}
-  try{ await db.doc("tasks/"+id).update(Object.assign({},patch,{updatedAt:new Date().toISOString()})); flash("Saved"); }
+  try{ await db.doc("tasks/"+id).update(Object.assign({},patch,{updatedAt:new Date().toISOString()}),rosFrom(id,patch)); flash("Saved"); }
   catch(e){ if(e&&e.code==="invalid_argument"){canWrite=false;renderAll();flash("Read-only");} else flash("Not saved"); }
 }
 async function saveDisc(id,patch,opts){
@@ -19858,7 +20113,7 @@ async function saveDisc(id,patch,opts){
   }
   if(d)Object.assign(d,patch);
   renderAll();
-  try{ await db.doc("discussion/"+id).update(patch); flash("Saved"); }catch(e){ flash("Not saved"); }
+  try{ await db.doc("discussion/"+id).update(patch,rosFrom(id,patch)); flash("Saved"); }catch(e){ flash("Not saved"); }
 }
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
@@ -21907,6 +22162,7 @@ function dateFromDaysOut(n){
 }
 function openDrawer(id){
   const t=S.tasks.get(id);if(!t)return;
+  rosOpened(id,t);
   try{ window.__hqGuard && window.__hqGuard.reset("drawer"); }catch(e){}
   S.open=id;
   const host=$("#rs-drawer-host");host.textContent="";
@@ -22398,6 +22654,7 @@ async function addDiscNote(discId,text){
 function openDiscDrawer(id){
   try{ window.__hqGuard && window.__hqGuard.reset("drawer"); }catch(e){}
   const d=S.disc.get(id);if(!d)return;
+  rosOpened(id,d);
   S.openDisc=id;S.open=null;
   const host=$("#rs-drawer-host");host.textContent="";
   const scrim=el("div","scrim");scrim.addEventListener("click",closeDrawerAsk);
@@ -22797,8 +23054,7 @@ startClock();
     saveT=setTimeout(async()=>{
       saveT=null; ST.lastWrite=Date.now();
       try{
-        await ST.db.doc('resume/'+forVenue).set({details:ST.doc.details||{}, fn:ST.doc.fn||{},
-          accepted:ST.doc.accepted||null, ignored:ST.doc.ignored||{}, updatedAt:new Date().toISOString()});
+        await ST.db.doc('resume/'+forVenue).set(resumeBody(forVenue), {base:resumeFrom(forVenue)});
         flash('Saved');
       }catch(e){ flash('Not saved'); }
       renderStatus();
@@ -22809,10 +23065,23 @@ startClock();
     if(!saveT) return;
     clearTimeout(saveT); saveT=null;
     if(!ST.db || ST.canWrite===false || !ST.loaded) return;
-    const forVenue=ST.venue, body={details:ST.doc.details||{}, fn:ST.doc.fn||{},
-      accepted:ST.doc.accepted||null, ignored:ST.doc.ignored||{}, updatedAt:new Date().toISOString()};
+    const forVenue=ST.venue, body=resumeBody(forVenue);
     ST.lastWrite=Date.now();
-    try{ ST.db.doc('resume/'+forVenue).set(body); }catch(e){}
+    try{ ST.db.doc('resume/'+forVenue).set(body, {base:resumeFrom(forVenue)}); }catch(e){}
+  }
+  /* November 5, 2026: what is written, and the copy it started from (the one this page last
+     took in, then each save after it), so a save carries only what was changed here */
+  function resumeBody(forVenue){
+    const b=JSON.parse(JSON.stringify({details:ST.doc.details||{}, fn:ST.doc.fn||{},
+      accepted:ST.doc.accepted||null, ignored:ST.doc.ignored||{}, updatedAt:new Date().toISOString()}));
+    ST.pendingSeen={venue:forVenue, doc:b};
+    return b;
+  }
+  function resumeFrom(forVenue){
+    const was=ST.seen && ST.seen.venue===forVenue ? ST.seen.doc : undefined;
+    if(ST.pendingSeen && ST.pendingSeen.venue===forVenue) ST.seen=ST.pendingSeen;
+    ST.pendingSeen=null;
+    return was;
   }
   /* write one detail by path, copying a default list or table the first time it is touched */
   function setDetail(path, val){
@@ -23948,6 +24217,8 @@ startClock();
       if(!firstRead && (saveT || (ST.lastWrite && Date.now()-ST.lastWrite<2500))) return;
       firstRead=false;
       const d=s.exists ? (s.data()||{}) : {};
+      /* November 5, 2026: what this page took in, so a save sends only what was changed here */
+      ST.seen={venue, doc:s.exists? JSON.parse(JSON.stringify(s.data()||{})) : null};
       /* the database hands back read-only objects; take a working copy we can edit */
       ST.doc=JSON.parse(JSON.stringify({details:d.details||{}, fn:d.fn||{}, accepted:d.accepted||null, ignored:d.ignored||{}}));
       ST.loaded=true;
@@ -29034,6 +29305,10 @@ const clockShort=m=>clock(m).replace(/ (AM|PM)$/,'');
 const durText=d=>{ const h=Math.floor(d/60), m=d%60; return h? (h+' hr'+(m?' '+m+' min':'')) : m+' min'; };
 
 let db=null, doc=null, vid='', unsub=null, saveT=null, dirty=false, savedAt=0, dragId=null, finding=null, newFor=null;
+/* November 5, 2026: the running order as this page last took it in. While someone is typing,
+   other people's saves are not pulled onto the screen, so a save sends only what was changed
+   here and their changes stay. */
+let seen;
 let dragPerson=null, sideQ='', sideMode='speakers';
 
 /* ---------- who is a lender ----------
@@ -29129,7 +29404,8 @@ let gsRead=false;
 async function save(){
   if(!db||!doc) return;
   if(!gsRead){ paintSaved('Not saved \u2014 still loading, try again in a moment'); return; }   /* Jonna, 2026-10-31 */
-  try{ await db.doc('schedule/'+C.p+'-'+vid).set(JSON.parse(JSON.stringify(doc))); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
+  const body=JSON.parse(JSON.stringify(doc)), from=seen; seen=JSON.parse(JSON.stringify(body));
+  try{ await db.doc('schedule/'+C.p+'-'+vid).set(body, {base:from}); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
   catch(e){ paintSaved('Not saved — '+((e&&e.message)||'try again')); }
 }
 function paintSaved(t){ const n=$(C.p+'-saved'); if(n) n.textContent=t; }
@@ -29198,7 +29474,7 @@ function render(){
   so.addEventListener('click',async()=>{
     if(!soArmed){ soArmed=true; so.classList.add('armed'); so.textContent='Click Again to Clear Everything'; setTimeout(()=>{ soArmed=false; so.classList.remove('armed'); so.textContent='Start Over'; },3000); return; }
     doc.items.forEach(it=>(it.people||[]).forEach(p=>linkPerson(p.id,it,false)));
-    clearTimeout(saveT); dirty=false; doc=null;
+    clearTimeout(saveT); dirty=false; doc=null; seen=null;
     try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(e){}
     render();
   });
@@ -29573,12 +29849,17 @@ function attach(){
   if(!db || !id || id===vid) return;
   if(dirty) save();
   if(unsub){ try{ unsub(); }catch(e){} unsub=null; }
-  vid=id; doc=null; gsRead=false; finding=null; newFor=null; render(); loadLenders();
+  vid=id; doc=null; seen=undefined; gsRead=false; finding=null; newFor=null; render(); loadLenders();
   unsub=db.doc('schedule/'+C.p+'-'+vid).onSnapshot(s=>{
     gsRead=true;
     const d=s.exists? s.data() : null;
     const busy=HOST.contains(document.activeElement) || dirty || dragId;
-    if(busy && doc) return;               /* never pull the page out from under the person typing */
+    if(busy && doc){                      /* never pull the page out from under the person typing */
+      if(seen!==undefined && JSON.stringify(d)!==JSON.stringify(seen))
+        paintSaved('Someone else just saved this running order. Saving keeps their changes and adds yours.');
+      return;
+    }
+    seen=d? JSON.parse(JSON.stringify(d)) : null;
     doc=d && Array.isArray(d.items) ? d : null;
     render();
   },()=>{});
