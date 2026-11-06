@@ -5320,10 +5320,11 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .bd-src{padding-top:10px}
 #app-people .tt-nights{padding:10px 16px;border-bottom:1px solid var(--line)}
 #app-people .tt-nh{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
-#app-people .tt-ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;margin-bottom:6px}
+#app-people .tt-ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px;margin-bottom:6px}
 #app-people .tt-n{border:1px solid var(--line);border-radius:5px;padding:5px 8px;background:var(--surface)}
+#app-people .tt-who{display:block;font-size:11px;line-height:1.35;color:var(--ink-2);margin-top:2px}
 #app-people .tt-n span{display:block;font-size:11px;color:var(--ink-3)}
-#app-people .tt-n b{font-family:var(--mono);font-size:16px;color:var(--ink-3)}
+#app-people .tt-n b{font-family:var(--mono);font-size:15px;color:var(--ink-3)}
 #app-people .tt-n.on{border-color:var(--accent)} #app-people .tt-n.on b{color:var(--accent)}
 #app-people .tt-park{display:flex;gap:8px;align-items:center;padding:10px 16px;font-size:12.5px;border-bottom:1px solid var(--line);cursor:pointer}
 #app-people .tt-acts .btn{padding:6px 12px;font-size:12.5px}
@@ -28073,10 +28074,14 @@ function ttSection(){
     const nw=el('div','tt-nights');
     nw.appendChild(el('div','tt-nh','Rooms by night — what to tell the hotel'));
     const ng=el('div','tt-ngrid');
+    /* Jonna, 2026-11-06: each box is one night, with how many rooms and who is in them */
     nts.forEach(x=>{ const c=el('div','tt-n'+(x.n?' on':'')); c.title=x.who.join(', ')||'Nobody yet';
-      c.appendChild(el('span',null,ttNice(x.iso))); c.appendChild(el('b',null,String(x.n))); ng.appendChild(c); });
+      c.appendChild(el('span',null,ttNice(x.iso)+' night'));
+      c.appendChild(el('b',null,x.n+' room'+(x.n===1?'':'s')));
+      if(x.who.length) c.appendChild(el('small','tt-who',x.who.join(', ')));
+      ng.appendChild(c); });
     nw.appendChild(ng);
-    nw.appendChild(el('div','pnote','Counts everyone with dates, from the night they arrive to the night before they leave. Their dates fill in the Resume’s Guestroom and Rate Assignments on their own.'));
+    nw.appendChild(el('div','pnote','Each box is one night at the hotel: the rooms we need that night and who is in them. Someone arriving Sunday and leaving Thursday is in a room Sunday through Wednesday nights. Their dates fill in the Resume’s Guestroom and Rate Assignments on their own.'));
     box.appendChild(nw);
     /* parking */
     const pk=el('label','tt-park'); const pc=document.createElement('input'); pc.type='checkbox'; pc.checked=!!ttDoc().park;
