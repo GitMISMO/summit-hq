@@ -5452,7 +5452,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-gbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .se-prev{min-height:0;background:#f1f6fa}
 .se-frame{width:100%;height:100%;border:0;background:#f1f6fa}
-#bd-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
+#bd-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .bn-box{width:min(620px,96vw);height:auto;max-height:94vh} .bn-edit{flex:1;min-height:0;overflow:auto} #bd-notify .se-who{max-height:min(560px,calc(100vh - 330px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
 @media (max-width:760px){ .se-body{grid-template-columns:1fr;grid-template-rows:auto 420px} .se-edit{border-right:0;border-bottom:1px solid var(--line)} }
 #app-reg .ws-title.ws-edit{cursor:text}
 #app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
@@ -7652,7 +7652,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
           </ul></li>
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
-        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
+        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> opens a list to tick who to send him: it starts with everyone who has answered In Person or Virtual and is not registered or sent to him yet (<b>Ready for Bernie</b>); switch to <b>Not Registered</b> or <b>Everyone</b> to pick anyone else. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
@@ -25861,14 +25861,12 @@ function render(){
     bs.left? bs.left+' of '+bs.total+' still to register' : 'Every board member is registered',
     bs.left,'boardOpen',false,box=>{
     const top=el('div','bd-top');
-    const nb=el('button','btn'+(bs.left?'':' ghost'), 'Notify Bernie'+(bs.left?' ('+bs.left+')':'')); nb.type='button';
+    /* Jonna, 2026-11-06: "be able to check the board members i want to notify bernie to register" */
+    const readyN=bnReady().length;
+    const nb=el('button','btn'+(readyN?'':' ghost'), 'Notify Bernie'+(readyN?' ('+readyN+')':'')); nb.type='button';
     nb.disabled=!bs.left;
-    nb.title=bs.left? 'Emails Bernie the '+bs.left+' board member'+(bs.left===1?'':'s')+' still to register' : 'Everyone is registered';
-    let armed=false;
-    nb.addEventListener('click',()=>{
-      if(!armed){ armed=true; nb.textContent='Click Again to Email Bernie'; nb.classList.add('armed'); return; }
-      notifyBernie();
-    });
+    nb.title=bs.left? 'Pick the board members to send Bernie to register' : 'Everyone is registered';
+    nb.addEventListener('click',()=>openBoardNotify());
     top.appendChild(nb);
     /* Jonna, 2026-11-06: ask the Board themselves, In Person or Virtually */
     const askN=BOARD.filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).length;
@@ -25880,7 +25878,7 @@ function render(){
     top.appendChild(el('div','pnote', nt&&nt.at
       ? 'Bernie was notified '+localDay(nt.at)+' about '+nt.n+' board member'+(nt.n===1?'':'s')
         +'. Each press emails him within about 20 minutes.'
-      : 'Emails Bernie a list of the board members still to register. It goes out within about 20 minutes.'));
+      : 'Pick the board members to send Bernie to register. It goes out within about 20 minutes.'));
     box.appendChild(top);
     /* where we are: in person, virtual, not marked yet, registered */
     const tl=el('div','bd-tally');
@@ -25900,8 +25898,10 @@ function render(){
         L.appendChild(nm);
         L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
         const ask=bdAsk(m.i);
-        if(ask || m.via){ const an=el('div','bd-ask'+(ask&&ask.respAt?' ok':''),
-          [ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'')+(ask.note?': \u201c'+ask.note+'\u201d':'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' \u00b7 no answer yet') : '', m.via||''].filter(Boolean).join(' \u00b7 '));
+        const sb=bnSent(m.i);
+        if(ask || m.via || sb){ const an=el('div','bd-ask'+(ask&&ask.respAt?' ok':''),
+          [ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'')+(ask.note?': \u201c'+ask.note+'\u201d':'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' \u00b7 no answer yet') : '',
+           sb && !at? 'Sent to Bernie '+localDay(sb).replace(/ at .*/,'') : '', m.via||''].filter(Boolean).join(' \u00b7 '));
           L.appendChild(an); }
         row.appendChild(L);
         const av=boardAtt(m.i), seg=el('div','bd-seg');
@@ -26302,9 +26302,81 @@ function setBoard(fields,label){ saveColl('board',ST.board,fields,label); }
 /* Notify Bernie: Summit HQ cannot send mail, so it writes the list to feeds/board-notify
    and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
    every 15 minutes for a request made 5 to 20 minutes earlier, so each press sends once. */
-async function notifyBernie(){
-  const v=venueInfo(), left=BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no');
-  if(!left.length) return;
+/* who is ready for Bernie: answered in person or virtual, not registered, not sent to him yet */
+const bnSent=id=>(boardDoc().sentB||{})[id]||'';
+const bnReady=()=>BOARD.filter(b=>!boardReg(b.i) && (boardAtt(b.i)==='in'||boardAtt(b.i)==='virt') && !bnSent(b.i));
+let bnPick=null;
+function openBoardNotify(){ bnPick={pick:new Set(bnReady().map(b=>b.i)), show:'ready', sending:false}; drawBoardNotify(); }
+function drawBoardNotify(){
+  let m=document.getElementById('bd-notify');
+  if(!bnPick){ if(m) m.remove(); return; }
+  if(!m){ m=el('div','se-modal'); m.id='bd-notify'; document.body.appendChild(m); }
+  m.textContent='';
+  const close=()=>{ bnPick=null; drawBoardNotify(); };
+  const scrim=el('div','se-scrim'); scrim.addEventListener('click',close); m.appendChild(scrim);
+  const box=el('div','se-box bn-box'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Notify Bernie');
+  const hd=el('div','se-hd'); hd.appendChild(el('div','se-t','Notify Bernie: Board Members to Register'));
+  const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const L=el('div','se-edit bn-edit');
+  const groups={ready:bnReady(), left:BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no'), all:BOARD};
+  const pick=el('div','se-pick'), ph=el('div','se-pickh');
+  const cnt=()=>bnPick.pick.size+' picked';
+  ph.appendChild(el('b',null,cnt()));
+  const qa=el('span','se-pqa');
+  const sAll=el('button','se-lnk','Pick All Shown'); sAll.type='button';
+  const sNone=el('button','se-lnk','Clear'); sNone.type='button';
+  qa.appendChild(sAll); qa.appendChild(sNone); ph.appendChild(qa); pick.appendChild(ph);
+  const seg=el('div','se-pseg');
+  [['ready','Ready for Bernie'],['left','Not Registered'],['all','Everyone']].forEach(([k,lab])=>{ const b=el('button',bnPick.show===k?'on':''); b.type='button';
+    b.appendChild(document.createTextNode(lab)); b.appendChild(el('em',null,String(groups[k].length)));
+    b.addEventListener('click',()=>{ bnPick.show=k; drawBoardNotify(); }); seg.appendChild(b); });
+  pick.appendChild(seg);
+  const lst=el('div','se-who');
+  if(!groups[bnPick.show].length) lst.appendChild(el('div','se-note se-empty', bnPick.show==='ready'
+    ? 'Nobody is waiting: everyone who has answered In Person or Virtual is registered or already sent to Bernie. Switch to Not Registered to pick anyone else.' : 'Nobody here.'));
+  groups[bnPick.show].forEach(b=>{
+    const row=el('label','se-whor');
+    const c=document.createElement('input'); c.type='checkbox'; c.checked=bnPick.pick.has(b.i);
+    c.addEventListener('change',()=>{ if(c.checked) bnPick.pick.add(b.i); else bnPick.pick.delete(b.i); ph.querySelector('b').textContent=cnt(); paintGo(); });
+    row.appendChild(c);
+    const tx=el('span','se-whon'); tx.appendChild(el('span',null,b.n));
+    const at=boardAtt(b.i), sb=bnSent(b.i), rg=boardReg(b.i);
+    tx.appendChild(el('small','se-whos',[at==='in'?'In person':at==='virt'?'Virtual':at==='no'?'Not attending':'No answer yet',
+      rg? 'Registered '+pretty(rg) : sb? 'Sent to Bernie '+localDay(sb).replace(/ at .*/,'') : ''].filter(Boolean).join(' \u00b7 ')));
+    row.appendChild(tx);
+    lst.appendChild(row);
+  });
+  sAll.addEventListener('click',()=>{ groups[bnPick.show].forEach(b=>bnPick.pick.add(b.i)); drawBoardNotify(); });
+  sNone.addEventListener('click',()=>{ bnPick.pick.clear(); drawBoardNotify(); });
+  pick.appendChild(lst); L.appendChild(pick);
+  L.appendChild(el('div','se-note','Bernie gets one email listing the board members you tick, with In Person or Virtual beside each, copied to Jonna. It goes out within about 20 minutes. Press Registered on their row once he has registered them.'));
+  const acts=el('div','se-acts');
+  const go=el('button','btn'); go.type='button';
+  let armed=false;
+  const paintGo=()=>{ armed=false; go.classList.remove('armed'); const n=bnPick.pick.size;
+    go.textContent= bnPick.sending? 'Saving…' : 'Email Bernie '+n+' Board Member'+(n===1?'':'s'); go.disabled=bnPick.sending||!n; };
+  paintGo();
+  go.addEventListener('click',async()=>{
+    const n=bnPick.pick.size;
+    if(!armed){ armed=true; go.textContent='Click Again to Email Bernie '+n; go.classList.add('armed'); return; }
+    bnPick.sending=true; paintGo();
+    const ok=await notifyBernie([...bnPick.pick]);
+    if(ok){ bnPick=null; drawBoardNotify(); try{ window.__hqFlash && window.__hqFlash('Bernie will get '+n+' board member'+(n===1?'':'s')+' to register within about 20 minutes'); }catch(e){} }
+    else { bnPick.sending=false; paintGo(); }
+  });
+  acts.appendChild(go);
+  L.appendChild(acts);
+  box.appendChild(L); m.appendChild(box);
+}
+async function notifyBernie(ids){
+  const v=venueInfo();
+  let left=BOARD.filter(b=>(ids||[]).indexOf(b.i)>=0);
+  if(!left.length) return false;
+  /* a second pick made before the first has gone joins it, so the first is not lost */
+  try{ const s=ST.db? await ST.db.doc('feeds/board-notify').get() : null; const prev=s&&s.exists? s.data() : null;
+    if(prev && Date.now()-Date.parse(prev.requestedAt||0)<4*60*1000 && Array.isArray(prev.ids)){
+      const all=new Set(prev.ids.concat(left.map(b=>b.i))); left=BOARD.filter(b=>all.has(b.i)); } }catch(e){}
   let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const td='padding:8px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,sans-serif;font-size:14px;color:#1b2733;vertical-align:top';
@@ -26317,11 +26389,13 @@ async function notifyBernie(){
   const listTable='<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:14px 0 4px"><tbody>'+listHtml+'</tbody></table>';
   const at=new Date().toISOString();
   const feed={requestedAt:at, requestedBy:who, summit:{venue:v.id||'', name:v.name||'', city:v.city||'', dates:v.dates||''},
-    count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||'', attending:boardAtt(b.i)==='in'?'In person':boardAtt(b.i)==='virt'?'Virtual':''})), listHtml:listTable};
+    ids:left.map(b=>b.i), count:left.length, people:left.map(b=>({name:b.n, title:b.t, company:b.c, role:b.r||'', attending:boardAtt(b.i)==='in'?'In person':boardAtt(b.i)==='virt'?'Virtual':''})), listHtml:listTable};
   try{ if(ST.db) await ST.db.doc('feeds/board-notify').set(feed); }
-  catch(x){ alert('Summit HQ could not save the request for Bernie. Check you are signed in and try again.'); return; }
-  setBoard({notified:{at, by:who, n:left.length}},'Bernie notified about the Board');
+  catch(x){ alert('Summit HQ could not save the request for Bernie. Check you are signed in and try again.'); return false; }
+  const sentB=Object.assign({},boardDoc().sentB||{}); left.forEach(b=>{ sentB[b.i]=at; });
+  setBoard({notified:{at, by:who, n:left.length}, sentB},'Bernie notified about the Board');
   render();
+  return true;
 }
 /* ============================================================
    ASK THE BOARD: IN PERSON OR VIRTUAL (Jonna, 2026-11-06)
