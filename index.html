@@ -7651,7 +7651,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>Turning them off.</b> The <b>Weekly Follow-Ups</b> switch at the top turns them off for the whole Summit; each speaker&rsquo;s own switch turns them off for just that person. Turn either back on and they pick up again.</li>
             <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
           </ul></li>
-        <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. Brian Vieaux and staff are not on the list.</li>
+        <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. <b>Notify Bernie</b> emails him the board members still to register; it goes out within about 20 minutes.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Mark each person <b>Going</b> or <b>Not Going</b>, tick the ones to ask, and press <b>Send the Travel Form</b>. Each gets a branded email from you with their own link to enter when they arrive and leave, whether they need a room and, when the hotel includes it, parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and the Resume&rsquo;s guest rooms. <b>Send to Bernie to Register</b> emails him the team with their dates. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
@@ -24966,6 +24966,8 @@ const BOARD=[
   {i:'matt-tully',n:'Matt Tully, CMB',t:'Chief of Staff',c:'Sagent',r:'',e:'matthew.tully@sagentlending.com'},
   {i:'matt-vanfossen',n:'Matt VanFossen',t:'Chief Executive Officer',c:'Absolute Home and Mortgage Automation Technologies',r:'',e:'matthewv@ahmcloans.com'},
   {i:'rusty-emory',n:'Rusty Emory',t:'Vice President, Manager Investor Delivery',c:'PrimeLending',r:'Ex-Officio',e:'remory@primelending.com'},
+  {i:'alexandra-brinton',n:'Alexandra Brinton',t:'',c:'MBA',r:'MBA',e:'abrinton@mba.org'},
+  {i:'michael-briggs',n:'Michael Briggs',t:'',c:'MBA',r:'MBA',e:'mbriggs@mba.org'},
   {i:'brian-hunt',n:'Brian Hunt',t:'Senior Director, Multifamily Technology Management',c:'Fannie Mae',r:'Ex-Officio',e:'brian_hunt@fanniemae.com'}
 ];
 const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25f','2025 Fall'],
@@ -25888,13 +25890,13 @@ function render(){
     let hc=null; try{ hc=window.__boardHeadcount? window.__boardHeadcount(venueNow()) : null; }catch(e){}
     box.appendChild(el('div','pnote bd-hc', 'Board meeting headcount on Hotel Specs: '+(hc==null?'not set yet':hc)
       +'. It follows the In Person number, so Rosalyn orders food for the right count.'));
-    [['Board Members',BOARD.filter(b=>b.r!=='Ex-Officio')],['Ex-Officio',BOARD.filter(b=>b.r==='Ex-Officio')]].forEach(([lab,list])=>{
+    [['Board Members',BOARD.filter(b=>b.r!=='Ex-Officio' && b.r!=='MBA')],['Ex-Officio',BOARD.filter(b=>b.r==='Ex-Officio')],['From MBA',BOARD.filter(b=>b.r==='MBA')]].forEach(([lab,list])=>{
       box.appendChild(el('div','bd-grp',lab));
       list.forEach(m=>{
         const at=boardReg(m.i);
         const row=el('div','bdrow'+(at?' done':''));
         const L=el('div','bd-l');
-        const nm=el('div','bd-n',m.n); if(m.r && m.r!=='Ex-Officio') nm.appendChild(el('span','bd-r',m.r));
+        const nm=el('div','bd-n',m.n); if(m.r && m.r!=='Ex-Officio' && m.r!=='MBA') nm.appendChild(el('span','bd-r',m.r));
         L.appendChild(nm);
         L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
         const ask=bdAsk(m.i);
@@ -26340,6 +26342,19 @@ function bdLink(m,tok,a){
   const v=venueInfo(), q=new URLSearchParams({t:tok, v:venueNow(), n:bdFirst(m), s:v.name||'Summit', d:seDates()||'', a});
   return BD_FORM+'?'+q.toString();
 }
+/* the Board meeting, from the Schedule: its day, hours and room */
+const BD_TZ={nola:'Central', slc:'Mountain', bethesda:'Eastern'};
+function bdMeeting(){
+  let f=null; try{ f=(window.__resumeFunctions? window.__resumeFunctions() : null)||[]; }catch(e){ f=[]; }
+  const list=Array.isArray(f)? f : (f&&f.functions)||[];
+  const b=list.find(x=>x && x.sid==='bod' && x.start!=null); if(!b) return null;
+  const n=['mon','tue','wed','thu'].indexOf(b.day); if(n<0) return null;
+  const d=seFirstDay(); if(!d) return null; d.setDate(d.getDate()+n);
+  const t=mm=>{ const h=Math.floor(mm/60), mi=mm%60, h12=((h+11)%12)+1; return {s:h12+':'+String(mi).padStart(2,'0'), ap:h<12?'AM':'PM'}; };
+  const a=t(b.start), z=t(b.end);
+  const hours= a.ap===z.ap? a.s+' to '+z.s+' '+z.ap : a.s+' '+a.ap+' to '+z.s+' '+z.ap;
+  return {day:WDAYS[d.getDay()]+', '+MONTHS[d.getMonth()]+' '+d.getDate(), hours, tz:BD_TZ[venueNow()]||'', room:String(b.room||'').trim()};
+}
 async function bdEmail(m,tok){
   const r=await seResume(), v=venueInfo();
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -26350,12 +26365,16 @@ async function bdEmail(m,tok){
     +'<td style="padding:0 10px 10px 0">'+btn(bdLink(m,tok,'in'),'I’ll Be There In Person')+'</td>'
     +'<td style="padding:0 0 10px 0">'+btn(bdLink(m,tok,'virt'),'I’ll Join Virtually')+'</td></tr></table>'
     +'<p style="margin:0 0 16px;font-size:13px;color:#55657a">Not able to make this one? <a href="'+e(bdLink(m,tok,'no'))+'" target="_blank" style="color:#0f6fa8">Let us know here</a>.</p>';
+  const mt=bdMeeting();
   const paras=['Hi '+bdFirst(m)+',',
-    'The MISMO '+seSummitShort()+' is '+(seDates()||'coming up')+(hotel? ' at the '+hotel : city? ' in '+city : '')+', and we hope you’ll be with us. As a member of the MISMO Board of Directors, your registration is complimentary, and we’ll take care of registering you.',
+    'The MISMO '+seSummitShort()+' is '+(seDates()||'coming up')+(hotel? ' at the '+hotel : city? ' in '+city : '')+', and we hope you’ll be with us. '
+      +(m.r==='MBA'? 'As part of the MISMO Board of Directors meeting, your registration is complimentary' : 'As a member of the MISMO Board of Directors, your registration is complimentary')+', and we’ll take care of registering you.'];
+  if(mt) paras.push({html:'<p style="margin:0 0 12px">The <b>Board of Directors meeting</b> is <b>'+e(mt.day)+', '+e(mt.hours)+(mt.tz?' '+e(mt.tz):'')+'</b>'+(mt.room?', in '+e(mt.room):'')+'.</p>'});
+  paras.push(
     'So we register you the right way, please let us know whether you’ll join us in person or virtually by clicking one of the buttons below.',
     {html:buttons},
     'If your plans change, just use the same buttons again.',
-    'Thank you,'];
+    'Thank you,');
   return {subject, html:ttHtml(subject, paras, null, TT_JONNA)};
 }
 let bdBulk=null;
@@ -26407,7 +26426,9 @@ function drawBoardAsk(){
   sAll.addEventListener('click',()=>{ groups[bdBulk.show].forEach(b=>bdBulk.pick.add(b.i)); drawBoardAsk(); });
   sNone.addEventListener('click',()=>{ bdBulk.pick.clear(); drawBoardAsk(); });
   pick.appendChild(lst); L.appendChild(pick);
-  L.appendChild(el('div','se-note','Each board member gets their own email from Jonna, with replies to Jonna. Their In Person or Virtually button marks them on the Board card, and the In Person count becomes the board meeting headcount on Hotel Specs. Assistants who do a board member’s scheduling are copied. Brian Vieaux and MISMO and MBA staff are not on this list.'));
+  L.appendChild(el('div','se-note','Each board member gets their own email from Jonna, with replies to Jonna. Their In Person or Virtually button marks them on the Board card, and the In Person count becomes the board meeting headcount on Hotel Specs. Assistants who do a board member’s scheduling are copied. Alexandra Brinton and Michael Briggs from MBA are included; Brian Vieaux and MISMO staff are not.'));
+  { const mt=bdMeeting(); L.appendChild(mt? el('div','se-note','The email gives the Board meeting as '+mt.day+', '+mt.hours+(mt.tz?' '+mt.tz:'')+(mt.room?', in '+mt.room:'')+', from the Schedule.')
+      : el('div','se-warn','The Board of Directors meeting is not on the Schedule for this summit yet, so the email leaves out its day and time.')); }
   const acts=el('div','se-acts');
   const go=el('button','btn'); go.type='button';
   let armed=false;
