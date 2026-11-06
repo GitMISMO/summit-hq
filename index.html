@@ -7650,6 +7650,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li><b>Someone who should not get the speaker email</b> (their sponsor or an assistant is sending the bio and headshot, say): turn off <b>Send Them the Speaker Email</b> on their record, or their switch on the Speaker Emails &amp; Follow-Ups card. Nothing goes to them on its own, they are left out of <b>Not Emailed Yet</b>, and no reminders start. <b>Copy Their Link</b> on their record gives you their bio and headshot form link to pass to whoever is sending it.</li>
             <li><b>Returning speakers.</b> A speaker who has spoken at an earlier Summit and whose bio and headshot are already on file is told so in their email and asked only whether they want to send an updated one; they get no reminders. In the Template for Every Speaker, a paragraph that starts <b>[New speakers]</b> goes only to everyone else, and one that starts <b>[Returning speakers]</b> goes only to them. {lastSummit} fills in the last Summit they spoke at.</li>
             <li><b>Bio and headshot by email.</b> When a speaker emails their headshot or bio instead of using the form, you do not need to put it in. Jonna is copied on every speaker email, and a flow watches her inbox: an email with attachments from a speaker&rsquo;s address goes straight onto their record &mdash; the biggest photo becomes their headshot, and a Word, PDF or text file becomes their bio file, with its words put in as their bio. If it came only to Amy, forward it to Jonna (keep their email address in what you forward) and it is matched the same way. It shows on their line as <b>Emailed</b> with the day, and the follow-ups stop once both are in. If they already had a headshot or bio, the new one waits on their row under <b>Came by Email</b>: <b>Use the New Headshot</b>, <b>Use the New Bio</b>, or <b>Keep What We Have</b>. A bio typed into the body of an email still needs copying in by hand.</li>
+            <li><b>Each Summit has its own speaker email.</b> A Summit whose speaker email has not been saved yet starts from the last Summit&rsquo;s saved wording, not the original standard one: its dates move to the new Summit, and the hotel, workshop name and reception sponsor are swapped in. A yellow note on <b>Template for Every Speaker</b> says so; read it through for anything that was only for the last Summit (a room name, say) and press <b>Save for Every Speaker</b>. Until it is saved for that Summit, speaker emails there do not go out on their own. The Board, the MISMO Team, the follow-ups and the bio and headshot answers are kept per Summit too, and the MISMO Team list starts from the last Summit&rsquo;s people without their dates.</li>
             <li><b>Saving your changes.</b> In a speaker&rsquo;s email, <b>Save</b> sits at the top. On <b>This Email</b> it keeps your changes for that one speaker: their own saved email is what goes to them, whether you send it or it goes on its own, and <b>Go Back to the Template Wording</b> drops it. On <b>Template for Every Speaker</b>, <b>Save for Every Speaker</b> saves the wording everyone gets and checks the saved copy before it says <b>Saved &#10003;</b>. Until you save, it says <b>Changes not saved yet</b>, and closing asks whether to save. Changes typed in <b>Choose Speakers to Email</b> go in those emails only and do not change the template.</li>
             <li><b>Send a Test to Me</b>, beside the send button on any speaker email or reminder, sends that exact email to you only, from Amy and marked [Test], so you can check it in your inbox. Its bio and headshot button goes to a practice copy of the form, so trying it does not change the speaker&rsquo;s record.</li>
             <li><b>Weekly follow-ups happen on their own.</b> Sending a speaker their email marks the day. From then on, anyone who still owes a bio or headshot gets a reminder every week on that same day of the week, until their bio and headshot are in or the Summit starts. The reminder says exactly what is still missing (bio, headshot, or both) and has the <b>Send My Bio &amp; Headshot</b> button. The <b>Summit HQ - Speaker Reminders</b> flow sends them each morning at 7:17 AM Mountain, skips anyone who has already sent theirs through the form, and never sends the same one twice.</li>
@@ -18422,7 +18423,7 @@ function leaveVenue(){
 $('venue-pick').addEventListener('change',e=>{leaveVenue(); activeVenue=e.target.value;
   if(!schedules[activeVenue]) schedules[activeVenue]={}; render(); save();});
 /* the Run of Show can switch summits too — it is one choice across Summit HQ */
-window.__scheduleVenues = ()=>venues.map(v=>({id:v.id, name:v.name||'', city:v.city||'', dates:v.dates||''}));
+window.__scheduleVenues = ()=>venues.map(v=>({id:v.id, name:v.name||'', city:v.city||'', dates:v.dates||'', workshopTitle:v.workshopTitle||''}));
 /* the rail's search opens a session here */
 window.__openSession = sid=>{
   const id=String(sid||'').split('@')[0];
@@ -26672,6 +26673,57 @@ async function seResume(){
   d=Object.assign({}, base, d, d.details||{});
   ST.seResume={v:venueNow(), d}; return d;
 }
+/* Jonna, 2026-11-06: "make sure this is all being replicated for each summit". A summit whose
+   speaker email has not been saved yet starts from the last summit's saved one (Amy's
+   wording), not the original standard wording: every date in it is moved to this summit
+   (the summits all start on a Monday, so the weekdays still match), and the hotel, the
+   workshop and the reception sponsor are swapped for this summit's. Anything else that
+   was only for that summit (a room name, say) is for whoever saves it to catch, and until
+   it is saved for this summit no speaker email goes out on its own. */
+function seFirstDayOf(vid){
+  let v=null; try{ v=(window.__scheduleVenues? window.__scheduleVenues() : []).find(x=>x.id===vid); }catch(e){}
+  const t=String((v&&v.dates)||''), y=(t.match(/(\d{4})/)||[])[1];
+  const m=/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})/i.exec(t);
+  if(!y||!m) return null;
+  return new Date(+y, MONTHS.findIndex(x=>x.toLowerCase()===m[1].toLowerCase()), +m[2]);
+}
+async function seTpl(r){
+  const d=seDoc();
+  if(d.subject || d.body) return Object.assign({}, seDefault(r), d.subject? {subject:d.subject}:{}, d.body? {body:d.body}:{});
+  const c=await seCarry(r);
+  return c || seDefault(r);
+}
+async function seCarry(r){
+  const here=venueNow(); let vs=[];
+  try{ vs=(window.__scheduleVenues? window.__scheduleVenues() : []).map(v=>v.id); }catch(e){}
+  const i=vs.indexOf(here);
+  const cands=[...ST.semail.keys()].filter(k=>k!==here && (ST.semail.get(k)||{}).body);
+  if(!cands.length) return null;
+  cands.sort((a,b)=>{ const ia=vs.indexOf(a), ib=vs.indexOf(b);
+    const da=i>=0&&ia>=0? (i-ia+vs.length)%vs.length : 99, db=i>=0&&ib>=0? (i-ib+vs.length)%vs.length : 99; return da-db; });
+  const from=cands[0], src=ST.semail.get(from)||{};
+  const d0=seFirstDayOf(from), d1=seFirstDay(); if(!d0||!d1) return null;
+  const shift=Math.round((d1-d0)/864e5);
+  const MON='January|February|March|April|May|June|July|August|September|October|November|December';
+  const move=t=>String(t||'').replace(new RegExp('\\b(?:(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday),\\s+)?('+MON+')\\s+(\\d{1,2})\\b','g'),(m,wd,mon,day)=>{
+    const mi=MONTHS.indexOf(mon);
+    /* the year that puts it nearest that summit */
+    let best=null; [d0.getFullYear()-1,d0.getFullYear(),d0.getFullYear()+1].forEach(y=>{ const x=new Date(y,mi,+day); if(!best || Math.abs(x-d0)<Math.abs(best-d0)) best=x; });
+    best.setDate(best.getDate()+shift);
+    return (wd? WDAYS[best.getDay()]+', ' : '')+MONTHS[best.getMonth()]+' '+best.getDate(); });
+  let body=move(src.body), subject=move(src.subject);
+  /* the hotel, the workshop and the reception sponsor */
+  try{ const s0=ST.db? await ST.db.doc('resume/'+from).get() : null; const r0=(s0&&s0.exists&&s0.data())||{};
+    const h0=String((r0.details&&r0.details.hotelName)||r0.hotelName||'').trim(), h1=String((r&&r.hotelName)||'').trim();
+    if(h0 && h1 && h0!==h1) body=body.split(h0).join(h1); }catch(e){}
+  try{ const v0=(window.__scheduleVenues? window.__scheduleVenues() : []).find(x=>x.id===from)||{};
+    const w0=String(v0.workshopTitle||'').trim(), w1=String(workshopName()||'').trim();
+    if(w0 && w1 && w0!==w1 && !/\[Name\]/.test(w1)) body=body.split(w0).join(w1); }catch(e){}
+  try{ let rec=''; const rr=portalRows().filter(x=>/reception/i.test(String(x.opportunity||''))); if(rr.length===1) rec=', sponsored by '+String(rr[0].company||'').trim();
+    body=body.replace(/(MISMO Matters Reception), sponsored by [^\n]+/g,'$1'+rec); }catch(e){}
+  let fromName=from; try{ fromName=((window.__scheduleVenues? window.__scheduleVenues() : []).find(x=>x.id===from)||{}).name||from; }catch(e){}
+  return {subject: subject||seDefault(r).subject, body, carried:fromName};
+}
 function seDefault(r){
   r=r||{};
   const hotel=String(r.hotelName||venueInfo().city||'[hotel]').trim();
@@ -26884,12 +26936,12 @@ let seOpen=null;
 async function openSpeakerEmail(id){
   const p=byId(id); if(!p) return;
   const r=await seResume();
-  const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
+  const tpl=await seTpl(r);
   const itok=stOf(p).itok||seTok();
   const v=seVars(p,itok);
   const dr=stOf(p).seDraft;
   seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_CC, subject: dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), body: dr&&dr.body!=null? dr.body : seFill(tpl.body,v),
-    tSubject:tpl.subject, tBody:tpl.body, sending:false, dirtyOne:false, dirtyTpl:false, saved:'', draft:!!dr};
+    tSubject:tpl.subject, tBody:tpl.body, carried:tpl.carried||'', sending:false, dirtyOne:false, dirtyTpl:false, saved:'', draft:!!dr};
   drawSpeakerEmail();
 }
 function drawSpeakerEmail(){
@@ -26956,6 +27008,7 @@ function drawSpeakerEmail(){
   } else {
     fld('Subject',seOpen.tSubject,v=>seOpen.tSubject=v);
     fld('Message',seOpen.tBody,v=>seOpen.tBody=v,{area:true,rows:18});
+    if(seOpen.carried && !seDoc().body) L.appendChild(el('div','se-warn','This summit’s speaker email starts from the '+seOpen.carried+' wording, with its dates moved to this summit and the hotel, workshop and reception sponsor updated. Read it through for anything that was only for that summit (a room name, a deadline), then press Save for Every Speaker. Until it is saved for this summit, speaker emails do not go out on their own.'));
     L.appendChild(el('div','se-note','The wording every speaker gets for this summit. These fill in for each speaker: {first}, {session}, {sessionDate}, {summitShort}, {dates}, {gsDate}, {gsDay}, {lastSummit}. Start a paragraph with [New speakers] or [Returning speakers] to send it to only that group. From the Resume: {roomBlock} (the Reservations link) and {rate}. And {infoLink} is the speaker’s own link to send their bio and headshot — it lands on their row in People.'));
     const row=el('div','se-acts');
     const rs=el('button','btn ghost','Start Over From the Standard Wording'); rs.type='button';
@@ -27394,6 +27447,7 @@ function autoState(p){
   if(!(st.ses||[]).length) return {k:'ses', t:'Goes out on its own once they are in a session'};
   if(!autoOn()) return {k:'off', t:'Ready: send it from Choose Speakers'};
   if(st.autoHold) return {k:'hold', t:'Held: it will not go on its own'};
+  if(!seDoc().body) return {k:'tpl', t:'Waiting: save this summit’s speaker email (Template for Every Speaker) first'};
   const since=seDoc().autoSince||'';
   if(!since || !st.sesAt || String(st.sesAt)<String(since)) return {k:'old', t:'Ready: send it from Choose Speakers'};
   const due=Date.parse(st.sesAt)+AUTO_WAIT;
@@ -27408,7 +27462,7 @@ async function autoSend(){
   autoBusy=true;
   try{
     const r=await seResume();
-    const tpl=Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{});
+    const tpl=await seTpl(r);
     const at=new Date().toISOString(), g=seDoc().graphic, reqs=[], after=[];
     ready.forEach(p=>{
       const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
@@ -27451,7 +27505,7 @@ let seBulk=null;
 async function openSpeakerBulk(kind, only){
   const r=await seResume();
   const tpl = kind==='welcome'
-    ? Object.assign({}, seDefault(r), seDoc().subject? {subject:seDoc().subject}:{}, seDoc().body? {body:seDoc().body}:{})
+    ? await seTpl(r)
     : {subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
   const pool=seMailable();
   const want = only? pool.filter(p=>only.indexOf(p.i)>=0)
