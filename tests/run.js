@@ -242,6 +242,36 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 13. The new People page: one row a person across their roles, a person opens on the
+         right, and changes made there land in the same records the cards use */
+  await check('New People page: one list, one place per person', async () => {
+    const store = {
+      'team-travel': { docs: { 'team-travel/nola': { order: ['pat-two'], ppl: { 'pat-two': { n: 'Pat Two', e: 'pat2@example.org', role: 'staff' } } } } },
+      board: { docs: { 'board/nola': { att: {} } } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/pat-two').set({ i: 'pat-two', n: 'Pat Two', e: 'pat2@example.org', st: { nola: { on: true, role: 'speaker', steps: {} } } });
+      localStorage.setItem('hq.people.v2', '1'); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2500);
+    const rows = await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].filter(r => /Pat Two/.test(r.innerText)).map(r => r.querySelector('.v2-roles').textContent));
+    expect(rows.length === 1 && /Speaker/.test(rows[0]) && /MISMO Team/.test(rows[0]), 'a speaker on the MISMO Team was not one row with both roles: ' + JSON.stringify(rows));
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Pat Two/.test(r.innerText)).click());
+    await s.page.waitForTimeout(1500);
+    const pane = await s.page.evaluate(() => document.body.classList.contains('paneon') && document.getElementById('hq-pane-t').textContent);
+    expect(pane === 'Pat Two', 'the person did not open on the right');
+    await s.page.fill('#hq-pane input[data-keep="v2tt-arr:pat-two"]', '2027-01-10'); await s.page.dispatchEvent('#hq-pane input[data-keep="v2tt-arr:pat-two"]', 'change');
+    await s.page.waitForTimeout(2500);
+    expect(s.store['team-travel'].docs['team-travel/nola'].ppl['pat-two'].arr === '2027-01-10', 'the arrival date typed in the panel was not saved to the team list');
+    await s.page.evaluate(() => [...document.querySelectorAll('#hq-pane .tstep')].find(b => /Added to the agenda/.test(b.textContent)).click());
+    await s.page.waitForTimeout(2500);
+    const doc = await s.page.evaluate(async () => { const db = await window.claude.use('db'); return (await db.doc('people/pat-two').get()).data(); });
+    expect(doc.st.nola.steps && doc.st.nola.steps.agenda, 'ticking a step in the panel was not saved');
+    expect(await s.page.evaluate(() => document.body.classList.contains('paneon')), 'the panel closed itself after a save');
+    await s.page.evaluate(() => localStorage.setItem('hq.people.v2', '0'));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
