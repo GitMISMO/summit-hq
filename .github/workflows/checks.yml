@@ -1,0 +1,20 @@
+# Runs Summit HQ's checks (tests/run.js) after every upload. If one fails, GitHub emails
+# whoever uploaded the change and the Actions tab says which check.
+name: Summit HQ Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
