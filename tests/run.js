@@ -252,7 +252,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       await db.doc('people/pat-two').set({ i: 'pat-two', n: 'Pat Two', e: 'pat2@example.org', st: { nola: { on: true, role: 'speaker', steps: {} } } });
       await db.doc('people/old-timer').set({ i: 'old-timer', n: 'Olive Timer', e: 'olive@example.org', h: ['26f'], st: {} });
-      localStorage.setItem('hq.people.v2', '1'); });
+      localStorage.setItem('hq.people.v2', '1'); localStorage.setItem('hq.people.v2per', '0'); });
     await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
     await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2500);
     const rows = await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].filter(r => /Pat Two/.test(r.innerText)).map(r => r.querySelector('.v2-roles').textContent));
@@ -273,7 +273,44 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const doc = await s.page.evaluate(async () => { const db = await window.claude.use('db'); return (await db.doc('people/pat-two').get()).data(); });
     expect(doc.st.nola.steps && doc.st.nola.steps.agenda, 'ticking a step in the panel was not saved');
     expect(await s.page.evaluate(() => document.body.classList.contains('paneon')), 'the panel closed itself after a save');
-    await s.page.evaluate(() => localStorage.setItem('hq.people.v2', '0'));
+    await s.page.evaluate(() => { localStorage.setItem('hq.people.v2', '0'); localStorage.removeItem('hq.people.v2per'); });
+    noErrors(s.errs); await s.close();
+  });
+
+  /* 14. The new People page comes a page at a time, and two records for one person merge */
+  await check('New People page: pages and merging the same person', async () => {
+    if (!fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').includes('v2Pager')) return; /* until the page itself is uploaded */
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      for (let k = 0; k < 25; k++) await db.doc('people/zz-' + k).set({ i: 'zz-' + k, n: 'Zed Person ' + String(k).padStart(2, '0'), st: { nola: { on: true, role: 'speaker' } } });
+      await db.doc('people/linna-a').set({ i: 'linna-a', n: 'Linna', e: 'lzhu@example.org', c: 'Urban Institute', st: { nola: { prospect: true, invite: 'invited', inviteAt: '2026-11-04' } } });
+      await db.doc('people/linna-b').set({ i: 'linna-b', n: 'Linna Zhu', c: 'Urban Institute', t: 'Principal', st: { nola: { prospect: true, pnote: 'Amy: Invite them' } } });
+      localStorage.setItem('hq.people.v2', '1'); localStorage.removeItem('hq.people.v2per'); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2500);
+    const n = () => s.page.evaluate(() => document.querySelectorAll('#app-people .v2-table tbody tr').length);
+    expect(await n() === 20, 'the list did not start at 20 a page: ' + await n());
+    expect(await s.page.evaluate(() => /Showing 1–20 of \d+/.test(document.querySelector('#app-people .v2-pager').innerText)), 'the page count line is missing');
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-pager button')].find(b => /Next/.test(b.textContent)).click()); await s.page.waitForTimeout(600);
+    expect(await s.page.evaluate(() => /Page 2 of/.test(document.querySelector('#app-people .v2-pager').innerText)), 'Next did not go to page 2');
+    await s.page.selectOption('#app-people .v2-pager select', '10'); await s.page.waitForTimeout(600);
+    expect(await n() === 10, 'Per Page 10 did not show 10');
+    await s.page.selectOption('#app-people .v2-pager select', '0'); await s.page.waitForTimeout(600);
+    expect(await n() > 25, 'Per Page All did not show everyone');
+    /* merge: open Linna (the one with the email and the invitation) and merge Linna Zhu into her */
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-count')].find(b => /Prospects/.test(b.innerText)).click()); await s.page.waitForTimeout(800);
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Invited Nov 4/.test(r.innerText)).click()); await s.page.waitForTimeout(1500);
+    expect(await s.page.evaluate(() => /Same Person Twice/.test(document.getElementById('hq-pane').innerText) && /Linna Zhu/.test(document.querySelector('#hq-pane .v2-merge-l').innerText)), 'the likely duplicate was not offered for merging');
+    await s.page.evaluate(() => { const b = [...document.querySelectorAll('#hq-pane .v2-merge-l button')][0]; b.click(); b.click(); }); await s.page.waitForTimeout(2500);
+    const docs = await s.page.evaluate(async () => { const db = await window.claude.use('db'); return { a: (await db.doc('people/linna-a').get()).data(), b: (await db.doc('people/linna-b').get()).data() }; });
+    expect(docs.a.n === 'Linna Zhu' && docs.a.e === 'lzhu@example.org' && docs.a.t === 'Principal', 'the kept record did not take the fuller name and the missing title: ' + JSON.stringify(docs.a));
+    expect(docs.a.st.nola.invite === 'invited' && /Amy: Invite them/.test(docs.a.st.nola.pnote || ''), 'the invitation or the note was lost in the merge: ' + JSON.stringify(docs.a.st));
+    expect(docs.b.gone === true && docs.b.mergedInto === 'linna-a', 'the other record was not retired');
+    expect(await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].filter(r => /Linna/.test(r.innerText)).length) === 1, 'both Linnas still show');
+    await s.page.evaluate(() => window.__hqUndo.undo()); await s.page.waitForTimeout(2500);
+    const back = await s.page.evaluate(async () => { const db = await window.claude.use('db'); return { a: (await db.doc('people/linna-a').get()).data(), b: (await db.doc('people/linna-b').get()).data() }; });
+    expect(back.a.n === 'Linna' && !back.b.gone && back.b.n === 'Linna Zhu', 'Undo did not put both records back: ' + JSON.stringify(back));
+    await s.page.evaluate(() => { localStorage.setItem('hq.people.v2', '0'); localStorage.removeItem('hq.people.v2per'); });
     noErrors(s.errs); await s.close();
   });
 
