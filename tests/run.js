@@ -207,6 +207,41 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.close();
   });
 
+  /* 11. The speaker automations still feed the flows. These run in the background from the
+         People page, so any change to that page must keep them: the weekly follow-up list
+         (Speaker Reminders flow), the email-in map (Speaker Emailed Files flow), and the list
+         for Bernie (New Speakers to Register flow). */
+  await check('Speaker automations still feed the flows', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/zz-spk').set({ i: 'zz-spk', n: 'Pat Speaker', e: 'pat@example.org', t: 'CTO', c: 'Sample Co',
+        st: { nola: { on: true, role: 'speaker', itok: 'zztok1', welcome: { at: '2026-10-28T15:00:00Z' } } } }); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(9000);
+    const rem = (s.store['feed-speaker-reminders'] || {}).doc || {};
+    const mine = (rem.requests || []).filter(r => r.person === 'zz-spk');
+    expect(mine.length > 0, 'no weekly follow-up was written for a speaker still owing a bio and headshot');
+    expect(mine.every(r => r.to === 'pat@example.org' && /Bio/.test(r.subject) && r.html), 'a follow-up was written without its address, subject or email');
+    const map = ((s.store['feed-speaker-mail-map'] || {}).doc || {}).speakers || [];
+    expect(map.some(x => x.e === 'pat@example.org' && x.t === 'zztok1'), 'the speaker was not put on the email-in map');
+    await s.page.evaluate(() => window.__speakerAdds.added('zz-spk')); await s.page.waitForTimeout(3000);
+    const adds = ((s.store['feed-speaker-adds'] || {}).doc || {}).adds || [];
+    expect(adds.some(a => a.person === 'zz-spk' && a.row), 'the speaker was not put on Bernie\'s list');
+    noErrors(s.errs); await s.close();
+  });
+
+  /* 12. A MISMO Team member's travel form answer lands on their record */
+  await check('Travel answers land on the right person', async () => {
+    const store = {
+      'team-travel': { docs: { 'team-travel/nola': { order: ['a'], ppl: { a: { n: 'Team Person', e: 't@example.org', role: 'staff', tok: 'tt1', sentAt: '2026-10-30T10:00:00Z' } } } } },
+      'feed-team-travel-answers': { doc: { answers: [{ t: 'tt1', v: 'nola', going: 'yes', arr: '2027-01-10', dep: '2027-01-14', room: 'yes', park: 'no', notes: 'Late flight', at: '2026-10-31T10:00:00Z' }] } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(6000);
+    const p = s.store['team-travel'].docs['team-travel/nola'].ppl.a;
+    expect(p.arr === '2027-01-10' && p.dep === '2027-01-14' && p.notes === 'Late flight', 'the travel answer did not land on the person: ' + JSON.stringify(p));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
