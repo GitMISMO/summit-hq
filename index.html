@@ -7674,7 +7674,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <h4>The New People Page (Being Tried)</h4>
       <ul>
         <li><b>Try the New People Page</b>, at the top of People, switches to it; <b>Back to the Current Page</b> switches back. Your choice is remembered in this browser, and both read and save the very same records, so nothing has to be moved or entered twice.</li>
-        <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b> or <b>Speaker Prospects</b> to show just those people. The search also looks through the master list.</li>
+        <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
         <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
         <li><b>Hotel Nights</b> shows the MISMO Team&rsquo;s stays as one bar a person with the rooms each night, and anything to check before it goes to the hotel.</li>
         <li><b>Emails &amp; Asks</b>, <b>Full Lists</b>, <b>Downloads</b> and <b>+ Add a Person</b> open the very same tools as the cards (Choose Speakers to Email, the Board ask, Notify Bernie, the travel ask, the full Board and Team lists, the speakers and sessions files). Every email still opens its preview first; nothing goes out until you press Send.</li>
@@ -25087,7 +25087,7 @@ startClock();
 #app-people.v2 .pp-bar, #app-people.v2 #pp-meters, #app-people.v2 .pp-found, #app-people.v2 .pp-cards, #app-people.v2 .pp-wall{display:none!important}
 #app-people .v2-hold{display:none}
 #app-people .pp-bar .v2-try{order:-1}
-#app-people .v2-counts{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:0 0 10px}
+#app-people .v2-counts{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 10px}
 #app-people .v2-count{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit;color:var(--ink)}
 #app-people .v2-count b{font-size:21px;line-height:1.2;color:var(--ink)}
 #app-people .v2-count span{font-size:12.5px;color:var(--ink-2)}
@@ -28987,7 +28987,9 @@ function v2Next(x){
 }
 const v2Needs=x=>{ const n=v2Next(x); return !n.ok && n.who!=='Waiting on them'; };
 const V2F=[['all','Everyone at This Summit',x=>x.here],['need','Need Something From Us',x=>x.here&&v2Needs(x)],['spk','Speakers',x=>x.spk],
-  ['board','Board of Directors',x=>!!x.board],['team','MISMO Team',x=>!!x.team],['spon','Sponsors',x=>!!(x.spon.length||x.sponP)],['pros','Speaker Prospects',x=>x.pros]];
+  ['board','Board of Directors',x=>!!x.board],['team','MISMO Team',x=>!!x.team],['spon','Sponsors',x=>!!(x.spon.length||x.sponP)],['pros','Speaker Prospects',x=>x.pros],
+  /* Jonna, 2026-11-07: the master list stays: everyone who has ever spoken, on this summit or not */
+  ['master','Master List of Speakers',x=>!!x.p]];
 
 /* the page */
 function v2Render(host){
@@ -29001,7 +29003,7 @@ function v2Render(host){
     return;
   }
   document.getElementById('app-people').classList.add('v2');
-  const all1=v2Entries(false);
+  const all1=v2Entries(true);
   const root=el('div','v2');
   /* the boxes: each one is the list behind it */
   const counts=el('div','v2-counts');
