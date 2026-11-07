@@ -291,6 +291,8 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       if (c0 === 'photos') return { file: fname('photo-' + seg[1]), own: true, coll: 'photos', id: seg[1] };
       if (c0 === 'schedule' && seg[1].indexOf('plans-') === 0) return { file: fname('plans-' + seg[1].slice(6)), own: true, coll: 'schedule', id: seg[1] };
       if (c0 === 'registration') return { file: fname('reg-' + seg[1]), own: true, coll: 'registration', id: seg[1] };
+      /* a past summit's Run of Show, kept as it stood (Jonna, 2026-11-06) */
+      if (c0 === 'archive') return { file: fname('arch-' + seg[1]), own: true, coll: 'archive', id: seg[1] };
       /* what the scheduled emails read: feeds/tasks, feeds/sponsor-list (see FEEDS) */
       if (c0 === 'feeds') return { file: fname('feed-' + seg[1]), own: true, coll: 'feeds', id: seg[1] };
       if (SHARDS[c0]) return { file: shard(c0, seg[1]), coll: c0, id: seg[1] };
@@ -2724,6 +2726,18 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 #app-ros .sbdg.s-late{color:var(--bad-ink);border-color:var(--bad);background:var(--bad-soft)}
 #app-ros .sbdg.s-soon{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
 #app-ros .tblwrap{overflow-x:auto;margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+.pst-modal{position:fixed;inset:0;z-index:20000;background:rgba(13,49,76,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.pst-box{background:var(--surface,#fff);color:var(--ink,#0d314c);border-radius:8px;width:min(980px,96vw);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.3);font-family:var(--ui,Arial,sans-serif)}
+.pst-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line,#d5e2ed)}
+.pst-hd b{font-size:15px}
+.pst-body{padding:12px 16px 18px;overflow:auto;font-size:13px}
+.pst-pick{font:inherit;padding:6px 8px;border:1px solid var(--line-2,#c3d3e1);border-radius:4px;background:var(--surface,#fff);color:inherit;margin-bottom:10px}
+.pst-note{color:var(--ink-2,#3d5468);margin:4px 0 12px}
+.pst-body h4{margin:16px 0 6px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3,#6c899f)}
+.pst-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.pst-tbl th{text-align:left;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3,#6c899f);padding:5px 8px;border-bottom:2px solid var(--line,#d5e2ed)}
+.pst-tbl td{padding:5px 8px;border-bottom:1px solid var(--line,#d5e2ed);vertical-align:top}
+.pst-tag{font-size:11px;color:var(--ink-3,#6c899f)}
 #app-ros .tbl{width:100%;border-collapse:collapse;font-size:12.5px}
 #app-ros .tbl th{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700;
   text-align:left;padding:5px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap}
@@ -5032,6 +5046,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
           <span class="hint picker" data-no-toggle id="cgPicker"><label for="cgSummit">Summit</label>
             <select id="cgSummit"></select>
             <button class="btn ghost" type="button" id="cgActivate" hidden>Make this the active cycle</button>
+            <button class="btn ghost" type="button" id="cgPast">Past Summits</button>
           </span>
           <div id="cgNotice"></div>
           <div class="steps" id="cgSteps"></div>
@@ -6101,6 +6116,9 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   }
   function flush(target){
     clearTimeout(saveTs[target]);
+    /* November 6, 2026: the summit and its list are taken when the edit is made, so switching
+       the summit picker inside the 300 ms wait still saves the edit to the summit it was made for */
+    const sidAt=ST.sid, sumAt=(target==='summit')? ST.summit : null;
     saveTs[target]=setTimeout(async()=>{
       saveTs[target]=null;
       if(!ST.ready || ST.readOk===false) return;      /* never over a list that was not read */
@@ -6116,10 +6134,11 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
         else {
           /* the review is written by the team from their own screens — never write an older
              copy of it over theirs */
-          try{ const cur=await db.doc('trunk/'+ST.sid).get(); const rr=cur && cur.exists && cur.data() && cur.data().review;
-            const lr=summit().review; if(rr && (!lr || (rr.v||0)>(lr.v||0))) summit().review=own(rr); }catch(e){}
-          const body=JSON.parse(JSON.stringify(summit()));
-          await db.doc('trunk/'+ST.sid).set(body, sendFrom('s:'+ST.sid, body));
+          const sm=sumAt || (sidAt===ST.sid? summit() : null); if(!sm) return;
+          try{ const cur=await db.doc('trunk/'+sidAt).get(); const rr=cur && cur.exists && cur.data() && cur.data().review;
+            const lr=sm.review; if(rr && (!lr || (rr.v||0)>(lr.v||0))) sm.review=own(rr); }catch(e){}
+          const body=JSON.parse(JSON.stringify(sm));
+          await db.doc('trunk/'+sidAt).set(body, sendFrom('s:'+sidAt, body));
         }
       }catch(e){}
     },300);
@@ -6152,6 +6171,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   /* the summit can change under us — pick up that summit's own merch and ticks */
   async function switchTo(sid){
     if(!sid || sid===ST.sid) return;
+    if(saveTs.summit){ flush('summit'); }   /* the edit is sent for the summit it was made in */
     ST.sid=sid; ST.summit=null;
     const db=await store();
     if(db){ try{ const b=await db.doc('trunk/'+sid).get();
@@ -7482,6 +7502,13 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <p><b>Save.</b> A task, an agenda item, a Resume section or a person opened on the right has a <b>Save</b> button at the bottom whenever there is something to type in. Everything is written as you go; Save makes sure the field you are in is written too, and closes the panel. Close a panel after changing something without pressing Save and it asks first: <b>Save Changes</b>, <b>Discard Changes</b> (puts back what each box said when you opened it) or <b>Keep Editing</b>.</p>
       <h4>The Buttons Above the Calendar</h4>
       <p><b>The Plan</b>, <b>Planning Meeting</b> and <b>All Tasks</b> switch the view without moving you back to the top of the page. <b>+ New Task</b> adds a task. <b>+ Add A Summit</b> opens the panel where you name a new Summit and drop its hotel contract in; the Schedule, the cycle, the Contract viewer and the resume are written together.</p>
+      <h4>Past Summits</h4>
+      <ul>
+        <li>Every summit you plan here is kept. Pick it in the <b>Summit</b> picker and the Schedule (sessions, attendance, AV, chairs, who is leading each one), the Resume, Hotel Specs, People and speaker steps, the Board of Directors card (with that summit&rsquo;s Board), MISMO Team travel, the Trunk, Registration and Sponsors show what they were for that summit.</li>
+        <li>The Run of Show is one running plan, so about 10 days after a summit starts its tasks, Planning Meeting agenda and Meeting Notes are kept as they stood. <b>Past Summits</b> on the Schedule Timeline opens any summit&rsquo;s kept plan, read only. Picking a summit that is over on the Schedule Timeline no longer moves the Run of Show back to it.</li>
+        <li>Session details you change (attendance, AV, chairs, leaders, times, a session taken off) belong to the summit picked when you change them; the session&rsquo;s name and description are shared, so a fix there shows everywhere. A session you add belongs to that summit and the ones after it.</li>
+        <li>A person&rsquo;s bio, title and headshot are the latest ones on file, not the ones from an earlier summit.</li>
+      </ul>
       <h4>The Plan</h4>
       <ul>
         <li>The <b>calendar</b> runs the full width of the page with every task on its due date. <b>Drag</b> a task to another day to move it. To move it into another month, hold it over the <b>&lsaquo;</b> or <b>&rsaquo;</b> arrows and the calendar turns the page. Click a task to open it.</li>
@@ -11509,10 +11536,45 @@ function assignHues(){
     TONE[x.id] = t;
   });
 }
+/* Jonna, 2026-11-06: "make sure this is all being replicated for each summit ... historically
+   reference all past summits". A session's name and colour are shared, but what is true of it
+   at one summit — its times and length, headcount, facilitator, chairs and leaders, staff,
+   AV, notes, whether it needs a session at all, whether it was taken off — is kept on that
+   summit's own record (venue.sessEdits), so changing it for Fall leaves Winter as it was.
+   The first time a summit is opened it takes in what it showed before this split. A session
+   added on one summit is not added to the summits that came before it. */
+const SESS_PER=new Set(['att','av','chairs','leaders','dns','unk','dur','fac','facLock','primaryFac','covering','staffIds','notes','tStart','tEnd','deleted']);
+let sessVenue=null;
+function venueRec(vid){ try{ return venues.find(x=>x.id===(vid||activeVenue))||null; }catch(e){ return null; } }   /* not yet, while the page is still starting */
+function vEdits(vid){
+  const v=venueRec(vid); if(!v) return {};
+  if(!v.sessEdits || !v.sessSplit){
+    /* once: what this summit showed until now becomes its own */
+    const own=v.sessEdits||{};
+    Object.entries(sessionEdits).forEach(([id,e])=>{ if(!e) return;
+      const mine=Object.assign({}, own[id]||{});
+      Object.keys(e).forEach(k=>{ if(SESS_PER.has(k) && k!=='deleted' && !(k in mine)) mine[k]=e[k]; });
+      if(Object.keys(mine).length) own[id]=mine; });
+    v.sessEdits=own; v.sessSplit=true;
+  }
+  return v.sessEdits;
+}
+function putEdit(id, patch, vid){
+  const sh={}, pv={};
+  Object.keys(patch||{}).forEach(k=>{ (SESS_PER.has(k)? pv : sh)[k]=patch[k]; });
+  if(Object.keys(sh).length) sessionEdits[id]=Object.assign({}, sessionEdits[id], sh);
+  if(Object.keys(pv).length){ const ve=vEdits(vid); ve[id]=Object.assign({}, ve[id], pv); }
+}
+const venueStart=v=>{ const m=/([A-Za-z]+)\s+(\d{1,2})\D.*?(\d{4})/.exec(String((v&&v.dates)||'')); if(!m) return ''; const d=new Date(m[1]+' '+m[2]+', '+m[3]); return isNaN(d)? '' : d.toISOString().slice(0,10); };
 function rebuildSessions(){
-  SESSIONS = BASE_SESSIONS.concat(customSessions)
-    .filter(x=>!(sessionEdits[x.id]&&sessionEdits[x.id].deleted))
-    .map(x=>Object.assign({}, x, sessionEdits[x.id]||{}));
+  const ve=vEdits(), here=venueStart(venueRec());
+  try{ sessVenue=activeVenue; }catch(e){ sessVenue=null; }
+  SESSIONS = BASE_SESSIONS.concat(customSessions.filter(c=>{
+      /* added for a later summit: not part of this earlier one */
+      const from=c.addedFor && venueRec(c.addedFor); const fs=from && venueStart(from);
+      return !(fs && here && here<fs); }))
+    .filter(x=>!(sessionEdits[x.id]&&sessionEdits[x.id].deleted) && !(ve[x.id]&&ve[x.id].deleted))
+    .map(x=>Object.assign({}, x, sessionEdits[x.id]||{}, ve[x.id]||{}));
   S = Object.fromEntries(SESSIONS.map(x=>[x.id,x]));
   WGS = SESSIONS.filter(x=>x.kind==='wg');
   applyJoints();
@@ -13256,6 +13318,7 @@ window.addEventListener('hq:portal', ()=>{ try{ if(syncPortalSponsors()) render(
 function render_(){
   try{ syncPortalSponsors(); }catch(e){}
   orderRooms();
+  if(sessVenue!==activeVenue) rebuildSessions();
   if(jointSig()!==JOINT_SIG) rebuildSessions();
   refreshRuleset(); refreshAskLocks();
   syncVenueAndSessions();
@@ -14939,7 +15002,7 @@ window.__setBoardHeadcount = function(vid, n){
   if(c.board.count===n) return false;
   c.board.count=n;
   if(!vid || vid===activeVenue){
-    sessionEdits['bod']=Object.assign({}, sessionEdits['bod'], {att:n});
+    putEdit('bod',{att:n});
     rebuildSessions(); render();
   }
   nameUndo('the Board headcount'); save(); return true;
@@ -15631,7 +15694,7 @@ function glHeads(){
     const commit=()=>{ const t=inp.value.replace(/[^0-9]/g,''); const n=t===''?null:parseInt(t,10);
       const cc=CATER()[it.ck]; if(!cc || cc.count===n) return;
       cc.count=n;
-      sessionEdits[it.sid]=Object.assign({}, sessionEdits[it.sid], {att:n});
+      putEdit(it.sid,{att:n});
       rebuildSessions(); render(); save(); };
     inp.addEventListener('change',commit);
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); } });
@@ -15982,7 +16045,7 @@ function renderNewcomer(){
     const gcommit=()=>{ const t=gi.value.replace(/[^0-9]/g,''); const n=t===''?null:parseInt(t,10);
       const cc=CATER().gs; if(!cc || cc.count===n) return;
       cc.count=n;
-      sessionEdits['general-sessions']=Object.assign({}, sessionEdits['general-sessions'], {att:n});
+      putEdit('general-sessions',{att:n});
       rebuildSessions(); render(); save(); };
     gi.addEventListener('input',()=>{ clearTimeout(gt); gt=setTimeout(gcommit,400); });
     gi.addEventListener('change',()=>{ clearTimeout(gt); gcommit(); });
@@ -16083,7 +16146,7 @@ function renderNewcomer(){
                 here can never disagree — but only for the summit on screen; the
                 sessions are shared, this number is not */
              if(!forV || forV===activeVenue){
-               sessionEdits[x.sid]=Object.assign({}, sessionEdits[x.sid], {att:n});
+               putEdit(x.sid,{att:n});
                rebuildSessions(); render();
              }
              save(); },
@@ -16596,10 +16659,9 @@ function deleteSession(id){
     askGone=list.length-keep.length;
     if(askGone) staffAsks[activeVenue]=keep;
   }catch(e){}
-  Object.keys(schedules).forEach(k=>{ if(schedules[k]) delete schedules[k][id]; });
+  /* this summit only: the summits before it keep it where it was */
   const sk=SKIPS(); if(sk[id]) delete sk[id];
-  if(own){ customSessions=customSessions.filter(c=>c.id!==id); delete sessionEdits[id]; }
-  else sessionEdits[id]=Object.assign({}, sessionEdits[id], {deleted:true});
+  putEdit(id,{deleted:true});
   editing=null; highlight=new Set(); highlightBlks=null; appliedOpt=null;
   rebuildSessions(); render(); save();
   notice(nm+' deleted'+(own?'.':' — bring it back from the bottom of the workgroup list.')
@@ -16640,6 +16702,7 @@ function duplicateSession(id){
     .forEach(k=>delete copy[k]);
   if(copy.kind==='standing'){ copy.kind='wg'; copy.dur=copy.dur||180; }
   copy.optional = true;                 /* a copy is not owed a slot until you place it */
+  copy.addedFor=activeVenue;
   customSessions.push(copy);
   rebuildSessions();
   editing=nid; editingBlk=null;
@@ -16665,15 +16728,16 @@ function deleteButton(id, label, run){
   return del;
 }
 function restoreSession(id){
-  if(!sessionEdits[id]) return;
-  const e=Object.assign({}, sessionEdits[id]); delete e.deleted;
-  sessionEdits[id]=e;
+  const ve=vEdits();
+  if(!sessionEdits[id] && !ve[id]) return;
+  if(sessionEdits[id]){ const e=Object.assign({}, sessionEdits[id]); delete e.deleted; sessionEdits[id]=e; }
+  if(ve[id]){ const e=Object.assign({}, ve[id]); delete e.deleted; ve[id]=e; }
   rebuildSessions(); render(); save();
   notice((S[id]?S[id].nm:'That session')+' is back on the list.');
 }
-const deletedSessions = ()=> BASE_SESSIONS
-  .filter(x=>sessionEdits[x.id] && sessionEdits[x.id].deleted)
-  .map(x=>Object.assign({}, x, Object.assign({}, sessionEdits[x.id], {deleted:undefined})));
+const deletedSessions = ()=>{ const ve=vEdits(); return BASE_SESSIONS.concat(customSessions)
+  .filter(x=>(sessionEdits[x.id] && sessionEdits[x.id].deleted) || (ve[x.id] && ve[x.id].deleted))
+  .map(x=>Object.assign({}, x, sessionEdits[x.id]||{}, ve[x.id]||{}, {deleted:undefined})); };
 
 /* Does this group need a session at all this summit? Marking it DNS lifts it off
    the grid; putting it back on the grid says it needs one after all. */
@@ -16711,7 +16775,7 @@ function snapSlotToHours(id){
   p.s=want;
 }
 function setEdit(id, patch, drawerOnly){
-  sessionEdits[id] = Object.assign({}, sessionEdits[id], patch);
+  putEdit(id, patch);
   /* the workshop's name lives in one place; keep the venue copy in step */
   if(id==='workshop' && patch.nm!=null){ const lv=V(); if(lv) lv.workshopTitle = patch.nm; }
   if(patch.att!==undefined){
@@ -17227,7 +17291,7 @@ async function loadLeadershipTracker(file){
     const id=wgKeys(g).map(k=>keyOf.get(k)).find(Boolean);
     if(!id){ missed.push(g); return; }
     const L=found[g].sort((a,b)=>ORDER[a.role]-ORDER[b.role]);
-    sessionEdits[id]=Object.assign({}, sessionEdits[id], {leaders:L});
+    putEdit(id,{leaders:L});
     matched.push(id);
   });
   if(!matched.length){ notice('No workgroup in the tracker matched a workgroup in Summit HQ, so nothing was changed.'); return; }
@@ -17373,10 +17437,10 @@ function syncVenueAndSessions(){
   Object.entries(LINK).forEach(([ck,sid])=>{
     const src=c[ck]; const sess=S[sid]; if(!src||!sess) return;
     if(src.count!=null && sess.att!==src.count){
-      sessionEdits[sid]=Object.assign({}, sessionEdits[sid], {att:src.count}); dirty=true;
+      putEdit(sid,{att:src.count}); dirty=true;
     } else if(src.count==null && sess.att!=null){
       /* this summit has no figure of its own; the card must not keep another's */
-      sessionEdits[sid]=Object.assign({}, sessionEdits[sid], {att:null}); dirty=true;
+      putEdit(sid,{att:null}); dirty=true;
     }
   });
   if(dirty) rebuildSessions();
@@ -17974,7 +18038,7 @@ function sessRail(d,s,p,rm,form){
 function addSession(){
   const base = snapState();
   const id = 's'+Date.now().toString(36);
-  customSessions.push({id, kind:'wg', nm:'New workgroup session', full:'New workgroup session',
+  customSessions.push({id, addedFor:activeVenue, kind:'wg', nm:'New workgroup session', full:'New workgroup session',
     dur:180, att:null, fac:'', chairs:[], avoid:[], av:'', notes:''});
   rebuildSessions(); editing=id;
   drawerBase=base; drawerNew=id;
@@ -17998,7 +18062,7 @@ function addWorkgroup(){
   const attRaw = ($('wg-att').value||'').trim();
   const att = attRaw==='' ? null : Math.max(0, Math.round(Number(attRaw)||0));
   const id='s'+Date.now().toString(36);
-  customSessions.push({id, kind:'wg', nm, full:nm,
+  customSessions.push({id, addedFor:activeVenue, kind:'wg', nm, full:nm,
     dur, att, fac:'', chairs:[], avoid:[], av:'', notes:''});
   rebuildSessions();
   justAdded=id;
@@ -18019,7 +18083,7 @@ function addSessionAt(blockId, roomId, slot){
   const base = snapState();
   const id='s'+Date.now().toString(36);
   const half = !!slot || bk.lunch || bk.eve;
-  customSessions.push({id, kind:'wg', nm:'New session', full:'New session',
+  customSessions.push({id, addedFor:activeVenue, kind:'wg', nm:'New session', full:'New session',
     dur: half?90:180, att:null, fac:'', chairs:[], avoid:[], av:'', notes:''});
   rebuildSessions();
   place()[id] = {b:blockId, r:roomId, s:slot||0,
@@ -18299,7 +18363,7 @@ function doPlace(sid, blockId, roomId, slot, dragFrom, decided){
   }
   pl[sid]=target;
   /* putting it on the grid says it needs a session after all */
-  if(s.dns){ sessionEdits[sid]=Object.assign({}, sessionEdits[sid], {dns:false}); rebuildSessions(); }
+  if(s.dns){ putEdit(sid,{dns:false}); rebuildSessions(); }
   const swapped=[], benched=[];
   inTheWay.forEach((oid,i)=>{
     /* a straight trade only works for the first one, and only if it fits where this came from */
@@ -19622,7 +19686,7 @@ prevState = snapState();
       const sid=CKSID[ck];
       /* the sessions are shared by every summit; only touch them for the one on screen */
       if(!forVenue || forVenue===activeVenue){
-        if(sid) sessionEdits[sid]=Object.assign({}, sessionEdits[sid], {att:n});
+        if(sid) putEdit(sid,{att:n});
         rebuildSessions(); render();
       }
       save();
@@ -20410,6 +20474,71 @@ async function addSummit(){
 /* One summit at a time across Summit HQ: the Schedule's summit picker sets this
    tab's active cycle, and activating a cycle here moves the Schedule with it.
    A Schedule summit is matched to a cycle by its first day, then by season and year. */
+/* ---------- Past summits (Jonna, 2026-11-06): "will i be able to historically reference all each
+   past summits we've planned in here with the details?" The task plan is one rolling list that
+   the next cycle reuses, so when a summit is over (or the plan moves on from it) its tasks,
+   meeting notes and agenda items are copied, as they stood, into a record of their own
+   (archive/ros-<cycle>). Past Summits on the Schedule Timeline opens any of them. ---------- */
+const rosDay=iso=>{ const d=new Date(String(iso||'')+'T12:00:00'); return isNaN(d)? null : d; };
+function rosPast(su){ const d=su&&rosDay(su.start); if(!d) return false; d.setDate(d.getDate()+4); return d<new Date(); }
+async function rosArchive(su, force){
+  if(!su || !su.id || !db || canWrite===false) return;
+  if(su.archivedAt && !force) return;
+  const d0=rosDay(su.start); if(!d0 || d0>new Date()) return;      /* only a summit that has happened */
+  const keep=x=>JSON.parse(JSON.stringify(x));
+  const tasks=[...S.tasks.values()].filter(t=>!t.summitId || t.summitId===su.id).map(t=>({id:t.id, task:t.task||'', owner:t.owner||'', assists:t.assists||'',
+    status:t.status||'', due:t.due||'', phase:t.phase||'', scope:t.scope||'', notes:t.notes||'', desc:t.desc||'', updatedAt:t.updatedAt||''}));
+  const mine=x=>x.summitId? x.summitId===su.id : String(x.createdAt||'')<=new Date(d0.getTime()+7*864e5).toISOString();
+  const notes=[...S.notes.values()].filter(mine).map(n=>({text:n.text||'', createdAt:n.createdAt||''}));
+  const disc=[...S.disc.values()].filter(mine).map(x=>({text:x.text||'', status:x.status||'', owner:x.owner||'', context:x.context||'', log:x.log||'', createdAt:x.createdAt||''}));
+  const at=new Date().toISOString();
+  try{
+    await db.doc('archive/ros-'+su.id).set(keep({summit:{id:su.id, name:su.name||'', start:su.start||'', end:su.end||'', venue:su.venue||''}, at, tasks, notes, discussion:disc}));
+    await db.doc('summits/'+su.id).update({archivedAt:at});
+    su.archivedAt=at;
+  }catch(e){}
+}
+/* a summit that is over and was never moved on from gets its record a week after it ends */
+function rosArchiveDue(){
+  const su=S.summits.get(S.cfg.activeSummitId); if(!su || su.archivedAt) return;
+  const d=rosDay(su.start); if(!d) return; d.setDate(d.getDate()+10);
+  if(d<new Date()) rosArchive(su);
+}
+async function openPastSummits(){
+  let m=document.getElementById('ros-past'); if(m) m.remove();
+  m=document.createElement('div'); m.id='ros-past'; m.className='pst-modal';
+  const box=document.createElement('div'); box.className='pst-box'; box.setAttribute('role','dialog'); box.setAttribute('aria-label','Past summits');
+  const close=()=>m.remove();
+  m.addEventListener('click',e=>{ if(e.target===m) close(); });
+  const hd=document.createElement('div'); hd.className='pst-hd';
+  const t=document.createElement('b'); t.textContent='Past Summits'; hd.appendChild(t);
+  const x=document.createElement('button'); x.type='button'; x.className='btn ghost'; x.textContent='Close'; x.addEventListener('click',close); hd.appendChild(x);
+  box.appendChild(hd);
+  const body=document.createElement('div'); body.className='pst-body'; box.appendChild(body);
+  m.appendChild(box); document.body.appendChild(m);
+  const past=summitList().filter(su=>su.archivedAt).sort((a,b)=>String(b.start).localeCompare(String(a.start)));
+  if(!past.length){ body.textContent='No summit has been kept here yet. A summit is kept a few days after it ends, or when the plan moves on to the next one.'; return; }
+  const sel=document.createElement('select'); sel.className='pst-pick';
+  past.forEach(su=>sel.appendChild(new Option((su.name||su.id)+(su.start?' — '+su.start:''), su.id)));
+  body.appendChild(sel);
+  const out=document.createElement('div'); body.appendChild(out);
+  const esc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const show=async()=>{
+    out.textContent='Loading…';
+    let r=null; try{ const sn=await db.doc('archive/ros-'+sel.value).get(); r=sn.exists? sn.data() : null; }catch(e){}
+    if(!r){ out.textContent='That record could not be opened.'; return; }
+    const by={}; (r.tasks||[]).forEach(t=>{ (by[t.phase||'Other']=by[t.phase||'Other']||[]).push(t); });
+    let h='<p class="pst-note">Kept '+esc(new Date(r.at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))+': '+(r.tasks||[]).length+' tasks, '+(r.discussion||[]).length+' agenda items, '+(r.notes||[]).length+' notes. Read only. The Schedule, Resume, People and the other tabs keep this summit too: pick it in the Summit picker.</p>';
+    const phs=Object.keys(by);
+    phs.forEach(ph=>{
+      h+='<h4>'+esc(phs.length===1 && ph==='Other'? 'Tasks' : ph)+'</h4><table class="pst-tbl"><thead><tr><th>Task</th><th>Owner</th><th>Status</th><th>Due</th><th>Notes</th></tr></thead><tbody>'
+        +by[ph].map(t=>'<tr><td>'+esc(t.task)+'</td><td>'+esc(t.owner)+'</td><td>'+esc(t.status)+'</td><td>'+esc(t.due)+'</td><td>'+esc(t.notes)+'</td></tr>').join('')+'</tbody></table>'; });
+    if((r.discussion||[]).length) h+='<h4>Planning Meeting Agenda</h4><ul>'+r.discussion.map(d=>'<li>'+esc(d.text)+(d.status?' <span class="pst-tag">'+esc(d.status)+'</span>':'')+(d.log?'<br><small>'+esc(d.log)+'</small>':'')+'</li>').join('')+'</ul>';
+    if((r.notes||[]).length) h+='<h4>Meeting Notes</h4><ul>'+r.notes.map(n=>'<li>'+esc(n.text)+' <small>'+esc(String(n.createdAt).slice(0,10))+'</small></li>').join('')+'</ul>';
+    out.innerHTML=h;
+  };
+  sel.addEventListener('change',show); show();
+}
 function isoOf(txt){
   const m=String(txt||"").match(/([A-Za-z]+)\s+(\d{1,2})\D.*?(\d{4})/);
   if(!m)return "";
@@ -20436,6 +20565,15 @@ async function followSchedule(v){
   const su=cycleForVenue(v); if(!su)return;
   S.linkedVenue=v.id;
   if(su.id===S.cfg.activeSummitId)return;
+  /* Jonna, 2026-11-06: looking back at a summit that is over must not move the task plan,
+     its dates and the Monday email for everyone onto it */
+  const cur=S.summits.get(S.cfg.activeSummitId);
+  if(rosPast(su) && cur && String(cur.start||'')>String(su.start||'')){
+    S.cgPick=su.id; renderAll();
+    flash(su.name+" is over — the Run of Show stays on "+(cur.name||"the current cycle")+". Its record is under Past Summits.");
+    return;
+  }
+  await rosArchive(S.summits.get(S.cfg.activeSummitId));
   /* the drawer is about a task read against the cycle you were on — its dates and its
      "days out from the summit" all belong to that one, and typing into it afterwards
      wrote the wrong numbers */
@@ -20494,6 +20632,7 @@ async function activateSummit(){
   const su=pickedSummit();
   if(!su.start){flash("Set the first day first");return;}
   const prev=S.cfg.activeSummitId;
+  await rosArchive(S.summits.get(prev));   /* keep the cycle being left as it stood */
   closeDrawer();                       /* it belongs to the cycle you are leaving */
   S.cfg.activeSummitId=su.id;renderAll();moveSchedule(su);
   try{
@@ -21110,7 +21249,7 @@ function renderNotes(){
 async function addNote(){
   if(canWrite===false){denied();return;}
   const id=newId("n");
-  const n={id,text:"",createdAt:new Date().toISOString(),taskId:""};
+  const n={id,text:"",createdAt:new Date().toISOString(),taskId:"",summitId:(activeSummit()||{}).id||""};
   S.notes.set(id,n);renderNotes();
   const node=noteNodes.get(id);if(node){node._ta.focus();node.scrollIntoView({behavior:"smooth",block:"nearest"});}
   try{
@@ -22852,7 +22991,7 @@ async function addDisc(){
   if(!v)return;
   if(canWrite===false){denied();return;}
   const id=newId("d");
-  const d={id,text:v,context:"",status:"open",owner:"",taskName:"",taskId:"",log:"",createdAt:new Date().toISOString(),source:"user"};
+  const d={id,text:v,context:"",status:"open",owner:"",taskName:"",taskId:"",log:"",createdAt:new Date().toISOString(),source:"user",summitId:(activeSummit()||{}).id||""};
   S.disc.set(id,d);inp.value="";renderAll();
   try{
     const{id:_,...body}=d;await db.doc("discussion/"+id).set(body);flash("Added");
@@ -22901,6 +23040,7 @@ document.addEventListener("keydown",e=>{
 });
 try{ if(window.__hqUndo) window.__hqUndo.register('ros', doUndo); }catch(e){}
 $("#cgSummit").addEventListener("change",e=>{S.cgPick=e.target.value;renderTimeline();});
+$("#cgPast").addEventListener("click",()=>openPastSummits());
 $("#cgActivate").addEventListener("click",activateSummit);
 $("#sAdd").addEventListener("click",addSummit);
 $("#sName").addEventListener("keydown",e=>{if(e.key==="Enter")addSummit();});
@@ -22947,6 +23087,7 @@ startClock();
       else S.tasks.set(c.doc.id,Object.assign({id:c.doc.id},c.doc.data()));
     });
     ready=true;renderAll();
+    if(!S.archChecked){ S.archChecked=true; setTimeout(()=>{ try{ rosArchiveDue(); }catch(e){} },8000); }
   },()=>{ready=true;renderAll();});
   db.collection("discussion").onSnapshot(s=>{
     s.docChanges().forEach(c=>{
@@ -24415,8 +24556,9 @@ startClock();
   /* 'people' and 'photos' are the People tab — the person records and their headshots.
      A backup with a lot of headshots in it is a big file; that is the cost of it being
      a real backup. */
-  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','registration','private'];
-  const VENUES=['nola','slc','bethesda'];
+  const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','registration','private',
+    'board','team-travel','speaker-email','sponsor-agenda','archive'];
+  const VENUES=(()=>{ try{ const v=(window.__scheduleVenues? window.__scheduleVenues() : []).map(x=>x.id); return v.length? v : ['nola','slc','bethesda']; }catch(e){ return ['nola','slc','bethesda']; } })();
   const mk=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
   let DB=null;
   const getDb=async()=>{ if(DB) return DB; try{ DB = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ DB=null; } return DB; };
@@ -25002,8 +25144,19 @@ const PAST=[['26f','2026 Fall'],['26s','2026 Spring'],['26w','2026 Winter'],['25
 /* what the Sponsorship Portal says, brought over by the nightly sync and kept in
    the `sponsors` collection, a document per summit. Read only here: the portal is
    where a sponsorship is worked, this is where it turns into somebody to register. */
-const EVENT_VENUE={'winter 2027':['nola'],'spring 2027':['slc'],'fall 2027':['bethesda'],
-  '2027 series':['nola','slc','bethesda']};
+/* Jonna, 2026-11-06: matched to any summit by its season and year ("Winter 2027" to the
+   2027 Winter Summit; "2027 Series" to every 2027 summit), not a list written for 2027
+   only, so a later year's sponsors never show on an earlier summit. An event that names
+   no summit we have shows on none. */
+function eventVenues(ev){
+  ev=String(ev||'').toLowerCase();
+  const yr=(ev.match(/\b(20\d\d)\b/)||[])[1], season=(ev.match(/winter|spring|fall|summer/)||[])[0];
+  let vs=[]; try{ vs=window.__scheduleVenues? window.__scheduleVenues() : []; }catch(e){}
+  if(!yr) return null;
+  return vs.filter(v=>{ const n=String(v.name||'').toLowerCase()+' '+String(v.dates||'').toLowerCase();
+    if(n.indexOf(yr)<0) return false;
+    return /series/.test(ev) || !season || n.indexOf(season)>=0; }).map(v=>v.id);
+}
 const ST={db:null, docs:new Map(), photos:new Map(), spon:new Map(), board:new Map(), sag:new Map(), semail:new Map(), travel:new Map(), travelLoaded:false, travelAnswers:null, venue:'', ready:false,
   open:new Set(), q:'', role:'', left:false, step:'', elseOpen:false, addOpen:false};
 const undoStack=[];
@@ -25910,7 +26063,7 @@ function render(){
     const cc=el('button','se-lnk','Clear'); cc.type='button'; cc.addEventListener('click',()=>{ sel.clear(); render(); });
     ckl.appendChild(ca); ckl.appendChild(cc); top.appendChild(ckl);
     /* Jonna, 2026-11-06: ask the Board themselves, In Person or Virtually */
-    const askN=BOARD.filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).length;
+    const askN=boardList().filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).length;
     const ak=el('button','btn'+(askN?'':' ghost'),'Ask In Person or Virtual'+(askN?' ('+askN+')':'')); ak.type='button';
     ak.title='Emails board members a branded note from Jonna with In Person and Virtually buttons; their answer marks them here';
     ak.addEventListener('click',()=>openBoardAsk());
@@ -25929,7 +26082,7 @@ function render(){
     let hc=null; try{ hc=window.__boardHeadcount? window.__boardHeadcount(venueNow()) : null; }catch(e){}
     box.appendChild(el('div','pnote bd-hc', 'Board meeting headcount on Hotel Specs: '+(hc==null?'not set yet':hc)
       +'. It follows the In Person number, so Rosalyn orders food for the right count.'));
-    [['Board Members',BOARD.filter(b=>b.r!=='Ex-Officio' && b.r!=='MBA')],['Ex-Officio',BOARD.filter(b=>b.r==='Ex-Officio')],['From MBA',BOARD.filter(b=>b.r==='MBA')]].forEach(([lab,list])=>{
+    [['Board Members',boardList().filter(b=>b.r!=='Ex-Officio' && b.r!=='MBA')],['Ex-Officio',boardList().filter(b=>b.r==='Ex-Officio')],['From MBA',boardList().filter(b=>b.r==='MBA')]].forEach(([lab,list])=>{
       box.appendChild(el('div','bd-grp',lab));
       list.forEach(m=>{
         const at=boardReg(m.i);
@@ -26233,7 +26386,7 @@ function portal(){
 function rowHere(r){
   const ev=String(r.event||'').trim().toLowerCase();
   if(!ev) return true;
-  const on=EVENT_VENUE[ev];
+  const on=eventVenues(ev);
   return on ? on.indexOf(venueNow())>=0 : true;
 }
 /* the portal copy has come in (it always files one document, even with no rows) */
@@ -26243,7 +26396,7 @@ window.__portalSponsors = function(vid){
   const seen=new Set(), out=[];
   ST.spon.forEach(d=>{ ((d&&d.rows)||[]).forEach(r=>{
     const k=[r.appNo,r.company,r.email,r.opportunity].join('|'); if(seen.has(k)) return; seen.add(k);
-    const ev=String(r.event||'').trim().toLowerCase(), on=EVENT_VENUE[ev];
+    const ev=String(r.event||'').trim().toLowerCase(), on=eventVenues(ev);
     if(!ev || !on || on.indexOf(vid)>=0) out.push(r);
   }); });
   return out;
@@ -26328,15 +26481,18 @@ function setSponAgenda(r,yes){
 }
 /* the Board, per summit */
 const boardDoc=()=>ST.board.get(venueNow())||{};
+/* the Board as it was for that summit: the first time a summit's Board card is used it keeps
+   its own copy of the list, so a later change to the Board leaves past summits as they were */
+const boardList=()=>{ const r=boardDoc().roster; return Array.isArray(r)&&r.length? r : BOARD; };
 const boardReg=id=>(boardDoc().reg||{})[id]||'';
 const boardAtt=id=>(boardDoc().att||{})[id]||'';
 function boardStat(){
-  const reg=BOARD.filter(b=>boardReg(b.i)).length;
-  const inP=BOARD.filter(b=>boardAtt(b.i)==='in').length, virt=BOARD.filter(b=>boardAtt(b.i)==='virt').length;
-  const no=BOARD.filter(b=>boardAtt(b.i)==='no').length;
+  const reg=boardList().filter(b=>boardReg(b.i)).length;
+  const inP=boardList().filter(b=>boardAtt(b.i)==='in').length, virt=boardList().filter(b=>boardAtt(b.i)==='virt').length;
+  const no=boardList().filter(b=>boardAtt(b.i)==='no').length;
   /* someone not coming has nothing to register */
-  const left=BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no').length;
-  return {total:BOARD.length, reg, left, inP, virt, no, unmarked:BOARD.length-inP-virt-no, need:BOARD.length-no};
+  const left=boardList().filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no').length;
+  return {total:boardList().length, reg, left, inP, virt, no, unmarked:boardList().length-inP-virt-no, need:boardList().length-no};
 }
 /* the in-person number is the Board meeting's headcount on Hotel Specs */
 function pushBoardHeadcount(){
@@ -26349,13 +26505,13 @@ function setBoardAtt(id,v){
   setBoard({att:a},'board attendance');
   pushBoardHeadcount(); render();
 }
-function setBoard(fields,label){ saveColl('board',ST.board,fields,label); }
+function setBoard(fields,label){ if(!Array.isArray(boardDoc().roster)) fields=Object.assign({roster:JSON.parse(JSON.stringify(BOARD))},fields); saveColl('board',ST.board,fields,label); }
 /* Notify Bernie: Summit HQ cannot send mail, so it writes the list to feeds/board-notify
    and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
    every 15 minutes for a request made 5 to 20 minutes earlier, so each press sends once. */
 /* who is ready for Bernie: answered in person or virtual, not registered, not sent to him yet */
 const bnSent=id=>(boardDoc().sentB||{})[id]||'';
-const bnReady=()=>BOARD.filter(b=>!boardReg(b.i) && (boardAtt(b.i)==='in'||boardAtt(b.i)==='virt') && !bnSent(b.i));
+const bnReady=()=>boardList().filter(b=>!boardReg(b.i) && (boardAtt(b.i)==='in'||boardAtt(b.i)==='virt') && !bnSent(b.i));
 let bnPick=null;
 /* what is checked on the card, per summit; starts with everyone ready for Bernie */
 function bnSel(){ const v=venueNow();
@@ -26377,7 +26533,7 @@ function drawBoardNotify(){
   const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
   box.appendChild(hd);
   const L=el('div','se-edit bn-edit');
-  const groups={ready:bnReady(), left:BOARD.filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no'), all:BOARD};
+  const groups={ready:bnReady(), left:boardList().filter(b=>!boardReg(b.i) && boardAtt(b.i)!=='no'), all:boardList()};
   const pick=el('div','se-pick'), ph=el('div','se-pickh');
   const cnt=()=>bnPick.pick.size+' picked';
   ph.appendChild(el('b',null,cnt()));
@@ -26429,12 +26585,12 @@ function drawBoardNotify(){
 }
 async function notifyBernie(ids){
   const v=venueInfo();
-  let left=BOARD.filter(b=>(ids||[]).indexOf(b.i)>=0);
+  let left=boardList().filter(b=>(ids||[]).indexOf(b.i)>=0);
   if(!left.length) return false;
   /* a second pick made before the first has gone joins it, so the first is not lost */
   try{ const s=ST.db? await ST.db.doc('feeds/board-notify').get() : null; const prev=s&&s.exists? s.data() : null;
     if(prev && Date.now()-Date.parse(prev.requestedAt||0)<4*60*1000 && Array.isArray(prev.ids)){
-      const all=new Set(prev.ids.concat(left.map(b=>b.i))); left=BOARD.filter(b=>all.has(b.i)); } }catch(e){}
+      const all=new Set(prev.ids.concat(left.map(b=>b.i))); left=boardList().filter(b=>all.has(b.i)); } }catch(e){}
   let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const td='padding:8px 10px;border-bottom:1px solid #e3e8ee;font-family:Arial,sans-serif;font-size:14px;color:#1b2733;vertical-align:top';
@@ -26511,8 +26667,8 @@ async function bdEmail(m,tok){
 }
 let bdBulk=null;
 function openBoardAsk(){
-  const not=BOARD.filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).map(b=>b.i);
-  bdBulk={pick:new Set(not), show:'open', prev:(not[0]||BOARD[0].i), sending:false};
+  const not=boardList().filter(b=>!boardAtt(b.i) && !bdAsk(b.i)).map(b=>b.i);
+  bdBulk={pick:new Set(not), show:'open', prev:(not[0]||boardList()[0].i), sending:false};
   drawBoardAsk();
 }
 function drawBoardAsk(){
@@ -26527,9 +26683,9 @@ function drawBoardAsk(){
   const x=el('button','se-x','×'); x.type='button'; x.title='Close'; x.addEventListener('click',close); hd.appendChild(x);
   box.appendChild(hd);
   const body=el('div','se-body'), L=el('div','se-edit'), R=el('div','se-prev');
-  const groups={open:BOARD.filter(b=>!boardAtt(b.i)), all:BOARD};
+  const groups={open:boardList().filter(b=>!boardAtt(b.i)), all:boardList()};
   const pick=el('div','se-pick'), ph=el('div','se-pickh');
-  const cnt=()=>bdBulk.pick.size+' of '+BOARD.length+' board members picked';
+  const cnt=()=>bdBulk.pick.size+' of '+boardList().length+' board members picked';
   ph.appendChild(el('b',null,cnt()));
   const qa=el('span','se-pqa');
   const sAll=el('button','se-lnk','Pick All Shown'); sAll.type='button';
@@ -26581,7 +26737,7 @@ function drawBoardAsk(){
   let me=''; try{ const s0=window.ResourcesSession&&window.ResourcesSession.current(); me=(s0&&s0.email)||''; }catch(e){}
   tb.disabled=!me; tb.title= me? 'Sends the email shown to '+me+' only, marked [Test]' : 'Sign in to send yourself a test';
   tb.addEventListener('click',async()=>{
-    const b=BOARD.find(z=>z.i===bdBulk.prev)||BOARD[0];
+    const b=boardList().find(z=>z.i===bdBulk.prev)||boardList()[0];
     tb.disabled=true; tb.textContent='Sending…';
     try{ const em=await bdEmail(b,'test'+ttTok().slice(0,10));
       await ttQueue([{id:'bd-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:me, to:me, cc:'', replyTo:TT_JONNA.email,
@@ -26591,7 +26747,7 @@ function drawBoardAsk(){
   });
   acts.appendChild(tb);
   L.appendChild(acts);
-  const prevB=BOARD.find(z=>z.i===bdBulk.prev)||BOARD[0];
+  const prevB=boardList().find(z=>z.i===bdBulk.prev)||boardList()[0];
   R.classList.add('bd-prev');
   R.appendChild(el('div','bd-prevh','Preview — '+prevB.n+' · to '+prevB.e+(prevB.cc?' · copy to '+prevB.cc:'')));
   const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview';
@@ -26602,7 +26758,7 @@ function drawBoardAsk(){
 async function bdSend(ids){
   const now=new Date().toISOString(), who=ttWho(), ask=Object.assign({},boardDoc().ask||{}), reqs=[];
   for(const [ix,id] of ids.entries()){
-    const b=BOARD.find(z=>z.i===id); if(!b || !/@/.test(b.e||'')) continue;
+    const b=boardList().find(z=>z.i===id); if(!b || !/@/.test(b.e||'')) continue;
     const tok=(ask[id]&&ask[id].tok)||ttTok();
     const em=await bdEmail(b,tok);
     reqs.push({id:'bd-'+Date.now().toString(36)+'-'+ix, requestedAt:now, requestedBy:who, to:b.e, cc:b.cc||'', replyTo:TT_JONNA.email,
