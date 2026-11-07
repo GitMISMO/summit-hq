@@ -7671,6 +7671,14 @@ textarea,input,select{font-family:var(--ui,inherit)}
   <details class="hp-sec">
     <summary><span class="hp-n">12</span>Speakers, Sponsors and the Board, Start to Finish</summary>
     <div class="hp-in">
+      <h4>The New People Page (Being Tried)</h4>
+      <ul>
+        <li><b>Try the New People Page</b>, at the top of People, switches to it; <b>Back to the Current Page</b> switches back. Your choice is remembered in this browser, and both read and save the very same records, so nothing has to be moved or entered twice.</li>
+        <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b> or <b>Speaker Prospects</b> to show just those people. The search also looks through the master list.</li>
+        <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
+        <li><b>Hotel Nights</b> shows the MISMO Team&rsquo;s stays as one bar a person with the rooms each night, and anything to check before it goes to the hotel.</li>
+        <li><b>Emails &amp; Asks</b>, <b>Full Lists</b>, <b>Downloads</b> and <b>+ Add a Person</b> open the very same tools as the cards (Choose Speakers to Email, the Board ask, Notify Bernie, the travel ask, the full Board and Team lists, the speakers and sessions files). Every email still opens its preview first; nothing goes out until you press Send.</li>
+      </ul>
       <h4>A Speaker</h4>
       <ol class="hp-steps">
         <li><b>Added to the agenda</b> (Jonna).</li>
@@ -25072,6 +25080,120 @@ startClock();
 })();
 </script>
 
+<style>
+/* ── THE NEW PEOPLE PAGE (Jonna, 2026-11-07) ── one list of everyone, each person in the
+   right-hand panel. While it is switched on, the cards are still built underneath (the
+   menus open them in the panel) but not shown. */
+#app-people.v2 .pp-bar, #app-people.v2 #pp-meters, #app-people.v2 .pp-found, #app-people.v2 .pp-cards, #app-people.v2 .pp-wall{display:none!important}
+#app-people .v2-hold{display:none}
+#app-people .pp-bar .v2-try{order:-1}
+#app-people .v2-counts{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:0 0 10px}
+#app-people .v2-count{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit;color:var(--ink)}
+#app-people .v2-count b{font-size:21px;line-height:1.2;color:var(--ink)}
+#app-people .v2-count span{font-size:12.5px;color:var(--ink-2)}
+#app-people .v2-count.warn b{color:var(--warn,#9a6812)}
+#app-people .v2-count:hover{border-color:var(--line-2)}
+#app-people .v2-count.on{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--sky,#74bfeb)}
+#app-people .v2-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px}
+#app-people .v2-q{flex:1 1 240px;min-width:0;padding:8px 11px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit}
+#app-people .v2-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden;background:var(--surface)}
+#app-people .v2-seg button{border:0;background:none;padding:7px 12px;font:inherit;font-weight:600;font-size:13px;color:var(--ink-2);cursor:pointer}
+#app-people .v2-seg button.on{background:var(--accent);color:#fff}
+#app-people .v2-menu{position:relative}
+#app-people .v2-pop{position:absolute;top:calc(100% + 4px);right:0;z-index:60;background:var(--surface);border:1px solid var(--line-2);border-radius:8px;box-shadow:0 10px 28px rgba(13,49,76,.16);min-width:310px;padding:6px}
+#app-people .v2-pop hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+#app-people .v2-opt{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:6px;cursor:pointer;font:inherit;color:var(--ink)}
+#app-people .v2-opt:hover{background:var(--accent-soft)}
+#app-people .v2-opt b{display:block;font-size:13.5px}
+#app-people .v2-opt small{color:var(--ink-3);font-size:12px}
+#app-people .v2-back{margin-left:auto}
+#app-people .v2-showing{font-size:13px;color:var(--ink-2);margin:2px 0 8px}
+#app-people .v2-showing b{color:var(--ink)}
+#app-people .v2-table{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow-x:auto}
+#app-people .v2-table table{width:100%;border-collapse:collapse}
+#app-people .v2-table th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700;text-align:left;padding:9px 10px;border-bottom:2px solid var(--line);background:var(--sunk);white-space:nowrap}
+#app-people .v2-table td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13px}
+#app-people .v2-table tbody tr{cursor:pointer}
+#app-people .v2-table tbody tr:hover td{background:var(--accent-soft)}
+#app-people .v2-table tbody tr.sel td{background:var(--accent-soft)}
+#app-people .v2-table tbody tr:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+#app-people .v2-pc{display:flex;gap:10px;align-items:center;min-width:210px}
+#app-people .v2-pc b{display:block;font-size:13.5px}
+#app-people .v2-pc small{display:block;color:var(--ink-3);font-size:12px}
+#app-people .v2-pc small.v2-off{color:var(--warn,#9a6812)}
+#app-people .v2-roles{color:var(--ink-2);font-size:12.5px}
+#app-people .v2-next b{color:var(--ink)}
+#app-people .v2-next b.wait{color:var(--ink-3);font-weight:600}
+#app-people .v2-st{font-size:13px;font-weight:600;white-space:nowrap}
+#app-people .v2-st:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px;background:var(--line-2)}
+#app-people .v2-st.ok{color:var(--good)}#app-people .v2-st.ok:before{background:var(--good)}
+#app-people .v2-st.wait{color:var(--warn,#9a6812)}#app-people .v2-st.wait:before{background:#e0a83c}
+#app-people .v2-st.us{color:var(--accent)}#app-people .v2-st.us:before{background:var(--accent)}
+#app-people .v2-st.none{color:var(--ink-3);font-weight:500}#app-people .v2-st.none:before{display:none}
+#app-people .v2-hotel{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);gap:12px;align-items:start}
+#app-people .v2-stay td,#app-people .v2-stay th{text-align:center;padding:7px 3px}
+#app-people .v2-stay td:first-child,#app-people .v2-stay th:first-child{text-align:left;padding-left:12px;min-width:170px}
+#app-people .v2-stay td:first-child .v2-st{margin-left:8px;font-size:12px}
+#app-people .v2-stay td.n{background:var(--accent)}
+#app-people .v2-stay td.n.f{border-radius:5px 0 0 5px}#app-people .v2-stay td.n.l{border-radius:0 5px 5px 0}
+#app-people .v2-stay tfoot td{font-weight:700;border-top:2px solid var(--line-2);background:var(--sunk)}
+#app-people .v2-side{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+#app-people .v2-side h4{margin:4px 0 6px;font-size:14px}
+#app-people .v2-side p{margin:0 0 10px;color:var(--ink-2);font-size:13px}
+#app-people .v2-side .v2-flag{color:var(--bad);font-weight:600}
+/* the panel for one person */
+#app-people .v2-rail{display:flex;flex-direction:column;gap:10px}
+#app-people .v2-head{display:flex;gap:12px;align-items:center}
+#app-people .v2-head .v2-av{width:56px;height:56px;font-size:17px}
+#app-people .v2-nm b{display:block;font-size:17px}
+#app-people .v2-nm span{display:block;color:var(--ink-2);font-size:13px}
+#app-people .v2-nm em{font-style:normal;color:var(--ink-3);font-size:12.5px}
+#app-people .v2-nextbox{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:9px 12px}
+#app-people .v2-nextbox.ok{border-left-color:var(--good)}
+#app-people .v2-nextbox small{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+#app-people .v2-nextbox b{font-size:14px}
+#app-people .v2-cols{display:flex;flex-direction:column;gap:10px}
+#app-people .v2-c{display:contents}
+html.hq-wide #app-people .v2-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}
+html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-width:0}
+#app-people .v2-sec{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+#app-people .v2-sec>h4{margin:0;padding:8px 12px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center;background:var(--sunk);border-radius:8px 8px 0 0}
+#app-people .v2-sec>h4 small{text-transform:none;letter-spacing:0;color:var(--ink-3);font-weight:500;font-size:12px}
+#app-people .v2-in{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+#app-people .v2-kv{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;font-size:13px;align-items:center}
+#app-people .v2-kv>span:nth-child(odd){color:var(--ink-3)}
+#app-people .v2-g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px 10px}
+#app-people .v2-g3 input,#app-people .v2-g3 select{font:inherit;padding:6px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);color:var(--ink)}
+#app-people .v2-hb{display:grid;grid-template-columns:minmax(170px,.8fr) 1.6fr;gap:14px;align-items:start}
+#app-people .v2-col{display:flex;flex-direction:column;gap:6px;min-width:0}
+#app-people .v2-lab{font-size:11.5px;color:var(--ink-3);font-weight:600}
+#app-people .v2-shot{position:relative;height:210px;border:2px dashed var(--line-2);border-radius:10px;background:var(--sunk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;font-size:12.5px;color:var(--ink-3);cursor:pointer;overflow:hidden}
+#app-people .v2-shot b{color:var(--ink-2)}
+#app-people .v2-shot.has{border-style:solid;border-color:var(--line)}
+#app-people .v2-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#app-people .v2-shot.over,#app-people .v2-bio.over{border-color:var(--accent);background:var(--accent-soft)}
+#app-people .v2-bio{position:relative;height:210px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);display:flex}
+#app-people .v2-bio textarea{flex:1;border:0;border-radius:10px;padding:10px 12px;resize:none;font:inherit;font-size:14px;line-height:1.5;background:transparent;color:var(--ink);outline:none}
+#app-people .v2-bio:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+#app-people .v2-bio-hint{position:absolute;left:12px;right:12px;bottom:10px;font-size:12px;color:var(--ink-3);pointer-events:none}
+#app-people .v2-dz{position:absolute;inset:0;border:2px dashed var(--accent);border-radius:10px;background:var(--accent-soft);display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ink);text-align:center}
+#app-people .v2-bio.over .v2-dz{display:flex}
+#app-people .v2-acts{display:flex;gap:12px;flex-wrap:wrap;align-items:center;min-height:20px}
+#app-people .v2-danger{color:var(--bad)!important}
+#app-people .v2-ses{border:1px solid var(--line);border-radius:6px}
+#app-people .v2-ses>div{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 9px;border-bottom:1px solid var(--line);font-size:13px}
+#app-people .v2-ses>div:last-child{border-bottom:0}
+#app-people .v2-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#app-people .v2-ck{display:inline-flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}
+#app-people .v2-ck input{width:16px;height:16px;accent-color:var(--accent)}
+#app-people .v2-ta{width:100%;font:inherit;padding:7px 9px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);resize:vertical}
+#app-people .v2-addrole{display:flex;gap:6px;flex-wrap:wrap}
+#app-people .v2-seg2{align-self:flex-start}
+#app-people .v2-off-btn{align-self:flex-start}
+#app-people .v2-spon+.v2-spon{border-top:1px solid var(--line);padding-top:8px}
+@media (max-width:1100px){#app-people .v2-counts{grid-template-columns:repeat(4,minmax(0,1fr))}#app-people .v2-hotel{grid-template-columns:1fr}}
+@media (max-width:640px){#app-people .v2-counts{grid-template-columns:repeat(2,minmax(0,1fr))}#app-people .v2-hb,#app-people .v2-kv{grid-template-columns:1fr}}
+</style>
 <script>
 /* ============================================================
    PEOPLE — speakers, sponsors and the board, and the process each one goes
@@ -26261,6 +26383,8 @@ function render(){
   cols.appendChild(left); cols.appendChild(right);
   /* an open block is rebuilt on the page; the pane takes the new one */
   try{ if(window.__pane){ window.__pane.refresh(); window.__pane.sheetRefresh(); } }catch(e){}
+  /* Jonna, 2026-11-07: the new People page, laid over the cards while it is tried */
+  try{ v2Render(host); }catch(e){ try{ document.getElementById('app-people').classList.remove('v2'); }catch(x){} try{ window.__hqErr && window.__hqErr('error','New People page: '+(e&&e.message||e),'v2Render'); }catch(x){} }
   /* whatever somebody was typing when this rebuild started goes back in, cursor and all */
   putTypingBack(host, typing);
 }
@@ -28748,6 +28872,613 @@ async function sessionFile(){
 }
 
 /* ---------- wiring ---------- */
+/* ============================================================
+   THE NEW PEOPLE PAGE (Jonna, 2026-11-07: "there really has to be a better organized way
+   to do this reducing the duplication, being able to see the full picture")
+   One list of everyone at the summit, one row a person whatever their roles — a speaker
+   who is also MISMO Team is one row, not three cards — and everything about one person in
+   one right-hand panel. It sits beside the cards while it is tried: Try the New People
+   Page switches to it and Back to the Current Page switches back, remembered in this
+   browser.
+   It reads and writes the very same records as the cards (people, team-travel, board,
+   sponsor-agenda) through the same functions, and the cards are still built underneath,
+   so every group tool opens exactly as before from the menus. Nothing here sends anything:
+   every email still opens its own preview first.
+   ============================================================ */
+const V2KEY='hq.people.v2';
+function v2On(){ try{ return localStorage.getItem(V2KEY)==='1'; }catch(e){ return false; } }
+function v2Set(on){
+  try{ localStorage.setItem(V2KEY,on?'1':'0'); }catch(e){}
+  try{ if(window.__pane) window.__pane.close(); }catch(e){}
+  ST.v2open=null; render();
+}
+const v2Mail=e=>String(e||'').split(/[;,]/)[0].trim().toLowerCase();
+const v2Initials=n=>String(n||'?').replace(/^(dr|mr|ms|mrs)\.?\s+/i,'').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+/* everyone at this summit, one entry a person, whatever cards they were on */
+function v2Entries(withMaster){
+  const list=[], byMail=new Map(), byName=new Map();
+  const slot=(e,n)=>{
+    const m=v2Mail(e), k=ttKey(n);
+    let x=(m&&byMail.get(m)) || (k&&byName.get(k)) || null;
+    if(!x){ x={n:n||'', e:m, p:null, team:null, board:null, spon:[]}; list.push(x); }
+    if(m && !byMail.has(m)) byMail.set(m,x);
+    if(k && !byName.has(k)) byName.set(k,x);
+    if(!x.e && m) x.e=m;
+    return x;
+  };
+  all().forEach(p=>{ if(!(onSummit(p) || isProspect(p) || withMaster)) return;
+    const x=slot(p.e,p.n); x.p=p; x.n=p.n||x.n; });
+  try{ ttList().forEach(t=>{ const x=slot(t.e,t.n); x.team=t; if(!x.n) x.n=t.n; }); }catch(e){}
+  try{ boardList().forEach(b=>{ const x=slot(b.e,b.n); x.board=b; if(!x.n) x.n=b.n; }); }catch(e){}
+  try{ portalRows().forEach(r=>{ const pp=personForRow(r);
+    const x= pp? slot(pp.e,pp.n) : slot(r.email, String(r.name||'').trim()||String(r.company||'Sponsor').trim());
+    if(pp && !x.p) x.p=pp;
+    x.spon.push(r); if(!x.n) x.n=String(r.name||r.company||'Sponsor').trim(); }); }catch(e){}
+  list.forEach(x=>{
+    const p=x.p;
+    x.id= p? 'p:'+p.i : x.team? 't:'+x.team.id : x.board? 'b:'+x.board.i : 's:'+sponKey(x.spon[0]);
+    x.spk= !!(p && isSpk(p));
+    x.pros= !!(p && isProspect(p) && !x.spk);
+    x.sponP= !!(p && onSummit(p) && roleOf(p)==='sponsor');
+    x.here= !!(x.spk || x.sponP || x.team || x.board || x.spon.length || (p && onSummit(p)));
+    x.t= p? p.t : x.board? x.board.t : '';
+    x.c= p? p.c : x.board? x.board.c : x.spon[0]? x.spon[0].company : '';
+  });
+  return list;
+}
+function v2Roles(x){
+  const r=[];
+  if(x.spk) r.push('Speaker');
+  if(x.board) r.push(x.board.r==='Ex-Officio'?'Board (Ex-Officio)':x.board.r==='MBA'?'Board (From MBA)':'Board of Directors');
+  if(x.team) r.push(x.team.role==='guest'?'MISMO Team (Guest)':'MISMO Team');
+  if(x.spon.length || x.sponP) r.push('Sponsor');
+  if(x.pros) r.push('Speaker Prospect');
+  if(!r.length && x.p) r.push('Master List');
+  return r;
+}
+function v2Bio(x){
+  if(!x.spk) return null;
+  const p=x.p, st=stOf(p);
+  if(hasBio(p) && hasShot(p)) return ['ok', st.iat? 'In by the form' : st.mat? 'In by email' : 'In'];
+  if(st.noEmail) return ['none','Comes another way'];
+  if(!seEmailed(p)) return ['none','Not asked yet'];
+  return ['wait', (hasBio(p)? 'Headshot' : hasShot(p)? 'Bio' : 'Bio and headshot')+' needed'];
+}
+function v2Reg(x){
+  if(x.spk){ const at=stepDone(x.p,'reg'); return at? ['ok','Registered'] : ['us','Bernie to register']; }
+  if(x.board){ const i=x.board.i, a=boardAtt(i);
+    return boardReg(i)? ['ok','Registered'] : a==='no'? ['none','Not attending'] : bnSent(i)? ['wait','With Bernie'] : a? ['us','Ready for Bernie'] : ['none','No answer yet']; }
+  if(x.team){ const t=x.team; return t.sentB? ['ok','Sent to Bernie'] : ttHasDates(t)? ['us','Ready for Bernie'] : ['none','Needs dates']; }
+  if(x.spon.length) return ['none','Comp code'];
+  return ['none','—'];
+}
+function v2Nights(t){ if(!t||!t.arr||!t.dep) return 0; const a=new Date(t.arr+'T12:00:00'), b=new Date(t.dep+'T12:00:00'); return Math.max(0,Math.round((b-a)/864e5)); }
+function v2Hotel(x){
+  const t=x.team; if(!t) return ['none','—'];
+  const n=v2Nights(t);
+  if(n) return ['ok', ttNice(t.arr).replace(/^\w+, /,'')+' – '+ttNice(t.dep).replace(/^\w+, /,'')+' · '+n+' night'+(n===1?'':'s')];
+  return t.sentAt? ['wait','Waiting on dates'] : ['none','Not asked yet'];
+}
+/* the one next thing, and whose it is */
+function v2Next(x){
+  const p=x.p;
+  if(x.pros){ const v=inviteOf(p); return v==='invited'? {who:'Waiting on them', t:'Invited '+pretty(stOf(p).inviteAt)} : {who:'Amy', t:'Invite them', act:'invite'}; }
+  if(x.spk){ const st=stOf(p);
+    if(!(st.ses||[]).length && !stepDone(p,'agenda')) return {who:'Jonna', t:'Put them on a session', act:'session'};
+    if(!st.welcome && !st.noEmail && !seAllIn(p)) return {who:'Amy', t:'Send their speaker email', act:'email'};
+    const n=nextStep(p);
+    if(n){
+      if(n.k==='bio'){ const rs=remState(p); return {who:'Waiting on them', t:'Their '+(seMissing(p)||'bio and headshot')+(rs.k==='on'&&rs.next? ' · next follow-up '+seNice(rs.next) : '')}; }
+      return {who:WHO[n.who]||n.who, t:n.ask, act:'step'};
+    }
+  }
+  if(x.board){ const i=x.board.i, a=boardAtt(i);
+    if(!boardReg(i) && a!=='no'){
+      if(!a) return bdAsk(i)? {who:'Waiting on them', t:'In person or virtual? Asked '+localDay(bdAsk(i).at).replace(/ at .*/,'')} : {who:'Jonna', t:'Ask in person or virtual', act:'boardask'};
+      if(!bnSent(i)) return {who:'Jonna', t:'Send to Bernie to register ('+(a==='in'?'in person':'virtual')+')', act:'boardbernie'};
+      return {who:'Bernie', t:'Register them ('+(a==='in'?'in person':'virtual')+')', act:'boardreg'};
+    } }
+  if(x.team){ const t=x.team;
+    if(!ttHasDates(t)) return t.sentAt? {who:'Waiting on them', t:'Travel dates · form sent '+localDay(t.sentAt).replace(/ at .*/,'')} : {who:'Jonna', t:'Ask for their travel dates', act:'travel'};
+    if(!t.sentB) return {who:'Jonna', t:'Send to Bernie to register', act:'teambernie'}; }
+  const due=x.spon.find(r=>!sponOnAgenda(r));
+  if(due) return {who:'Jonna', t:'Mark '+String(due.company||'the sponsor').trim()+' on the agenda', act:'agenda'};
+  return {who:'', t:'All set', ok:true};
+}
+const v2Needs=x=>{ const n=v2Next(x); return !n.ok && n.who!=='Waiting on them'; };
+const V2F=[['all','Everyone at This Summit',x=>x.here],['need','Need Something From Us',x=>x.here&&v2Needs(x)],['spk','Speakers',x=>x.spk],
+  ['board','Board of Directors',x=>!!x.board],['team','MISMO Team',x=>!!x.team],['spon','Sponsors',x=>!!(x.spon.length||x.sponP)],['pros','Speaker Prospects',x=>x.pros]];
+
+/* the page */
+function v2Render(host){
+  if(!v2On()){
+    /* the way in, on the current page */
+    const bar=document.querySelector('#app-people .pp-bar');
+    if(bar && !bar.querySelector('.v2-try')){ const b=el('button','btn v2-try','Try the New People Page'); b.type='button';
+      b.title='One list of everyone at this summit, with each person opened on the right. Switch back any time.';
+      b.addEventListener('click',()=>v2Set(true)); bar.insertBefore(b, bar.firstChild); }
+    document.getElementById('app-people').classList.remove('v2');
+    return;
+  }
+  document.getElementById('app-people').classList.add('v2');
+  const all1=v2Entries(false);
+  const root=el('div','v2');
+  /* the boxes: each one is the list behind it */
+  const counts=el('div','v2-counts');
+  const f=ST.v2f||'all';
+  V2F.forEach(([k,l,fn])=>{ const n=all1.filter(fn).length;
+    const on=f===k && (ST.v2view||'list')==='list';
+    const b=el('button','v2-count'+(on?' on':'')+(k==='need'&&n?' warn':'')); b.type='button';
+    b.appendChild(el('b',null,String(n))); b.appendChild(el('span',null,l));
+    b.setAttribute('aria-pressed',on?'true':'false');
+    b.addEventListener('click',()=>{ ST.v2f=k; ST.v2view='list'; render(); });
+    counts.appendChild(b); });
+  root.appendChild(counts);
+  /* the bar */
+  const bar=el('div','v2-bar');
+  const q=document.createElement('input'); q.type='search'; q.className='v2-q'; q.dataset.keep='v2:q'; q.value=ST.v2q||'';
+  q.placeholder='Find anyone at this summit, or on the master list'; q.setAttribute('aria-label','Find a person');
+  q.addEventListener('input',()=>{ ST.v2q=q.value; renderSoon(); });
+  bar.appendChild(q);
+  const seg=el('div','v2-seg'); [['list','List'],['hotel','Hotel Nights']].forEach(([k,l])=>{ const b=el('button',(ST.v2view||'list')===k?'on':'',l); b.type='button';
+    b.addEventListener('click',()=>{ ST.v2view=k; render(); }); seg.appendChild(b); });
+  bar.appendChild(seg);
+  bar.appendChild(v2Menu('Emails & Asks',[
+    ['Choose Speakers to Email','The speaker email: pick who, check it, send from Amy',()=>openSpeakerBulk('welcome')],
+    ['Speaker Emails & Follow-Ups','The wording, the weekly follow-ups and the follow-up list',()=>v2Card('sefOpen')],
+    null,
+    ['Ask the Board: In Person or Virtual','The branded email with the meeting day and time',()=>openBoardAsk()],
+    ['Notify Bernie: Board Members','Who Bernie should register from the Board',()=>openBoardNotify()],
+    null,
+    ['Ask the MISMO Team for Travel Dates','Preview first, with Send a Test to Me',()=>openTravelAsk()],
+    ['Send the MISMO Team to Bernie','Check who goes on his list, then send',()=>v2Card('ttOpen')]
+  ]));
+  bar.appendChild(v2Menu('Full Lists',[
+    ['What Still Has To Happen','Step by step, who is waiting on what',()=>v2Card('fOpen')],
+    ['Board of Directors','The whole Board, with Notify Bernie and the tally',()=>v2Card('boardOpen')],
+    ['MISMO Team at the Summit','Dates, parking and Rooms by Night',()=>v2Card('ttOpen')],
+    ['Sponsors From The Portal','Status, comp codes and the agenda marks',()=>v2Card('sponOpen')],
+    ['Speaker Prospects','To invite, invited, accepted, declined',()=>v2Card('prosOpen')],
+    ['Master List of Speakers','Everyone who has ever spoken',()=>v2Card('elseOpen')]
+  ]));
+  bar.appendChild(v2Menu('Downloads',[
+    ['Speakers File','For the event app upload',()=>appFile()],
+    ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()],
+    ['Bio Chase List','Who still owes a bio or headshot',()=>chase()]
+  ]));
+  const addm=v2Menu('+ Add a Person',[
+    ['A Speaker on This Summit','Finds them on the master list first, or adds someone new',()=>v2Card('lOpen')],
+    ['A Speaker Prospect','Someone you might ask to speak',()=>v2Card('prosOpen')],
+    ['Someone on the MISMO Team','Staff, the meetings team, facilitators, the architect or a guest',()=>v2Card('ttOpen')]
+  ]); addm.querySelector('.btn').className='btn'; bar.appendChild(addm);
+  const back=el('button','se-lnk v2-back','Back to the Current Page'); back.type='button';
+  back.addEventListener('click',()=>v2Set(false));
+  bar.appendChild(back);
+  root.appendChild(bar);
+
+  if((ST.v2view||'list')==='hotel'){ root.appendChild(v2HotelView()); }
+  else {
+    const qq=String(ST.v2q||'').replace(/\s+/g,' ').trim().toLowerCase();
+    const pool= qq? v2Entries(true).filter(x=>[x.n,x.e,x.t,x.c].join(' ').toLowerCase().indexOf(qq)>=0) : all1.filter((V2F.find(z=>z[0]===f)||V2F[0])[2]);
+    const lab=(V2F.find(z=>z[0]===f)||V2F[0])[1];
+    const line=el('div','v2-showing');
+    if(qq){ line.appendChild(document.createTextNode(pool.length+' found for “'+String(ST.v2q).trim()+'”, including the master list')); }
+    else { line.appendChild(document.createTextNode('Showing ')); line.appendChild(el('b',null,lab)); line.appendChild(document.createTextNode(' · '+pool.length+(f==='all'?' · click anyone to open them':'')));
+      if(f!=='all'){ const sa=el('button','se-lnk','Show Everyone'); sa.type='button'; sa.addEventListener('click',()=>{ ST.v2f='all'; render(); }); line.appendChild(document.createTextNode(' · ')); line.appendChild(sa); } }
+    root.appendChild(line);
+    root.appendChild(v2Table(pool.slice().sort((a,b)=>String(a.n).localeCompare(String(b.n)))));
+  }
+  /* the open person, as a card the panel takes */
+  const hold=el('div','v2-hold');
+  if(ST.v2open){ const x=v2Find(ST.v2open); if(x) hold.appendChild(v2Person(x)); }
+  root.appendChild(hold);
+  host.insertBefore(root, host.firstChild);
+}
+function v2Find(id){ return v2Entries(true).find(x=>x.id===id) || null; }
+function v2Card(key){ try{ if(window.__pane) window.__pane.open('people:'+key); }catch(e){} }
+function v2Menu(label,items){
+  const w=el('div','v2-menu');
+  const b=el('button','btn ghost',label+' ▾'); b.type='button'; b.setAttribute('aria-haspopup','true');
+  const pop=el('div','v2-pop'); pop.hidden=true;
+  items.forEach(it=>{ if(!it){ pop.appendChild(el('hr')); return; }
+    const o=el('button','v2-opt'); o.type='button'; o.appendChild(el('b',null,it[0])); o.appendChild(el('small',null,it[1]));
+    o.addEventListener('click',e=>{ e.stopPropagation(); pop.hidden=true; it[2](); });
+    pop.appendChild(o); });
+  b.addEventListener('click',e=>{ e.stopPropagation(); const was=pop.hidden; document.querySelectorAll('#app-people .v2-pop').forEach(x=>x.hidden=true); pop.hidden=!was; });
+  w.appendChild(b); w.appendChild(pop);
+  return w;
+}
+document.addEventListener('click',()=>{ document.querySelectorAll('#app-people .v2-pop').forEach(x=>x.hidden=true); });
+const v2St=(k,t)=>el('span','v2-st '+k,t);
+function v2Table(pool){
+  const wrap=el('div','v2-table');
+  if(!pool.length){ wrap.appendChild(el('div','blank', ST.ready? 'Nobody here.' : 'Loading…')); return wrap; }
+  const t=el('table'); const th=el('thead'), tr0=el('tr');
+  ['Person','Roles','Bio & Headshot','Registration','Hotel','Next Step'].forEach(h=>tr0.appendChild(el('th',null,h)));
+  th.appendChild(tr0); t.appendChild(th);
+  const tb=el('tbody');
+  pool.forEach(x=>{
+    const tr=el('tr', ST.v2open===x.id? 'sel' : ''); tr.dataset.v2=x.id; tr.tabIndex=0;
+    const c1=el('td'); const pc=el('div','v2-pc');
+    pc.appendChild(x.p? avatar(x.p) : el('span','pp-av none',v2Initials(x.n)));
+    const tx=el('div'); tx.appendChild(el('b',null,x.n||'Unnamed')); tx.appendChild(el('small',null,[x.t,x.c].filter(Boolean).join(' · ')));
+    if(!x.here && !x.pros) tx.appendChild(el('small','v2-off','Not on this summit'));
+    pc.appendChild(tx); c1.appendChild(pc); tr.appendChild(c1);
+    tr.appendChild(el('td','v2-roles',v2Roles(x).join(' · ')));
+    const b=v2Bio(x); const c3=el('td'); c3.appendChild(b? v2St(b[0],b[1]) : v2St('none','—')); tr.appendChild(c3);
+    const r=v2Reg(x); const c4=el('td'); c4.appendChild(v2St(r[0],r[1])); tr.appendChild(c4);
+    const h=v2Hotel(x); const c5=el('td'); c5.appendChild(v2St(h[0],h[1])); tr.appendChild(c5);
+    const n=v2Next(x); const c6=el('td','v2-next');
+    if(n.ok) c6.appendChild(v2St('ok','All set'));
+    else { if(n.who) c6.appendChild(el('b',n.who==='Waiting on them'?'wait':'',n.who+': ')); c6.appendChild(document.createTextNode(n.t)); }
+    tr.appendChild(c6);
+    tr.addEventListener('click',()=>v2Open(x.id));
+    tr.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); v2Open(x.id); } });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); wrap.appendChild(t);
+  return wrap;
+}
+function v2Open(id){
+  ST.v2open=id; render();
+  setTimeout(()=>{ try{ if(window.__pane && window.__pane.key()!=='people:who-'+id) window.__pane.open('people:who-'+id); }catch(e){} },0);
+}
+/* Hotel Nights: one bar a person, the rooms each night, and what to check */
+function v2HotelView(){
+  const w=el('div','v2-hotel');
+  const team=ttList(), nights=ttNights().map(n=>n.iso);
+  const card=el('div','v2-table'); const t=el('table','v2-stay');
+  const hr=el('tr'); hr.appendChild(el('th',null,'MISMO Team'));
+  nights.forEach(d=>hr.appendChild(el('th',null,ttNice(d).replace(/, \w+ /,' ')))); hr.appendChild(el('th',null,'Nights'));
+  const th=el('thead'); th.appendChild(hr); t.appendChild(th);
+  const tb=el('tbody');
+  team.forEach(p=>{ const tr=el('tr'); const c=el('td'); c.appendChild(el('span',null,p.n||''));
+    if(!ttHasDates(p)) c.appendChild(v2St('wait', p.sentAt? 'waiting on dates':'not asked'));
+    tr.appendChild(c);
+    nights.forEach((d,i)=>{ const inn=p.arr&&p.dep&&d>=p.arr&&d<p.dep; const td=el('td', inn?'n':'');
+      if(inn){ if(d===p.arr || i===0) td.classList.add('f'); const nx=nights[i+1]; if(!nx || nx>=p.dep) td.classList.add('l'); }
+      tr.appendChild(td); });
+    tr.appendChild(el('td',null,String(v2Nights(p)||'—')));
+    tr.addEventListener('click',()=>{ const x=v2Entries(false).find(z=>z.team&&z.team.id===p.id); if(x) v2Open(x.id); });
+    tb.appendChild(tr); });
+  t.appendChild(tb);
+  const tf=el('tfoot'), fr=el('tr'); fr.appendChild(el('td',null,'Rooms That Night'));
+  let tot=0; nights.forEach(d=>{ const n=team.filter(p=>p.arr&&p.dep&&d>=p.arr&&d<p.dep).length; tot+=n; fr.appendChild(el('td',null,String(n))); });
+  fr.appendChild(el('td',null,String(tot))); tf.appendChild(fr); t.appendChild(tf);
+  card.appendChild(t); w.appendChild(card);
+  const side=el('div','v2-side');
+  const miss=team.filter(p=>!ttHasDates(p));
+  side.appendChild(el('h4',null,'Check Before It Goes to the Hotel'));
+  const odd=team.filter(p=>ttHasDates(p) && p.notes && /sun|mon|tue|wed|thu|fri|sat/i.test(p.notes));
+  odd.forEach(p=>side.appendChild(el('p','v2-flag',p.n+' left a note with their dates: “'+p.notes+'”. Check it matches.')));
+  side.appendChild(el('p',null, miss.length? miss.length+' still to send dates: '+miss.map(p=>p.n).join(', ')+'.' : 'Everyone’s dates are in.'));
+  if(miss.length){ const a=el('button','btn ghost','Ask for Travel Dates'); a.type='button'; a.addEventListener('click',()=>openTravelAsk()); side.appendChild(a); }
+  side.appendChild(el('h4',null,'Feeds the Resume'));
+  side.appendChild(el('p',null,'These nights fill the Guestroom and Rate Assignments on the Resume on their own.'));
+  side.appendChild(el('h4',null,'Bernie'));
+  const ready=team.filter(p=>ttHasDates(p)&&!p.sentB).length;
+  side.appendChild(el('p',null, ready? ready+' with dates in, not sent to him yet.' : 'Nobody waiting to go to him.'));
+  const sb=el('button','btn ghost','Send the MISMO Team to Bernie'); sb.type='button'; sb.addEventListener('click',()=>v2Card('ttOpen')); side.appendChild(sb);
+  w.appendChild(side);
+  return w;
+}
+/* ---------- one person, everything about them ---------- */
+function v2Sec(title, side){
+  const s=el('section','v2-sec'); const h=el('h4');
+  h.appendChild(el('span',null,title)); if(side) h.appendChild(side);
+  s.appendChild(h); const b=el('div','v2-in'); s.appendChild(b); s.body=b; return s;
+}
+function v2Person(x){
+  return section(x.n||'Person','',null,'who-'+x.id,true,box=>{
+    const p=x.p, wrap=el('div','v2-rail');
+    /* who they are, and the one next thing */
+    const hd=el('div','v2-head');
+    const av= p? avatar(p,true) : el('span','pp-av none',v2Initials(x.n)); av.classList.add('v2-av'); hd.appendChild(av);
+    const nm=el('div','v2-nm'); nm.appendChild(el('b',null,x.n||'')); nm.appendChild(el('span',null,[x.t,x.c].filter(Boolean).join(' · ')));
+    nm.appendChild(el('em',null,v2Roles(x).join(' · '))); hd.appendChild(nm);
+    wrap.appendChild(hd);
+    const n=v2Next(x), nb=el('div','v2-nextbox'+(n.ok?' ok':''));
+    const nt=el('div'); nt.appendChild(el('small',null,'Next'+(n.who&&!n.ok?' · '+n.who:''))); nt.appendChild(el('b',null,n.t)); nb.appendChild(nt);
+    const go=v2Action(x,n); if(go) nb.appendChild(go);
+    wrap.appendChild(nb);
+    const cols=el('div','v2-cols'), L=el('div','v2-c'), R=el('div','v2-c');
+    /* contact */
+    const ct=v2Sec('Contact');
+    if(p){ const g=el('div','pgrid');
+      g.appendChild(textField('Name',p.n,v=>{ if(v){ patch(p.i,{n:v},'a name'); renderSoon(); } }, p.i+':v2n'));
+      g.appendChild(textField('Email',p.e,v=>{ patch(p.i,{e:v},'an email'); renderSoon(); }, p.i+':v2e'));
+      g.appendChild(textField('Title',p.t,v=>{ patch(p.i,{t:v},'a title'); renderSoon(); }, p.i+':v2t'));
+      g.appendChild(textField('Company',p.c,v=>{ patch(p.i,{c:v},'a company'); renderSoon(); }, p.i+':v2c'));
+      ct.body.appendChild(g);
+    } else if(x.team){ const g=el('div','pgrid');
+      g.appendChild(textField('Name',x.team.n,v=>{ if(v) ttSet(x.team.id,{n:v},'a name on the MISMO team'); }, 'v2tn:'+x.team.id));
+      g.appendChild(textField('Email',x.team.e,v=>ttSet(x.team.id,{e:v},'an email on the MISMO team'), 'v2te:'+x.team.id));
+      ct.body.appendChild(g);
+    } else { const kv=el('div','v2-kv');
+      [['Email',x.e||'—'],['Title',x.t||'—'],['Company',x.c||'—']].forEach(([k,v])=>{ kv.appendChild(el('span',null,k)); kv.appendChild(el('span',null,v)); });
+      ct.body.appendChild(kv);
+      ct.body.appendChild(el('div','pnote', x.board? 'From the MISMO Leadership page on mismo.org.' : 'From the Sponsorship Portal; change it there.')); }
+    L.appendChild(ct);
+    /* headshot and bio, side by side and the same height */
+    if(p) L.appendChild(v2HeadBio(p));
+    /* each role they hold */
+    if(x.spk || (p && onSummit(p) && roleOf(p)!=='speaker')) R.appendChild(v2Speaker(x));
+    if(x.team) R.appendChild(v2Team(x));
+    if(x.board) R.appendChild(v2Board(x));
+    if(x.spon.length) R.appendChild(v2Sponsor(x));
+    if(x.pros || (p && isProspect(p))) R.appendChild(v2Prospect(x));
+    /* a role they do not have yet */
+    if(p){ const ar=el('div','v2-addrole');
+      if(!x.spk){ const b=el('button','btn ghost','+ Speaker on This Summit'); b.type='button'; b.addEventListener('click',()=>addSpeaker(p.i)); ar.appendChild(b); }
+      if(!x.spk && !isProspect(p)){ const b=el('button','btn ghost','+ Speaker Prospect'); b.type='button'; b.addEventListener('click',()=>addProspect(p.i)); ar.appendChild(b); }
+      if(!x.team){ const b=el('button','btn ghost','+ MISMO Team'); b.type='button'; b.title='Adds them to this summit’s team list, for travel dates and Bernie';
+        b.addEventListener('click',()=>{ const ppl=Object.assign({},ttDoc().ppl||{}); let id=ttSlug(p.n).slice(0,30)||('p'+Date.now().toString(36)); if(ppl[id]) id=id+'-'+Date.now().toString(36).slice(-3);
+          ppl[id]={n:p.n, e:p.e||'', role:'staff', go:''}; const order=(ttDoc().order||Object.keys(ttDoc().ppl||{})).concat([id]);
+          ttSave({ppl,order},'someone added to the MISMO team'); render(); }); ar.appendChild(b); }
+      if(ar.children.length) R.appendChild(ar); }
+    /* a note for this summit, and what they have done before */
+    if(p && onSummit(p)){ const ns=v2Sec('Note for This Summit');
+      const t=document.createElement('textarea'); t.rows=2; t.value=stOf(p).note||''; t.dataset.keep=p.i+':v2note'; t.className='v2-ta';
+      t.placeholder='Anything the team should know for this summit…';
+      t.addEventListener('change',()=>patchSt(p.i,{note:t.value},'a note'));
+      ns.body.appendChild(t); L.appendChild(ns); }
+    if(p){ const hs=v2Sec('History'); const had=PAST.filter(([k])=>(p.h||[]).indexOf(k)>=0);
+      const kv=el('div','v2-kv'); kv.appendChild(el('span',null,'Summits Spoken At'));
+      kv.appendChild(el('span',null, had.length? had.map(([k,l])=>l+((p.s||{})[k]?' ('+p.s[k]+')':'')).join(', ') : 'Nothing on file; this looks like their first'));
+      const notes=Object.keys(p.nt||{}).map(k=>p.nt[k]).filter(Boolean);
+      if(notes.length){ kv.appendChild(el('span',null,'Notes')); kv.appendChild(el('span',null,notes.join(' · '))); }
+      hs.body.appendChild(kv); L.appendChild(hs); }
+    /* one column: who they are, their headshot and bio, then their roles, then the note and
+       history. Expanded: those on the left and the roles on the right. */
+    [...L.children].forEach((n,i)=>{ n.style.order= i<2? String(i+1) : String(30+i); });
+    [...R.children].forEach((n,i)=>{ n.style.order=String(10+i); });
+    cols.appendChild(L); cols.appendChild(R); wrap.appendChild(cols);
+    if(p && onSummit(p)){ const rm=el('button','btn ghost v2-off-btn','Take Them Off This Summit'); rm.type='button';
+      rm.title='Takes them off this summit only. They stay on the master list with everything on file.';
+      let armed=false;
+      rm.addEventListener('click',()=>{ if(!armed){ armed=true; rm.textContent='Click Again to Take Them Off'; rm.classList.add('armed'); return; }
+        patchSt(p.i,{on:false},'someone taken off the summit'); try{ speakerAddsTouch(p.i); }catch(e){} render(); });
+      wrap.appendChild(rm); }
+    box.appendChild(wrap);
+  });
+}
+/* the button on the Next line: only things that open something to check, or tick a box */
+function v2Action(x,n){
+  const mk=(t,fn)=>{ const b=el('button','btn',t); b.type='button'; b.addEventListener('click',e=>{ e.stopPropagation(); fn(); }); return b; };
+  const p=x.p;
+  if(n.act==='email') return mk('Open the Speaker Email',()=>openSpeakerEmail(p.i));
+  if(n.act==='boardask') return mk('Ask the Board',()=>openBoardAsk());
+  if(n.act==='boardbernie') return mk(bnSel().has(x.board.i)?'✓ On Bernie’s List':'Check for Bernie',()=>{ const s=bnSel(); s.has(x.board.i)? s.delete(x.board.i) : s.add(x.board.i); render(); });
+  if(n.act==='boardreg') return mk('Mark Registered',()=>{ const reg=Object.assign({},boardDoc().reg||{}); reg[x.board.i]=today(); setBoard({reg},'a board registration'); render(); });
+  if(n.act==='travel') return mk('Ask for Travel Dates',()=>openTravelAsk());
+  if(n.act==='teambernie') return mk(ttBSel().has(x.team.id)?'✓ On Bernie’s List':'Check for Bernie',()=>{ const s=ttBSel(); s.has(x.team.id)? s.delete(x.team.id) : s.add(x.team.id); render(); });
+  if(n.act==='agenda'){ const r=x.spon.find(z=>!sponOnAgenda(z)); return mk('Mark on the Agenda',()=>setSponAgenda(r,true)); }
+  if(n.act==='invite') return mk('Mark Invited',()=>setInvite(p.i,'invited'));
+  return null;
+}
+function v2HeadBio(p){
+  const s=v2Sec('Headshot & Bio'), g=el('div','v2-hb');
+  /* the headshot: drop it on, or choose one */
+  const c1=el('div','v2-col'); c1.appendChild(el('span','v2-lab','Headshot'));
+  const box=el('label','v2-shot'+(hasShot(p)?' has':''));
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.hidden=true;
+  const put=async f=>{ if(!f) return; if(!/^image\//.test(f.type||'')){ alert('That file is not a picture.'); return; }
+    try{ await setPhoto(p.i,f); }catch(e){ alert('That file could not be read as a picture.'); } };
+  inp.addEventListener('change',()=>put(inp.files&&inp.files[0]));
+  if(hasShot(p)){ const im=document.createElement('img'); im.alt=p.n||''; im.src=p.thumb||p.purl; box.appendChild(im);
+    if(p.thumb) loadPhoto(p.i).then(full=>{ if(full) im.src=full; });
+    im.addEventListener('error',()=>{ im.remove(); box.classList.remove('has'); box.appendChild(el('span',null,'In the event app')); }); }
+  else { box.appendChild(el('b',null,'Drop a Photo Here')); box.appendChild(el('small',null,'or click to choose one')); }
+  box.appendChild(inp);
+  box.addEventListener('dragover',e=>{ e.preventDefault(); box.classList.add('over'); });
+  box.addEventListener('dragleave',()=>box.classList.remove('over'));
+  box.addEventListener('drop',e=>{ e.preventDefault(); box.classList.remove('over'); put(e.dataTransfer.files&&e.dataTransfer.files[0]); });
+  c1.appendChild(box);
+  const a1=el('div','v2-acts');
+  if(hasShot(p)){ const rp=el('button','se-lnk','Replace'); rp.type='button'; rp.addEventListener('click',()=>inp.click()); a1.appendChild(rp);
+    const rm=el('button','se-lnk v2-danger','Remove'); rm.type='button'; let armed=false;
+    rm.addEventListener('click',()=>{ if(!armed){ armed=true; rm.textContent='Click Again to Remove'; return; } clearPhoto(p.i); }); a1.appendChild(rm); }
+  else a1.appendChild(el('span','pnote','Any size; it is kept small'));
+  c1.appendChild(a1);
+  /* the bio: type or paste it, or drop their bio file on it */
+  const c2=el('div','v2-col'); c2.appendChild(el('span','v2-lab','Bio'));
+  const bw=el('div','v2-bio');
+  const ta=document.createElement('textarea'); ta.value=p.bio||''; ta.dataset.keep=p.i+':v2bio';
+  ta.placeholder='Paste or type their bio, as it should read on the agenda and in the event app';
+  ta.addEventListener('change',()=>{ patch(p.i,{bio:ta.value},'a bio'); render(); });
+  bw.appendChild(ta);
+  if(!String(p.bio||'').trim()) bw.appendChild(el('span','v2-bio-hint','Or drop their bio file here (Word, PDF or text)'));
+  const dz=el('div','v2-dz'); dz.appendChild(el('b',null,'Drop the Bio File')); dz.appendChild(el('small',null,'Its words go into the bio, ready to edit')); bw.appendChild(dz);
+  const fin=document.createElement('input'); fin.type='file'; fin.accept='.docx,.pdf,.txt,.doc,.rtf,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document'; fin.hidden=true;
+  const readBio=async f=>{ if(!f) return;
+    if(!(window.BioText && window.BioText.read)){ alert('The bio reader is still loading. Try again in a moment.'); return; }
+    let t=''; try{ t=await window.BioText.read(f, f.name); }catch(e){ t=''; }
+    if(!t){ alert('Summit HQ could not read the words in '+f.name+'. Open it and paste the bio in instead.'); return; }
+    if(String(p.bio||'').trim() && !confirm('Put the bio from '+f.name+' in place of the bio that is there now?')) return;
+    patch(p.i,{bio:t.slice(0,8000)},'a bio from '+f.name); render(); };
+  fin.addEventListener('change',()=>readBio(fin.files&&fin.files[0]));
+  bw.addEventListener('dragover',e=>{ if([...(e.dataTransfer.types||[])].indexOf('Files')<0) return; e.preventDefault(); bw.classList.add('over'); });
+  bw.addEventListener('dragleave',e=>{ if(!bw.contains(e.relatedTarget)) bw.classList.remove('over'); });
+  bw.addEventListener('drop',e=>{ if(!(e.dataTransfer.files&&e.dataTransfer.files.length)) return; e.preventDefault(); bw.classList.remove('over'); readBio(e.dataTransfer.files[0]); });
+  c2.appendChild(bw); c2.appendChild(fin);
+  const a2=el('div','v2-acts');
+  const ch=el('button','se-lnk','Choose a File'); ch.type='button'; ch.addEventListener('click',()=>fin.click()); a2.appendChild(ch);
+  const cb=el('button','se-lnk','Copy the Bio'); cb.type='button'; cb.disabled=!String(p.bio||'').trim();
+  cb.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(ta.value); }catch(e){ ta.select(); document.execCommand('copy'); } cb.textContent='Copied'; setTimeout(()=>{ cb.textContent='Copy the Bio'; },1500); });
+  a2.appendChild(cb);
+  if(p.biofile && p.biofile.tok){ const vb=el('button','se-lnk','Review Their Bio File'); vb.type='button'; vb.title=p.biofile.name+(p.biofile.at?' · sent '+localDay(p.biofile.at):'');
+    vb.addEventListener('click',()=>openBioFile(p.i)); a2.appendChild(vb); }
+  c2.appendChild(a2);
+  g.appendChild(c1); g.appendChild(c2); s.body.appendChild(g);
+  return s;
+}
+function v2Speaker(x){
+  const p=x.p, st=stOf(p);
+  const s=v2Sec(x.spk && roleOf(p)==='speaker'? 'Speaker' : ROLE1[roleOf(p)]||'On This Summit');
+  /* the speaker email, one button away */
+  if(speaking(p)){
+    const sw=el('div','se-row');
+    const sent=st.welcome;
+    const b0=el('button','btn'+(sent?' ghost':''), sent? 'Speaker Email Sent — Open' : 'Open the Speaker Email'); b0.type='button';
+    b0.title='Opens the speaker email to check, change and send. Nothing goes until you press Send.';
+    b0.addEventListener('click',()=>openSpeakerEmail(p.i)); sw.appendChild(b0);
+    sw.appendChild(el('span','pnote', sent? 'Sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'') : st.noEmail? 'Set to not get it: their bio and headshot come another way' : (p.e? 'Goes to '+p.e : 'Add their email first')));
+    if(!sent){ const s0=seSwitch(!st.noEmail,'Send them the speaker email',on=>{ patchSt(p.i,{noEmail:!on},on?'speaker email on':'speaker email off'); render(); },
+        'Turn off if they should not get the speaker email, for example when their sponsor or an assistant is sending the bio and headshot');
+      const sl=el('span','se-swl'); sl.appendChild(el('small',null,'Send Them the Speaker Email')); sl.appendChild(s0); sw.appendChild(sl); }
+    s.body.appendChild(sw);
+    s.body.appendChild(siLine(p));
+  }
+  /* where they are */
+  s.body.appendChild(el('div','plab','Where They Are'));
+  const track=el('div','track'); const nx=nextStep(p);
+  stepsFor(p).forEach(sp=>{
+    const at=stepDone(p,sp.k), auto=sp.k==='bio'&&at==='on file';
+    if(sp.parts){ const miss=appMissing(p);
+      const t=el('div','tstep tstep-split'+(at?' on':'')+(nx&&nx.k===sp.k?' next':''));
+      t.appendChild(el('span','tt',(at?'✓ ':'')+sp.t));
+      t.appendChild(el('span','tw', at? 'Both up '+pretty(at) : miss.length===2? (WHO[sp.who]||sp.who) : 'Still to go up: '+miss.join(' and ')));
+      const bits=el('span','tparts');
+      sp.parts.forEach(([pk,plab])=>{ const on=appPart(p,pk); const b=el('button','tpart'+(on?' on':'')); b.type='button'; b.textContent=(on?'✓ ':'')+plab;
+        b.title=on? plab+' went up '+pretty(on)+'. Click to take it back off.' : plab+' is still to go up on the event app. Click when it is up.';
+        b.addEventListener('click',e=>{ e.stopPropagation(); const steps=Object.assign({},st.steps||{});
+          if(!steps.appshot && steps.appbio && steps.app) steps.appshot=steps.appbio;
+          if(steps[pk]) delete steps[pk]; else steps[pk]=today();
+          steps.app=(steps.appbio&&steps.appshot)? (steps.app||today()) : ''; if(!steps.app) delete steps.app;
+          patchSt(p.i,{steps,on:true},plab+' on the event app'); render(); });
+        bits.appendChild(b); });
+      t.appendChild(bits); track.appendChild(t); return; }
+    const t=el('button','tstep'+(at?' on':'')+(auto?' auto':'')+(nx&&nx.k===sp.k?' next':'')); t.type='button';
+    t.appendChild(el('span','tt',(at?'✓ ':'')+sp.t));
+    t.appendChild(el('span','tw', at? (auto?'Bio and headshot are on file':pretty(at)) : (WHO[sp.who]||sp.who)));
+    t.title=at? (auto?'This ticks itself: the bio and the headshot are both on file.':'Done '+pretty(at)+'. Click to untick.') : sp.ask+' — '+(WHO[sp.who]||sp.who)+'. Click when it is done.';
+    if(auto) t.disabled=true;
+    else t.addEventListener('click',()=>{ const steps=Object.assign({},st.steps||{}); if(steps[sp.k]) delete steps[sp.k]; else steps[sp.k]=today(); patchSt(p.i,{steps,on:true},sp.t); render(); });
+    track.appendChild(t); });
+  s.body.appendChild(track);
+  if(roleOf(p)!=='speaker'){ const sp=el('button','btn '+(st.speaking?'':'ghost')+' spk',st.speaking?'✓ Also Speaking':'They Are Also Speaking'); sp.type='button';
+    sp.addEventListener('click',()=>{ patchSt(p.i,{speaking:!st.speaking},'also speaking'); render(); }); s.body.appendChild(sp); }
+  /* the sessions they are in, which fill the event app's Session Keys */
+  if(speaking(p)){ const ses=summitSessions();
+    if(ses.length){ const picked=(st.ses||[]).slice();
+      s.body.appendChild(el('div','plab','Sessions They Are In'));
+      const lst=el('div','v2-ses');
+      if(!picked.length) lst.appendChild(el('div','pnote','Not on a session yet.'));
+      picked.forEach(k=>{ const z=ses.find(q=>q.key===k); const r=el('div');
+        r.appendChild(el('span',null,(z?z.name:k)+(z&&(z.dayLabel||z.room)?' · '+[z.dayLabel,z.room].filter(Boolean).join(' · '):'')));
+        const xb=el('button','se-lnk v2-danger','Take Out'); xb.type='button';
+        xb.addEventListener('click',()=>{ patchSt(p.i,{ses:picked.filter(q=>q!==k)},'a session');
+          if(/^gs-/.test(k)) try{ window.__gsPerson && window.__gsPerson(p.i,k,false); }catch(e){}
+          if(/^wk-/.test(k)) try{ window.__wkPerson && window.__wkPerson(p.i,k,false); }catch(e){}
+          render(); });
+        r.appendChild(xb); lst.appendChild(r); });
+      s.body.appendChild(lst);
+      const left=ses.filter(z=>picked.indexOf(z.key)<0);
+      if(left.length){ const sel=document.createElement('select'); sel.className='sesadd';
+        sel.appendChild(new Option('+ Add a Session…',''));
+        const days=[]; left.forEach(z=>{ if(days.indexOf(z.dayLabel||'')<0) days.push(z.dayLabel||''); });
+        days.forEach(d=>{ const og=document.createElement('optgroup'); og.label=d||'Not on the grid yet';
+          left.filter(z=>(z.dayLabel||'')===d).forEach(z=>og.appendChild(new Option(z.name+(z.room?' · '+z.room:''),z.key))); sel.appendChild(og); });
+        sel.addEventListener('change',()=>{ if(!sel.value) return; const k=sel.value;
+          patchSt(p.i,{ses:picked.concat(k), sesAt:new Date().toISOString()},'a session');
+          if(/^gs-/.test(k)) try{ window.__gsPerson && window.__gsPerson(p.i,k,true); }catch(e){}
+          if(/^wk-/.test(k)) try{ window.__wkPerson && window.__wkPerson(p.i,k,true); }catch(e){}
+          render(); });
+        const rw=el('div','v2-row'); rw.appendChild(sel); rw.appendChild(el('span','pnote','Goes into the speakers file as Session Keys')); s.body.appendChild(rw); }
+    } }
+  return s;
+}
+function v2Team(x){
+  const t=x.team, s=v2Sec(t.role==='guest'?'MISMO Team (Guest)':'MISMO Team');
+  const g=el('div','v2-g3');
+  const dt=(lab,k)=>{ const w=el('label','fldmini'); w.appendChild(el('label',null,lab)); const i=document.createElement('input'); i.type='date'; i.value=t[k]||''; i.min=ttDay(-5); i.max=ttDay(7);
+    i.dataset.keep='v2tt-'+k+':'+t.id; i.addEventListener('change',()=>ttSet(t.id,{[k]:i.value},'travel dates')); w.appendChild(i); return w; };
+  g.appendChild(dt('Arrives','arr')); g.appendChild(dt('Departs','dep'));
+  const gw=el('label','fldmini'); gw.appendChild(el('label',null,'Group')); const gs=document.createElement('select');
+  TT_ROLES.forEach(([v,l])=>gs.appendChild(new Option(l,v))); gs.value=t.role||'staff'; gs.addEventListener('change',()=>ttSet(t.id,{role:gs.value},'a group on the MISMO team')); gw.appendChild(gs); g.appendChild(gw);
+  if(ttDoc().park){ const pw=el('label','fldmini'); pw.appendChild(el('label',null,'Parking')); const ps=document.createElement('select');
+    [['','—'],['yes','Yes'],['no','No']].forEach(([v,l])=>ps.appendChild(new Option(l,v))); ps.value=t.park||''; ps.addEventListener('change',()=>ttSet(t.id,{park:ps.value},'parking')); pw.appendChild(ps); g.appendChild(pw); }
+  s.body.appendChild(g);
+  const kv=el('div','v2-kv'); const n=v2Nights(t);
+  kv.appendChild(el('span',null,'Hotel')); kv.appendChild(n? el('span',null,n+' night'+(n===1?'':'s')+', '+ttNice(t.arr)+' to '+ttNice(t.dep)+' · fills the Resume on its own') : v2St('wait','Dates not in'));
+  kv.appendChild(el('span',null,'Travel Form'));
+  const tf=el('span',null, t.respAt? 'Dates in '+localDay(t.respAt).replace(/ at .*/,'') : t.sentAt? 'Form sent '+localDay(t.sentAt).replace(/ at .*/,'')+(ttHasDates(t)?'':' · waiting') : 'Not asked yet');
+  const ak=el('button','se-lnk',t.sentAt?'Send Again':'Ask for Travel Dates'); ak.type='button'; ak.title='Opens the travel email to check and send'; ak.addEventListener('click',()=>openTravelAsk());
+  tf.appendChild(document.createTextNode(' ')); tf.appendChild(ak); kv.appendChild(tf);
+  if(t.notes){ kv.appendChild(el('span',null,'Their Note')); kv.appendChild(el('span',null,'“'+t.notes+'”')); }
+  kv.appendChild(el('span',null,'Bernie'));
+  if(t.sentB) kv.appendChild(el('span',null,'Sent to Bernie '+localDay(t.sentB).replace(/ at .*/,'')));
+  else { const lb=el('label','v2-ck'); const ck=document.createElement('input'); ck.type='checkbox'; ck.checked=ttBSel().has(t.id);
+    ck.addEventListener('change',()=>{ ck.checked? ttBSel().add(t.id) : ttBSel().delete(t.id); render(); });
+    lb.appendChild(ck); lb.appendChild(document.createTextNode(' Include on Bernie’s next list ')); const op=el('button','se-lnk','Send'); op.type='button'; op.title='Opens the MISMO Team list to check and send to Bernie'; op.addEventListener('click',e=>{ e.preventDefault(); v2Card('ttOpen'); }); lb.appendChild(op); kv.appendChild(lb); }
+  s.body.appendChild(kv);
+  const rm=el('button','se-lnk v2-danger','Take Off the Team List'); rm.type='button';
+  rm.addEventListener('click',()=>{ if(!confirm('Take '+t.n+' off the team list for this summit?')) return;
+    const ppl=Object.assign({},ttDoc().ppl||{}); delete ppl[t.id]; ttBSel().delete(t.id); ttSave({ppl},'someone off the MISMO team'); render(); });
+  s.body.appendChild(rm);
+  return s;
+}
+function v2Board(x){
+  const m=x.board, s=v2Sec('Board of Directors', el('small',null,'Comped registration'));
+  const av=boardAtt(m.i), seg=el('div','bd-seg v2-seg2'); seg.setAttribute('role','group');
+  [['in','In Person'],['virt','Virtually'],['no','Not Attending']].forEach(([k,l])=>{ const b=el('button','bd-opt'+(av===k?' on':''),l); b.type='button';
+    b.setAttribute('aria-pressed',av===k?'true':'false'); b.title=av===k?'Click to clear it':'Mark '+l.toLowerCase();
+    b.addEventListener('click',()=>setBoardAtt(m.i, av===k?'':k)); seg.appendChild(b); });
+  s.body.appendChild(seg);
+  const kv=el('div','v2-kv');
+  const add=(k,v)=>{ kv.appendChild(el('span',null,k)); kv.appendChild(typeof v==='string'? el('span',null,v) : v); };
+  add('Group', m.r==='Ex-Officio'?'Ex-Officio':m.r==='MBA'?'From MBA':('Board Members'+(m.r?' · '+m.r:'')));
+  if(m.via) add('Schedules Through', m.via);
+  const ask=bdAsk(m.i);
+  const aw=el('span',null, ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' · no answer yet') : 'Not asked yet');
+  const ab=el('button','se-lnk',ask? 'Ask Again' : 'Ask In Person or Virtual'); ab.type='button'; ab.addEventListener('click',()=>openBoardAsk());
+  aw.appendChild(document.createTextNode(' ')); aw.appendChild(ab); add('The Ask', aw);
+  if(ask && ask.note) add('Their Note','“'+ask.note+'”');
+  const reg=boardReg(m.i);
+  if(reg) add('Bernie', '✓ Registered '+pretty(reg));
+  else if(av!=='no'){ const sb=bnSent(m.i);
+    if(sb) add('Bernie','Sent to Bernie '+localDay(sb).replace(/ at .*/,''));
+    else { const lb=el('label','v2-ck'); const ck=document.createElement('input'); ck.type='checkbox'; ck.checked=bnSel().has(m.i);
+      ck.addEventListener('change',()=>{ ck.checked? bnSel().add(m.i) : bnSel().delete(m.i); render(); });
+      lb.appendChild(ck); lb.appendChild(document.createTextNode(' Include on Bernie’s next list ')); const op=el('button','se-lnk','Notify Bernie'); op.type='button'; op.addEventListener('click',e=>{ e.preventDefault(); openBoardNotify(); }); lb.appendChild(op); add('Bernie', lb); } }
+  kv.appendChild(el('span',null,'Registered'));
+  const rb=el('button','btn ghost'+(reg?' sp-done':''), reg? '✓ Registered' : 'Mark Registered'); rb.type='button';
+  rb.addEventListener('click',()=>{ const r=Object.assign({},boardDoc().reg||{}); if(r[m.i]) delete r[m.i]; else r[m.i]=today(); setBoard({reg:r},'a board registration'); render(); });
+  const rw=el('span'); rw.appendChild(rb); kv.appendChild(rw);
+  s.body.appendChild(kv);
+  return s;
+}
+function v2Sponsor(x){
+  const s=v2Sec('Sponsor', el('small',null,'From the Sponsorship Portal'));
+  x.spon.forEach(r=>{ const at=sponOnAgenda(r), [sk,slab]=sponStatus(r), code=String(r.compCode||'').trim();
+    const kv=el('div','v2-kv v2-spon');
+    kv.appendChild(el('span',null,'Sponsor')); kv.appendChild(el('span',null,[String(r.company||'').trim(), r.level?titleCase(r.level):'', slab].filter(Boolean).join(' · ')));
+    const w=sponWhat(r); if(w){ kv.appendChild(el('span',null,'Sponsoring')); kv.appendChild(el('span',null,w)); }
+    if(code){ kv.appendChild(el('span',null,'Comp Code')); kv.appendChild(el('span',null,code+(r.comps?' · '+r.comps+' comp'+(String(r.comps)==='1'?'':'s'):'')+' (they register themselves)')); }
+    kv.appendChild(el('span',null,'Agenda'));
+    const b=el('button','btn'+(at?' ghost sp-done':''), at? '✓ On the Agenda' : 'Mark on the Agenda'); b.type='button';
+    b.title=at? 'Marked '+pretty(at)+'. Click to take the mark off.' : 'Click once they are on the agenda.';
+    b.addEventListener('click',()=>setSponAgenda(r,!at)); const bw=el('span'); bw.appendChild(b); kv.appendChild(bw);
+    s.body.appendChild(kv); });
+  s.body.appendChild(el('div','pnote','The sponsorship itself is changed in the Sponsorship Portal.'));
+  return s;
+}
+function v2Prospect(x){
+  const p=x.p, v=inviteOf(p), s=v2Sec('Speaker Prospect');
+  const seg=el('div','bd-seg v2-seg2'); seg.setAttribute('role','group');
+  INVITE.forEach(([k,l])=>{ const b=el('button','bd-opt'+(v===k?' on':''),l); b.type='button'; b.setAttribute('aria-pressed',v===k?'true':'false');
+    b.title= v===k? 'Click to clear it' : k==='accepted'? 'Accepted puts them straight onto this summit as a speaker' : 'Mark '+l.toLowerCase();
+    b.addEventListener('click',()=>setInvite(p.i, v===k?'':k)); seg.appendChild(b); });
+  s.body.appendChild(seg);
+  const w=el('label','fldmini'); w.appendChild(el('label',null,'Who suggested them, the topic, when to follow up'));
+  const t=document.createElement('textarea'); t.rows=3; t.className='v2-ta'; t.value=stOf(p).pnote||''; t.dataset.keep=p.i+':v2pnote';
+  t.addEventListener('change',()=>patchSt(p.i,{pnote:t.value.trim()},'a prospect note')); w.appendChild(t); s.body.appendChild(w);
+  const x2=el('button','se-lnk v2-danger','Take Off the Prospect List'); x2.type='button'; let armed=false;
+  x2.addEventListener('click',()=>{ if(!armed){ armed=true; x2.textContent='Click Again to Take Them Off'; return; } dropProspect(p.i); });
+  s.body.appendChild(x2);
+  return s;
+}
+
 function init(){
   const q=$('pp-q');
   if(q) q.addEventListener('input',()=>{ ST.q=q.value; render(); });
@@ -28857,6 +29588,7 @@ window.__people={
   },
   open:id=>{
     const p=byId(id); if(!p) return false;
+    if(v2On()){ v2Open('p:'+id); return true; }
     if(isSpk(p)) ST.lOpen=true; else ST.elseOpen=true;
     ST.open.add(id); render();
     setTimeout(()=>{
