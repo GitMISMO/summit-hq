@@ -180,6 +180,33 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.close();
   });
 
+  /* 10. A file sent in from outside (the speaker form, or by email) can never run inside
+         Summit HQ: a "PDF" that is really a web page is not shown, a real PDF is */
+  await check('Files sent in from outside cannot run in Summit HQ', async () => {
+    const b64 = x => Buffer.from(x).toString('base64');
+    const store = {
+      'feed-si-evtok': { doc: { bioFile: b64('<script>parent.__pwned=1;window.__pwned=1</script>'), bioFileType: 'text/html' } },
+      'feed-si-oktok': { doc: { bioFile: b64('%PDF-1.4\n%sample\n'), bioFileType: 'application/pdf' } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/zz-evil').set({ i: 'zz-evil', n: 'Zz Evil', e: 'evil@example.org', biofile: { tok: 'evtok', name: 'bio.pdf', type: 'text/html', src: 'form' } });
+      await db.doc('people/zz-good').set({ i: 'zz-good', n: 'Zz Good', e: 'good@example.org', biofile: { tok: 'oktok', name: 'bio.pdf', type: 'application/pdf', src: 'form' } }); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__peopleOpen('left')); await s.page.waitForTimeout(2000);
+    const review = async id => {
+      await s.page.evaluate(id => document.querySelector('.pp-row[data-id="' + id + '"] .pp-hd').click(), id); await s.page.waitForTimeout(1000);
+      await s.page.evaluate(id => [...document.querySelectorAll('.pp-row[data-id="' + id + '"] .se-lnk')].find(b => /Review the File/.test(b.textContent)).click(), id);
+      await s.page.waitForTimeout(1800);
+      const n = await s.page.evaluate(() => document.querySelectorAll('#bio-modal iframe').length);
+      await s.page.evaluate(() => { const m = document.getElementById('bio-modal'); if (m) m.remove(); });
+      return n;
+    };
+    expect(await review('zz-evil') === 0, 'a web page sent in as a PDF was shown on the page');
+    expect(!(await s.page.evaluate(() => window.__pwned)), 'a file sent in from outside ran inside Summit HQ');
+    expect(await review('zz-good') === 1, 'a real PDF was not shown');
+    await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
