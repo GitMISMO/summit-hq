@@ -279,7 +279,6 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
 
   /* 14. The new People page comes a page at a time, and two records for one person merge */
   await check('New People page: pages and merging the same person', async () => {
-    if (!fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').includes('v2Pager')) return; /* until the page itself is uploaded */
     const s = await open(opts());
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       for (let k = 0; k < 25; k++) await db.doc('people/zz-' + k).set({ i: 'zz-' + k, n: 'Zed Person ' + String(k).padStart(2, '0'), st: { nola: { on: true, role: 'speaker' } } });
