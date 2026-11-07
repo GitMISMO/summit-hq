@@ -1,13 +1,28 @@
-# Runs Summit HQ's checks (tests/run.js) after every upload. If one fails, GitHub emails
-# whoever uploaded the change and the Actions tab says which check.
-name: Summit HQ Checks
+# Summit HQ goes live only after its checks pass (tests/run.js). Every upload to main runs
+# the checks; if they pass, this publishes the site to resources.mismo.org/summit-hq/. If one
+# fails, the site stays on the version before, and GitHub emails whoever uploaded the change.
+# In an emergency: Actions > Summit HQ Checks and Publish > Run workflow, tick Skip the checks.
+name: Summit HQ Checks and Publish
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      skip_checks:
+        description: Skip the checks (emergency only)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: summit-hq-publish
+  cancel-in-progress: false
 jobs:
   checks:
+    if: ${{ !inputs.skip_checks }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -18,3 +33,18 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm test
+  publish:
+    needs: checks
+    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && (needs.checks.result == 'success' || (needs.checks.result == 'skipped' && inputs.skip_checks)) }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
