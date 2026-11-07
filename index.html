@@ -5614,11 +5614,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   <div class="pp-bar">
     <span class="grow"><input type="search" id="pp-q" placeholder="Search a name, company or email…" aria-label="Search people"></span>
     <span class="seg" id="pp-roles"></span>
-    <button class="chip" type="button" id="pp-left" aria-pressed="false"
-      title="Show only the people who still owe something — a bio, a headshot, a place on the agenda, the event app or a registration. Press again for everybody.">Only What&rsquo;s Outstanding</button>
     <span style="flex:1"></span>
-    <button class="btn ghost" type="button" id="pp-chase"
-      title="Writes a text file with a ready-to-send message for everyone on this summit still missing a bio or a headshot — one message each, with what they owe already filled in. Copy each into your email and tick them off here as you go.">Chase email</button>
     <button class="btn ghost" type="button" id="pp-app"
       title="Downloads the event app&rsquo;s speakers file, column for column, for everyone on this summit who is speaking and already on the agenda — ready to upload, nothing to retype.">Speakers file</button>
     <button class="btn ghost" type="button" id="pp-ses"
@@ -7366,7 +7362,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Send the speaker email.</b> On the <b>Speaker Emails &amp; Follow-Ups</b> card on People, press <b>Choose Speakers to Email</b> and tick who gets it, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
           <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. Anyone who has not sent theirs gets a reminder every week on the day their email went, until it is in; see <b>Speaker Emails &amp; Follow-Ups</b> on People to see who is next, or to switch the reminders off for someone. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
           <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
-          <li><b>Use Only What&rsquo;s Outstanding</b> to see just the speakers who still owe you something.</li>
+          <li><b>See who still owes you something</b> on People: the <b>What Still Has To Happen</b> card, or <b>Need Something From Us</b> on the new People page.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
         <h4>Emails You Get</h4>
@@ -7720,7 +7716,6 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
-        <li><b>Only What&rsquo;s Outstanding</b> shows just the people who still owe something.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
       </ul>
     </div>
@@ -25084,7 +25079,7 @@ startClock();
 /* ── THE NEW PEOPLE PAGE (Jonna, 2026-11-07) ── one list of everyone, each person in the
    right-hand panel. While it is switched on, the cards are still built underneath (the
    menus open them in the panel) but not shown. */
-#app-people.v2 .pp-bar, #app-people.v2 #pp-meters, #app-people.v2 .pp-found, #app-people.v2 .pp-cards, #app-people.v2 .pp-wall{display:none!important}
+#app-people.v2 .pp-bar, #app-people.v2 .pp-found, #app-people.v2 .pp-cards, #app-people.v2 .pp-wall{display:none!important}
 #app-people .v2-hold{display:none}
 #app-people .pp-bar .v2-try{order:-1}
 #app-people .v2-counts{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 10px}
@@ -25475,7 +25470,7 @@ function stats(){
 window.__peopleStats=()=>{ const s=stats(); return {total:s.total, ready:s.ready, outstanding:s.outstanding, steps:s.steps}; };
 window.__peopleOpen=which=>{
   try{ if(window.__hqGo) window.__hqGo('people'); }catch(e){}
-  if(which==='left'){ ST.left=true; ST.step=''; render(); }
+  if(which==='left'){ if(v2On()){ ST.v2f='need'; ST.v2step=''; ST.v2view='list'; } else { ST.left=true; ST.step=''; } render(); }
   try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){}
 };
 
@@ -25487,15 +25482,18 @@ function meters(){
     d.appendChild(el('div','n',String(n))); d.appendChild(el('div','k',k));
     if(go){ d.addEventListener('click',go); d.setAttribute('role','button'); d.tabIndex=0; }
     m.appendChild(d); };
-  tile(s.total,'Speakers',null,()=>{ST.left=false;ST.step='';render();openPeopleCard('lOpen');});
-  tile(s.steps.bio+' / '+s.need.bio,'Bios in hand',s.steps.bio===s.need.bio&&s.need.bio?'is-good':'',()=>{ST.step='bio';ST.left=false;render();});
-  tile(s.steps.app+' / '+s.need.app,'On the event app',s.steps.app===s.need.app&&s.need.app?'is-good':'',()=>{ST.step='app';ST.left=false;render();});
-  tile(s.steps.reg+' / '+s.need.reg,'Registered',s.steps.reg===s.need.reg&&s.need.reg?'is-good':'',()=>{ST.step='reg';ST.left=false;render();});
+  /* Jonna, 2026-11-07: the dark band stays on the new People page too; there each tile shows
+     the people behind it in the list */
+  const v2=v2On(), V=(f,step)=>()=>{ ST.v2f=f; ST.v2step=step||''; ST.v2view='list'; ST.v2q=''; render(); };
+  tile(s.total,'Speakers',null, v2? V('spk') : ()=>{ST.left=false;ST.step='';render();openPeopleCard('lOpen');});
+  tile(s.steps.bio+' / '+s.need.bio,'Bios in hand',s.steps.bio===s.need.bio&&s.need.bio?'is-good':'', v2? V('spk','bio') : ()=>{ST.step='bio';ST.left=false;render();});
+  tile(s.steps.app+' / '+s.need.app,'On the event app',s.steps.app===s.need.app&&s.need.app?'is-good':'', v2? V('spk','app') : ()=>{ST.step='app';ST.left=false;render();});
+  tile(s.steps.reg+' / '+s.need.reg,'Registered',s.steps.reg===s.need.reg&&s.need.reg?'is-good':'', v2? V('spk','reg') : ()=>{ST.step='reg';ST.left=false;render();});
   const bs=boardStat();
-  tile(bs.reg+' / '+bs.total,'Board registered',bs.reg===bs.total?'is-good':'is-warn',()=>{ render(); openPeopleCard('boardOpen'); });
+  tile(bs.reg+' / '+bs.total,'Board registered',bs.reg===bs.total?'is-good':'is-warn', v2? V('board') : ()=>{ render(); openPeopleCard('boardOpen'); });
   const pr=portalRows();
   if(pr.length){ const onA=pr.filter(r=>sponOnAgenda(r)).length;
-    tile(onA+' / '+pr.length,'Sponsors on the agenda',onA===pr.length?'is-good':'is-warn',()=>{ render(); openPeopleCard('sponOpen'); }); }
+    tile(onA+' / '+pr.length,'Sponsors on the agenda',onA===pr.length?'is-good':'is-warn', v2? V('spon') : ()=>{ render(); openPeopleCard('sponOpen'); }); }
 }
 
 /* What the search at the top found, and where it is. Without this the box is at the
@@ -28969,7 +28967,7 @@ function v2Next(x){
     const n=nextStep(p);
     if(n){
       if(n.k==='bio'){ const rs=remState(p); return {who:'Waiting on them', t:'Their '+(seMissing(p)||'bio and headshot')+(rs.k==='on'&&rs.next? ' · next follow-up '+seNice(rs.next) : '')}; }
-      return {who:WHO[n.who]||n.who, t:n.ask, act:'step'};
+      return {who:String(WHO[n.who]||n.who).split(' ')[0], t:n.ask, act:'step'};
     }
   }
   if(x.board){ const i=x.board.i, a=boardAtt(i);
@@ -29013,7 +29011,7 @@ function v2Render(host){
     const b=el('button','v2-count'+(on?' on':'')+(k==='need'&&n?' warn':'')); b.type='button';
     b.appendChild(el('b',null,String(n))); b.appendChild(el('span',null,l));
     b.setAttribute('aria-pressed',on?'true':'false');
-    b.addEventListener('click',()=>{ ST.v2f=k; ST.v2view='list'; render(); });
+    b.addEventListener('click',()=>{ ST.v2f=k; ST.v2step=''; ST.v2view='list'; render(); });
     counts.appendChild(b); });
   root.appendChild(counts);
   /* the bar */
@@ -29045,8 +29043,7 @@ function v2Render(host){
   ]));
   bar.appendChild(v2Menu('Downloads',[
     ['Speakers File','For the event app upload',()=>appFile()],
-    ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()],
-    ['Bio Chase List','Who still owes a bio or headshot',()=>chase()]
+    ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()]
   ]));
   const addm=v2Menu('+ Add a Person',[
     ['A Speaker on This Summit','Finds them on the master list first, or adds someone new',()=>v2Card('lOpen')],
@@ -29061,12 +29058,14 @@ function v2Render(host){
   if((ST.v2view||'list')==='hotel'){ root.appendChild(v2HotelView()); }
   else {
     const qq=String(ST.v2q||'').replace(/\s+/g,' ').trim().toLowerCase();
-    const pool= qq? v2Entries(true).filter(x=>[x.n,x.e,x.t,x.c].join(' ').toLowerCase().indexOf(qq)>=0) : all1.filter((V2F.find(z=>z[0]===f)||V2F[0])[2]);
-    const lab=(V2F.find(z=>z[0]===f)||V2F[0])[1];
+    const stp= f==='spk' && ST.v2step ? STEPS.find(z=>z.k===ST.v2step) : null;
+    const pool= qq? v2Entries(true).filter(x=>[x.n,x.e,x.t,x.c].join(' ').toLowerCase().indexOf(qq)>=0)
+      : all1.filter((V2F.find(z=>z[0]===f)||V2F[0])[2]).filter(x=>!stp || (applies(x.p,stp.k) && !stepDone(x.p,stp.k)));
+    const lab=(V2F.find(z=>z[0]===f)||V2F[0])[1]+(stp? ' still needing \u201c'+stp.t+'\u201d' : '');
     const line=el('div','v2-showing');
     if(qq){ line.appendChild(document.createTextNode(pool.length+' found for “'+String(ST.v2q).trim()+'”, including the master list')); }
     else { line.appendChild(document.createTextNode('Showing ')); line.appendChild(el('b',null,lab)); line.appendChild(document.createTextNode(' · '+pool.length+(f==='all'?' · click anyone to open them':'')));
-      if(f!=='all'){ const sa=el('button','se-lnk','Show Everyone'); sa.type='button'; sa.addEventListener('click',()=>{ ST.v2f='all'; render(); }); line.appendChild(document.createTextNode(' · ')); line.appendChild(sa); } }
+      if(f!=='all'||stp){ const sa=el('button','se-lnk','Show Everyone'); sa.type='button'; sa.addEventListener('click',()=>{ ST.v2f='all'; ST.v2step=''; render(); }); line.appendChild(document.createTextNode(' · ')); line.appendChild(sa); } }
     root.appendChild(line);
     root.appendChild(v2Table(pool.slice().sort((a,b)=>String(a.n).localeCompare(String(b.n)))));
   }
