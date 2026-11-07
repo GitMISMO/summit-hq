@@ -19,6 +19,26 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   } catch (e) { out = true; }
   document.documentElement.classList.add(out ? 'hq-out' : 'hq-in');
 })();</script>
+<script>/* System Health (November 6, 2026): every error the page hits is noted from the very first
+   line, so the System Health panel can show it and send it to the team's log. */
+(function(){
+  var L = window.__hqErrs = [];
+  function add(kind, msg, src){
+    msg = String(msg || '').replace(/\s+/g, ' ').slice(0, 300);
+    if (!msg || /ResizeObserver loop|^Script error\.?$|AbortError|The user aborted/i.test(msg)) return;
+    var at = new Date().toISOString(), last = L[L.length - 1];
+    if (last && last.msg === msg) { last.n++; last.at = at; }
+    else { L.push({ at: at, kind: kind, msg: msg, src: String(src || '').slice(0, 120), n: 1, tab: String(location.hash || '').slice(0, 30) }); if (L.length > 60) L.shift(); }
+    try { window.dispatchEvent(new Event('hq:err')); } catch (e) {}
+  }
+  window.__hqErr = add;
+  window.addEventListener('error', function (e) {
+    if (e && e.message) add('error', e.message, String(e.filename || '').split('/').pop().split('?')[0] + (e.lineno ? ':' + e.lineno : ''));
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e && e.reason; add('promise', r && (r.message || r.code) || String(r || ''), r && r.stack ? String(r.stack).split('\n')[1] : '');
+  });
+})();</script>
 <script src="/assets/session.js"></script>
 <script>(function(){
   /* Keep the class in step afterwards: signing in reveals the app without a reload, and
@@ -443,7 +463,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
       var go = function () {
         if (kind === 'update' && f.loaded && docIn(f, path) === null) { rej(err('not-found', 'No document to update: ' + path)); return; }
         var from = base !== undefined ? clone(base) : (f.loaded && kind !== 'delete' ? clone(docIn(f, path)) : undefined);
-        var op = { kind: kind, path: path, data: data, base: from, res: res, rej: rej, lockGrid: path === 'schedule/summits' && !gridOwner() };
+        var op = { kind: kind, path: path, data: data, base: from, res: res, rej: rej, lockGrid: path === 'schedule/summits' && !gridOwner(), at: now() };
         f.pending.push(op); f.view = null;
         if (p.own) register(path, kind !== 'delete');
         notify(f, true);
@@ -936,6 +956,10 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   var troubled = false;
   function problem(e, lost) {
     status.lastError = (e && (e.code || e.message)) || 'error';
+    /* System Health keeps the last few, and the team's log gets them */
+    status.problems = (status.problems || []).concat([{ at: new Date().toISOString(), code: status.lastError, lost: !!lost,
+      msg: String((e && e.message) || '').slice(0, 200) }]).slice(-20);
+    try { if (window.__hqErr) window.__hqErr(lost ? 'save-lost' : 'save-retry', 'Save ' + (lost ? 'refused' : 'delayed') + ': ' + status.lastError + ((e && e.message) ? ' (' + String(e.message).slice(0, 140) + ')' : ''), ''); } catch (x) {}
     if (lost) {
       var why = (e && (WHY[e.code] || e.message)) || 'relay error';
       if (e && e.code === 'GITHUB') why = e.gh === 404
@@ -946,7 +970,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
     troubled = true;
     toast(e && (e.status === 401 || e.code === 'SIGNED_OUT') ? 'Sign in again to finish saving — nothing is lost.' : 'Not saved yet — trying again. Keep this tab open.', 'bad');
   }
-  function saved() { if (troubled && !anyPending()) { troubled = false; toast('All changes saved.'); } }
+  function saved() { status.savedAt = new Date().toISOString(); if (troubled && !anyPending()) { troubled = false; toast('All changes saved.'); } }
 
   /* ---------- the door ---------- */
   window.claude = {
@@ -959,7 +983,7 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   };
   window.__hqRelay = { files: F, place: place, poll: function () { poll(true); }, pending: anyPending, status: status, same: mgSame,
     why: function () { return WHY[status.lastError] || status.lastError || ''; },
-    config: { RELAY_URL: RELAY_URL, PROJECT: PROJECT, POLL_MS: POLL_MS } };
+    config: { RELAY_URL: RELAY_URL, PROJECT: PROJECT, POLL_MS: POLL_MS, MAX_FILE: MAX_FILE } };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hookSession); else hookSession();
 })();
@@ -7472,6 +7496,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
         <li><b>Undo</b> steps back the last change, on any tab. Ctrl+Z (Cmd+Z on a Mac) does the same.</li>
         <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
+        <li><b>System Health</b> shows whether saving, storage and the email flows are working. Its dot is green when all is well, amber for a warning and red when something needs attention; red also puts a bar across the top of the page for everyone.</li>
         <li><b>Help</b> is this page.</li>
         <li><b>Sponsorship Portal</b> is the stamp that says when Summit HQ last checked the portal. <b>&#10003; 0 new changes</b> means the two are in step. <b>N new changes, not copied yet</b> means the portal has saved something Summit HQ does not have yet; it normally clears within minutes. <b>Last copy</b> is when the portal&rsquo;s information last arrived. It checks when the page opens and every 30 minutes.</li>
         <li><b>Dark Mode</b> switches the colors. The arrow at the top (or the backslash key) narrows the menu to icons.</li>
@@ -7757,6 +7782,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </ol>
       <p>Two helpers live in the <code>lib</code> folder beside <code>index.html</code> and load only when they are used: <code>docx.js</code> writes the resume as a Word file, and <code>pdfjs-lib.js</code> with <code>pdfjs-worker.js</code> read a hotel contract PDF in Add A Summit. Leave that folder in place; without it those two buttons stop working.</p>
       <p>Each part of Summit HQ waits until its own information has loaded before it saves anything, so a slow connection can never write a blank copy over real work. If a save is tried too early it says <b>Still loading</b>; try again a moment later.</p>
+      <p><b>Automatic checks.</b> Every upload to GitHub runs Summit HQ&rsquo;s checks (the <code>tests</code> folder) a few minutes later: every tab opens, saving and merging work, each summit keeps its own details, Past Summits, the Board and Team emails, and System Health. If any check fails, GitHub emails whoever uploaded, and the repository&rsquo;s <b>Actions</b> tab says which one. If you cannot tell why, put the previous <code>index.html</code> back.</p>
       <p>Never put names, emails, contracts or other private details in the page; they belong in the saved information, which only arrives after sign-in. If a change breaks the page, open <code>index.html</code>&rsquo;s history on GitHub and put the previous version back the same way.</p>
     </div>
   </details>
@@ -7767,6 +7793,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>What You See</th><th>What to Do</th></tr></thead>
         <tbody>
+          <tr><td>A red bar across the top, or a red dot on <b>System Health</b></td><td>Press <b>Details</b>. It names what stopped: a flow (open that flow in Power Automate, check its run history, resubmit a failed run and sign in any connection showing an error; turn it back on if it was turned off), saving (keep the tab open; tell Perry if it does not clear) or storage (tell Perry before the file is full). <b>Copy Report</b> copies everything it found, ready to paste into an email.</td></tr>
+          <tr><td>Something looks broken but there is no red bar</td><td>Open <b>System Health</b>. <b>Team Error Log</b> lists the errors anyone&rsquo;s Summit HQ has hit in the last 7 days, with who and which tab, so the problem can be found without asking around.</td></tr>
           <tr><td>The page keeps asking you to sign in, or shows nothing</td><td>Sign out and back in. If it still will not open, ask Perry to check your Summit HQ access.</td></tr>
           <tr><td>Your change does not show for someone else</td><td>Wait 30 seconds and have them reload. If the page says a save failed, reload and make the change again. If saves keep failing, the save relay may be down: tell Perry.</td></tr>
           <tr><td>The portal stamp says changes are not copied, for more than a day</td><td>Open the <b>Sponsorship Team Emails</b> flow in Power Automate and check its run history. Resubmit a failed run; if its connections show an error, sign them in again.</td></tr>
@@ -31130,6 +31158,314 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
   const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
       try{ window.ResourcesSession.onChange(()=>{ if(!db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
     setTimeout(start,2500); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+})();
+</script>
+
+<style>
+/* ── System Health (November 6, 2026) ─────────────────────────────────── */
+#hh-btn{position:relative}
+#hh-btn .hh-dot{position:absolute;left:21px;top:6px;width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.35);box-shadow:0 0 0 2px var(--navy,#0f314c)}
+#hh-btn .hh-dot.ok{background:#72C08E}
+#hh-btn .hh-dot.warn{background:#E0A83C}
+#hh-btn .hh-dot.bad{background:#F08579}
+body.railmini #hh-btn .hh-dot{left:24px;top:7px}
+#hh-bar{position:fixed;top:calc(var(--hq-h,56px) + 10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);
+  z-index:140;display:flex;align-items:center;gap:12px;max-width:min(760px,calc(100vw - 32px));
+  background:var(--bad-soft,#FBE8E6);color:var(--bad-ink,#7A1913);border:1px solid var(--bad,#A32219);
+  border-radius:8px;padding:9px 10px 9px 14px;font:500 13px/1.4 var(--display,"IBM Plex Sans",system-ui,sans-serif);
+  box-shadow:0 6px 20px rgba(13,49,76,.16)}
+#hh-bar[hidden]{display:none}
+#hh-bar b{font-weight:700}
+#hh-bar .hh-go{flex:0 0 auto;background:var(--bad,#A32219);color:#fff;border:0;border-radius:5px;padding:6px 11px;font:inherit;font-weight:600;cursor:pointer}
+#hh-bar .hh-x{flex:0 0 auto;background:none;border:0;color:inherit;font-size:20px;line-height:1;padding:0 4px;cursor:pointer;opacity:.7}
+#hh-bar .hh-x:hover{opacity:1}
+.hh-box{width:min(860px,96vw)}
+.hh-sum{display:flex;align-items:center;gap:10px;margin:2px 0 12px;font-size:13.5px}
+.hh-big{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+.hh-big.ok,.hh-row.ok::before{background:var(--good,#0F7B5C)}
+.hh-big.warn,.hh-row.warn::before{background:var(--warn,#A2701A)}
+.hh-big.bad,.hh-row.bad::before{background:var(--bad,#A32219)}
+.hh-big.off,.hh-row.off::before{background:var(--ink-3,#71777F)}
+.hh-grid{columns:3 240px;column-gap:8px}
+.hh-grid .hh-row{break-inside:avoid;margin:0 0 8px}
+.hh-row{position:relative;border:1px solid var(--line,#DFDCD5);border-radius:6px;padding:9px 11px 9px 22px;background:var(--surface,#fff)}
+.hh-row::before{content:"";position:absolute;left:9px;top:14px;width:7px;height:7px;border-radius:50%}
+.hh-row.bad{border-color:var(--bad,#A32219);background:var(--bad-soft,#FBE8E6)}
+.hh-row.warn{border-color:var(--warn,#A2701A);background:var(--warn-soft,#FBF0DC)}
+.hh-row .hh-t{font-weight:700;font-size:13px}
+.hh-row .hh-l{font-size:12.5px;color:var(--ink-2,#414750);margin-top:2px}
+.hh-row ul{margin:5px 0 0;padding-left:16px;font-size:12px;color:var(--ink-2,#414750)}
+.hh-row ul li{margin:1px 0}
+.hh-bars{margin-top:5px;display:flex;flex-direction:column;gap:4px}
+.hh-bars div{display:grid;grid-template-columns:1fr 46px;gap:8px;align-items:center;font-size:11.5px;color:var(--ink-2,#414750)}
+.hh-bars i{display:block;height:5px;border-radius:3px;background:var(--line,#DFDCD5);overflow:hidden;grid-column:1/-1}
+.hh-bars i s{display:block;height:100%;background:var(--accent,#14486E)}
+.hh-bars i s.warn{background:var(--warn,#A2701A)}
+.hh-bars i s.bad{background:var(--bad,#A32219)}
+.hh-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hh-tbl td:first-child{white-space:nowrap}
+.hh-quiet{color:var(--ink-3,#71777F);font-size:12.5px;margin:4px 0 0}
+</style>
+<script>
+/* ============================================================
+   SYSTEM HEALTH (Jonna, 2026-11-06: "work on the backend stuff to make this a rock solid
+   program")
+   Summit HQ leans on things nobody sees: the save relay, and the Power Automate flows that
+   send what the page queues. When one of those stops, nothing on the page used to say so —
+   an email simply never went. This watches them:
+   • Saving: anything waiting more than 5 minutes, or a change the relay refused.
+   • Storage: how full each shared file is against the relay's limit for one save.
+   • The flows whose work the page can see: Speaker Emails (sent within a minute or two),
+     Speaker Reminders (7:17 AM Mountain), New Speakers to Register (weekday mornings).
+   • Errors: every error the page hits (caught from the first line of the page) is shown
+     here and written to feeds/health-log, so problems on anyone's screen reach one place.
+   A red check shows a bar across the top for everyone signed in, and the dot on the System
+   Health row in the left menu turns red. Nothing here changes any data except the log.
+   ============================================================ */
+(function(){
+  "use strict";
+  const MT='America/Denver', LOG='feeds/health-log', KEEP_DAYS=30, LOG_MAX=150;
+  const MIN=60*1000, CHECK_EVERY=5*MIN;
+  const R=()=>window.__hqRelay;
+  let db=null, last=null, btn=null, dot=null, bar=null, running=null, modal=null, started=false;
+  const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const when=iso=>{ const d=new Date(iso); if(isNaN(d)) return ''; const t=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const today=new Date().toDateString()===d.toDateString(); return today? t : d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' at '+t; };
+  const dayLabel=ymd=>{ const d=new Date(ymd+'T12:00:00'); return isNaN(d)? ymd : d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); };
+  /* Mountain time, where the flows are scheduled */
+  function mt(d){
+    const o={}; new Intl.DateTimeFormat('en-US',{timeZone:MT,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23',weekday:'short'})
+      .formatToParts(d).forEach(p=>{ o[p.type]=p.value; });
+    return { ymd:o.year+'-'+o.month+'-'+o.day, mins:(Number(o.hour)%24)*60+Number(o.minute), wd:o.weekday };
+  }
+  /* the last weekday morning (by `atMins` Mountain) that has already passed */
+  function lastWeekdayRun(atMins){
+    const nowD=new Date();
+    for(let back=0; back<8; back++){
+      const d=new Date(nowD.getTime()-back*864e5), m=mt(d);
+      if(m.wd==='Sat' || m.wd==='Sun') continue;
+      if(back===0 && m.mins<atMins) continue;
+      /* that day at atMins Mountain, as an instant */
+      return nowD.getTime()-back*864e5-(m.mins-atMins)*MIN;
+    }
+    return 0;
+  }
+  async function getDb(){ if(db) return db; try{ db=await window.claude.use('db'); }catch(e){ db=null; } return db; }
+  async function read(path){ const s=await db.doc(path).get(); return s && s.exists? s.data() : null; }
+  const row=(key,title,level,line,list,extra)=>({key,title,level,line,list:list||[],extra:extra||''});
+
+  /* ---------- the checks ---------- */
+  function chkSaving(){
+    const r=R(); if(!r) return row('save','Saving','off','The save relay has not started on this page.');
+    const st=r.status||{}, files=r.files||{}; let n=0, oldest=0;
+    Object.keys(files).forEach(k=>{ (files[k].pending||[]).forEach(op=>{ n++; if(op.at && (!oldest || op.at<oldest)) oldest=op.at; }); });
+    const lost=(st.problems||[]).filter(p=>p.lost && Date.now()-Date.parse(p.at)<24*60*MIN);
+    const retry=(st.problems||[]).filter(p=>!p.lost && Date.now()-Date.parse(p.at)<60*MIN);
+    const age=oldest? Math.round((Date.now()-oldest)/MIN) : 0;
+    if(lost.length) return row('save','Saving','bad', lost.length+' change'+(lost.length>1?'s were':' was')+' refused today and taken back. Make '+(lost.length>1?'them':'it')+' again; if it keeps happening, tell Perry.',
+      lost.slice(-3).map(p=>when(p.at)+': '+(p.code||'error')+(p.msg? ' ('+p.msg+')':'')));
+    if(n && age>=5) return row('save','Saving','bad', n+' change'+(n>1?'s have':' has')+' been waiting '+age+' minutes to save. Keep this tab open; if it does not clear, the save relay may be down (tell Perry).');
+    if(st.offline) return row('save','Saving','warn','Cannot reach the save relay right now. Changes wait here and save when it is back.');
+    if(retry.length) return row('save','Saving','warn','A save had to be tried again in the last hour'+(n? '; '+n+' still waiting.' : ', and went through.'), retry.slice(-2).map(p=>when(p.at)+': '+(p.code||'error')));
+    return row('save','Saving','ok', n? n+' change'+(n>1?'s':'')+' saving now.' : 'Every change is saved'+(st.savedAt? '. Last save '+when(st.savedAt)+'.' : '.'));
+  }
+  const FRIENDLY={ros:'Run of Show',schedule:'Schedule',resume:'Resume','own-index':'File Index',people:'People',board:'Board',
+    'team-travel':'MISMO Team Travel','speaker-email':'Speaker Email Wording',trunk:'The Trunk',specs:'Hotel Specs','sponsor-agenda':'Sponsor Agenda Marks'};
+  const nice=name=>{ const m=String(name).match(/^(.*?)-(\d+)$/); if(m && FRIENDLY[m[1]]) return FRIENDLY[m[1]]+' (Part '+(Number(m[2])+1)+')';
+    return FRIENDLY[name] || String(name).replace(/--/g,' / ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); };
+  function chkStorage(){
+    const r=R(); if(!r) return row('store','Storage','off','Not loaded yet.');
+    const cap=(r.config&&r.config.MAX_FILE)||940000, files=r.files||{}, sizes=[];
+    Object.keys(files).forEach(k=>{ const f=files[k]; if(!f.loaded || f.own || !f.server) return;
+      let n=0; try{ n=JSON.stringify(f.server).length; }catch(e){} sizes.push({name:k, n, pct:Math.round(n*100/cap)}); });
+    sizes.sort((a,b)=>b.n-a.n);
+    const top=sizes.slice(0,4), worst=top[0];
+    const lvl=!worst? 'ok' : worst.pct>=90? 'bad' : worst.pct>=70? 'warn' : 'ok';
+    const bars='<div class="hh-bars">'+top.map(s=>'<div><span>'+esc(nice(s.name))+'</span><span>'+s.pct+'%</span><i><s class="'+(s.pct>=90?'bad':s.pct>=70?'warn':'')+'" style="width:'+Math.min(100,s.pct)+'%"></s></i></div>').join('')+'</div>';
+    const line=!worst? 'Nothing loaded yet.' : lvl==='bad'? nice(worst.name)+' is '+worst.pct+'% full. Tell Perry before it reaches 100%: saves to it would stop.'
+      : lvl==='warn'? nice(worst.name)+' is '+worst.pct+'% full. Plenty for now; worth splitting before next year.'
+      : 'Every shared file has room. The fullest is '+worst.pct+'% full.';
+    return row('store','Storage',lvl,line,[],bars);
+  }
+  async function chkSpeakerEmails(){
+    const q=await read('feeds/speaker-email'), s=await read('feeds/speaker-email-sent');
+    const sent=new Set((s&&s.ids)||[]), list=((q&&q.requests)||[]).filter(r=>r && !sent.has(r.id));
+    const late=list.filter(r=>Date.now()-Date.parse(r.requestedAt||0)>15*MIN);
+    if(late.length) return row('sem','Speaker Emails Flow','bad', late.length+' email'+(late.length>1?'s have':' has')+' waited more than 15 minutes. The Summit HQ - Speaker Emails flow may be turned off or failing: open it in Power Automate and check its runs.',
+      late.slice(0,5).map(r=>'To '+(r.to||'')+', queued '+when(r.requestedAt)));
+    if(list.length) return row('sem','Speaker Emails Flow','ok', list.length+' email'+(list.length>1?'s':'')+' on the way (it sends within a minute or two).');
+    return row('sem','Speaker Emails Flow','ok','Nothing waiting.'+(s&&s.updatedAt? ' Last sent '+when(s.updatedAt)+'.' : ''));
+  }
+  async function chkReminders(){
+    const q=await read('feeds/speaker-reminders'), s=await read('feeds/speaker-reminders-sent');
+    const sent=new Set((s&&s.ids)||[]), m=mt(new Date());
+    const reqs=((q&&q.requests)||[]).filter(r=>r && r.on);
+    const due=reqs.filter(r=>!sent.has(r.id) && (r.on<m.ymd || (r.on===m.ymd && m.mins>=9*60)));
+    /* the flow rightly skips anyone whose bio and headshot are already in */
+    const missed=[];
+    for(const r of due.slice(0,12)){
+      let done=false;
+      if(r.tok){ try{ done=!!(await read('feeds/si-'+r.tok)) || !!(await read('feeds/sm-'+r.tok)); }catch(e){} }
+      if(!done) missed.push(r);
+    }
+    const next=reqs.filter(r=>r.on>=m.ymd && !sent.has(r.id)).map(r=>r.on).sort()[0];
+    const nextN=next? reqs.filter(r=>r.on===next).length : 0;
+    if(missed.length) return row('rem','Speaker Reminders Flow','bad', missed.length+' follow-up'+(missed.length>1?'s were':' was')+' due and not sent. The Summit HQ - Speaker Reminders flow (7:17 AM Mountain) may be off or failing.',
+      missed.slice(0,5).map(r=>dayLabel(r.on)+': '+(r.to||'')));
+    return row('rem','Speaker Reminders Flow','ok', next? 'Next: '+dayLabel(next)+' ('+nextN+' follow-up'+(nextN>1?'s':'')+').' : 'No follow-ups scheduled.');
+  }
+  async function chkAdds(){
+    const q=await read('feeds/speaker-adds'), s=await read('feeds/speaker-adds-sent');
+    const sent=new Set((s&&s.ids)||[]), runAt=lastWeekdayRun(11*60);
+    const adds=((q&&q.adds)||[]).filter(a=>a && !sent.has(a.id));
+    const late=adds.filter(a=>Date.parse(a.addedAt||0)<runAt);
+    if(late.length) return row('add','New Speakers to Register Flow','bad', late.length+' speaker'+(late.length>1?'s were':' was')+' added before this morning&rsquo;s email and '+(late.length>1?'were':'was')+' not on it. The Summit HQ - New Speakers to Register flow may be off or failing.',
+      late.slice(0,5).map(a=>(a.name||'')+', added '+when(a.addedAt)));
+    return row('add','New Speakers to Register Flow','ok', adds.length? adds.length+' speaker'+(adds.length>1?'s':'')+' for the next weekday morning&rsquo;s email.' : 'Nothing waiting for Bernie&rsquo;s next list.');
+  }
+  function chkErrors(){
+    const L=window.__hqErrs||[];
+    if(!L.length) return row('err','Errors on This Page','ok','None since this page was opened.');
+    const n=L.reduce((a,e)=>a+e.n,0);
+    return row('err','Errors on This Page','warn', n+' error'+(n>1?'s':'')+' since this page was opened. Usually harmless; they are sent to the team log below.',
+      L.slice(-4).reverse().map(e=>when(e.at)+': '+e.msg.slice(0,110)));
+  }
+  const NOT_WATCHED=['Board Members to Register','Team Travel Answers','Speaker Info Answers','Speaker Emailed Files','Monday Task Email','Registration List to Sponsors','Sponsorship Team Emails'];
+
+  async function run(){
+    if(running) return running;
+    running=(async()=>{
+      const out=[chkSaving(), chkStorage()];
+      if(await getDb()){
+        for(const f of [chkSpeakerEmails, chkReminders, chkAdds]){
+          try{ out.push(await f()); }catch(e){ out.push(row(f.name,f===chkSpeakerEmails?'Speaker Emails Flow':f===chkReminders?'Speaker Reminders Flow':'New Speakers to Register Flow','off','Could not be checked just now ('+esc(e&&e.message||e)+').')); }
+        }
+      }
+      out.push(chkErrors());
+      last={at:new Date().toISOString(), rows:out};
+      paint();
+      return last;
+    })();
+    try{ return await running; } finally{ running=null; }
+  }
+  const worst=rows=>rows.some(r=>r.level==='bad')? 'bad' : rows.some(r=>r.level==='warn')? 'warn' : 'ok';
+
+  /* ---------- the left-menu row, the top bar, the panel ---------- */
+  function placeBtn(){
+    const foot=document.querySelector('.hq .mast-right'); if(!foot) return;
+    if(!btn){
+      btn=document.createElement('button'); btn.type='button'; btn.className='theme-btn'; btn.id='hh-btn'; btn.title='System Health';
+      btn.innerHTML='<svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></svg><i class="hh-dot" aria-hidden="true"></i><span>System Health</span>';
+      btn.addEventListener('click',openPanel);
+      dot=btn.querySelector('.hh-dot');
+    }
+    const before=document.getElementById('help-btn') || document.getElementById('rail-sync') || document.getElementById('theme-btn');
+    if(before && (btn.parentNode!==foot || btn.nextSibling!==before)) foot.insertBefore(btn,before);
+  }
+  function paint(){
+    placeBtn();
+    if(!last) return;
+    const w=worst(last.rows);
+    if(dot){ dot.className='hh-dot '+w; }
+    if(btn) btn.setAttribute('aria-label','System Health: '+(w==='bad'?'needs attention':w==='warn'?'a warning':'all working'));
+    const bad=last.rows.filter(r=>r.level==='bad');
+    const sig=bad.map(r=>r.key+':'+r.line).join('|');
+    let gone=''; try{ gone=sessionStorage.getItem('hq:health-dismissed')||''; }catch(e){}
+    if(!bar){
+      bar=document.createElement('div'); bar.id='hh-bar'; bar.setAttribute('role','alert'); bar.hidden=true;
+      document.body.appendChild(bar);
+    }
+    if(!bad.length || sig===gone){ bar.hidden=true; }
+    else {
+      bar.innerHTML='<span><b>'+esc(bad[0].title)+':</b> '+bad[0].line+(bad.length>1? ' (and '+(bad.length-1)+' more)' : '')+'</span>'
+        +'<button type="button" class="hh-go">Details</button><button type="button" class="hh-x" aria-label="Hide until something else changes">&times;</button>';
+      bar.querySelector('.hh-go').onclick=openPanel;
+      bar.querySelector('.hh-x').onclick=()=>{ try{ sessionStorage.setItem('hq:health-dismissed',sig); }catch(e){} bar.hidden=true; };
+      bar.hidden=false;
+    }
+    if(modal) drawPanel();
+  }
+  function report(){
+    if(!last) return '';
+    return ['Summit HQ System Health, '+new Date(last.at).toLocaleString('en-US'),'']
+      .concat(last.rows.map(r=>(r.level==='ok'?'OK':r.level==='warn'?'WARNING':r.level==='bad'?'PROBLEM':'NOT CHECKED')+' | '+r.title+': '+r.line.replace(/&rsquo;/g,"'")+(r.list.length? '\n   - '+r.list.join('\n   - ') : '')))
+      .concat(['', 'Errors on this page:'].concat((window.__hqErrs||[]).slice(-15).map(e=>'  '+e.at+' '+e.kind+' x'+e.n+' '+e.msg+(e.src?' ['+e.src+']':''))))
+      .join('\n');
+  }
+  async function teamLog(){
+    if(!(await getDb())) return null;
+    try{ const d=await read(LOG); return (d&&Array.isArray(d.entries))? d.entries : []; }catch(e){ return null; }
+  }
+  async function drawPanel(){
+    if(!modal || !last) return;
+    const body=modal.querySelector('.pst-body');
+    const w=worst(last.rows);
+    body.innerHTML='<div class="hh-sum"><i class="hh-big '+w+'"></i><span><b>'+(w==='bad'?'Something Needs Attention':w==='warn'?'Working, With a Warning':'Everything Is Working')+'</b>. Checked '+when(last.at)+'; it checks again every 5 minutes while Summit HQ is open.</span></div>'
+      +'<div class="hh-grid">'+last.rows.map(r=>'<div class="hh-row '+r.level+'"><div class="hh-t">'+esc(r.title)+'</div><div class="hh-l">'+r.line+'</div>'
+        +(r.list.length? '<ul>'+r.list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>' : '')+r.extra+'</div>').join('')+'</div>'
+      +'<p class="hh-quiet">Not watched from here (their work never shows in Summit HQ&rsquo;s data until it lands, so a stop cannot be seen): '+NOT_WATCHED.join(', ')+'. Power Automate emails a flow&rsquo;s owner when it keeps failing.</p>'
+      +'<h4>Team Error Log (Last 7 Days)</h4><div class="hh-log"><p class="hh-quiet">Loading&hellip;</p></div>'
+      +'<div class="hh-acts"><button type="button" class="btn" data-hh="again">Check Again</button><button type="button" class="btn ghost" data-hh="copy">Copy Report</button></div>';
+    body.querySelector('[data-hh="again"]').onclick=async e=>{ e.target.disabled=true; e.target.textContent='Checking…'; await run(); };
+    body.querySelector('[data-hh="copy"]').onclick=async e=>{ try{ await navigator.clipboard.writeText(report()); e.target.textContent='Copied'; }catch(x){ e.target.textContent='Could Not Copy'; } };
+    const entries=await teamLog(), box=body.querySelector('.hh-log'); if(!box) return;
+    const recent=(entries||[]).filter(x=>Date.now()-Date.parse(x.at)<7*864e5).slice(-25).reverse();
+    box.innerHTML=entries===null? '<p class="hh-quiet">The team log could not be read just now.</p>'
+      : !recent.length? '<p class="hh-quiet">No errors logged by anyone in the last 7 days.</p>'
+      : '<table class="pst-tbl hh-tbl"><thead><tr><th>When</th><th>Who</th><th>Where</th><th>What</th></tr></thead><tbody>'
+        +recent.map(x=>'<tr><td>'+esc(when(x.at))+'</td><td>'+esc(x.who||'')+'</td><td>'+esc((x.tab||'').replace('#','')||'')+'</td><td>'+esc(x.msg)+(x.n>1?' ('+x.n+' times)':'')+'</td></tr>').join('')+'</tbody></table>';
+  }
+  function openPanel(){
+    if(!modal){
+      modal=document.createElement('div'); modal.className='pst-modal'; modal.id='hh-modal';
+      modal.innerHTML='<div class="pst-box hh-box" role="dialog" aria-label="System Health"><div class="pst-hd"><b>System Health</b><button type="button" class="btn ghost">Close</button></div><div class="pst-body"></div></div>';
+      const close=()=>{ modal.remove(); modal=null; document.removeEventListener('keydown',esc_); };
+      const esc_=e=>{ if(e.key==='Escape') close(); };
+      modal.querySelector('.pst-hd .btn').onclick=close;
+      modal.addEventListener('click',e=>{ if(e.target===modal) close(); });
+      document.addEventListener('keydown',esc_);
+      document.body.appendChild(modal);
+      modal.querySelector('.pst-body').innerHTML='<p class="hh-quiet">Checking&hellip;</p>';
+    }
+    run();
+  }
+
+  /* ---------- the team's log: errors from everyone's screen in one place ---------- */
+  let shipT=null, shippedUpTo=0, shipping=false;
+  function shipSoon(){ clearTimeout(shipT); shipT=setTimeout(ship, 60*1000); }
+  async function ship(){
+    if(shipping) return; const L=window.__hqErrs||[];
+    const fresh=L.filter(e=>Date.parse(e.at)>shippedUpTo); if(!fresh.length) return;
+    if(!(await getDb())) return;
+    shipping=true;
+    try{
+      let who=''; try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); who=(s&&(s.name||s.email))||''; }catch(e){}
+      const cur=await read(LOG); const keep=Date.now()-KEEP_DAYS*864e5;
+      let entries=((cur&&cur.entries)||[]).filter(x=>Date.parse(x.at)>keep);
+      fresh.forEach(e=>{ entries.push({at:e.at, who, kind:e.kind, msg:e.msg, src:e.src, n:e.n, tab:e.tab||'', ua:navigator.userAgent.replace(/^.*?(Edg|Chrome|Firefox|Safari)\/(\d+).*$/,'$1 $2')}); });
+      entries=entries.slice(-LOG_MAX);
+      await db.doc(LOG).set({updatedAt:new Date().toISOString(), entries});
+      shippedUpTo=Math.max.apply(null, fresh.map(e=>Date.parse(e.at)));
+    }catch(e){}
+    finally{ shipping=false; }
+  }
+  window.addEventListener('hq:err', ()=>{ shipSoon(); if(last){ last.rows=last.rows.map(r=>r.key==='err'? chkErrors() : r); paint(); } });
+
+  /* ---------- start once signed in ---------- */
+  function start(){
+    if(started) return; started=true;
+    placeBtn();
+    setTimeout(run, 20*1000);
+    setInterval(()=>{ if(!document.hidden) run(); }, CHECK_EVERY);
+    setInterval(placeBtn, 4000);
+    if((window.__hqErrs||[]).length) shipSoon();
+  }
+  const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
+      try{ window.ResourcesSession.onChange(()=>{ if(window.ResourcesSession.current()) start(); }); }catch(e){} return; }
+    start(); };
+  window.__hqHealth={run, report, open:openPanel, last:()=>last};
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
 })();
 </script>
