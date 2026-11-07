@@ -7778,11 +7778,11 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Go to <b>github.com/GitMISMO/summit-hq</b> and download the current <code>index.html</code>. Always start from the copy on GitHub; an older copy would undo recent changes.</li>
         <li>Make the change. Keep the sign-in block at the very top of the file.</li>
         <li>On the repository page choose <b>Add file &rarr; Upload files</b>, drop in the new <code>index.html</code>, write a short note of what changed, and press <b>Commit changes</b>.</li>
-        <li>It is live on resources.mismo.org about a minute later. Reload Summit HQ to see it.</li>
+        <li>GitHub runs Summit HQ&rsquo;s checks, and only when they pass does it go live on resources.mismo.org, about 4 minutes after the upload. Reload Summit HQ to see it. If a check fails, the page stays as it was and GitHub emails you which check failed.</li>
       </ol>
       <p>Two helpers live in the <code>lib</code> folder beside <code>index.html</code> and load only when they are used: <code>docx.js</code> writes the resume as a Word file, and <code>pdfjs-lib.js</code> with <code>pdfjs-worker.js</code> read a hotel contract PDF in Add A Summit. Leave that folder in place; without it those two buttons stop working.</p>
       <p>Each part of Summit HQ waits until its own information has loaded before it saves anything, so a slow connection can never write a blank copy over real work. If a save is tried too early it says <b>Still loading</b>; try again a moment later.</p>
-      <p><b>Automatic checks.</b> Every upload to GitHub runs Summit HQ&rsquo;s checks (the <code>tests</code> folder) a few minutes later: every tab opens, saving and merging work, each summit keeps its own details, Past Summits, the Board and Team emails, and System Health. If any check fails, GitHub emails whoever uploaded, and the repository&rsquo;s <b>Actions</b> tab says which one. If you cannot tell why, put the previous <code>index.html</code> back.</p>
+      <p><b>Automatic checks.</b> Every upload to GitHub runs Summit HQ&rsquo;s checks (the <code>tests</code> folder) before it goes live: every tab opens, saving and merging work, each summit keeps its own details, Past Summits, the Board and Team emails, System Health, and files sent in from outside can never run inside the page. If any check fails, the change does not go live, GitHub emails whoever uploaded, and the repository&rsquo;s <b>Actions</b> tab says which one. In an emergency only, a change can go live without the checks: <b>Actions &rarr; Summit HQ Checks and Publish &rarr; Run workflow</b>, tick <b>Skip the checks</b>.</p>
       <p>Never put names, emails, contracts or other private details in the page; they belong in the saved information, which only arrives after sign-in. If a change breaks the page, open <code>index.html</code>&rsquo;s history on GitHub and put the previous version back the same way.</p>
     </div>
   </details>
@@ -26778,7 +26778,7 @@ function drawBoardAsk(){
   const prevB=boardList().find(z=>z.i===bdBulk.prev)||boardList()[0];
   R.classList.add('bd-prev');
   R.appendChild(el('div','bd-prevh','Preview — '+prevB.n+' · to '+prevB.e+(prevB.cc?' · copy to '+prevB.cc:'')));
-  const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview';
+  const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview'; fr.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');
   R.appendChild(fr);
   bdEmail(prevB,(bdAsk(prevB.i)||{}).tok||'preview').then(em=>{ fr.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+em.html+'</body>'; });
   body.appendChild(L); body.appendChild(R); box.appendChild(body); m.appendChild(box);
@@ -27247,7 +27247,7 @@ function drawSpeakerEmail(){
     if(sent) acts.appendChild(el('span','se-note','Last sent '+localDay(sent.at)+(sent.to?' to '+sent.to:'')+'.'));
     L.appendChild(acts);
   }
-  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks';
+  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; pf.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');
   R.appendChild(pf);
   function paintPrev(){
     const v=seVars(p,seOpen.itok);
@@ -27463,12 +27463,19 @@ async function openBioFile(id){
     u.addEventListener('click',()=>{ patch(p.i,{bio:tx.value.trim()},'a bio from their file'); u.textContent='Done — It’s Their Bio Now'; render(); });
     acts.appendChild(c); acts.appendChild(u);
   }
-  const url=URL.createObjectURL(blob);
+  /* a download only: opened in a tab it must never be read as a web page */
+  const url=URL.createObjectURL(new Blob([blob],{type:'application/octet-stream'}));
   const dl=document.createElement('a'); dl.className='btn ghost'; dl.href=url; dl.download=p.biofile.name||'bio'; dl.textContent='Download the File';
   acts.appendChild(dl);
   L.appendChild(acts);
-  if(/pdf/i.test(blob.type) || /\.pdf$/i.test(p.biofile.name)){
-    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Their bio file'; fr.src=url; R.appendChild(fr);
+  /* November 7, 2026: shown on the page only when it really is a PDF, and always shown as one —
+     a file sent in from outside saying it is a PDF while holding a web page would otherwise run
+     inside Summit HQ */
+  const head=new Uint8Array(await blob.slice(0,5).arrayBuffer());
+  const isPdf=String.fromCharCode.apply(null, head)==='%PDF-';
+  if(isPdf){
+    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Their bio file';
+    fr.src=URL.createObjectURL(new Blob([blob],{type:'application/pdf'})); R.appendChild(fr);
   } else {
     body.classList.add('one');
   }
@@ -27809,7 +27816,7 @@ function drawSpeakerBulk(){
     const v=Object.assign(p? seVars(p,tk) : {}, {missing:(p&&seMissing(p))||'bio and headshot'});
     return {subject:seFill(seBulk.subject,v), body:seFill(seBulk.body,v), itok:tk}; }));
   L.appendChild(acts);
-  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; R.appendChild(pf);
+  const pf=document.createElement('iframe'); pf.className='se-frame'; pf.title='How the email looks'; pf.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox'); R.appendChild(pf);
   function paint(){
     const p=byId(seBulk.prev)||pool[0]; if(!p){ pf.srcdoc=''; return; }
     const v=Object.assign(seVars(p, stOf(p).itok||'preview'),{missing:seMissing(p)||'bio and headshot'});
@@ -28453,7 +28460,7 @@ function drawTravelAsk(){
   const pp=ttList().find(z=>z.id===ttAsk.prev)||ttList()[0];
   if(pp){
     R.appendChild(el('div','bd-prevh','Preview — '+pp.n+' · to '+(pp.e||'no email yet')));
-    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview';
+    const fr=document.createElement('iframe'); fr.className='se-frame'; fr.title='Email preview'; fr.setAttribute('sandbox','allow-popups allow-popups-to-escape-sandbox');
     fr.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+ttEmail(pp,pp.tok||'preview').html+'</body>';
     R.appendChild(fr);
   }
