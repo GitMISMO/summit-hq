@@ -7670,6 +7670,9 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <h4>The New People Page (Being Tried)</h4>
       <ul>
         <li><b>Try the New People Page</b>, at the top of People, switches to it; <b>Back to the Current Page</b> switches back. Your choice is remembered in this browser, and both read and save the very same records, so nothing has to be moved or entered twice.</li>
+        <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, On the Event App, Registered, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
+        <li><b>The list comes a page at a time</b>, 20 to start. <b>Per Page</b> under the list changes it to 10, 20, 30, 40, 50 or All (remembered in this browser), and <b>Back</b> and <b>Next</b> move through the pages. Changing the filter or the search starts again at page 1.</li>
+        <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the furthest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
         <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
         <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
         <li><b>Hotel Nights</b> shows the MISMO Team&rsquo;s stays as one bar a person with the rooms each night, and anything to check before it goes to the hotel.</li>
@@ -25079,7 +25082,9 @@ startClock();
 /* ── THE NEW PEOPLE PAGE (Jonna, 2026-11-07) ── one list of everyone, each person in the
    right-hand panel. While it is switched on, the cards are still built underneath (the
    menus open them in the panel) but not shown. */
-#app-people.v2 .pp-bar, #app-people.v2 .pp-found, #app-people.v2 .pp-cards, #app-people.v2 .pp-wall{display:none!important}
+#app-people.v2 .pp-bar, #app-people.v2 .pp-found, #app-people.v2 .pp-cards{display:none!important}
+#app-people.v2 .pp-step{cursor:pointer}
+#app-people.v2 .pp-wall{margin-bottom:12px}
 #app-people .v2-hold{display:none}
 #app-people .pp-bar .v2-try{order:-1}
 #app-people .v2-counts{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;margin:0 0 10px}
@@ -25186,6 +25191,16 @@ html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-w
 #app-people .v2-seg2{align-self:flex-start}
 #app-people .v2-off-btn{align-self:flex-start}
 #app-people .v2-spon+.v2-spon{border-top:1px solid var(--line);padding-top:8px}
+#app-people .v2-pager{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:13px;color:var(--ink-2)}
+#app-people .v2-pg-n{flex:1 1 auto}
+#app-people .v2-pg-per select{font:inherit;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);color:var(--ink);margin-left:4px}
+#app-people .v2-pg-nav{display:inline-flex;align-items:center;gap:8px}
+#app-people .v2-pg-of{min-width:92px;text-align:center}
+#app-people .v2-dup{background:var(--warn-soft,#fbf1df);border:1px solid #f0d9a8;border-radius:8px;padding:9px 12px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}
+#app-people .v2-dup b{color:var(--warn,#9a6812)}
+#app-people .v2-merge-l{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow:auto}
+#app-people .v2-merge-l>div{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+#app-people .v2-merge-l small{color:var(--ink-3)}
 @media (max-width:1100px){#app-people .v2-counts{grid-template-columns:repeat(4,minmax(0,1fr))}#app-people .v2-hotel{grid-template-columns:1fr}}
 @media (max-width:640px){#app-people .v2-counts{grid-template-columns:repeat(2,minmax(0,1fr))}#app-people .v2-hb,#app-people .v2-kv{grid-template-columns:1fr}}
 </style>
@@ -25721,7 +25736,8 @@ function speakerWall(){
     const ring=el('span','pp-ring'); ring.appendChild(avatar(p,true)); b.appendChild(ring);
     b.appendChild(el('b',null,String(p.n||'').split(/\s+/)[0]||''));
     b.appendChild(el('small',null, nx? nx.t : 'All set'));
-    b.addEventListener('click',()=>showPersonRow(p.i));
+    /* on the new People page a face opens them on the right */
+    b.addEventListener('click',()=>{ if(v2On()) v2Open('p:'+p.i); else showPersonRow(p.i); });
     row.appendChild(b);
   });
   w.appendChild(row);
@@ -25733,6 +25749,10 @@ function speakerWall(){
     const t=el('div','pp-stept'); t.appendChild(el('span','pp-stepn',String(i+1))); t.appendChild(document.createTextNode(x.t)); st.appendChild(t);
     const bar=el('div','pp-sbar'); const f=el('i'); f.style.width=Math.round(c/spk.length*100)+'%'; bar.appendChild(f); st.appendChild(bar);
     st.appendChild(el('div','pp-stepc',c+' of '+spk.length));
+    /* on the new People page a step shows the speakers still waiting on it */
+    if(v2On()){ st.setAttribute('role','button'); st.tabIndex=0; st.title='Show the speakers still needing \u201c'+x.t+'\u201d';
+      const go=()=>{ ST.v2f='spk'; ST.v2step=x.k; ST.v2view='list'; ST.v2q=''; render(); };
+      st.addEventListener('click',go); st.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } }); }
     bars.appendChild(st);
   });
   w.appendChild(bars);
@@ -29067,13 +29087,39 @@ function v2Render(host){
     else { line.appendChild(document.createTextNode('Showing ')); line.appendChild(el('b',null,lab)); line.appendChild(document.createTextNode(' · '+pool.length+(f==='all'?' · click anyone to open them':'')));
       if(f!=='all'||stp){ const sa=el('button','se-lnk','Show Everyone'); sa.type='button'; sa.addEventListener('click',()=>{ ST.v2f='all'; ST.v2step=''; render(); }); line.appendChild(document.createTextNode(' · ')); line.appendChild(sa); } }
     root.appendChild(line);
-    root.appendChild(v2Table(pool.slice().sort((a,b)=>String(a.n).localeCompare(String(b.n)))));
+    /* Jonna, 2026-11-07: pages, not an endless scroll. 20 a page to start; 10 to 50 or all */
+    const sorted=pool.slice().sort((a,b)=>String(a.n).localeCompare(String(b.n)));
+    const sig=[f,ST.v2step||'',qq].join('|'); if(ST.v2sig!==sig){ ST.v2sig=sig; ST.v2page=0; }
+    const per=v2Per(), pages=per? Math.max(1,Math.ceil(sorted.length/per)) : 1;
+    if((ST.v2page||0)>=pages) ST.v2page=pages-1;
+    const pg=ST.v2page||0, from=per? pg*per : 0, to=per? Math.min(sorted.length,from+per) : sorted.length;
+    root.appendChild(v2Table(sorted.slice(from,to)));
+    if(sorted.length) root.appendChild(v2Pager(sorted.length,from,to,pg,pages,per));
   }
   /* the open person, as a card the panel takes */
   const hold=el('div','v2-hold');
   if(ST.v2open){ const x=v2Find(ST.v2open); if(x) hold.appendChild(v2Person(x)); }
   root.appendChild(hold);
-  host.insertBefore(root, host.firstChild);
+  /* under the speaker faces, which stay at the top */
+  const wall=host.querySelector(':scope > .pp-wall');
+  host.insertBefore(root, wall? wall.nextSibling : host.firstChild);
+}
+function v2Per(){ if(ST.v2per===undefined){ let v=20; try{ const x=localStorage.getItem('hq.people.v2per'); if(x!==null) v=Number(x); }catch(e){} ST.v2per=isNaN(v)?20:v; } return ST.v2per; }
+function v2Pager(total,from,to,pg,pages,per){
+  const w=el('div','v2-pager');
+  w.appendChild(el('span','v2-pg-n', total? 'Showing '+(from+1)+'\u2013'+to+' of '+total : ''));
+  const lw=el('label','v2-pg-per'); lw.appendChild(document.createTextNode('Per Page '));
+  const sel=document.createElement('select'); [[10,'10'],[20,'20'],[30,'30'],[40,'40'],[50,'50'],[0,'All']].forEach(([v,l])=>sel.appendChild(new Option(l,String(v))));
+  sel.value=String(per); sel.setAttribute('aria-label','How many people a page');
+  sel.addEventListener('change',()=>{ ST.v2per=Number(sel.value); ST.v2page=0; try{ localStorage.setItem('hq.people.v2per',sel.value); }catch(e){} render(); });
+  lw.appendChild(sel); w.appendChild(lw);
+  const nav=el('span','v2-pg-nav');
+  const go=n=>{ ST.v2page=n; render(); try{ document.querySelector('#app-people .v2-counts').scrollIntoView({block:'start',behavior:'smooth'}); }catch(e){} };
+  const b0=el('button','btn ghost','\u2039 Back'); b0.type='button'; b0.disabled=pg<=0; b0.addEventListener('click',()=>go(pg-1));
+  const b1=el('button','btn ghost','Next \u203a'); b1.type='button'; b1.disabled=pg>=pages-1; b1.addEventListener('click',()=>go(pg+1));
+  nav.appendChild(b0); nav.appendChild(el('span','v2-pg-of','Page '+(pg+1)+' of '+pages)); nav.appendChild(b1);
+  w.appendChild(nav);
+  return w;
 }
 function v2Find(id){ return v2Entries(true).find(x=>x.id===id) || null; }
 function v2Card(key){ try{ if(window.__pane) window.__pane.open('people:'+key); }catch(e){} }
@@ -29229,6 +29275,8 @@ function v2Person(x){
       const notes=Object.keys(p.nt||{}).map(k=>p.nt[k]).filter(Boolean);
       if(notes.length){ kv.appendChild(el('span',null,'Notes')); kv.appendChild(el('span',null,notes.join(' · '))); }
       hs.body.appendChild(kv); L.appendChild(hs); }
+    if(p){ const ms=v2MergeSec(p); if(v2Dups(p).length) wrap.appendChild(el('div','v2-dup','This looks like someone else on the list too. See Same Person Twice? below to merge them.'));
+      L.appendChild(ms); }
     /* one column: who they are, their headshot and bio, then their roles, then the note and
        history. Expanded: those on the left and the roles on the right. */
     [...L.children].forEach((n,i)=>{ n.style.order= i<2? String(i+1) : String(30+i); });
@@ -29242,6 +29290,83 @@ function v2Person(x){
       wrap.appendChild(rm); }
     box.appendChild(wrap);
   });
+}
+/* ---------- the same person twice: merge them (Jonna, 2026-11-07) ----------
+   The record open on the right is kept; the other one's details fill in anything it is
+   missing, every summit's progress is put together (the furthest step, sessions, the
+   invitation), and the other record is retired. Undo puts both back. */
+const v2Rank={'':0,invited:1,declined:2,accepted:3};
+function v2MergeSt(a,b){
+  a=a||{}; b=b||{};
+  const out=Object.assign({},b,a);
+  out.on=!!(a.on||b.on); out.speaking=!!(a.speaking||b.speaking); out.prospect=!!(a.prospect||b.prospect);
+  out.role=a.role||b.role||out.role;
+  out.steps=Object.assign({},b.steps||{},a.steps||{});
+  out.ses=[...new Set([].concat(a.ses||[],b.ses||[]))];
+  const ia=a.invite||'', ib=b.invite||'';
+  if((v2Rank[ib]||0)>(v2Rank[ia]||0)){ out.invite=ib; out.inviteAt=b.inviteAt||''; } else { out.invite=ia; out.inviteAt=a.inviteAt||b.inviteAt||''; }
+  ['welcome','itok','iat','iask','mat','mPhotoAt','mFileAt','mWhat','note','pnote'].forEach(k=>{ if(!a[k] && b[k]) out[k]=b[k]; });
+  if(a.note && b.note && a.note!==b.note) out.note=a.note+' \u00b7 '+b.note;
+  if(a.pnote && b.pnote && a.pnote!==b.pnote) out.pnote=a.pnote+' \u00b7 '+b.pnote;
+  return out;
+}
+function v2Merge(keepId, dropId){
+  const A=byId(keepId), B=byId(dropId); if(!A || !B || keepId===dropId) return false;
+  /* one Undo puts both records back, and the sessions back with the other one */
+  const snap=id=>ST.docs.has(id)?JSON.parse(JSON.stringify(ST.docs.get(id))):null;
+  const moved=[]; const ue={group:[{id:keepId,prev:snap(keepId)},{id:dropId,prev:snap(dropId)}],ses:moved,keep:keepId,drop:dropId};
+  undoStack.push(ue); if(undoStack.length>80) undoStack.shift();
+  try{ if(window.__hqUndo) window.__hqUndo.record('people','two records merged'); }catch(e){}
+  const da=Object.assign({},A,ST.docs.get(keepId)||{}), db=Object.assign({},B,ST.docs.get(dropId)||{});
+  const doc=Object.assign({},db,da,{i:keepId});
+  doc.n= String(db.n||'').trim().length>String(da.n||'').trim().length ? db.n : da.n;
+  ['e','t','c','bio','thumb','purl','li','biofile'].forEach(k=>{ if(!String(da[k]||'').trim() && db[k]) doc[k]=db[k]; });
+  doc.h=[...new Set([].concat(da.h||[],db.h||[]))];
+  doc.s=Object.assign({},db.s||{},da.s||{}); doc.nt=Object.assign({},db.nt||{},da.nt||{});
+  doc.pros=!!(da.pros||db.pros);
+  const st={}; new Set([...Object.keys(da.st||{}),...Object.keys(db.st||{})]).forEach(v=>{ st[v]=v2MergeSt((da.st||{})[v],(db.st||{})[v]); });
+  doc.st=st;
+  delete doc.gone; delete doc.mergedInto;
+  write(keepId,doc);
+  /* the other one is retired, not lost: it says where it went */
+  write(dropId,{i:dropId,n:db.n||'',gone:true,mergedInto:keepId,at:new Date().toISOString()});
+  /* the General Sessions and Workshop segments follow them across */
+  Object.keys(db.st||{}).forEach(v=>((db.st[v]||{}).ses||[]).forEach(k=>{
+    const had=(((da.st||{})[v]||{}).ses||[]).indexOf(k)>=0; if(!had) moved.push(k);
+    if(/^gs-/.test(k)) try{ if(window.__gsPerson){ window.__gsPerson(dropId,k,false); if(!had) window.__gsPerson(keepId,k,true); } }catch(e){}
+    if(/^wk-/.test(k)) try{ if(window.__wkPerson){ window.__wkPerson(dropId,k,false); if(!had) window.__wkPerson(keepId,k,true); } }catch(e){} }));
+  try{ speakerAddsTouch(keepId); speakerAddsTouch(dropId); }catch(e){}
+  try{ window.__hqFlash && window.__hqFlash((B.n||'The other record')+' is merged into '+(doc.n||'this one')); }catch(e){}
+  render(); return true;
+}
+/* someone who looks like the same person: same email, or the same first name at the same company */
+function v2Dups(p){
+  const em=v2Mail(p.e), first=String(p.n||'').trim().split(/\s+/)[0].toLowerCase(), co=String(p.c||'').trim().toLowerCase();
+  return all().filter(q=>q.i!==p.i && (
+    (em && v2Mail(q.e)===em) ||
+    (first.length>1 && co && String(q.c||'').trim().toLowerCase()===co && String(q.n||'').trim().split(/\s+/)[0].toLowerCase()===first)));
+}
+function v2MergeSec(p){
+  const s=v2Sec('Same Person Twice?');
+  const dups=v2Dups(p);
+  const row=q=>{ const r=el('div'); const t=el('span'); t.appendChild(el('b',null,q.n||'Unnamed'));
+      t.appendChild(el('small',null,' '+[q.e,q.c].filter(Boolean).join(' \u00b7 ')+(onSummit(q)?' \u00b7 on this summit':'')+(isProspect(q)?' \u00b7 prospect':''))); r.appendChild(t);
+      const b=el('button','btn ghost','Merge Into This One'); b.type='button'; let armed=false;
+      b.title='Keeps this record and brings in anything '+(q.n||'they')+' have that it is missing. Undo puts both back.';
+      b.addEventListener('click',()=>{ if(!armed){ armed=true; b.textContent='Click Again to Merge'; b.classList.add('armed'); return; } v2Merge(p.i,q.i); });
+      r.appendChild(b); return r; };
+  if(dups.length){ const d=el('div','v2-dup'); d.appendChild(el('b',null,dups.length===1?'This may be the same person:':'These may be the same person:'));
+    s.body.appendChild(d); const l=el('div','v2-merge-l'); dups.forEach(q=>l.appendChild(row(q))); s.body.appendChild(l); }
+  const q=document.createElement('input'); q.type='search'; q.className='v2-ta'; q.placeholder='Find the other record by name, email or company';
+  q.dataset.keep=p.i+':v2merge'; q.value=ST.v2mq&&ST.v2mq.id===p.i? ST.v2mq.q : '';
+  const hits=el('div','v2-merge-l');
+  const draw=()=>{ hits.textContent=''; const t=q.value.replace(/\s+/g,' ').trim().toLowerCase(); ST.v2mq={id:p.i,q:q.value};
+    if(t.length<2) return;
+    all().filter(x=>x.i!==p.i && [x.n,x.e,x.c,x.t].join(' ').toLowerCase().indexOf(t)>=0).slice(0,8).forEach(x=>hits.appendChild(row(x))); };
+  q.addEventListener('input',draw); draw();
+  s.body.appendChild(q); s.body.appendChild(hits);
+  s.body.appendChild(el('div','pnote','This record is kept. The other one\u2019s email, title, bio, headshot and progress on each summit fill in anything missing here, and it is retired. Undo puts both back.'));
+  return s;
 }
 /* the button on the Next line: only things that open something to check, or tick a box */
 function v2Action(x,n){
@@ -29498,6 +29623,13 @@ function init(){
       if(e.prev) map.set(e.v,e.prev); else map.delete(e.v);
       if(ST.db){ try{ ST.db.doc(e.coll+'/'+e.v).set(e.prev||{}); }catch(x){} }
       if(e.coll==='board') pushBoardHeadcount();
+      render(); return;
+    }
+    if(e.group){
+      for(const g of e.group){ if(g.prev) write(g.id,g.prev); else await removeDoc(g.id); }
+      (e.ses||[]).forEach(k=>{
+        if(/^gs-/.test(k)) try{ window.__gsPerson && (window.__gsPerson(e.keep,k,false), window.__gsPerson(e.drop,k,true)); }catch(x){}
+        if(/^wk-/.test(k)) try{ window.__wkPerson && (window.__wkPerson(e.keep,k,false), window.__wkPerson(e.drop,k,true)); }catch(x){} });
       render(); return;
     }
     if(e.prev){ write(e.id,e.prev); }
