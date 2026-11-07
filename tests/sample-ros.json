@@ -1,0 +1,879 @@
+{
+"docs": {
+"meta/config": {
+"activeSummitId": "w2027",
+"end": "2027-01-14",
+"gridSteps": [
+{
+"key": "survey",
+"label": "Survey Chairs for Showstoppers",
+"offset": 104,
+"taskId": "t031"
+},
+{
+"key": "final",
+"label": "Final Adjustments and Finalize the Schedule",
+"offset": 97,
+"taskId": "t034"
+}
+],
+"name": "Winter Summit 2027",
+"roster": [
+"Amy Moses",
+"Bernardo Jordan",
+"Jonna Critchley",
+"Kelly Bradshaw",
+"Perry Williams",
+"Rosalyn Milliken",
+"Vanessa Rios"
+],
+"start": "2027-01-11",
+"venue": "InterContinental New Orleans"
+},
+"summits/w2027": {
+"name": "Winter Summit 2027",
+"start": "2027-01-11",
+"end": "2027-01-14",
+"venue": "InterContinental New Orleans",
+"order": 7
+},
+"summits/f2027": {
+"name": "Fall Summit 2027",
+"start": "2027-09-13",
+"end": "2027-09-16",
+"venue": "The Bethesdan Hotel, Bethesda",
+"order": 8
+},
+"notes/nmuzqk7oi5n8q": {
+"text": "Sample meeting note",
+"createdAt": "2026-10-08T16:13:29.442Z"
+},
+"notes/nmvwu0qq5a7fa": {
+"text": "Sample meeting note",
+"createdAt": "2026-10-31T20:06:43.277Z"
+},
+"tasks/amua9r5tmwdfs": {
+"task": "Sample Task 1",
+"owner": "Jonna Critchley",
+"due": "2026-11-12",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "This Summit Only",
+"daysOut": 60
+},
+"tasks/t002": {
+"task": "Sample Task 2",
+"owner": "Kelly Bradshaw",
+"due": "2026-10-15",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"flagged": true,
+"daysOut": 88,
+"sort": 500
+},
+"tasks/t003": {
+"task": "Sample Task 3",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Not Started",
+"scope": "Fall Only"
+},
+"tasks/t004": {
+"task": "Sample Task 4",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Not Started",
+"scope": "Fall Only"
+},
+"tasks/t005": {
+"task": "Sample Task 5",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Not Started",
+"scope": "Fall Only"
+},
+"tasks/t006": {
+"task": "Sample Task 6",
+"owner": "Jonna Critchley",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "In Progress",
+"scope": "All Summits",
+"daysOut": 66
+},
+"tasks/t007": {
+"task": "Sample Task 7",
+"owner": "Perry Williams",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "In Progress",
+"scope": "All Summits",
+"flagged": true,
+"daysOut": 66
+},
+"tasks/t008": {
+"task": "Sample Task 8",
+"owner": "Amy Moses",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits",
+"flagged": true,
+"automate": true,
+"sort": 600
+},
+"tasks/t009": {
+"task": "Sample Task 9",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits",
+"automate": true
+},
+"tasks/t010": {
+"task": "Sample Task 10",
+"owner": "Jonna Critchley",
+"due": "2026-11-20",
+"dueKind": "date",
+"status": "Complete",
+"scope": "Unassigned",
+"automate": true,
+"daysOut": 52
+},
+"tasks/t011": {
+"task": "Sample Task 11",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "Unassigned"
+},
+"tasks/t012": {
+"task": "Sample Task 12",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t013": {
+"task": "Sample Task 13",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t014": {
+"task": "Sample Task 14",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t015": {
+"task": "Sample Task 15",
+"owner": "Vanessa Rios",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t016": {
+"task": "Sample Task 16",
+"owner": "Vanessa Rios",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t017": {
+"task": "Sample Task 17",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t018": {
+"task": "Sample Task 18",
+"owner": "Jonna Critchley",
+"due": "",
+"dueKind": "none",
+"status": "Complete",
+"scope": "All Summits"
+},
+"tasks/t019": {
+"task": "Sample Task 19",
+"owner": "Bernardo Jordan",
+"due": "2026-09-03",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 130
+},
+"tasks/t020": {
+"task": "Sample Task 20",
+"owner": "Jonna Critchley",
+"due": "2026-09-04",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 129
+},
+"tasks/t021": {
+"task": "Sample Task 21",
+"owner": "Jonna Critchley",
+"due": "2026-09-04",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 129
+},
+"tasks/t022": {
+"task": "Sample Task 22",
+"owner": "Amy Moses",
+"due": "",
+"dueKind": "now",
+"status": "Being Discussed",
+"scope": "All Summits",
+"flagged": true,
+"sort": 200
+},
+"tasks/t023": {
+"task": "Sample Task 23",
+"owner": "Amy Moses",
+"due": "2026-10-22",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"flagged": true,
+"daysOut": 81,
+"sort": 100
+},
+"tasks/t024": {
+"task": "Sample Task 24",
+"owner": "Jonna Critchley",
+"due": "2026-09-25",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 108
+},
+"tasks/t025": {
+"task": "Sample Task 25",
+"owner": "Jonna Critchley",
+"due": "2026-09-17",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"flagged": true,
+"daysOut": 116,
+"sort": 700
+},
+"tasks/t026": {
+"task": "Sample Task 26",
+"owner": "Amy Moses",
+"due": "",
+"dueKind": "now",
+"status": "Being Discussed",
+"scope": "All Summits",
+"flagged": true,
+"sort": 300
+},
+"tasks/t027": {
+"task": "Sample Task 27",
+"owner": "Amy Moses",
+"due": "",
+"dueKind": "now",
+"status": "Being Discussed",
+"scope": "All Summits",
+"flagged": true,
+"sort": 400
+},
+"tasks/t028": {
+"task": "Sample Task 28",
+"owner": "Perry Williams",
+"due": "",
+"dueKind": "now",
+"status": "Need to Discuss",
+"scope": "All Summits",
+"sort": 500
+},
+"tasks/t029": {
+"task": "Sample Task 29",
+"owner": "Amy Moses",
+"due": "2026-09-18",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 115
+},
+"tasks/t030": {
+"task": "Sample Task 30",
+"owner": "Jonna Critchley",
+"due": "2026-09-25",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 108
+},
+"tasks/t031": {
+"task": "Sample Task 31",
+"owner": "Jonna Critchley",
+"due": "2026-09-29",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 104
+},
+"tasks/t033": {
+"task": "Sample Task 32",
+"owner": "Jonna Critchley",
+"due": "2026-10-06",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 97
+},
+"tasks/t034": {
+"task": "Sample Task 33",
+"owner": "Jonna Critchley",
+"due": "2026-10-06",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 97
+},
+"tasks/t035": {
+"task": "Sample Task 34",
+"owner": "Jonna Critchley",
+"due": "2026-10-15",
+"dueKind": "date",
+"status": "Complete",
+"scope": "All Summits",
+"daysOut": 88
+},
+"tasks/t036": {
+"task": "Sample Task 35",
+"owner": "Vanessa Rios",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 66
+},
+"tasks/t037": {
+"task": "Sample Task 36",
+"owner": "Jonna Critchley",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 66
+},
+"tasks/t038": {
+"task": "Sample Task 37",
+"owner": "Kelly Bradshaw",
+"due": "2026-11-11",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 61
+},
+"tasks/t039": {
+"task": "Sample Task 38",
+"owner": "Jonna Critchley",
+"due": "2026-11-11",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 61
+},
+"tasks/t040": {
+"task": "Sample Task 39",
+"owner": "Kelly Bradshaw",
+"due": "2026-11-11",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 61
+},
+"tasks/t041": {
+"task": "Sample Task 40",
+"owner": "Rosalyn Milliken",
+"due": "2026-11-11",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 61
+},
+"tasks/t042": {
+"task": "Sample Task 41",
+"owner": "Amy Moses",
+"due": "2026-11-11",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 61
+},
+"tasks/t043": {
+"task": "Sample Task 42",
+"owner": "Jonna Critchley",
+"due": "2026-11-23",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 49
+},
+"tasks/t044": {
+"task": "Sample Task 43",
+"owner": "Amy Moses",
+"due": "2026-11-23",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 49
+},
+"tasks/t045": {
+"task": "Sample Task 44",
+"owner": "Jonna Critchley",
+"due": "2026-11-23",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 49
+},
+"tasks/t046": {
+"task": "Sample Task 45",
+"owner": "Jonna Critchley",
+"due": "2026-11-23",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 49
+},
+"tasks/t047": {
+"task": "Sample Task 46",
+"owner": "Rosalyn Milliken",
+"due": "2026-11-23",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 49
+},
+"tasks/t048": {
+"task": "Sample Task 47",
+"owner": "Jonna Critchley",
+"due": "2026-11-30",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 42
+},
+"tasks/t049": {
+"task": "Sample Task 48",
+"owner": "Jonna Critchley",
+"due": "2026-11-30",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 42
+},
+"tasks/t050": {
+"task": "Sample Task 49",
+"owner": "Jonna Critchley",
+"due": "2026-12-01",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 41
+},
+"tasks/t051": {
+"task": "Sample Task 50",
+"owner": "Jonna Critchley",
+"due": "2026-12-01",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "For Next Summit",
+"daysOut": 41
+},
+"tasks/t052": {
+"task": "Sample Task 51",
+"owner": "Jonna Critchley",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 34
+},
+"tasks/t053": {
+"task": "Sample Task 52",
+"owner": "Rosalyn Milliken",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 34
+},
+"tasks/t054": {
+"task": "Sample Task 53",
+"owner": "Bernardo Jordan",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 34
+},
+"tasks/t055": {
+"task": "Sample Task 54",
+"owner": "Rosalyn Milliken",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 34
+},
+"tasks/t056": {
+"task": "Sample Task 55",
+"owner": "Jonna Critchley",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 34
+},
+"tasks/t057": {
+"task": "Sample Task 56",
+"owner": "Jonna Critchley",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "For Next Summit",
+"daysOut": 34
+},
+"tasks/t058": {
+"task": "Sample Task 57",
+"owner": "Jonna Critchley",
+"due": "2026-12-08",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "For Next Summit",
+"daysOut": 34
+},
+"tasks/t059": {
+"task": "Sample Task 58",
+"owner": "Jonna Critchley",
+"due": "2026-12-15",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "For Next Summit",
+"daysOut": 27
+},
+"tasks/t060": {
+"task": "Sample Task 59",
+"owner": "Jonna Critchley",
+"due": "2026-12-15",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "For Next Summit",
+"daysOut": 27
+},
+"tasks/t061": {
+"task": "Sample Task 60",
+"owner": "Jonna Critchley",
+"due": "2026-12-28",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 14
+},
+"tasks/t062": {
+"task": "Sample Task 61",
+"owner": "Jonna Critchley",
+"due": "2026-12-28",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 14
+},
+"tasks/t063": {
+"task": "Sample Task 62",
+"owner": "Kelly Bradshaw",
+"due": "2026-12-28",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 14
+},
+"tasks/t064": {
+"task": "Sample Task 63",
+"owner": "Rosalyn Milliken",
+"due": "2026-12-28",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 14
+},
+"tasks/t065": {
+"task": "Sample Task 64",
+"owner": "Vanessa Rios",
+"due": "2026-12-28",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 14
+},
+"tasks/t066": {
+"task": "Sample Task 65",
+"owner": "Jonna Critchley",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t067": {
+"task": "Sample Task 66",
+"owner": "Bernardo Jordan",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t068": {
+"task": "Sample Task 67",
+"owner": "Perry Williams",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t069": {
+"task": "Sample Task 68",
+"owner": "Amy Moses",
+"due": "2026-12-07",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 35
+},
+"tasks/t070": {
+"task": "Sample Task 69",
+"owner": "Perry Williams",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t071": {
+"task": "Sample Task 70",
+"owner": "Perry Williams",
+"due": "2027-01-05",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 6
+},
+"tasks/t072": {
+"task": "Sample Task 71",
+"owner": "Kelly Bradshaw",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t073": {
+"task": "Sample Task 72",
+"owner": "Perry Williams",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t074": {
+"task": "Sample Task 73",
+"owner": "Amy Moses",
+"due": "2026-12-07",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 35
+},
+"tasks/t075": {
+"task": "Sample Task 74",
+"owner": "Jonna Critchley",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t076": {
+"task": "Sample Task 75",
+"owner": "Amy Moses",
+"due": "2026-12-12",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 30
+},
+"tasks/t077": {
+"task": "Sample Task 76",
+"owner": "Amy Moses",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t078": {
+"task": "Sample Task 77",
+"owner": "Amy Moses",
+"due": "2027-01-04",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 7
+},
+"tasks/t079": {
+"task": "Sample Task 78",
+"owner": "Vanessa Rios",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 66
+},
+"tasks/t082": {
+"task": "Sample Task 79",
+"owner": "Jonna Critchley",
+"due": "2026-12-07",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": 35
+},
+"tasks/t083": {
+"task": "Sample Task 80",
+"owner": "Perry Williams",
+"due": "2027-01-12",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": -1
+},
+"tasks/t084": {
+"task": "Sample Task 81",
+"owner": "Amy Moses",
+"due": "2027-01-18",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "All Summits",
+"daysOut": -7
+},
+"tasks/amupzfqlu85jd": {
+"task": "Sample Task 82",
+"owner": "Amy Moses",
+"due": "2026-10-29",
+"dueKind": "date",
+"status": "Complete",
+"scope": "This Summit Only",
+"flagged": true,
+"summitId": "w2027",
+"daysOut": 74
+},
+"tasks/amuwpow4j1xkp": {
+"task": "Sample Task 83",
+"owner": "Amy Moses",
+"due": "2026-11-06",
+"dueKind": "date",
+"status": "Being Discussed",
+"scope": "This Summit Only",
+"flagged": true,
+"summitId": "w2027",
+"daysOut": 66
+},
+"tasks/amv9ttourp55a": {
+"task": "Sample Task 84",
+"owner": "Perry Williams",
+"due": "2026-12-14",
+"dueKind": "date",
+"status": "Not Started",
+"scope": "This Summit Only",
+"summitId": "w2027",
+"daysOut": 28
+},
+"discussion/d01": {
+"text": "Sample agenda item",
+"status": "resolved",
+"owner": "Amy Moses",
+"taskId": "t022",
+"createdAt": "2026-10-03T12:00:00Z",
+"log": ""
+},
+"discussion/d02": {
+"text": "Sample agenda item",
+"status": "resolved",
+"owner": "Kelly Bradshaw",
+"taskId": "t002",
+"createdAt": "2026-10-03T12:00:00Z",
+"log": ""
+},
+"discussion/d03": {
+"text": "Sample agenda item",
+"status": "resolved",
+"owner": "Jonna Critchley",
+"taskId": "t025",
+"createdAt": "2026-10-03T12:00:00Z",
+"log": ""
+},
+"discussion/d04": {
+"text": "Sample agenda item",
+"status": "open",
+"owner": "Amy Moses",
+"taskId": "t027",
+"createdAt": "2026-10-03T12:00:00Z",
+"sort": 200,
+"log": ""
+},
+"discussion/d05": {
+"text": "Sample agenda item",
+"status": "open",
+"owner": "Amy Moses",
+"taskId": "t026",
+"createdAt": "2026-10-03T12:00:00Z",
+"sort": 300,
+"log": ""
+},
+"discussion/d06": {
+"text": "Sample agenda item",
+"status": "open",
+"owner": "Amy Moses",
+"taskId": "t008",
+"createdAt": "2026-10-03T12:00:00Z",
+"sort": 400,
+"log": ""
+},
+"discussion/dmu5wmj3wovjs": {
+"text": "Sample agenda item",
+"status": "resolved",
+"owner": "Amy Moses",
+"taskId": "t023",
+"createdAt": "2026-10-04T12:00:00Z",
+"sort": 100,
+"log": ""
+}
+}
+}
