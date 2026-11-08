@@ -7362,7 +7362,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Send the speaker email.</b> On the <b>Speaker Emails &amp; Follow-Ups</b> card on People, press <b>Choose Speakers to Email</b> and tick who gets it, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
           <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. Anyone who has not sent theirs gets a reminder every week on the day their email went, until it is in; see <b>Speaker Emails &amp; Follow-Ups</b> on People to see who is next, or to switch the reminders off for someone. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
           <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
-          <li><b>See who still owes you something</b> on People: the <b>What Still Has To Happen</b> card, or <b>Need Something From Us</b> on the new People page.</li>
+          <li><b>See who still owes you something</b> on People: the <b>Need Something From Us</b> box at the top.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
         <h4>Emails You Get</h4>
@@ -7667,9 +7667,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
   <details class="hp-sec">
     <summary><span class="hp-n">12</span>Speakers, Sponsors and the Board, Start to Finish</summary>
     <div class="hp-in">
-      <h4>The New People Page (Being Tried)</h4>
+      <h4>The People Page</h4>
       <ul>
-        <li><b>Try the New People Page</b>, at the top of People, switches to it; <b>Back to the Current Page</b> switches back. Your choice is remembered in this browser, and both read and save the very same records, so nothing has to be moved or entered twice.</li>
         <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, On the Event App, Registered, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
         <li><b>The list comes a page at a time</b>, 20 to start. <b>Per Page</b> under the list changes it to 10, 20, 30, 40, 50 or All (remembered in this browser), and <b>Back</b> and <b>Next</b> move through the pages. Changing the filter or the search starts again at page 1.</li>
         <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the latest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
@@ -7695,6 +7694,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
       </ol>
       <h4>The People Tab Tools</h4>
+      <p>Each of these opens on the right from <b>Full Lists</b>, <b>Emails &amp; Asks</b> or <b>+ Add a Person</b> at the top of People, or from a person&rsquo;s own panel.</p>
       <ul>
         <li><b>Confirmed Speakers</b> lists this Summit&rsquo;s speakers.</li>
         <li><b>Speaker Prospects</b> is who you might ask to speak. Mark each one <b>Invited</b>, <b>Accepted</b> or <b>Declined</b>. Accepted makes them a Confirmed Speaker; Declined keeps them on the list for future Summits. <b>Edit</b> on a row opens their name, email, title and company to change right there, with a <b>Notes for This Summit</b> box (who suggested them, the topic, when to follow up).</li>
@@ -28904,7 +28904,10 @@ async function sessionFile(){
    every email still opens its own preview first.
    ============================================================ */
 const V2KEY='hq.people.v2';
-function v2On(){ try{ return localStorage.getItem(V2KEY)==='1'; }catch(e){ return false; } }
+/* Jonna, 2026-11-07: "let's just move to the new look, don't need both". It is the People
+   page now. The cards are still built underneath (hidden) because the menus open them on the
+   right, and if the page itself ever fails to draw, the cards show instead of a blank tab. */
+function v2On(){ return true; }
 function v2Set(on){
   try{ localStorage.setItem(V2KEY,on?'1':'0'); }catch(e){}
   try{ if(window.__pane) window.__pane.close(); }catch(e){}
@@ -29070,9 +29073,6 @@ function v2Render(host){
     ['A Speaker Prospect','Someone you might ask to speak',()=>v2Card('prosOpen')],
     ['Someone on the MISMO Team','Staff, the meetings team, facilitators, the architect or a guest',()=>v2Card('ttOpen')]
   ]); addm.querySelector('.btn').className='btn'; bar.appendChild(addm);
-  const back=el('button','se-lnk v2-back','Back to the Current Page'); back.type='button';
-  back.addEventListener('click',()=>v2Set(false));
-  bar.appendChild(back);
   root.appendChild(bar);
 
   if((ST.v2view||'list')==='hotel'){ root.appendChild(v2HotelView()); }
