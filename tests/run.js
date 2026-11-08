@@ -268,7 +268,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.fill('#hq-pane input[data-keep="v2tt-arr:pat-two"]', '2027-01-10'); await s.page.dispatchEvent('#hq-pane input[data-keep="v2tt-arr:pat-two"]', 'change');
     await s.page.waitForTimeout(2500);
     expect(s.store['team-travel'].docs['team-travel/nola'].ppl['pat-two'].arr === '2027-01-10', 'the arrival date typed in the panel was not saved to the team list');
-    await s.page.evaluate(() => [...document.querySelectorAll('#hq-pane .tstep')].find(b => /Added to the agenda/.test(b.textContent)).click());
+    await s.page.evaluate(() => [...document.querySelectorAll('#hq-pane .tstep')].find(b => /Placed on a Session|Added to the agenda/.test(b.textContent)).click());
     await s.page.waitForTimeout(2500);
     const doc = await s.page.evaluate(async () => { const db = await window.claude.use('db'); return (await db.doc('people/pat-two').get()).data(); });
     expect(doc.st.nola.steps && doc.st.nola.steps.agenda, 'ticking a step in the panel was not saved');
