@@ -7476,7 +7476,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>Member 360</td><td>resources.mismo.org/member-360</td><td>Member organizations. General Sessions uses it to tell which presenters work for lenders.</td></tr>
           <tr><td>Power Automate flows</td><td>make.powerautomate.com (MBA environment)</td><td>The automatic emails, the portal copy into Summit HQ and the weekly task email.</td></tr>
           <tr><td>SharePoint lists</td><td><b>Sponsorship Requests</b> on the MISMO Summits site</td><td>The old <b>Summit HQ People</b> and <b>Summit HQ Tasks</b> lists in Jonna&rsquo;s OneDrive are no longer used.</td></tr>
-          <tr><td>Registration numbers</td><td>Aptify, the view <b>Event Attendance w/ Prompt</b></td><td>Vanessa&rsquo;s registration dashboard exports these; the Registration tab loads them.</td></tr>
+          <tr><td>Registration numbers</td><td>Aptify, through the report <b>SummitHQ_Registration</b> (reports.mba.org, Mismo folder)</td><td>Emailed every Friday at 6 AM Eastern to mismosummit@mba.org; the Registration tab loads it by itself.</td></tr>
           <tr><td>The event app</td><td>Vanessa builds it each Summit</td><td>Summit HQ gives her the speakers file and sessions file ready to upload.</td></tr>
         </tbody>
       </table></div>
@@ -7658,7 +7658,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
     <div class="hp-in">
       <p>The weekly registration report for the Summit picked, compared with last year at the same week. Week 0 is the Friday before the Summit opens.</p>
       <ul>
-        <li><b>Update the Numbers</b> loads the files from Vanessa&rsquo;s registration dashboard (exported from Aptify). <b>Week-by-Week History</b> takes a Friday&rsquo;s numbers typed in.</li>
+        <li><b>The numbers update themselves every Friday.</b> At 6 AM Eastern, Reporting Services emails that week&rsquo;s registrations from Aptify (the report <b>SummitHQ_Registration</b> in the Mismo folder on reports.mba.org) to mismosummit@mba.org, with Jonna copied. The <b>Summit HQ - Registration Weekly Pull</b> flow saves it, and the first time anyone opens Summit HQ afterward, Registration takes in this year&rsquo;s registrants (in person and virtual), last year&rsquo;s for the same summit, and that Friday&rsquo;s row on Week-by-Week History. A company keeps the category it was given before; a new one gets one from its Aptify company type. Sponsorships carry over from the last week that had them. Nobody uploads anything.</li>
+        <li><b>Update the Numbers</b> still loads files by hand (Vanessa&rsquo;s dashboard exports), and <b>Week-by-Week History</b> takes a Friday&rsquo;s numbers typed in. Whichever came in last stands.</li>
         <li>Registrations come from the Aptify view <b>Event Attendance w/ Prompt</b>, run with the Summit&rsquo;s name so it counts in-person and virtual. Sponsorship dollars come from the Sponsorship Portal&rsquo;s Money tab.</li>
         <li>Each week is kept as it was reported. Cancelled orders drop out of Aptify, so rebuilding an old week from today&rsquo;s export can come out lower.</li>
         <li>The bottom of the tab explains exactly how each number is counted.</li>
@@ -7737,7 +7738,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
         <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company, name, job title and In-Person or Virtual (read by the Registration List to Sponsors email).</li>
         <li><b>People &rarr; Bernie.</b> Each speaker added on People is written to a small ready-made list that the <b>New Speakers to Register</b> flow reads every weekday morning, so Bernie gets one email rather than one per speaker.</li>
-        <li><b>Aptify &rarr; Registration.</b> Through the files from Vanessa&rsquo;s registration dashboard.</li>
+        <li><b>Aptify &rarr; Registration.</b> The SummitHQ_Registration report is emailed every Friday morning and Summit HQ loads it by itself (see Registration). Files from Vanessa&rsquo;s dashboard can still be loaded by hand.</li>
       </ul>
     </div>
   </details>
@@ -7756,6 +7757,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>Summit HQ Daily Health Check</td><td>Every day at 12:13 PM Mountain, whether or not anyone has Summit HQ open. It emails only when something is wrong: a speaker email stuck, a follow-up that was due and did not go, a speaker left off Bernie&rsquo;s morning list, or 15 or more errors in a day</td><td>Jonna</td><td>Summit HQ - Daily Health Check</td></tr>
           <tr><td>Speaker bio and headshot by email</td><td>An email with attachments from a speaker (or forwarded with their address in it) lands in Jonna&rsquo;s inbox</td><td>No email: the headshot and bio file land on their row on People</td><td>Summit HQ - Speaker Emailed Files (reads feeds/speaker-mail-map; saves to feeds/sm-&lt;their code&gt; and feeds/speaker-mail-in)</td></tr>
           <tr><td>Speaker bio and headshot answers</td><td>A speaker sends the form from the link in their speaker email</td><td>No email: the bio, title, company, LinkedIn and headshot land on their row on People</td><td>Summit HQ - Speaker Info Answers (saves each answer to feeds/si-&lt;their code&gt;)</td></tr>
+          <tr><td>Summit HQ Registration Pull</td><td>Every Friday at 6:00 AM Eastern</td><td>mismosummit@mba.org, with Jonna copied. No one needs to open it: the flow saves the attached file and Registration loads it</td><td>Reporting Services subscription on SummitHQ_Registration (reports.mba.org, Mismo folder); Summit HQ - Registration Weekly Pull saves it</td></tr>
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna and Amy</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
@@ -8077,7 +8079,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
       if(ST.ready && ST.writeSid===sid && Date.now()-ST.lastWrite<4000) return;
       /* November 5, 2026: what this page took in, so a save sends only what was changed here */
       ST.seen=(s && s.exists && s.data())? JSON.parse(JSON.stringify(s.data())) : null;
-      ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; ST.readOk=true; render(); };
+      ST.doc=(s && s.exists && s.data())? take(s.data()) : null; ST.ready=true; ST.readOk=true; render();
+      setTimeout(()=>{ try{ autoPull(sid); }catch(e){} }, 400); };
     if(typeof ref.onSnapshot==='function'){
       try{ ST.unsub=ref.onSnapshot(got, ()=>{ if(sid===ST.sid){ ST.ready=true; render(); } }); return; }catch(e){}
     }
@@ -8114,6 +8117,79 @@ textarea,input,select{font-family:var(--ui,inherit)}
   }); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{ try{ joinUndo(); }catch(e){} });
   else setTimeout(()=>{ try{ joinUndo(); }catch(e){} },0);
+
+  /* ---------- the weekly Aptify email (Jonna, 2026-11-08) ----------
+     "automate the weekly summit registration report like Member 360 just did with its weekly
+     Aptify pull". Reporting Services (reports.mba.org › Reports › Mismo › SummitHQ_Registration)
+     emails every MISMO Summit registration from the last 20 months, as CSV, to
+     mismosummit@mba.org every Friday at 6 AM Eastern. The flow "Summit HQ - Registration Weekly
+     Pull" saves it to feeds/registration-pull {name, subject, receivedAt, csv}. The first time
+     this summit's numbers are opened after a new email, it is loaded here exactly as Update the
+     Numbers would: this year's registrants (in person and virtual), last year's same summit, and
+     that Friday's row on Week-by-Week History. Nobody uploads anything. Update the Numbers still
+     works by hand; whichever is newer stands. */
+  const pullDone=new Set();
+  const normCo=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  /* a company's category: what it was given before (Vanessa's lists), else from Aptify's company type */
+  function catFromType(company, type){
+    const c=normCo(company), t=String(type||'').toLowerCase();
+    if(/mortgagebankersassociation|^mba$|^mismo/.test(c)) return 'MBA/MISMO';
+    if(/federal home loan|government sponsored/.test(t) || /fanniemae|freddiemac|ginniemae|fhlb/.test(c)) return 'GSE (incl. FHLBs)';
+    if(/government|regulator|federal agency/.test(t)) return 'Government Agency';
+    if(/technology/.test(t)) return 'Tech Provider';
+    if(/mortgage bank|bank|thrift|credit union|servicer|reverse mortgage|lender|investment bank/.test(t)) return 'Lender/Servicer';
+    if(/association/.test(t)) return 'Association';
+    if(/title|insurance|professional services|appraisal|law|consult|provider/.test(t)) return 'Service Provider';
+    if(/nonprofit|non-profit/.test(t)) return 'Association';
+    return t? 'Other' : '';
+  }
+  async function autoPull(sid){
+    if(sid!==ST.sid || !ST.readOk || pullDone.has(sid)) return;
+    const db=await store(); if(!db) return;
+    let f=null; try{ const x=await db.doc('feeds/registration-pull').get(); f=x&&x.exists? x.data() : null; }catch(e){ return; }
+    if(!f || !f.csv || sid!==ST.sid) return;
+    pullDone.add(sid);
+    const d=doc(), got=(d.files.pull||{}).receivedAt||'';
+    if(got && String(got)>=String(f.receivedAt||'')) return;          /* already in */
+    const fd=firstDay(); if(!fd) return;
+    const raw=rowsOf(f.csv, 'pull.csv').filter(r=>!/cancel/i.test(String(r.status||'')));
+    if(!raw.length) return;
+    const near=(iso, centre, days)=>{ const x=d0(iso); return !!x && Math.abs(x-centre)<=days*DAY; };
+    const lastYear=new Date(fd.getTime()-364*DAY);
+    const curRaw=raw.filter(r=>near(r.meeting_date, fd, 10)), priorRaw=raw.filter(r=>near(r.meeting_date, lastYear, 45));
+    if(!curRaw.length) return;                                          /* not this summit's email */
+    /* categories already given to a company stay as they were */
+    const known=new Map();
+    ['prior','current'].forEach(k=>{ const L=d[k]; if(!L||!L.rows) return; const ic=L.cols.indexOf('company'), ik=L.cols.indexOf('category');
+      if(ic<0||ik<0) return; L.rows.forEach(r=>{ const c=normCo(r[ic]); if(c && r[ik]) known.set(c, r[ik]); }); });
+    const person=r=>{ const p=asPerson(r,0); p.registration_id=String(r.registration_id||p.registration_id);
+      p.category=known.get(normCo(p.company)) || catOf(catFromType(p.company, r.company_type)); return p; };
+    const toList=L=>({cols:COLS.slice(), rows:L.map(person).map(p=>COLS.map(c=>p[c]==null?'':p[c]))});
+    step('the weekly Aptify registration email');
+    const at=new Date().toISOString(), src='Weekly Aptify email ('+(f.name||'SummitHQ_Registration')+')';
+    d.current=toList(curRaw); d.files.current={file:src, at, by:'Weekly Aptify pull'};
+    if(priorRaw.length){ d.prior=toList(priorRaw); d.files.prior={file:src, at, by:'Weekly Aptify pull'}; }
+    /* that Friday's row */
+    const rep=date10(f.receivedAt)||todayIso(), wk=weeksFor(rep), yr=fd.getUTCFullYear();
+    if(wk!=null){
+      const cur=d.current.rows.map(r=>Object.fromEntries(COLS.map((c,i)=>[c,r[i]])));
+      const inP=cur.filter(r=>r.format!=='Virtual').length, rev=cur.reduce((a,r)=>a+(num(r.reg_revenue)||0),0);
+      const mine=d.weekly.filter(r=>num(r.summit_year)===yr).sort((a,b)=>num(b.weeks_prior)-num(a.weeks_prior));
+      const lastSp=(mine.slice().reverse().find(r=>num(r.sponsorships)!=null)||{}).sponsorships;
+      const sp=num(lastSp);
+      const row={summit_year:yr, weeks_prior:wk, week_label:weekLabel(wk), report_date:rep,
+        summit:(venue()&&venue().name)||'', total_registered:cur.length, in_person:inP, virtual:cur.length-inP,
+        mba_mismo:cur.filter(r=>r.category==='MBA/MISMO').length, registration_revenue:Math.round(rev),
+        sponsorships:sp, registration_plus_sponsorships:sp==null? null : Math.round(rev)+sp,
+        source:'Aptify weekly email'+(sp!=null?' + the last sponsorship total':'')+', '+fmtShort(rep)};
+      Object.keys(row).forEach(k=>{ if(row[k]==null||row[k]==='') delete row[k]; });
+      d.weekly=d.weekly.filter(r=>!(num(r.summit_year)===yr && num(r.weeks_prior)===wk)).concat([row]);
+    }
+    d.files.pull={receivedAt:f.receivedAt||at, at, rows:raw.length};
+    save(); render(true);
+    flash('This week’s registrations came in from Aptify: '+nf.format(d.current.rows.length)+' registered');
+  }
+  window.__regPullNow=()=>{ pullDone.delete(ST.sid); return autoPull(ST.sid); };
 
   /* ---------- the counts, as Vanessa's page works them out ---------- */
   function weekly(){
@@ -32297,6 +32373,14 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
       missed.slice(0,5).map(r=>dayLabel(r.on)+': '+(r.to||'')));
     return row('rem','Speaker Reminders Flow','ok', next? 'Next: '+dayLabel(next)+' ('+nextN+' follow-up'+(nextN>1?'s':'')+').' : 'No follow-ups scheduled.');
   }
+  /* the weekly Aptify registration email (Jonna, 2026-11-08): Fridays 6 AM Eastern */
+  async function chkRegPull(){
+    const f=await read('feeds/registration-pull');
+    if(!f || !f.receivedAt) return row('reg','Registration Weekly Pull','warn','No weekly Aptify registration email has come in yet. Reporting Services sends SummitHQ_Registration to mismosummit@mba.org every Friday at 6 AM Eastern; the Summit HQ - Registration Weekly Pull flow saves it.');
+    const age=(Date.now()-Date.parse(f.receivedAt))/86400000;
+    if(age>8) return row('reg','Registration Weekly Pull','bad','The last weekly Aptify registration email came '+when(f.receivedAt)+'. Check the Summit HQ - Registration Weekly Pull flow in Power Automate, and that the SummitHQ_Registration subscription on reports.mba.org still runs.');
+    return row('reg','Registration Weekly Pull','ok','Last came '+when(f.receivedAt)+'. Registration loads it by itself.');
+  }
   async function chkAdds(){
     const q=await read('feeds/speaker-adds'), s=await read('feeds/speaker-adds-sent');
     const sent=new Set((s&&s.ids)||[]), runAt=lastWeekdayRun(11*60);
@@ -32320,8 +32404,8 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
     running=(async()=>{
       const out=[chkSaving(), chkStorage()];
       if(await getDb()){
-        for(const f of [chkSpeakerEmails, chkReminders, chkAdds]){
-          try{ out.push(await f()); }catch(e){ out.push(row(f.name,f===chkSpeakerEmails?'Speaker Emails Flow':f===chkReminders?'Speaker Reminders Flow':'New Speakers to Register Flow','off','Could not be checked just now ('+esc(e&&e.message||e)+').')); }
+        for(const f of [chkSpeakerEmails, chkReminders, chkAdds, chkRegPull]){
+          try{ out.push(await f()); }catch(e){ out.push(row(f.name,f===chkSpeakerEmails?'Speaker Emails Flow':f===chkReminders?'Speaker Reminders Flow':f===chkRegPull?'Registration Weekly Pull':'New Speakers to Register Flow','off','Could not be checked just now ('+esc(e&&e.message||e)+').')); }
         }
       }
       out.push(chkErrors());

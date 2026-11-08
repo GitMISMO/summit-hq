@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-08
 
+- Registration loads itself every Friday: the SummitHQ_Registration report is emailed from Aptify at 6 AM Eastern, the Summit HQ - Registration Weekly Pull flow saves it, and Summit HQ takes it in; System Health shows when it last came
 - Schedule: facilitator choices come from the MMS's facilitator list instead of the Initiative Hub's
 
 ## 2026-11-07
