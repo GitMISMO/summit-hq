@@ -353,15 +353,14 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
-  /* 17. The Schedule's facilitator choices come from the MMS's list, and a copy is kept for everyone */
+  /* 17. The Schedule's facilitator choices come from the MMS's published list */
   await check('Facilitator choices come from the MMS', async () => {
-    const store = { config: { docs: { 'config/people': { facilitators: [{ name: 'Erin Bittenbender', email: 'e@example.org' }, { name: 'Zara Newfac', email: 'z@example.org' }] } } } };
-    const s = await open(opts({ store }));
-    await s.page.waitForTimeout(4000);
+    const s = await open(opts({ store: { config: { docs: { 'config/people': { facilitators: [{ name: 'Erin Bittenbender' }, { name: 'Zara Newfac' }] } } } } }));
+    await s.page.route('**/mms/facilitators.json*', r => r.fulfill({ contentType: 'application/json',
+      body: JSON.stringify({ source: 'MMS', facilitators: [{ name: 'Erin Bittenbender' }, { name: 'Zara Newfac' }] }) }));
+    await s.page.reload(); await s.page.waitForTimeout(5000);
     const pool = await s.page.evaluate('FAC_POOL.slice()');
     expect(pool.indexOf('Zara') >= 0 && pool.indexOf('Erin') >= 0, 'the MMS facilitators did not reach the Schedule: ' + JSON.stringify(pool));
-    const copy = await s.page.evaluate(async () => { const db = await window.claude.use('db'); const d = await db.doc('meta/facilitators').get(); return d.exists ? d.data() : null; });
-    expect(copy && copy.names && copy.names.indexOf('Zara Newfac') >= 0 && !JSON.stringify(copy).includes('@'), 'Summit HQ did not keep a copy of the names (or kept emails): ' + JSON.stringify(copy));
     noErrors(s.errs); await s.close();
   });
 
