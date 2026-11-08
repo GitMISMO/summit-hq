@@ -384,6 +384,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const w = (d.weekly || []).find(r => r.summit_year === 2027 && r.report_date === '2026-10-30');
     expect(w && w.total_registered === 2 && w.in_person === 1 && w.virtual === 1 && w.registration_revenue === 1098, 'that Friday\'s row was not added: ' + JSON.stringify(w));
     expect(d.files && d.files.pull && d.files.pull.receivedAt === '2026-10-30T11:02:00Z', 'the email was not marked as taken in');
+    expect((d.weekly || []).filter(r => r.summit_year === 2027 && r.weeks_prior === w.weeks_prior).length === 1, 'the week was added twice');
     noErrors(s.errs); await s.close();
   });
 
