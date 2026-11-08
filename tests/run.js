@@ -392,6 +392,49 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 19. The sponsors' weekly list: Kelly's wording, the finished email in the feed, and what was sent */
+  await check('The sponsors\' weekly list wording and sent record', async () => {
+    const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status';
+    const csv = [H,
+      '1001,Ann Lender,Sample Bank,ann@bank.example,In-Person,2026-10-01,899.00,CTO,Independent Mortgage Bank,Paid,Member,82690,MISMO Winter Summit,2027-01-11,SHIPPED',
+      '1002,Tom Tech,Tech Co,tom@tech.example,Virtual,2026-10-20,199.00,VP,Technology Solution Provider,Paid,Member,83115,MISMO Winter Summit Virtual,2027-01-11,SHIPPED'].join('\r\n');
+    const store = {
+      'feed-registration-pull': { doc: { name: 'SummitHQ_Registration.csv', subject: 'Summit HQ Registration Pull', receivedAt: '2026-10-30T11:02:00Z', csv } },
+      'sponsor-email': { docs: { 'sponsor-email/main': { subject: 'MISMO {summit} List for Sponsors', body: 'Hello sponsors,\n\nWe have {count} registrants as of {asof}.' } } },
+      'feed-sponsor-list-sent': { doc: { runs: [{ at: '2026-10-30T16:02:00Z', venue: 'nola', summit: 'Winter', subject: 'Last Friday', html: '<p>Hi</p>',
+        list: '﻿Company,Name\r\nSample Bank,Ann Lender\r\n', to: [{ company: 'Sample Sponsor Co', name: 'Pat Sponsor', email: 'pat@sponsor.example' }] }] } }
+    };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(9000);
+    const feed = async () => s.page.evaluate(async () => { const db = await window.claude.use('db'); const x = await db.doc('feeds/sponsor-list').get(); return x.exists ? x.data() : null; });
+    let win = (((await feed()) || {}).summits || []).find(x => x.venue === 'nola');
+    expect(win && /^MISMO .+ List for Sponsors$/.test(win.subject || ''), 'the feed does not carry Kelly\'s subject: ' + (win && win.subject));
+    const h = String(win.html || '');
+    expect(h.includes('We have 2 registrants') && h.includes('Kelly Bradshaw') && h.includes('unable to provide email addresses') && !h.includes('{count}') && !h.includes('Amy Moses'),
+      'the finished email is not right: ' + h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 400));
+    const txt = await s.page.locator('#rg-spon').innerText();
+    expect(/Weekly List to Sponsors/.test(txt) && /Next Send/i.test(txt) && /November 20/.test(txt), 'the card does not show the schedule: ' + txt.slice(0, 300));
+    expect(await s.page.locator('#rg-spon iframe').count() >= 1, 'no preview of the email');
+    /* what went: open the Friday, see who got it */
+    await s.page.locator('#rg-spon .sp-run').first().click();
+    const sent = await s.page.locator('#sp-sent').innerText();
+    expect(/Sample Sponsor Co/.test(sent) && /pat@sponsor\.example/.test(sent), 'the sent record does not show who got it: ' + sent.slice(0, 300));
+    /* Kelly changes the wording and saves; the feed follows */
+    await s.page.fill('#sp-subject', 'Your {summit} Registrants');
+    await s.page.locator('#rg-spon button', { hasText: 'Save' }).first().click();
+    await s.page.waitForTimeout(7000);
+    expect(s.store['sponsor-email'].docs['sponsor-email/main'].subject === 'Your {summit} Registrants', 'the wording was not saved');
+    win = (((await feed()) || {}).summits || []).find(x => x.venue === 'nola');
+    expect(win && /^Your .+ Registrants$/.test(win.subject || ''), 'the feed did not pick up the new wording: ' + (win && win.subject));
+    /* a test goes to the signed-in person only */
+    await s.page.locator('#rg-spon button', { hasText: 'Send a Test to Me' }).click();
+    await s.page.waitForTimeout(1500);
+    const q = ((s.store['feed-speaker-email'] || {}).doc || {}).requests || [];
+    const tq = q.find(r => /^sp-test-/.test(r.id));
+    expect(tq && tq.to === 'tester@example.org' && /^\[Test\] /.test(tq.subject) && /Kelly Bradshaw/.test(tq.html), 'the test was not queued to the signed-in person only: ' + JSON.stringify(tq || q).slice(0, 300));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
