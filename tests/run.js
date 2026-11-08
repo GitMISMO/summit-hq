@@ -313,6 +313,31 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 15. The website's agenda: General Sessions goes to feeds/website-agenda only once it is switched on */
+  await check('General Sessions reaches the website agenda once switched on', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/gs-spk').set({ i: 'gs-spk', n: 'Gail Speaker', e: 'gail@example.org', t: 'CTO', c: 'Sample Bank', thumb: 'data:image/png;base64,iVBORw0KGgo=',
+        st: { nola: { on: true, role: 'speaker', ses: ['gs-g1'] } } });
+      await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
+        { id: 'g1', kind: 'Keynote', title: 'The Year Ahead', desc: 'Where the industry goes next.', dur: 45, people: [{ id: 'gs-spk', role: 'Speaker' }] },
+        { id: 'g2', kind: 'Break', title: 'Networking Break', dur: 20, people: [] }] }); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
+    expect(!(s.store['feed-website-agenda']), 'the running order reached the website before it was switched on');
+    await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Website Agenda/.test(b.textContent)).click());
+    await s.page.waitForTimeout(5000);
+    const f = ((s.store['feed-website-agenda'] || {}).doc || {}).summits || {};
+    const gs = f.nola && f.nola.gs;
+    expect(gs && gs.sessions.length === 2 && gs.sessions[0].title === 'The Year Ahead' && gs.sessions[0].start === '9:00 AM', 'the running order was not written for the website: ' + JSON.stringify(f).slice(0, 300));
+    const p = gs.sessions[0].people[0];
+    expect(p && p.name === 'Gail Speaker' && p.company === 'Sample Bank' && p.photo && !('email' in p) && !JSON.stringify(f).includes('gail@'), 'the speaker was not written right, or an email went out: ' + JSON.stringify(p));
+    await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Website Agenda/.test(b.textContent)).click());
+    await s.page.waitForTimeout(5000);
+    expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola), 'switching it off did not take the running order off');
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
