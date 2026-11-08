@@ -7663,6 +7663,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Registrations come from the Aptify view <b>Event Attendance w/ Prompt</b>, run with the Summit&rsquo;s name so it counts in-person and virtual. Sponsorship dollars come from the Sponsorship Portal&rsquo;s Money tab.</li>
         <li>Each week is kept as it was reported. Cancelled orders drop out of Aptify, so rebuilding an old week from today&rsquo;s export can come out lower.</li>
         <li>The bottom of the tab explains exactly how each number is counted.</li>
+        <li><b>Weekly List to Sponsors.</b> The card under the registrant lists shows when the Friday list to sponsors goes (12:00 PM Eastern, from week 7 through the Friday before the Summit), the email&rsquo;s wording and a preview. Kelly (or anyone who edits Summit HQ) can change the subject and message and press <b>Save</b>; the next Friday&rsquo;s email uses it. Fill-ins: {summit}, {opens}, {count} and {asof}. <b>Send a Test to Me</b> sends it to you only, marked [Test]. Kelly&rsquo;s signature and the line about email addresses are always added.</li>
+        <li><b>Sent</b> lists every Friday that went: when, how many sponsors and registrants, and the subject. Click one to see who got it (company, contact and email), the email exactly as it went, and the list that was attached. This is the record instead of copying Jonna and Kelly.</li>
       </ul>
     </div>
   </details>
@@ -7736,7 +7738,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Member 360 &rarr; General Sessions.</b> Member 360&rsquo;s list of organizations says which are lenders, so General Sessions can highlight lender presenters.</li>
         <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
-        <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company, name, job title and In-Person or Virtual (read by the Registration List to Sponsors email).</li>
+        <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company, name, job title and In-Person or Virtual (read by the Registration List to Sponsors email, together with that email&rsquo;s finished wording). That flow writes back what it sent each Friday, which Registration shows under Weekly List to Sponsors.</li>
         <li><b>People &rarr; Bernie.</b> Each speaker added on People is written to a small ready-made list that the <b>New Speakers to Register</b> flow reads every weekday morning, so Bernie gets one email rather than one per speaker.</li>
         <li><b>Aptify &rarr; Registration.</b> The SummitHQ_Registration report is emailed every Friday morning and Summit HQ loads it by itself (see Registration). Files from Vanessa&rsquo;s dashboard can still be loaded by hand.</li>
       </ul>
@@ -7761,7 +7763,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna and Amy</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
-          <tr><td>Registration List to Sponsors</td><td>Fridays at 12:00 PM Eastern, from week 7 (for Winter 2027, Friday, Nov 20) through the Friday before the Summit (Jan 8)</td><td>Every approved sponsor&rsquo;s contact, sent as Kelly (Send As; replies go to her), with Jonna and Kelly copied on each; the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
+          <tr><td>Registration List to Sponsors</td><td>Fridays at 12:00 PM Eastern, from week 7 (for Winter 2027, Friday, Nov 20) through the Friday before the Summit (Jan 8)</td><td>Every approved sponsor&rsquo;s contact, sent as Kelly (Send As; replies go to her), in the wording kept on Registration (Weekly List to Sponsors), where each Friday&rsquo;s send is recorded with who got it; the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
           <tr><td>Sponsorship invoice, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase (sponsor logos now go onto the website automatically, so Vanessa no longer gets a logo request)</td><td>Invoice: Bernie. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
           <tr><td>New sponsorship application</td><td>A sponsor submits on the Prospectus</td><td>The sponsorship team</td><td>Sponsorship Intake</td></tr>
         </tbody>
@@ -7901,6 +7903,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
     </div>
     <section class="ws-card" id="rg-hist"></section>
     <section class="ws-card" id="rg-list"></section>
+    <section class="ws-card" id="rg-spon" aria-label="Weekly list to sponsors"></section>
     <section class="ws-method" id="rg-method"></section>
   </div>
 </div>
@@ -24679,7 +24682,7 @@ startClock();
      A backup with a lot of headshots in it is a big file; that is the cost of it being
      a real backup. */
   const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','registration','private',
-    'board','team-travel','speaker-email','sponsor-agenda','archive'];
+    'board','team-travel','speaker-email','sponsor-agenda','sponsor-email','archive'];
   const VENUES=(()=>{ try{ const v=(window.__scheduleVenues? window.__scheduleVenues() : []).map(x=>x.id); return v.length? v : ['nola','slc','bethesda']; }catch(e){ return ['nola','slc','bethesda']; } })();
   const mk=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
   let DB=null;
@@ -24692,7 +24695,7 @@ startClock();
     const NICE={meta:'the settings', summits:'the summits', tasks:'the tasks',
       discussion:'the meeting', notes:'the notes', schedule:'the Schedule',
       resume:'the resume', people:'the people', photos:'the headshots', private:'the contact details',
-      sponsors:'the sponsors', trunk:'the trunk', registration:'the registration numbers'};
+      sponsors:'the sponsors', trunk:'the trunk', registration:'the registration numbers', 'sponsor-email':'the sponsors\u2019 email wording'};
     let n=0;
     for(const c of COLLECTIONS){
       n++;
@@ -27253,7 +27256,8 @@ const seFill=(t,v)=>seGroup(t,v)
   .replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? v[k] : m);
 /* the branded email: blank line = new paragraph, a short first line ending in ":" = heading,
    [words](link) = a link */
-function seHtml(subject, body){
+function seHtml(subject, body, opt){
+  opt=opt||{}; const SIG=opt.sig||SE_AMY;
   const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const A=(u,a)=>'<a href="'+e(u).replace(/"/g,'%22')+'" style="color:#0f6fa8;font-weight:700">'+a+'</a>';
   /* [words](link) is a link, and so is a bare web address */
@@ -27280,13 +27284,17 @@ function seHtml(subject, body){
    +'<table cellpadding="0" cellspacing="0" style="width:100%;max-width:640px;margin:0 auto;text-align:left;background:#ffffff;border:1px solid #d5e2ed;border-radius:8px"><tbody>'
    +'<tr><td style="background:#0d314c;padding:16px 32px;border-radius:7px 7px 0 0"><table cellpadding="0" cellspacing="0" style="width:100%"><tbody><tr><td style="vertical-align:middle"><table cellpadding="0" cellspacing="0"><tbody><tr><td style="background:#ffffff;border-radius:5px;padding:8px 12px"><img src="https://resources.mismo.org/member-360/mismo-logo-email.png" alt="MISMO" width="132" height="20" border="0" style="display:block;border:0;outline:none;width:132px;height:20px"></td></tr></tbody></table></td><td style="vertical-align:middle;text-align:right;'+F+';font-size:13px;font-weight:600;color:#a9d8f3">MISMO Summit</td></tr></tbody></table></td></tr>'
    +'<tr><td style="height:3px;line-height:3px;font-size:0;background:#74bfeb">&nbsp;</td></tr>'
-   +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">'+e(subject)+'</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+e((venueInfo().name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
+   +'<tr><td style="padding:26px 32px 4px;'+F+'"><div style="font-size:22px;line-height:1.25;font-weight:700;color:#0d314c">'+e(opt.title!=null? opt.title : subject)+'</div><div style="font-size:13px;color:#6c899f;margin-top:4px">'+e(opt.sub!=null? opt.sub : (venueInfo().name||'')+(seDates()?' · '+seDates():''))+'</div></td></tr>'
    +'<tr><td style="padding:16px 32px 8px;'+F+';font-size:15px;line-height:1.6;color:#0d314c">'+paras+'</td></tr>'
-   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(SE_AMY.name)+'</b><br><span style="color:#55657a">'+e(SE_AMY.title)+'</span><br><a href="mailto:'+SE_AMY.email+'" style="color:#0f6fa8">'+SE_AMY.email+'</a> &nbsp;|&nbsp; <a href="https://www.mismo.org" style="color:#0f6fa8">mismo.org</a></td></tr>'
+   +'<tr><td style="padding:4px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#0d314c"><b>'+e(SIG.name)+'</b><br><span style="color:#55657a">'+e(SIG.title)+'</span><br><a href="mailto:'+SIG.email+'" style="color:#0f6fa8">'+SIG.email+'</a> &nbsp;|&nbsp; <a href="https://www.mismo.org" style="color:#0f6fa8">mismo.org</a>'+(SIG.lines||[]).map(l=>'<br><span style="color:#55657a">'+e(l)+'</span>').join('')+'</td></tr>'
+   +(opt.note? '<tr><td style="padding:0 32px 22px;'+F+';font-size:12px;line-height:1.5;color:#6c899f">'+e(opt.note)+'</td></tr>' : '')
    +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
    +'</tbody></table></td></tr></tbody></table>';
 }
 
+/* Jonna, 2026-11-08: the same branded email for other senders (the sponsors' weekly list, as Kelly) */
+window.__mailHtml=(subject, body, opt)=>seHtml(subject, body, opt);
+window.__hqQueueMail=req=>seQueue(req);
 /* saving, and checking it took: the template goes to the shared copy and is read back from
    the server; a speaker's own email is kept on their record */
 async function seSaveNow(p){
@@ -32098,6 +32106,254 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
 })();
 </script>
 
+<style>
+/* the sponsors' weekly list: the wording Kelly keeps, and what went (Jonna, 2026-11-08) */
+#app-reg #rg-spon .sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));gap:16px;align-items:start}
+#app-reg #rg-spon .sp-sec{display:grid;gap:8px;min-width:0}
+#app-reg #rg-spon h3{margin:4px 0 0;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+#app-reg #rg-spon label{display:grid;gap:3px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+#app-reg #rg-spon input[type=text],#app-reg #rg-spon textarea{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);
+  background:var(--paper);border:1px solid var(--line-2);border-radius:6px;padding:7px 10px;width:100%;min-width:0;box-sizing:border-box}
+#app-reg #rg-spon textarea{min-height:22rem;line-height:1.5;resize:vertical}
+#app-reg #rg-spon input:focus-visible,#app-reg #rg-spon textarea:focus-visible{outline:2px solid var(--ws-sky);outline-offset:1px}
+#app-reg #rg-spon .sp-hint{font-size:12px;color:var(--ink-3);line-height:1.5}
+#app-reg #rg-spon .sp-stat{font-size:12px;color:var(--ink-3)}
+#app-reg #rg-spon .sp-stat.dirty{color:var(--warn,#b7791f);font-weight:600}
+#app-reg #rg-spon .sp-stat.ok{color:var(--good)}
+#app-reg #rg-spon .sp-stat.bad{color:var(--bad)}
+#app-reg #rg-spon iframe{width:100%;height:680px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
+#app-reg #rg-spon .sp-when{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:8px}
+#app-reg #rg-spon .sp-when > div{border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--paper);padding:8px 12px}
+#app-reg #rg-spon .sp-when .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+#app-reg #rg-spon .sp-when .v{font-size:14px;font-weight:600;color:var(--ink)}
+#app-reg #rg-spon .sp-run td{cursor:pointer}
+#app-reg #rg-spon .sp-run:hover td,#app-reg #rg-spon .sp-run.open td{background:color-mix(in srgb,var(--ws-sky) 18%,transparent)}
+#app-reg #rg-spon .sp-detail td{background:var(--paper);cursor:default}
+#app-reg #rg-spon .sp-detail .ws-row{margin:2px 0 8px}
+#app-reg #rg-spon .sp-to{border-collapse:collapse;width:100%;font-size:12px}
+#app-reg #rg-spon .sp-to td,#app-reg #rg-spon .sp-to th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left}
+#app-reg #rg-spon .sp-to th{color:var(--ink-3);font-weight:600}
+</style>
+<script>
+/* ============================================================
+   THE SPONSORS' WEEKLY LIST EMAIL (Jonna, 2026-11-08)
+   ------------------------------------------------------------
+   "instead of cc'ing us a place we can see who got it and what the email looked like"
+   and "can she update the wording like the speaker email Amy can revise?"
+
+     sponsor-email/main          the wording Kelly keeps: {subject, body, savedAt, savedBy}.
+                                 Fill-ins: {summit} {opens} {count} {asof}.
+     feeds/sponsor-list          FEEDS adds each summit's finished subject and email (html),
+                                 built here, so the Friday flow sends exactly what this
+                                 page previews.
+     feeds/sponsor-list-sent     written by the Registration List to Sponsors flow after
+                                 each Friday: {runs:[{at, venue, summit, subject, html,
+                                 list (the CSV it attached), to:[{company,name,email}], test}]}
+   The card on Registration shows the schedule, the wording, a preview, a test to yourself,
+   and every Friday sent: who got it, the email itself, and the list.
+   ============================================================ */
+(function(){
+  "use strict";
+  const KELLY={name:'Kelly Bradshaw', title:'Director, Strategic Growth, MISMO', email:'KBradshaw@mismo.org',
+    lines:['1919 M Street NW, 5th Floor | Washington, DC 20036','CELL: (301) 755-8356']};
+  const NOTE='You are receiving this as a sponsor of the MISMO Summit. Due to compliance with spam and data privacy laws, we are unable to provide email addresses.';
+  const DEF={subject:'MISMO {summit} Registration List',
+    body:'Summit Sponsor,\n\n'
+      +'Thank you for your support of the upcoming MISMO Summit! As a sponsor benefit, please find the attached registration list, which we will continue to provide on a weekly basis until the start of the event.\n\n'
+      +'The attached list has {count} registrants as of {asof}, listed by company, name, job title and whether they are attending in person or virtually.\n\n'
+      +'If you have any questions, please reach out to me at KBradshaw@mismo.org. Thanks again!'};
+  const TITLE='Your Weekly Registration List';
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const D=iso=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); return m? new Date(Date.UTC(+m[1],+m[2]-1,+m[3],12)) : null; };
+  const longD=iso=>{ const d=D(iso); return d? MONTHS[d.getUTCMonth()]+' '+d.getUTCDate()+', '+d.getUTCFullYear() : ''; };
+  const dayD=iso=>{ const d=D(iso); return d? DAYS[d.getUTCDay()]+', '+MONTHS[d.getUTCMonth()]+' '+d.getUTCDate() : ''; };
+  const addDays=(iso,n)=>{ const d=D(iso); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+  /* today in Eastern time, since the flow runs at noon Eastern */
+  const todayET=()=>{ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } };
+  const fill=(t,v)=>String(t==null?'':t).replace(/\{(\w+)\}/g,(m,k)=>v[k]!=null? String(v[k]) : m);
+  function vars(s){
+    const n=Array.isArray(s&&s.people)? s.people.length : 0;
+    return {summit:String(s&&s.name||''), opens:longD(s&&s.start), count:n.toLocaleString('en-US'), asof:longD((s&&s.listDate)||todayET())};
+  }
+  function tplOf(t){ t=t||{}; return {subject: String(t.subject||'').trim()? t.subject : DEF.subject, body: String(t.body||'').trim()? t.body : DEF.body}; }
+  /* the finished email for one summit, or null when the email builder is not loaded yet */
+  function build(s, t){
+    if(typeof window.__mailHtml!=='function') return null;
+    const tp=tplOf(t), v=vars(s), subject=fill(tp.subject,v), body=fill(tp.body,v);
+    return {subject, html:window.__mailHtml(subject, body, {sig:KELLY, note:NOTE, title:TITLE, sub:v.summit+(v.opens?' · Opens '+v.opens:'')})};
+  }
+  /* the Fridays it goes: from the Friday of week 7 until the Friday before the Summit opens */
+  function fridays(s){
+    if(!s||!s.firstSend||!s.start) return [];
+    const out=[]; for(let f=s.firstSend; f<s.start; f=addDays(f,7)) out.push(f); return out;
+  }
+  window.__sponMail={build, DEF, KELLY, NOTE, fridays, todayET};
+
+  /* ---------- the card on Registration ---------- */
+  const $=id=>document.getElementById(id);
+  const el=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
+  const btn=(t,cls,fn)=>{ const b=el('button','ws-btn'+(cls?' '+cls:''),t); b.type='button'; b.addEventListener('click',fn); return b; };
+  const canEdit=()=>{ try{ const R=window.ResourcesSession; if(R && R.canEdit) return !!R.canEdit('summit-hq'); }catch(e){} return true; };
+  const me=()=>{ try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); return (s&&s.email)||''; }catch(e){ return ''; } };
+  const who=()=>{ try{ return (window.__hqWho&&window.__hqWho())||me(); }catch(e){ return me(); } };
+  const sid=()=>{ try{ const s=$('venue-pick'); return (s&&s.value)||''; }catch(e){ return ''; } };
+  const when=iso=>{ const d=new Date(iso); if(isNaN(d)) return ''; return d.toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); };
+  const S={db:null, list:null, tpl:null, tplReady:false, sent:null, ed:null, open:null, sid:'', built:false};
+
+  function entry(){
+    const v=sid(), xs=(S.list&&S.list.summits)||[];
+    return xs.find(x=>x.venue===v) || null;
+  }
+  function frame(html, h){
+    const f=document.createElement('iframe'); f.setAttribute('sandbox',''); f.setAttribute('title','The email');
+    f.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0;background:#f1f6fa">'+(html||'')+'</body>';
+    if(h) f.style.height=h; return f;
+  }
+  function csvDownload(name, text){
+    const b=new Blob([String(text||'')],{type:'text/csv'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+  }
+  function sample(){
+    const e=entry(); if(e) return e;
+    let v=null; try{ v=(window.__scheduleVenues? window.__scheduleVenues():[]).find(x=>x.id===sid()); }catch(err){}
+    return {venue:sid(), name:(v&&v.name)||'MISMO Summit', start:'', people:[]};
+  }
+
+  function render(){
+    const host=$('rg-spon'); if(!host) return;
+    if(S.sid!==sid()){ S.sid=sid(); S.built=false; S.open=null; }
+    const act=document.activeElement;
+    if(S.built && act && host.contains(act) && /INPUT|TEXTAREA/.test(act.tagName)){ paintWhen(); paintSent(); return; }
+    host.textContent='';
+    const hd=el('div','ws-row'); hd.appendChild(el('h2',null,'Weekly List to Sponsors')); host.appendChild(hd);
+    host.appendChild(el('div','sp-when')).id='sp-when';
+    const g=el('div','sp-grid'); host.appendChild(g);
+    const L=el('div','sp-sec'), R=el('div','sp-sec'); g.appendChild(L); g.appendChild(R);
+    L.appendChild(el('h3',null,'The Email'));
+    paintEditor(L, R);
+    const H=el('div','sp-sec'); H.id='sp-sent'; host.appendChild(H);
+    S.built=true; paintWhen(); paintSent();
+  }
+
+  function paintWhen(){
+    const box=$('sp-when'); if(!box) return; box.textContent='';
+    const e=entry(), fr=fridays(e), t=todayET();
+    const runs=((S.sent&&S.sent.runs)||[]).filter(r=>r && !r.test && r.venue===sid());
+    const nowET=(()=>{ try{ return +new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hour12:false}).format(new Date()); }catch(err){ return 12; } })();
+    const next=fr.find(f=>f>t || (f===t && nowET<12 && !runs.some(r=>String(r.at||'').slice(0,10)===t)));
+    const tile=(k,v)=>{ const d=el('div'); d.appendChild(el('div','k',k)); d.appendChild(el('div','v',v)); box.appendChild(d); };
+    if(!e || !fr.length){
+      tile('Next Send','None set'); tile('Registrants on the List', e? String((e.people||[]).length) : '—');
+      box.appendChild(el('p','note', e? 'This Summit has started, so the list no longer goes.' : 'The list goes once this Summit has dates on the Schedule and a registrant list here.'));
+      return;
+    }
+    tile('Next Send', next? dayD(next)+', 12:00 PM ET' : 'Done for this Summit');
+    tile('First and Last Friday', dayD(fr[0]).replace(/^\w+, /,'')+' – '+dayD(fr[fr.length-1]).replace(/^\w+, /,''));
+    tile('Registrants on the List', (e.people||[]).length.toLocaleString('en-US')+(e.listDate?' as of '+longD(e.listDate).replace(/, \d{4}$/,''):''));
+    tile('Sent', runs.length? runs.length+' Friday'+(runs.length>1?'s':'')+' so far' : 'Not yet');
+    const n=el('p','note','Sent as Kelly Bradshaw, with replies to Kelly, to each approved sponsor’s contact. The list has company, name, job title and In-Person or Virtual, never email addresses. MISMO and MBA staff are left off.');
+    n.style.gridColumn='1 / -1'; box.appendChild(n);
+  }
+
+  function paintEditor(L, R){
+    const edit=canEdit();
+    const cur=tplOf(S.tpl);
+    if(!S.ed || !S.ed.dirty) S.ed={subject:cur.subject, body:cur.body, dirty:false, msg:'', cls:''};
+    const sl=el('label',null,'Subject'), si=document.createElement('input'); si.type='text'; si.value=S.ed.subject; si.disabled=!edit; si.id='sp-subject';
+    sl.appendChild(si); L.appendChild(sl);
+    const bl=el('label',null,'Message'), bi=document.createElement('textarea'); bi.value=S.ed.body; bi.disabled=!edit; bi.id='sp-body';
+    bl.appendChild(bi); L.appendChild(bl);
+    L.appendChild(el('div','sp-hint','Fill-ins: {summit} the Summit’s name, {opens} its first day, {count} registrants on the list, {asof} the list’s date. A blank line starts a new paragraph. Kelly’s signature and the line about email addresses are added at the end.'));
+    const row=el('div','ws-row'), stat=el('span','sp-stat grow');
+    const showStat=()=>{ stat.className='sp-stat grow'+(S.ed.cls?' '+S.ed.cls:'');
+      stat.textContent= S.ed.msg || (S.ed.dirty? 'Changes not saved yet' : (S.tpl&&S.tpl.savedAt? 'Saved '+when(S.tpl.savedAt)+(S.tpl.savedBy?' by '+S.tpl.savedBy:'') : 'The original wording')); };
+    const save=btn('Save','',async()=>{
+      if(!S.db) return; save.disabled=true; S.ed.msg='Saving…'; S.ed.cls=''; showStat();
+      const doc={subject:si.value, body:bi.value, savedAt:new Date().toISOString(), savedBy:who()};
+      try{
+        await S.db.doc('sponsor-email/main').set(doc);
+        const back=await S.db.doc('sponsor-email/main').get(), d=back.exists?back.data():{};
+        if(d.subject!==doc.subject || d.body!==doc.body) throw new Error('not saved');
+        S.tpl=d; S.ed.dirty=false; S.ed.msg='Saved. Friday’s email will use it.'; S.ed.cls='ok';
+      }catch(err){ S.ed.msg='Could not save. Try again.'; S.ed.cls='bad'; }
+      save.disabled=!edit; showStat();
+    });
+    const orig=btn('Back to the Original Wording','ghost',()=>{ si.value=DEF.subject; bi.value=DEF.body; changed(); });
+    const test=btn('Send a Test to Me','ghost',async()=>{
+      const to=me(); if(!to || typeof window.__hqQueueMail!=='function') return;
+      const m=build(sample(), {subject:si.value, body:bi.value}); if(!m) return;
+      test.disabled=true; test.textContent='Sending…';
+      try{ await window.__hqQueueMail({id:'sp-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:to, to, cc:'',
+          replyTo:KELLY.email, from:'kbradshaw@mismo.org', subject:'[Test] '+m.subject, html:m.html, person:'', summit:sid(), graphic:''});
+        test.textContent='Test on Its Way to You'; }
+      catch(err){ test.textContent='Could Not Send the Test'; test.disabled=false; }
+    });
+    test.title='Sends this email to you only, marked [Test], without the list attached'; test.disabled=!me();
+    if(edit){ row.appendChild(save); row.appendChild(orig); }
+    row.appendChild(test); row.appendChild(stat); L.appendChild(row);
+    R.appendChild(el('h3',null,'Preview'));
+    const pv=el('div'); R.appendChild(pv);
+    const draw=()=>{ const m=build(sample(), {subject:si.value, body:bi.value}); pv.textContent='';
+      if(!m){ pv.appendChild(el('p','note','The preview appears in a moment.')); return; }
+      const sub=el('div','sp-hint'); sub.textContent='Subject: '+m.subject; pv.appendChild(sub); pv.appendChild(frame(m.html)); };
+    let t=null;
+    const changed=()=>{ S.ed.subject=si.value; S.ed.body=bi.value; const c=tplOf(S.tpl);
+      S.ed.dirty=(si.value!==c.subject || bi.value!==c.body); S.ed.msg=''; S.ed.cls=''; showStat();
+      clearTimeout(t); t=setTimeout(draw,250); };
+    si.addEventListener('input',changed); bi.addEventListener('input',changed);
+    showStat(); draw();
+  }
+
+  function paintSent(){
+    const H=$('sp-sent'); if(!H) return; H.textContent='';
+    H.appendChild(el('h3',null,'Sent'));
+    const runs=((S.sent&&S.sent.runs)||[]).filter(r=>r && r.venue===sid()).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+    if(!runs.length){ H.appendChild(el('p','ws-blank','Nothing has gone for this Summit yet. Each Friday’s email shows here once it goes: who got it, the email itself and the list.')); return; }
+    const box=el('div','ws-tablebox'), t=el('table','ws-table'), th=el('thead'), hr=el('tr');
+    ['Sent','Sponsors','Registrants','Subject'].forEach(h=>{ hr.appendChild(el('th',null)).appendChild(el('span','ws-plain',h)); });
+    th.appendChild(hr); t.appendChild(th); const tb=el('tbody'); t.appendChild(tb); box.appendChild(t); H.appendChild(box);
+    runs.forEach((r,i)=>{
+      const key=String(r.at||i), to=Array.isArray(r.to)?r.to:[];
+      const rows=String(r.list||'').replace(/^﻿/,'').split(/\r?\n/).filter(x=>x.trim()).length;
+      const tr=el('tr','sp-run'+(S.open===key?' open':''));
+      const c0=el('td',null,when(r.at)); if(r.test) c0.appendChild(el('span','ws-chip new','Test')); tr.appendChild(c0);
+      tr.appendChild(el('td',null,String(to.length))); tr.appendChild(el('td',null,String(Math.max(0,rows-1))));
+      tr.appendChild(el('td',null,r.subject||''));
+      tr.addEventListener('click',()=>{ S.open= S.open===key? null : key; paintSent(); });
+      tb.appendChild(tr);
+      if(S.open!==key) return;
+      const dr=el('tr','sp-detail'), td=el('td'); td.colSpan=4; dr.appendChild(td); tb.appendChild(dr);
+      const acts=el('div','ws-row');
+      const show=btn('See the Email','ghost',()=>{ const f=td.querySelector('iframe'); if(f){ f.remove(); show.textContent='See the Email'; return; }
+        td.appendChild(frame(r.html||'<p style="font-family:Arial;padding:20px">The email was not recorded.</p>')); show.textContent='Hide the Email'; });
+      acts.appendChild(show);
+      if(r.list) acts.appendChild(btn('Download the List','ghost',()=>csvDownload('Sponsor Registration List '+String(r.at||'').slice(0,10)+'.csv', r.list)));
+      td.appendChild(acts);
+      const tt=el('table','sp-to'), h2=el('tr'); ['Company','Contact','Email'].forEach(h=>h2.appendChild(el('th',null,h))); tt.appendChild(h2);
+      to.slice().sort((a,b)=>String(a.company||'').localeCompare(String(b.company||''))).forEach(x=>{ const r2=el('tr');
+        [x.company,x.name,x.email].forEach(v=>r2.appendChild(el('td',null,v||''))); tt.appendChild(r2); });
+      td.appendChild(tt);
+    });
+  }
+
+  async function start(){
+    try{ S.db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ S.db=null; }
+    if(!S.db) return;
+    S.db.doc('sponsor-email/main').onSnapshot(s=>{ S.tpl=s.exists?(s.data()||null):null; S.tplReady=true;
+      window.__sponTpl=S.tpl; window.dispatchEvent(new Event('hq-spon-tpl'));
+      if(!(S.ed&&S.ed.dirty)) S.built=false; render(); });
+    S.db.doc('feeds/sponsor-list').onSnapshot(s=>{ S.list=s.exists?s.data():null; render(); });
+    S.db.doc('feeds/sponsor-list-sent').onSnapshot(s=>{ S.sent=s.exists?s.data():null; render(); });
+    const vp=$('venue-pick'); if(vp) vp.addEventListener('change',()=>setTimeout(render,50));
+  }
+  const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
+      try{ window.ResourcesSession.onChange(()=>{ if(!S.db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
+    setTimeout(start,2000); };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+})();
+</script>
 <script>
 /* ============================================================
    FEEDS — what the scheduled emails read (Jonna, 2026-10-28)
@@ -32115,11 +32371,15 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
                          MISMO and MBA staff left out. The "Registration List to
                          Sponsors" flow sends it to approved sponsors every Friday at
                          noon Eastern, from the Friday of week 7 until the Friday before.
+                         Each summit also carries the finished subject and email (html),
+                         in Kelly's wording from sponsor-email/main (see the sponsors'
+                         weekly list email above), so the flow sends what the page previews.
    ============================================================ */
 (function(){
   "use strict";
   let db=null;
-  const tasks={}, summits={}, regs={}, feed={}, ready={tasks:false,cfg:false,summits:false,ftasks:false,fspon:false};
+  const tasks={}, summits={}, regs={}, feed={}, ready={tasks:false,cfg:false,summits:false,ftasks:false,fspon:false,stpl:false};
+  let spTpl=null;
   let cfg={}, timer=null, venuesSeen='';
   const canEdit=()=>{ try{ const R=window.ResourcesSession; if(!R||!R.current||!R.current()) return false;
     return R.canEdit ? !!R.canEdit('summit-hq') : true; }catch(e){ return false; } };
@@ -32185,6 +32445,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       out.push({venue:v.id, name, season:season?season[0].toUpperCase()+season.slice(1).toLowerCase():'', year, start,
         firstSend:sendFrom(start), listDate:String(f.at||'').slice(0,10), listBy:String(f.by||''), people});
     });
+    /* the finished email, in Kelly's wording; nothing is written until the email builder is
+       ready, so a blank email can never go out */
+    for(const x of out){ const m=window.__sponMail && window.__sponMail.build(x, spTpl); if(!m || !m.html) return null; x.subject=m.subject; x.html=m.html; }
     return {summits:out};
   }
 
@@ -32195,9 +32458,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       if(strip(t)!==strip(feed.tasks)){ feed.tasks=t; try{ await db.doc('feeds/tasks').set(Object.assign({updatedAt:new Date().toISOString()},t)); }catch(e){} }
     }
     const vs=venues();
-    if(ready.fspon && vs.length && vs.every(v=>regs[v.id]!==undefined)){
+    if(ready.fspon && ready.stpl && vs.length && vs.every(v=>regs[v.id]!==undefined)){
       const s=sponsorFeed();
-      if(strip(s)!==strip(feed.spon)){ feed.spon=s; try{ await db.doc('feeds/sponsor-list').set(Object.assign({updatedAt:new Date().toISOString()},s)); }catch(e){} }
+      if(s && strip(s)!==strip(feed.spon)){ feed.spon=s; try{ await db.doc('feeds/sponsor-list').set(Object.assign({updatedAt:new Date().toISOString()},s)); }catch(e){} }
     }
   }
   function watchVenues(){
@@ -32214,6 +32477,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     db.doc('meta/config').onSnapshot(s=>{ cfg=s.exists?(s.data()||{}):{}; ready.cfg=true; soon(); });
     db.doc('feeds/tasks').onSnapshot(s=>{ feed.tasks=s.exists?s.data():null; ready.ftasks=true; soon(); });
     db.doc('feeds/sponsor-list').onSnapshot(s=>{ feed.spon=s.exists?s.data():null; ready.fspon=true; soon(); });
+    db.doc('sponsor-email/main').onSnapshot(s=>{ spTpl=s.exists?(s.data()||null):null; ready.stpl=true; soon(); }, ()=>{ ready.stpl=true; soon(); });
     watchVenues(); setInterval(()=>{ watchVenues(); soon(); }, 60*60000);
     let n=0; const t=setInterval(()=>{ watchVenues(); if(venuesSeen || ++n>40) clearInterval(t); }, 3000);
   }
@@ -32335,7 +32599,7 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
     return row('save','Saving','ok', n? n+' change'+(n>1?'s':'')+' saving now.' : 'Every change is saved'+(st.savedAt? '. Last save '+when(st.savedAt)+'.' : '.'));
   }
   const FRIENDLY={ros:'Run of Show',schedule:'Schedule',resume:'Resume','own-index':'File Index',people:'People',board:'Board',
-    'team-travel':'MISMO Team Travel','speaker-email':'Speaker Email Wording',trunk:'The Trunk',specs:'Hotel Specs','sponsor-agenda':'Sponsor Agenda Marks'};
+    'team-travel':'MISMO Team Travel','speaker-email':'Speaker Email Wording',trunk:'The Trunk',specs:'Hotel Specs','sponsor-agenda':'Sponsor Agenda Marks','sponsor-email':'Sponsor Email Wording'};
   const nice=name=>{ const m=String(name).match(/^(.*?)-(\d+)$/); if(m && FRIENDLY[m[1]]) return FRIENDLY[m[1]]+' (Part '+(Number(m[2])+1)+')';
     return FRIENDLY[name] || String(name).replace(/--/g,' / ').replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); };
   function chkStorage(){
@@ -32387,6 +32651,22 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
     if(age>8) return row('reg','Registration Weekly Pull','bad','The last weekly Aptify registration email came '+when(f.receivedAt)+'. Check the Summit HQ - Registration Weekly Pull flow in Power Automate, and that the SummitHQ_Registration subscription on reports.mba.org still runs.');
     return row('reg','Registration Weekly Pull','ok','Last came '+when(f.receivedAt)+'. Registration loads it by itself.');
   }
+  /* the sponsors' Friday list (Jonna, 2026-11-08): each sent Friday is recorded by the flow */
+  async function chkSponsorList(){
+    const l=await read('feeds/sponsor-list'), s=await read('feeds/sponsor-list-sent');
+    const M=window.__sponMail; if(!M) return row('spl','Registration List to Sponsors','off','Not loaded yet.');
+    const t=M.todayET(), hr=(()=>{ try{ return +new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hour12:false}).format(new Date()); }catch(e){ return 23; } })();
+    const runs=((s&&s.runs)||[]).filter(r=>r && !r.test);
+    const missed=[]; let next='';
+    ((l&&l.summits)||[]).forEach(x=>{
+      const fr=M.fridays(x), due=fr.filter(f=>f<t || (f===t && hr>=13)).pop();
+      if(!next) next=fr.find(f=>f>t || (f===t && hr<13))||'';
+      if(due && !runs.some(r=>r.venue===x.venue && String(r.at||'').slice(0,10)>=due)) missed.push((x.name||x.venue)+', '+due);
+    });
+    if(missed.length) return row('spl','Registration List to Sponsors','bad','A Friday list to sponsors has no record of going. Check the Summit HQ - Registration List to Sponsors flow in Power Automate, and that sponsors are approved in the Sponsorship Portal.', missed.slice(0,4));
+    const last=runs.map(r=>r.at).sort().pop();
+    return row('spl','Registration List to Sponsors','ok',(last? 'Last sent '+when(last)+'.' : 'Nothing sent yet.')+(next? ' Next: Friday at noon Eastern, '+next+'.' : ''));
+  }
   async function chkAdds(){
     const q=await read('feeds/speaker-adds'), s=await read('feeds/speaker-adds-sent');
     const sent=new Set((s&&s.ids)||[]), runAt=lastWeekdayRun(11*60);
@@ -32403,15 +32683,15 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
     return row('err','Errors on This Page','warn', n+' error'+(n>1?'s':'')+' since this page was opened. Usually harmless; they are sent to the team log below.',
       L.slice(-4).reverse().map(e=>when(e.at)+': '+e.msg.slice(0,110)));
   }
-  const NOT_WATCHED=['Board Members to Register','Team Travel Answers','Speaker Info Answers','Speaker Emailed Files','Monday Task Email','Registration List to Sponsors','Sponsorship Team Emails'];
+  const NOT_WATCHED=['Board Members to Register','Team Travel Answers','Speaker Info Answers','Speaker Emailed Files','Monday Task Email','Sponsorship Team Emails'];
 
   async function run(){
     if(running) return running;
     running=(async()=>{
       const out=[chkSaving(), chkStorage()];
       if(await getDb()){
-        for(const f of [chkSpeakerEmails, chkReminders, chkAdds, chkRegPull]){
-          try{ out.push(await f()); }catch(e){ out.push(row(f.name,f===chkSpeakerEmails?'Speaker Emails Flow':f===chkReminders?'Speaker Reminders Flow':f===chkRegPull?'Registration Weekly Pull':'New Speakers to Register Flow','off','Could not be checked just now ('+esc(e&&e.message||e)+').')); }
+        for(const f of [chkSpeakerEmails, chkReminders, chkAdds, chkRegPull, chkSponsorList]){
+          try{ out.push(await f()); }catch(e){ out.push(row(f.name,f===chkSpeakerEmails?'Speaker Emails Flow':f===chkReminders?'Speaker Reminders Flow':f===chkRegPull?'Registration Weekly Pull':f===chkSponsorList?'Registration List to Sponsors':'New Speakers to Register Flow','off','Could not be checked just now ('+esc(e&&e.message||e)+').')); }
         }
       }
       out.push(chkErrors());
