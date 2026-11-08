@@ -7376,7 +7376,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <ol class="hp-steps">
           <li><b>Check sponsors on People.</b> Approved sponsors arrive from the Sponsorship Portal on their own, with their level, what they sponsor and their comp code. They go on the website agenda by themselves (breakfasts, breaks and receptions included), so there is nothing to mark.</li>
           <li><b>Watch the numbers on Registration</b>: this week against last year, and who has registered.</li>
-          <li><b>The weekly registration list to sponsors</b> goes out on your behalf on Mondays from seven weeks out; nothing to press.</li>
+          <li><b>The weekly registration list to sponsors</b> goes out as you (Send As) every Friday at noon Eastern from week 7, the Friday seven weeks before the Friday ahead of the Summit, through the Friday before it; nothing to press.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
         <h4>Emails You Get</h4>
@@ -7761,7 +7761,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <tr><td>New Summit Sponsor</td><td>A sponsorship is approved in the Sponsorship Portal for the first time</td><td>Rosalyn</td><td>Sponsorship Team Emails (Email Rosalyn New Sponsor step)</td></tr>
           <tr><td>Board Members to Register</td><td>Someone presses <b>Notify Bernie</b> on the Board of Directors card in People (checked every 15 minutes)</td><td>Bernie; copied to Jonna and Amy</td><td>Summit HQ - Board Members to Register (reads Summit HQ&rsquo;s board list)</td></tr>
           <tr><td>Tasks Due This Week</td><td>Mondays at 7:00 AM Mountain</td><td>Jonna, Rosalyn, Kelly, Amy, Perry, Bernie and Vanessa</td><td>Summit HQ - Monday Task Email (reads Summit HQ&rsquo;s open tasks: due in the next 7 days, plus anything overdue)</td></tr>
-          <tr><td>Registration List to Sponsors</td><td>Mondays at 9:00 AM Eastern, from seven weeks before each Summit until it opens</td><td>Every approved sponsor&rsquo;s contact, sent on Kelly&rsquo;s behalf; the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
+          <tr><td>Registration List to Sponsors</td><td>Fridays at 12:00 PM Eastern, from week 7 (for Winter 2027, Friday, Nov 20) through the Friday before the Summit (Jan 8)</td><td>Every approved sponsor&rsquo;s contact, sent as Kelly (Send As; replies go to her); the attached list has company, name, job title and whether each person is In-Person or Virtual (no emails)</td><td>Summit HQ - Registration List to Sponsors</td></tr>
           <tr><td>Sponsorship invoice, paid notice, payment follow-up</td><td>When the portal approves, marks paid or sends a chase (sponsor logos now go onto the website automatically, so Vanessa no longer gets a logo request)</td><td>Invoice: Bernie. Paid: Jonna, Amy and Kelly. Follow-up: Bernie, Jonna, Amy and Kelly</td><td>Sponsorship Team Emails</td></tr>
           <tr><td>New sponsorship application</td><td>A sponsor submits on the Prospectus</td><td>The sponsorship team</td><td>Sponsorship Intake</td></tr>
         </tbody>
@@ -32113,8 +32113,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
                          registrants as company, name, job title and In-Person or Virtual
                          (no emails), with
                          MISMO and MBA staff left out. The "Registration List to
-                         Sponsors" flow sends it to approved sponsors every Monday
-                         from seven weeks out.
+                         Sponsors" flow sends it to approved sponsors every Friday at
+                         noon Eastern, from the Friday of week 7 until the Friday before.
    ============================================================ */
 (function(){
   "use strict";
@@ -32157,6 +32157,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     return y+'-'+String(MON[m[1]]).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
   }
   const addDays=(iso,n)=>{ const d=new Date(iso+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+  /* Jonna, 2026-11-08: the sponsors' list goes Fridays at noon Eastern, from the Friday of week 7
+     (week 0 is the Friday before the Summit opens) until that last Friday */
+  const sendFrom=start=>{ let f=addDays(start,-1); while(new Date(f+'T12:00:00Z').getUTCDay()!==5) f=addDays(f,-1); return addDays(f,-49); };
   function venues(){ try{ return window.__scheduleVenues ? window.__scheduleVenues() : []; }catch(e){ return []; } }
   function sponsorFeed(){
     const today=new Date().toISOString().slice(0,10), out=[];
@@ -32180,7 +32183,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       people.sort((a,b)=>a.company.localeCompare(b.company)||a.name.localeCompare(b.name));
       const f=(d.files&&d.files.current)||{};
       out.push({venue:v.id, name, season:season?season[0].toUpperCase()+season.slice(1).toLowerCase():'', year, start,
-        firstSend:addDays(start,-49), listDate:String(f.at||'').slice(0,10), listBy:String(f.by||''), people});
+        firstSend:sendFrom(start), listDate:String(f.at||'').slice(0,10), listBy:String(f.by||''), people});
     });
     return {summits:out};
   }
