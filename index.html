@@ -7430,7 +7430,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <h4>What You Do</h4>
         <ol class="hp-steps">
           <li><b>Download the event app files</b> from People: <b>Speakers file</b> and <b>Sessions file</b> are laid out column for column for the upload.</li>
-          <li><b>Tick each speaker&rsquo;s bio and headshot</b> once they are on the event app.</li>
+          <li><b>Tick each speaker&rsquo;s bio and headshot</b> once they are on the event app, and <b>Mark On the Event App</b> on each sponsor (the <b>Sponsors File</b> under Downloads lists them).</li>
           <li><b>Load the registration numbers</b> on Registration from your dashboard&rsquo;s export.</li>
           <li><b>Collect sponsor logos</b> when the portal&rsquo;s logo request comes in.</li>
         </ol>
@@ -7691,7 +7691,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <ol class="hp-steps">
         <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
         <li>Approved sponsors appear on the <b>Sponsors From The Portal</b> card on their own, with their status (Approved, Pending Payment or Paid), level, what they are sponsoring, and their <b>comp code</b> and number of comps. They register themselves with the code, so sponsors are never registered from Summit HQ.</li>
-        <li>Nothing to do on People: once approved, the website&rsquo;s Summit Sponsor Feed puts them on the website agenda by itself, within the hour on weekdays.</li>
+        <li>Once approved, the website&rsquo;s Summit Sponsor Feed puts them on the website agenda by itself, within the hour on weekdays.</li>
+        <li><b>On the event app</b> (Vanessa). <b>Downloads &rarr; Sponsors File</b> lists every approved sponsor with their level, what they sponsor, website and logo; she presses <b>Mark On the Event App</b> on each once they are in. Until then their Next Step reads <b>Vanessa: Put them on the event app</b>.</li>
         <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
       </ol>
       <h4>The People Tab Tools</h4>
@@ -25522,8 +25523,9 @@ function meters(){
   const bs=boardStat();
   tile(bs.reg+' / '+bs.total,'Board registered',bs.reg===bs.total?'is-good':'is-warn', v2? V('board') : ()=>{ render(); openPeopleCard('boardOpen'); });
   const pr=portalRows();
-  if(pr.length){ const onA=pr.filter(r=>sponOnAgenda(r)).length;
-    tile(onA+' / '+pr.length,'Sponsors on the agenda',onA===pr.length?'is-good':'is-warn', v2? V('spon') : ()=>{ render(); openPeopleCard('sponOpen'); }); }
+  const pra=pr.filter(sponAuto);
+  if(pra.length){ const onA=pra.filter(r=>sponOnApp(r)).length;
+    tile(onA+' / '+pra.length,'Sponsors on the event app',onA===pra.length?'is-good':'is-warn', v2? V('spon') : ()=>{ render(); openPeopleCard('sponOpen'); }); }
 }
 
 /* What the search at the top found, and where it is. Without this the box is at the
@@ -26205,7 +26207,10 @@ function render(){
         row.appendChild(L);
         const st=el('div','sp-st'); st.appendChild(el('span','sp-tag '+sk,slab)); row.appendChild(st);
         const A=el('div','sp-a');
-        A.appendChild(el('span','sp-me', at? '\u2713 On the agenda automatically' : 'On the agenda once approved')); row.appendChild(A);
+        A.appendChild(el('span','sp-me', at? '\u2713 On the agenda automatically' : 'On the agenda once approved'));
+        const ap=sponOnApp(r), ab=el('button','btn'+(ap?' ghost sp-done':''), ap? '\u2713 On the Event App' : 'Mark On the Event App'); ab.type='button';
+        ab.title= ap? 'Marked '+pretty(ap)+'. Click to take the mark off.' : 'Vanessa: click once they are on the event app.';
+        ab.addEventListener('click',()=>setSponApp(r,!ap)); A.appendChild(ab); row.appendChild(A);
         box.appendChild(row);
       });
     });
@@ -26660,6 +26665,16 @@ function saveColl(coll,map,fields,label){
   try{ if(window.__hqUndo) window.__hqUndo.record('people',label||''); }catch(e){}
   const d=Object.assign({},prev||{},fields); map.set(v,d);
   if(ST.db){ try{ ST.db.doc(coll+'/'+v).set(JSON.parse(JSON.stringify(d))); }catch(e){} }
+}
+/* Jonna, 2026-11-07: "there needs to be a step for the sponsors to be put on the event app
+   like the speakers and the sessions" — Vanessa's step. One tick per sponsorship per summit,
+   kept with the agenda marks (sponsor-agenda/<summit>.app). */
+function sponOnApp(r){ const a=(ST.sag.get(venueNow())||{}).app||{}; return a[sponKey(r)]||''; }
+function setSponApp(r,yes){
+  const app=Object.assign({},(ST.sag.get(venueNow())||{}).app||{});
+  if(yes) app[sponKey(r)]=today(); else delete app[sponKey(r)];
+  saveColl('sponsor-agenda',ST.sag,{app},yes?'a sponsor on the event app':'a sponsor off the event app');
+  render();
 }
 function setSponAgenda(r,yes){
   const on=Object.assign({},(ST.sag.get(venueNow())||{}).on||{});
@@ -28889,6 +28904,24 @@ async function appFile(){
 
 /* The week as the app wants its sessions: every function on the Schedule, with the
    room as its location and the wall clock the way the app writes it. */
+/* Vanessa's sponsors list for the event app: every approved sponsorship on this summit, one
+   row each, with the website and logo the website's Summit Sponsor Feed already uses */
+async function sponsorFile(){
+  const rows=portalRows().filter(sponAuto);
+  if(!rows.length){ alert('No approved sponsors on this summit yet.'); return; }
+  let web=[]; try{ const j=await fetch('/sponsors/winter-2027.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null); web=(j&&j.sponsors)||[]; }catch(e){}
+  const norm=x=>String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+  const find=co=>web.find(w=>norm(w.name)===norm(co)) || web.find(w=>norm(co).indexOf(norm(w.name))===0 || norm(w.name).indexOf(norm(co))===0) || null;
+  const order={platinum:1,gold:2,silver:3,bronze:4};
+  const seen=new Set(), out=[];
+  rows.forEach(r=>{ const k=sponKey(r); if(seen.has(k)) return; seen.add(k); out.push(r); });
+  out.sort((a,b)=>(order[String(a.level||'').toLowerCase()]||9)-(order[String(b.level||'').toLowerCase()]||9) || String(a.company||'').localeCompare(String(b.company||'')));
+  const H=['Name','Level','Sponsoring','Website','Logo','On the Event App'];
+  const lines=[H.map(csvCell).join(',')];
+  out.forEach(r=>{ const w=find(r.company)||{};
+    lines.push([String(r.company||'').trim(), r.level?titleCase(r.level):'', sponWhat(r)||'', w.url||'', w.logo||'', sponOnApp(r)? 'Yes' : ''].map(x=>csvCell(x)).join(',')); });
+  await saveBlob(new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv'}), slugSummit()+'-sponsors.csv');
+}
 async function sessionFile(){
   const list=summitSessions();
   if(!list.length){ alert('Nothing on the Schedule for this summit yet.'); return; }
@@ -29019,6 +29052,8 @@ function v2Next(x){
   if(x.team){ const t=x.team;
     if(!ttHasDates(t)) return t.sentAt? {who:'Waiting on them', t:'Travel dates · form sent '+localDay(t.sentAt).replace(/ at .*/,'')} : {who:'Jonna', t:'Ask for their travel dates', act:'travel'};
     if(!t.sentB) return {who:'Jonna', t:'Send to Bernie to register', act:'teambernie'}; }
+  const appDue=x.spon.find(r=>sponAuto(r) && !sponOnApp(r));
+  if(appDue) return {who:'Vanessa', t:'Put '+String(appDue.company||'the sponsor').trim()+' on the event app', act:'sponapp'};
   return {who:'', t:'All set', ok:true};
 }
 const v2Needs=x=>{ const n=v2Next(x); return !n.ok && n.who!=='Waiting on them'; };
@@ -29081,7 +29116,8 @@ function v2Render(host){
   ]));
   bar.appendChild(v2Menu('Downloads',[
     ['Speakers File','For the event app upload',()=>appFile()],
-    ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()]
+    ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()],
+    ['Sponsors File','Each approved sponsor: level, what they sponsor, website and logo',()=>sponsorFile()]
   ]));
   const addm=v2Menu('+ Add a Person',[
     ['A Speaker on This Summit','Finds them on the master list first, or adds someone new',()=>v2Card('lOpen')],
@@ -29400,6 +29436,7 @@ function v2Action(x,n){
   if(n.act==='travel') return mk('Ask for Travel Dates',()=>openTravelAsk());
   if(n.act==='teambernie') return mk(ttBSel().has(x.team.id)?'✓ On Bernie’s List':'Check for Bernie',()=>{ const s=ttBSel(); s.has(x.team.id)? s.delete(x.team.id) : s.add(x.team.id); render(); });
   if(n.act==='agenda'){ const r=x.spon.find(z=>!sponOnAgenda(z)); return mk('Mark on the Agenda',()=>setSponAgenda(r,true)); }
+  if(n.act==='sponapp'){ const r=x.spon.find(z=>sponAuto(z) && !sponOnApp(z)); return mk('Mark On the Event App',()=>setSponApp(r,true)); }
   if(n.act==='invite') return mk('Mark Invited',()=>setInvite(p.i,'invited'));
   return null;
 }
@@ -29604,6 +29641,11 @@ function v2Sponsor(x){
     if(code){ kv.appendChild(el('span',null,'Comp Code')); kv.appendChild(el('span',null,code+(r.comps?' · '+r.comps+' comp'+(String(r.comps)==='1'?'':'s'):'')+' (they register themselves)')); }
     kv.appendChild(el('span',null,'Agenda'));
     kv.appendChild(el('span',null, at? 'On the website agenda automatically' : 'Goes on the website agenda once approved'));
+    const ap=sponOnApp(r);
+    kv.appendChild(el('span',null,'Event App'));
+    const ab=el('button','btn'+(ap?' ghost sp-done':''), ap? '✓ On the Event App' : 'Mark On the Event App'); ab.type='button';
+    ab.title= ap? 'Vanessa marked them on the event app '+pretty(ap)+'. Click to take the mark off.' : 'Vanessa: click once their logo and listing are on the event app.';
+    ab.addEventListener('click',()=>setSponApp(r,!ap)); const aw=el('span'); aw.appendChild(ab); kv.appendChild(aw);
     s.body.appendChild(kv); });
   s.body.appendChild(el('div','pnote','The sponsorship itself is changed in the Sponsorship Portal.'));
   return s;

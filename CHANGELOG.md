@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-07
 
+- Sponsors: an On the Event App step for Vanessa, and a Sponsors File under Downloads
 - Next Step: a speaker whose bio and headshot are in, or whose speaker email went, is no longer shown as needing to be asked for them
 - General Sessions and the Workshop: Show on the Website Agenda writes the running order and speakers for the website to read
 - Sponsors go on the agenda automatically; no Mark on the Agenda step
