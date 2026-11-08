@@ -338,6 +338,21 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 16. A sponsor's event app step: Vanessa's, and it ticks */
+  await check('Sponsors have an event app step for Vanessa', async () => {
+    const store = { 'portal-applications': { docs: { 'P-1': { appNo: 'P-1', company: 'Sample Sponsor Co', contactEmail: 'pat@sponsor.example', contactName: 'Pat Sponsor', status: 'Approved', level2027: 'GOLD', event: 'Winter 2027', opportunity: 'Breakfast' } } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(4000);
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-count')].find(b => /Sponsors/.test(b.innerText)).click()); await s.page.waitForTimeout(800);
+    const next = await s.page.evaluate(() => { const r = [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Sample Sponsor|Pat Sponsor/.test(r.innerText)); return r ? r.innerText : ''; });
+    expect(/Vanessa/.test(next) && /event app/.test(next) && !/on the agenda/i.test(next.replace(/On the Event App/i, '')), 'the sponsor did not show Vanessa\'s event app step: ' + next);
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Sample Sponsor|Pat Sponsor/.test(r.innerText)).click()); await s.page.waitForTimeout(1500);
+    await s.page.evaluate(() => [...document.querySelectorAll('#hq-pane button')].find(b => /Mark On the Event App/.test(b.textContent)).click()); await s.page.waitForTimeout(2500);
+    const after = await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Sample Sponsor|Pat Sponsor/.test(r.innerText)).innerText);
+    expect(/All set/.test(after), 'marking the sponsor on the event app did not finish their steps: ' + after);
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
