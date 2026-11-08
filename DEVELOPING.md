@@ -30,7 +30,7 @@ Every connection is written down in the **MISMO Connections Map** (Claude Doc `U
 
 - **Summit HQ writes feeds that Power Automate flows read** (`feeds/…` in the relay): queued emails (`speaker-email`), weekly follow-ups (`speaker-reminders`), Bernie's new speakers (`speaker-adds`) and Board list (`board-notify`), open tasks (`tasks`), the registrant list for sponsors (`sponsor-list`), the speaker email map (`speaker-mail-map`), the error log (`health-log`), and the public agenda for the website (`website-agenda`: each summit's General Sessions and Workshop running order with speakers' names, titles, companies and headshot files; written only when Show on the Website Agenda is on, never emails or notes). Each flow notes what it sent in a matching `…-sent` feed so nothing goes twice.
 - **Flows write answers back:** speaker form answers (`si-<code>`), emailed bios and headshots (`sm-<code>`, `speaker-mail-in`), travel and Board answers (`team-travel-answers`), and the Sponsorship Portal's applications (`portal-applications`, read only here).
-- **Summit HQ reads** Member 360's organization list (lenders) and the Initiative Hub facilitator roster.
+- **Summit HQ reads** Member 360's organization list (lenders) and the MMS's facilitator list (relay project `mms`, file `config`, document `config/people`; a copy is kept in Summit HQ's `meta/facilitators` for people who cannot open the MMS).
 - Summit HQ cannot send email itself. Every email goes through a flow, and nothing goes to a list without a preview first. Test emails go to Jonna only.
 - The flows are in Jonna's Power Automate (environment `Default-867e5d11-…`), all named `Summit HQ - …`. Help section 14, Emails That Send on Their Own, lists each one, when it runs and who gets it.
 

@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-08
+
+- Schedule: facilitator choices come from the MMS's facilitator list instead of the Initiative Hub's
+
 ## 2026-11-07
 
 - Speaker steps: Registered now comes before On the Event App
