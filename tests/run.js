@@ -283,7 +283,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       for (let k = 0; k < 25; k++) await db.doc('people/zz-' + k).set({ i: 'zz-' + k, n: 'Zed Person ' + String(k).padStart(2, '0'), st: { nola: { on: true, role: 'speaker' } } });
       await db.doc('people/linna-a').set({ i: 'linna-a', n: 'Linna', e: 'lzhu@example.org', c: 'Urban Institute', st: { nola: { prospect: true, invite: 'invited', inviteAt: '2026-11-04' } } });
-      await db.doc('people/linna-b').set({ i: 'linna-b', n: 'Linna Zhu', c: 'Urban Institute', t: 'Principal', st: { nola: { prospect: true, pnote: 'Amy: Invite them' } } });
+      await db.doc('people/linna-b').set({ i: 'linna-b', n: 'Linna Zhu', c: 'Urban Institute', t: 'Principal', st: { nola: { prospect: true, pnote: 'Amy: Invite them', invite: 'accepted', inviteAt: '2026-11-03' } } });
       localStorage.setItem('hq.people.v2', '1'); localStorage.removeItem('hq.people.v2per'); });
     await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
     await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2500);
