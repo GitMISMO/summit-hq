@@ -25363,6 +25363,15 @@ function stepDone(p,k){
      placed on a General Sessions segment or Workshop section is on the agenda; the tick
      is still there for anyone on it some other way */
   if(k==='agenda') return s.agenda || ((stOf(p).ses||[]).length? 'on a session' : '');
+  /* Jonna, 2026-11-07: asking for the bio and headshot is done once the speaker email has
+     gone (it is the ask), once they have been set to get it another way, or once the bio
+     and headshot are already in. A speaker with both in was being shown "Amy: Ask for the
+     bio and headshot". */
+  if(k==='contacted'){ const st=stOf(p);
+    if(s.contacted) return s.contacted;
+    if(st.welcome) return (st.welcome.at||'sent');
+    if(st.noEmail) return 'another way';
+    return stepDone(p,'bio')? 'bio in' : ''; }
   if(k==='bio') return s.bio || (hasBio(p)&&hasShot(p)) ? (s.bio||'on file') : '';
   /* on the event app only once BOTH the bio and the headshot are up */
   if(k==='app'){
