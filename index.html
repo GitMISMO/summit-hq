@@ -7672,7 +7672,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Try the New People Page</b>, at the top of People, switches to it; <b>Back to the Current Page</b> switches back. Your choice is remembered in this browser, and both read and save the very same records, so nothing has to be moved or entered twice.</li>
         <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, On the Event App, Registered, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
         <li><b>The list comes a page at a time</b>, 20 to start. <b>Per Page</b> under the list changes it to 10, 20, 30, 40, 50 or All (remembered in this browser), and <b>Back</b> and <b>Next</b> move through the pages. Changing the filter or the search starts again at page 1.</li>
-        <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the furthest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
+        <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the latest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
         <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
         <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
         <li><b>Hotel Nights</b> shows the MISMO Team&rsquo;s stays as one bar a person with the rooms each night, and anything to check before it goes to the hotel.</li>
@@ -29304,7 +29304,11 @@ function v2MergeSt(a,b){
   out.steps=Object.assign({},b.steps||{},a.steps||{});
   out.ses=[...new Set([].concat(a.ses||[],b.ses||[]))];
   const ia=a.invite||'', ib=b.invite||'';
-  if((v2Rank[ib]||0)>(v2Rank[ia]||0)){ out.invite=ib; out.inviteAt=b.inviteAt||''; } else { out.invite=ia; out.inviteAt=a.inviteAt||b.inviteAt||''; }
+  /* the latest invitation news wins (a stale Accepted on the other record must not beat an
+     Invited sent since); with no dates to go by, the further along one */
+  const da2=String(a.inviteAt||''), db2=String(b.inviteAt||'');
+  const takeB= ib && (!ia || (da2&&db2? db2>da2 : (v2Rank[ib]||0)>(v2Rank[ia]||0)));
+  if(takeB){ out.invite=ib; out.inviteAt=b.inviteAt||''; } else { out.invite=ia; out.inviteAt=a.inviteAt||(ia?'':b.inviteAt)||''; }
   ['welcome','itok','iat','iask','mat','mPhotoAt','mFileAt','mWhat','note','pnote'].forEach(k=>{ if(!a[k] && b[k]) out[k]=b[k]; });
   if(a.note && b.note && a.note!==b.note) out.note=a.note+' \u00b7 '+b.note;
   if(a.pnote && b.pnote && a.pnote!==b.pnote) out.pnote=a.pnote+' \u00b7 '+b.pnote;
@@ -29321,6 +29325,8 @@ function v2Merge(keepId, dropId){
   const doc=Object.assign({},db,da,{i:keepId});
   doc.n= String(db.n||'').trim().length>String(da.n||'').trim().length ? db.n : da.n;
   ['e','t','c','bio','thumb','purl','li','biofile'].forEach(k=>{ if(!String(da[k]||'').trim() && db[k]) doc[k]=db[k]; });
+  /* an email box holding something that is not an email gives way to a real one */
+  if(String(db.e||'').indexOf('@')>0 && String(doc.e||'').indexOf('@')<0) doc.e=db.e;
   doc.h=[...new Set([].concat(da.h||[],db.h||[]))];
   doc.s=Object.assign({},db.s||{},da.s||{}); doc.nt=Object.assign({},db.nt||{},da.nt||{});
   doc.pros=!!(da.pros||db.pros);
