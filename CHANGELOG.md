@@ -4,6 +4,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-07
 
+- Speaker steps: Registered now comes before On the Event App
+- The first speaker step is now called Placed on a Session (it was Added to the Agenda)
 - Sponsors: an On the Event App step for Vanessa, and a Sponsors File under Downloads
 - Next Step: a speaker whose bio and headshot are in, or whose speaker email went, is no longer shown as needing to be asked for them
 - General Sessions and the Workshop: Show on the Website Agenda writes the running order and speakers for the website to read

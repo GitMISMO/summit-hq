@@ -7670,7 +7670,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
     <div class="hp-in">
       <h4>The People Page</h4>
       <ul>
-        <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, On the Event App, Registered, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
+        <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, Registered, On the Event App, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
         <li><b>The list comes a page at a time</b>, 20 to start. <b>Per Page</b> under the list changes it to 10, 20, 30, 40, 50 or All (remembered in this browser), and <b>Back</b> and <b>Next</b> move through the pages. Changing the filter or the search starts again at page 1.</li>
         <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the latest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
         <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
@@ -7680,11 +7680,11 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </ul>
       <h4>A Speaker</h4>
       <ol class="hp-steps">
-        <li><b>Added to the agenda</b>. Amy places the speaker on their General Sessions segment or Workshop section, and the agenda builds itself from there, so this ticks itself once they are on a session. Jonna ticks it only for someone on the agenda some other way.</li>
+        <li><b>Placed on a Session</b>. Amy places the speaker on their General Sessions segment or Workshop section, and the agenda builds itself from there, so this ticks itself once they are on a session. Jonna ticks it only for someone on the agenda some other way.</li>
         <li><b>Asked for a bio and headshot</b> (Amy).</li>
         <li><b>Bio and headshot in hand</b> (Amy). Ticks itself once both are in.</li>
-        <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
         <li><b>Registered for the event</b> (Bernie).</li>
+        <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
       </ol>
       <p>Adding a speaker on People puts them on Bernie&rsquo;s next <b>New Speakers to Register</b> email on its own; he gets one list each weekday morning, not an email per speaker.</p>
       <h4>A Sponsor</h4>
@@ -25245,12 +25245,13 @@ window.__peopleSetSeed=function(a){ SEED=Array.isArray(a)?a:[]; };
    put the headshot up and gets the bio later, or the other way round, so the one step
    carries a marker each and is only done when both are up. */
 const STEPS=[
-  {k:'agenda',   t:'Added to the agenda',        who:'JC',   /* Jonna does the agenda; Amy places speakers on sessions first (Put them on a session) */ ask:'Add them to the agenda'},
+  {k:'agenda',   t:'Placed on a Session',        who:'JC',   /* Jonna, 2026-11-07: renamed from Added to the agenda; the agenda builds itself from the sessions Amy places them on */ ask:'Put them on a session'},
   {k:'contacted',t:'Asked for bio & headshot',   who:'AM', ask:'Ask for the bio and headshot', spk:true},
   {k:'bio',      t:'Bio & headshot in hand',     who:'AM', ask:'Get the bio and headshot in', auto:true, spk:true},
+  /* Jonna, 2026-11-07: Registered comes before the event app */
+  {k:'reg',      t:'Registered for the event',   who:'BJ', ask:'Register them'},
   {k:'app',      t:'On the event app',           who:'VR', ask:'Put the bio and the headshot on the app',
-   spk:true, parts:[['appbio','Bio'],['appshot','Headshot']]},
-  {k:'reg',      t:'Registered for the event',   who:'BJ', ask:'Register them'}
+   spk:true, parts:[['appbio','Bio'],['appshot','Headshot']]}
 ];
 /* which half of the event-app step is up. A record written before the two were split
    carries `appbio` meaning both were up, so it stands for the headshot too. */
@@ -25518,8 +25519,8 @@ function meters(){
   const v2=v2On(), V=(f,step)=>()=>{ ST.v2f=f; ST.v2step=step||''; ST.v2view='list'; ST.v2q=''; render(); };
   tile(s.total,'Speakers',null, v2? V('spk') : ()=>{ST.left=false;ST.step='';render();openPeopleCard('lOpen');});
   tile(s.steps.bio+' / '+s.need.bio,'Bios in hand',s.steps.bio===s.need.bio&&s.need.bio?'is-good':'', v2? V('spk','bio') : ()=>{ST.step='bio';ST.left=false;render();});
-  tile(s.steps.app+' / '+s.need.app,'On the event app',s.steps.app===s.need.app&&s.need.app?'is-good':'', v2? V('spk','app') : ()=>{ST.step='app';ST.left=false;render();});
   tile(s.steps.reg+' / '+s.need.reg,'Registered',s.steps.reg===s.need.reg&&s.need.reg?'is-good':'', v2? V('spk','reg') : ()=>{ST.step='reg';ST.left=false;render();});
+  tile(s.steps.app+' / '+s.need.app,'On the event app',s.steps.app===s.need.app&&s.need.app?'is-good':'', v2? V('spk','app') : ()=>{ST.step='app';ST.left=false;render();});
   const bs=boardStat();
   tile(bs.reg+' / '+bs.total,'Board registered',bs.reg===bs.total?'is-good':'is-warn', v2? V('board') : ()=>{ render(); openPeopleCard('boardOpen'); });
   const pr=portalRows();
@@ -26216,7 +26217,7 @@ function render(){
     });
     sponSec.id='pp-portal';
     try{ if(window.__pane) window.__pane.face(sponSec,{
-      note: PP_SAY.sponOpen(prows.length)+(pdue.length? ' \u00b7 '+pdue.length+' to mark on the agenda':''),
+      note: PP_SAY.sponOpen(prows.length)+(pdue.length? ' \u00b7 '+pdue.length+' waiting on approval':''),
       tone: pdue.length?'warn':''}); }catch(e){}
   }
 
@@ -28882,7 +28883,7 @@ async function appFile(){
   /* the app's speakers file is for the people who are actually speaking; a sponsor
      on the agenda is not one of them */
   const list=all().filter(onSummit).filter(speaking).filter(p=>stepDone(p,'agenda'));
-  if(!list.length){ alert('Nobody who is speaking is on the agenda yet \u2014 tick \u201cAdded to the agenda\u201d for them first.'); return; }
+  if(!list.length){ alert('Nobody who is speaking is on the agenda yet \u2014 put them on a session (or tick \u201cPlaced on a Session\u201d) first.'); return; }
   const rows=[RDM_SPK.map(csvCell).join(',')];
   list.forEach(p=>{
     const parts=String(p.n||'').trim().split(/\s+/);
