@@ -7374,7 +7374,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="reg">Registration</button><button type="button" data-go="trunk">The Trunk</button></div>
         <h4>What You Do</h4>
         <ol class="hp-steps">
-          <li><b>Check sponsors on People.</b> Approved sponsors arrive from the Sponsorship Portal on their own, with their level, what they sponsor and their comp code. Once one is on the agenda, press <b>Mark on Agenda</b>.</li>
+          <li><b>Check sponsors on People.</b> Approved sponsors arrive from the Sponsorship Portal on their own, with their level, what they sponsor and their comp code. They go on the website agenda by themselves (breakfasts, breaks and receptions included), so there is nothing to mark.</li>
           <li><b>Watch the numbers on Registration</b>: this week against last year, and who has registered.</li>
           <li><b>The weekly registration list to sponsors</b> goes out on your behalf on Mondays from seven weeks out; nothing to press.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
@@ -7613,6 +7613,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
+        <li><b>Show on the Website Agenda</b> lets the website&rsquo;s agenda show this running order: each segment&rsquo;s time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). It is off until you turn it on, one summit at a time, for General Sessions and the Workshop each. Changes made afterwards reach the website on their own. Click it again to take the running order off.</li>
       </ul>
       <h4>The Workshop</h4>
       <p><b>Workshop</b> in the left menu works exactly the same way for Monday afternoon&rsquo;s Workshop. Start from a <b>Typical Workshop</b> (a welcome, sections, a break, a hands-on exercise and a wrap-up) or start blank, add sections, and drag speakers onto them from the <b>Confirmed Speakers</b> list on the right. Its start and end times come from the Workshop on the Schedule. Each Summit keeps its own Workshop, and its sections go into the event app&rsquo;s sessions file in place of the single Workshop block. A speaker put on a section shows it under <b>Sessions They Are In</b> on People, and the speaker email names it.</p>
@@ -7690,7 +7691,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <ol class="hp-steps">
         <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
         <li>Approved sponsors appear on the <b>Sponsors From The Portal</b> card on their own, with their status (Approved, Pending Payment or Paid), level, what they are sponsoring, and their <b>comp code</b> and number of comps. They register themselves with the code, so sponsors are never registered from Summit HQ.</li>
-        <li>Add them to the agenda, then press <b>Mark on Agenda</b> on their row. That is the only step for a sponsor here.</li>
+        <li>Nothing to do on People: once approved, the website&rsquo;s Summit Sponsor Feed puts them on the website agenda by itself, within the hour on weekdays.</li>
         <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
       </ol>
       <h4>The People Tab Tools</h4>
@@ -25191,6 +25192,7 @@ html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-w
 #app-people .v2-seg2{align-self:flex-start}
 #app-people .v2-off-btn{align-self:flex-start}
 #app-people .v2-spon+.v2-spon{border-top:1px solid var(--line);padding-top:8px}
+#app-gs .gs-web-on,#app-wk .gs-web-on{background:var(--good,#1f7a4d);border-color:var(--good,#1f7a4d);color:#fff}
 #app-people .v2-pager{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:13px;color:var(--ink-2)}
 #app-people .v2-pg-n{flex:1 1 auto}
 #app-people .v2-pg-per select{font:inherit;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);color:var(--ink);margin-left:4px}
@@ -26177,7 +26179,7 @@ function render(){
   let sponSec=null;
   if(prows.length){
     sponSec=section('Sponsors From The Portal',
-      pdue.length? pdue.length+' to mark on the agenda' : 'Every sponsor is on the agenda',
+      pdue.length? pdue.length+' waiting on approval' : 'All on the website agenda automatically',
       prows.length,'sponOpen',!!pdue.length,box=>{
       const when=portal().at;
       box.appendChild(el('div','pnote pp-when','From the Sponsorship Portal'
@@ -26194,10 +26196,7 @@ function render(){
         row.appendChild(L);
         const st=el('div','sp-st'); st.appendChild(el('span','sp-tag '+sk,slab)); row.appendChild(st);
         const A=el('div','sp-a');
-        const b=el('button','btn'+(at?' ghost sp-done':''), at? '\u2713 On the Agenda' : 'Mark on Agenda'); b.type='button';
-        b.title= at? 'Marked on the agenda '+pretty(at)+'. Click to take the mark off.' : 'Click once they are on the agenda.';
-        b.addEventListener('click',()=>setSponAgenda(r,!at));
-        A.appendChild(b); row.appendChild(A);
+        A.appendChild(el('span','sp-me', at? '\u2713 On the agenda automatically' : 'On the agenda once approved')); row.appendChild(A);
         box.appendChild(row);
       });
     });
@@ -26632,9 +26631,14 @@ function sponWhat(r){
 /* the agenda mark, kept per summit against the portal row; a sponsor marked before this
    card existed was marked on their person record, and that still counts */
 const sponKey=r=>String(r.appNo||'').trim() || (normCo(r.company)+'-'+normCo(r.opportunity)).slice(0,60);
+/* Jonna, 2026-11-07: "they should be automatically added". The website's Summit Sponsor Feed
+   puts every Approved, Pending Payment, Paid or In Kind sponsor on the website agenda by
+   itself, so nobody marks them any more. An old mark taken off by hand still counts. */
+const sponAuto=r=>{ const k=sponStatus(r)[0]; return k==='paid'||k==='ok'||k==='pend'||/kind/i.test(String(r.status||'')); };
 function sponOnAgenda(r){
   const on=(ST.sag.get(venueNow())||{}).on||{}, k=sponKey(r);
-  if(Object.prototype.hasOwnProperty.call(on,k)) return on[k]||'';
+  if(Object.prototype.hasOwnProperty.call(on,k) && on[k]) return on[k];
+  if(sponAuto(r)) return 'automatic';
   const who=personForRow(r);
   return (who && onSummit(who) && stepDone(who,'agenda')) || '';
 }
@@ -29006,8 +29010,6 @@ function v2Next(x){
   if(x.team){ const t=x.team;
     if(!ttHasDates(t)) return t.sentAt? {who:'Waiting on them', t:'Travel dates · form sent '+localDay(t.sentAt).replace(/ at .*/,'')} : {who:'Jonna', t:'Ask for their travel dates', act:'travel'};
     if(!t.sentB) return {who:'Jonna', t:'Send to Bernie to register', act:'teambernie'}; }
-  const due=x.spon.find(r=>!sponOnAgenda(r));
-  if(due) return {who:'Jonna', t:'Mark '+String(due.company||'the sponsor').trim()+' on the agenda', act:'agenda'};
   return {who:'', t:'All set', ok:true};
 }
 const v2Needs=x=>{ const n=v2Next(x); return !n.ok && n.who!=='Waiting on them'; };
@@ -29592,9 +29594,7 @@ function v2Sponsor(x){
     const w=sponWhat(r); if(w){ kv.appendChild(el('span',null,'Sponsoring')); kv.appendChild(el('span',null,w)); }
     if(code){ kv.appendChild(el('span',null,'Comp Code')); kv.appendChild(el('span',null,code+(r.comps?' · '+r.comps+' comp'+(String(r.comps)==='1'?'':'s'):'')+' (they register themselves)')); }
     kv.appendChild(el('span',null,'Agenda'));
-    const b=el('button','btn'+(at?' ghost sp-done':''), at? '✓ On the Agenda' : 'Mark on the Agenda'); b.type='button';
-    b.title=at? 'Marked '+pretty(at)+'. Click to take the mark off.' : 'Click once they are on the agenda.';
-    b.addEventListener('click',()=>setSponAgenda(r,!at)); const bw=el('span'); bw.appendChild(b); kv.appendChild(bw);
+    kv.appendChild(el('span',null, at? 'On the website agenda automatically' : 'Goes on the website agenda once approved'));
     s.body.appendChild(kv); });
   s.body.appendChild(el('div','pnote','The sponsorship itself is changed in the Sponsorship Portal.'));
   return s;
@@ -30967,6 +30967,40 @@ async function save(){
 }
 function paintSaved(t){ const n=$(C.p+'-saved'); if(n) n.textContent=t; }
 
+/* ---------- the website's agenda (Jonna, 2026-11-07) ----------
+   "I'm not sure if the Tuesday sessions and speakers auto fill on the agenda on the website."
+   They did not: the website showed one all-day General Sessions block. With Show on the
+   Website Agenda on, this running order is written to feeds/website-agenda, one entry per
+   summit (gs = General Sessions, wk = Workshop): the times, titles, descriptions, sponsors,
+   and each speaker's name, title, company, role and headshot file. Nothing private (no
+   emails, notes or contacts). The website reads it from there. Off, the entry is taken out. */
+let webT=null, webLast;
+function photoFile(id){ try{ return window.__hqRelay? window.__hqRelay.place('photos/'+id).file : ''; }catch(e){ return ''; } }
+function webEntry(){
+  const fn=gsFn();
+  return {label:C.label, day:C.dayName, date:tuesdayLabel(), room:(fn&&fn.room)||'',
+    sessions: timeline().map(r=>{ const it=r.it;
+      return {start:clock(r.s), end:clock(r.e), kind:it.kind, title:it.title||it.kind, desc:it.desc||'', sponsor:it.sponsor||'', brk:SOFT.has(it.kind),
+        people:(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return null;
+          return {name:p.n||'', title:p.t||'', company:p.c||'', role:ref.role||personRole(it), photo:p.thumb? photoFile(p.i) : '', photoUrl:p.purl||''}; }).filter(Boolean)}; })};
+}
+function webSync(){
+  clearTimeout(webT); webT=setTimeout(async()=>{
+    if(!db || !vid || !doc || !gsRead) return;
+    /* never write a running order whose speakers have not loaded yet */
+    if(doc.web && (doc.items||[]).some(it=>(it.people||[]).length) && !people().length) return;
+    const want= doc.web? webEntry() : null, sig=JSON.stringify(want);
+    if(sig===webLast) return;
+    let cur={}; try{ const s=await db.doc('feeds/website-agenda').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
+    const summits=JSON.parse(JSON.stringify(cur.summits||{})), v=venue(), one=Object.assign({},summits[vid]||{});
+    if(want) one[C.p]=want; else delete one[C.p];
+    if(one.gs||one.wk){ Object.assign(one,{name:(v&&v.name)||'', city:(v&&v.city)||'', dates:(v&&v.dates)||''}); summits[vid]=one; }
+    else delete summits[vid];
+    if(JSON.stringify(cur.summits||{})===JSON.stringify(summits)){ webLast=sig; return; }
+    try{ await db.doc('feeds/website-agenda').set({updatedAt:new Date().toISOString(), summits}); webLast=sig; }catch(e){}
+  },1500);
+}
+
 /* ---------- linking speakers to the People tab ---------- */
 const segKey=it=>C.p+'-'+it.id;
 function linkPerson(pid,it,on){
@@ -31035,7 +31069,13 @@ function render(){
     try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(e){}
     render();
   });
-  acts.appendChild(add); acts.appendChild(pr); acts.appendChild(so);
+  /* Jonna, 2026-11-07: the website's agenda fills itself from here, once she says so */
+  const wb=el('button','btn'+(doc.web?' gs-web-on':' ghost'), doc.web? '\u2713 On the Website Agenda' : 'Show on the Website Agenda'); wb.type='button';
+  wb.title= doc.web? 'The website\u2019s agenda shows this running order, its speakers and their headshots'+(doc.webAt?' (since '+String(doc.webAt).slice(0,10)+')':'')+'. Click to take it off.'
+    : 'Let the website\u2019s agenda show this running order, with each speaker\u2019s name, title, company and headshot. Off until you turn it on.';
+  wb.addEventListener('click',()=>{ doc.web=!doc.web; doc.webAt=doc.web? new Date().toISOString() : ''; touch(); render(); });
+  acts.appendChild(add); acts.appendChild(pr); acts.appendChild(wb); acts.appendChild(so);
+  webSync();
 
   /* the strip: when it starts and ends, how it lands against the room's hours */
   const tl=timeline();

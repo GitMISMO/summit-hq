@@ -4,6 +4,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-07
 
+- General Sessions and the Workshop: Show on the Website Agenda writes the running order and speakers for the website to read
+- Sponsors go on the agenda automatically; no Mark on the Agenda step
 - Change log and how-it-works guide (DEVELOPING.md) added to the repository
 - Added to the agenda ticks itself once a speaker is on a session; the agenda stays Jonna's
 - Putting a speaker on a session is Amy's step
