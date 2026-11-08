@@ -8183,7 +8183,10 @@ textarea,input,select{font-family:var(--ui,inherit)}
         sponsorships:sp, registration_plus_sponsorships:sp==null? null : Math.round(rev)+sp,
         source:'Aptify weekly email'+(sp!=null?' + the last sponsorship total':'')+', '+fmtShort(rep)};
       Object.keys(row).forEach(k=>{ if(row[k]==null||row[k]==='') delete row[k]; });
-      d.weekly=d.weekly.filter(r=>!(num(r.summit_year)===yr && num(r.weeks_prior)===wk)).concat([row]);
+      /* a week someone loaded or typed by hand stays as they had it; only the email's own row is refreshed */
+      const had=d.weekly.find(r=>num(r.summit_year)===yr && num(r.weeks_prior)===wk);
+      if(!had || /aptify weekly email/i.test(String(had.source||'')))
+        d.weekly=d.weekly.filter(r=>r!==had).concat([row]);
     }
     d.files.pull={receivedAt:f.receivedAt||at, at, rows:raw.length};
     save(); render(true);
