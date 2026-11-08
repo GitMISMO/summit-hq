@@ -11249,8 +11249,9 @@ const FAC_POOL = ['Meghan','Kathryn','Erin','Leeann','Kellie','Kelly R.'];
 /* TBD can be chosen, but the schedule never assigns it and two TBDs never clash */
 const FAC_CHOICES = FAC_POOL.concat(['TBD']);
 /* ── The facilitators come from the MMS ──────────────────────────────────────────────
-   The MMS (People and Roles › Facilitators) keeps the list; see loadFacRoster below. Until
-   November 7, 2026 it came from the Initiative Hub's facilitator-roster.json. The schedule works in first names, as
+   The MMS (People and Roles › Facilitators) keeps the list and publishes the names to
+   /mms/facilitators.json; see loadFacRoster below. Until November 8, 2026 it came from the
+   Initiative Hub's facilitator-roster.json. The schedule works in first names, as
    the saved sessions always have, so each full name is shortened to its first name
    ("Kellie Stoll" -> "Kellie"), or first name and initial if two share a first name.
 
@@ -11333,49 +11334,22 @@ function facSelect(opts, val, onChange){
   wrap.append(sel, box);
   return wrap;
 }
-/* Jonna, 2026-11-07: the facilitators now come from the MMS (People and Roles ›
-   Facilitators, relay project "mms", file "config", document config/people), not the
-   Initiative Hub's list. Only someone with MMS access can read it there, so whoever can
-   keeps a copy of the names in Summit HQ (meta/facilitators) and everyone else reads that.
-   Read only: Summit HQ never changes the MMS. */
+/* Jonna, 2026-11-08: the facilitators now come from the MMS, not the Initiative Hub's list.
+   The MMS publishes the names (no emails) to /mms/facilitators.json from its People and
+   Roles › Facilitators, the same shape the Initiative Hub's file had:
+   {source:"MMS", updated, facilitators:[{name}]}. Read only. */
 (function loadFacRoster(){
   if (!window.fetch) return;
-  const use = full => {
-    full = (full || []).map(n => String(n || '').trim()).filter(Boolean);
-    if (!full.length) return false;
-    FAC_ROSTER = facShortNames(full);
-    if (applyFacRoster() && window.__scheduleLoaded && typeof render === 'function') render();
-    return true;
-  };
-  const db = async () => { try { return window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { return null; } };
-  const fromMms = async () => {
-    const tok = window.ResourcesSession && window.ResourcesSession.token && window.ResourcesSession.token();
-    const relay = window.__hqRelay && window.__hqRelay.config && window.__hqRelay.config.RELAY_URL;
-    if (!tok || !relay) return null;
-    try {
-      const r = await fetch(relay + '/mms/data/config', { cache: 'no-store', headers: { Authorization: 'Bearer ' + tok } });
-      if (!r.ok) return null;
-      const j = await r.json(), p = j && j.data && j.data.docs && j.data.docs['config/people'];
-      const list = (p && Array.isArray(p.facilitators) ? p.facilitators : []).map(f => String((f && f.name) || '').trim()).filter(Boolean);
-      return list.length ? list : null;
-    } catch (e) { return null; }
-  };
-  let tries = 0;
-  (async function go(){
-    const full = await fromMms();
-    const d = await db();
-    if (full) {
-      use(full);
-      /* keep Summit HQ's copy current for people who cannot open the MMS */
-      if (d) try { const s = await d.doc('meta/facilitators').get(), cur = s.exists ? s.data() : null;
-        if (!cur || JSON.stringify(cur.names || []) !== JSON.stringify(full))
-          await d.doc('meta/facilitators').set({ names: full, from: 'MMS People and Roles', at: new Date().toISOString() }); } catch (e) {}
-      return;
-    }
-    if (d) try { const s = await d.doc('meta/facilitators').get(); if (s.exists && use((s.data() || {}).names)) return; } catch (e) {}
-    /* not signed in yet: look again shortly; after that, the names above stand */
-    if (++tries < 6) setTimeout(go, 5000);
-  })();
+  fetch('/mms/facilitators.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      const full = (d && Array.isArray(d.facilitators) ? d.facilitators : [])
+        .map(f => String((f && f.name) || '').trim()).filter(Boolean);
+      if (!full.length) return;
+      FAC_ROSTER = facShortNames(full);
+      if (applyFacRoster() && window.__scheduleLoaded && typeof render === 'function') render();
+    })
+    .catch(() => {});
 })();
 const realFac = f => !!f && f!=='Staff' && f!=='TBD';
 const STAFF = [
