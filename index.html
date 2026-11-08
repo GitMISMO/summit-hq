@@ -7679,7 +7679,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </ul>
       <h4>A Speaker</h4>
       <ol class="hp-steps">
-        <li><b>Added to the agenda</b> (Amy): she places speakers on their General Sessions segment or Workshop section.</li>
+        <li><b>Added to the agenda</b>. Amy places the speaker on their General Sessions segment or Workshop section, and the agenda builds itself from there, so this ticks itself once they are on a session. Jonna ticks it only for someone on the agenda some other way.</li>
         <li><b>Asked for a bio and headshot</b> (Amy).</li>
         <li><b>Bio and headshot in hand</b> (Amy). Ticks itself once both are in.</li>
         <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
@@ -25242,7 +25242,7 @@ window.__peopleSetSeed=function(a){ SEED=Array.isArray(a)?a:[]; };
    put the headshot up and gets the bio later, or the other way round, so the one step
    carries a marker each and is only done when both are up. */
 const STEPS=[
-  {k:'agenda',   t:'Added to the agenda',        who:'AM',   /* Jonna, 2026-11-07: Amy places speakers on sessions and the workshop */ ask:'Add them to the agenda'},
+  {k:'agenda',   t:'Added to the agenda',        who:'JC',   /* Jonna does the agenda; Amy places speakers on sessions first (Put them on a session) */ ask:'Add them to the agenda'},
   {k:'contacted',t:'Asked for bio & headshot',   who:'AM', ask:'Ask for the bio and headshot', spk:true},
   {k:'bio',      t:'Bio & headshot in hand',     who:'AM', ask:'Get the bio and headshot in', auto:true, spk:true},
   {k:'app',      t:'On the event app',           who:'VR', ask:'Put the bio and the headshot on the app',
@@ -25357,6 +25357,10 @@ const hasBio=p=>!!String(p.bio||'').trim();
    on file or they are not */
 function stepDone(p,k){
   const s=stOf(p).steps||{};
+  /* Jonna, 2026-11-07: the agenda builds itself from the sessions, so a speaker Amy has
+     placed on a General Sessions segment or Workshop section is on the agenda; the tick
+     is still there for anyone on it some other way */
+  if(k==='agenda') return s.agenda || ((stOf(p).ses||[]).length? 'on a session' : '');
   if(k==='bio') return s.bio || (hasBio(p)&&hasShot(p)) ? (s.bio||'on file') : '';
   /* on the event app only once BOTH the bio and the headshot are up */
   if(k==='app'){
