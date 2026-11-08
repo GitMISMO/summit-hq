@@ -7354,7 +7354,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </div>
 
       <div class="hp-who" data-p="amy" hidden>
-        <div class="hp-whohd"><b>Amy Moses</b><span>VP of Strategic Growth. Gets every speaker&rsquo;s bio and headshot in.</span></div>
+        <div class="hp-whohd"><b>Amy Moses</b><span>VP of Strategic Growth. Places speakers on their General Sessions segments and Workshop sections, and gets every speaker&rsquo;s bio and headshot in.</span></div>
         <div class="hp-go"><span>Your pages</span><button type="button" data-go="people">People</button><button type="button" data-go="gs">General Sessions</button><button type="button" data-go="wk">Workshop</button><button type="button" data-go="trunk">The Trunk</button></div>
         <h4>What You Do</h4>
         <ol class="hp-steps">
@@ -7679,7 +7679,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       </ul>
       <h4>A Speaker</h4>
       <ol class="hp-steps">
-        <li><b>Added to the agenda</b> (Jonna).</li>
+        <li><b>Added to the agenda</b> (Amy): she places speakers on their General Sessions segment or Workshop section.</li>
         <li><b>Asked for a bio and headshot</b> (Amy).</li>
         <li><b>Bio and headshot in hand</b> (Amy). Ticks itself once both are in.</li>
         <li><b>On the event app</b> (Vanessa). The bio and the headshot each get their own tick.</li>
@@ -7836,7 +7836,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <thead><tr><th>Person</th><th>Role in the Summits</th></tr></thead>
         <tbody>
           <tr><td>Jonna Critchley</td><td>Director of Programs &amp; Operations. Owns Summit HQ, the schedule, the agenda, General Sessions and the automatic emails.</td></tr>
-          <tr><td>Amy Moses</td><td>Asks speakers for bios and headshots and gets them in.</td></tr>
+          <tr><td>Amy Moses</td><td>Places speakers on sessions and Workshop sections; asks speakers for bios and headshots and gets them in.</td></tr>
           <tr><td>Vanessa Rios</td><td>Builds the event app and keeps the registration dashboard.</td></tr>
           <tr><td>Bernardo (Bernie) Jordan</td><td>Registers speakers and staff, sends sponsorship invoices, and keeps the Trunk.</td></tr>
           <tr><td>Kelly Bradshaw</td><td>Copied on speaker and sponsorship emails; leads marketing pieces and the awards ceremony.</td></tr>
@@ -25242,7 +25242,7 @@ window.__peopleSetSeed=function(a){ SEED=Array.isArray(a)?a:[]; };
    put the headshot up and gets the bio later, or the other way round, so the one step
    carries a marker each and is only done when both are up. */
 const STEPS=[
-  {k:'agenda',   t:'Added to the agenda',        who:'JC', ask:'Add them to the agenda'},
+  {k:'agenda',   t:'Added to the agenda',        who:'AM',   /* Jonna, 2026-11-07: Amy places speakers on sessions and the workshop */ ask:'Add them to the agenda'},
   {k:'contacted',t:'Asked for bio & headshot',   who:'AM', ask:'Ask for the bio and headshot', spk:true},
   {k:'bio',      t:'Bio & headshot in hand',     who:'AM', ask:'Get the bio and headshot in', auto:true, spk:true},
   {k:'app',      t:'On the event app',           who:'VR', ask:'Put the bio and the headshot on the app',
@@ -28985,7 +28985,7 @@ function v2Next(x){
   const p=x.p;
   if(x.pros){ const v=inviteOf(p); return v==='invited'? {who:'Waiting on them', t:'Invited '+pretty(stOf(p).inviteAt)} : {who:'Amy', t:'Invite them', act:'invite'}; }
   if(x.spk){ const st=stOf(p);
-    if(!(st.ses||[]).length && !stepDone(p,'agenda')) return {who:'Jonna', t:'Put them on a session', act:'session'};
+    if(!(st.ses||[]).length && !stepDone(p,'agenda')) return {who:'Amy', t:'Put them on a session', act:'session'};
     if(!st.welcome && !st.noEmail && !seAllIn(p)) return {who:'Amy', t:'Send their speaker email', act:'email'};
     const n=nextStep(p);
     if(n){
