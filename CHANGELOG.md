@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-08
 
+- Registration: Weekly List to Sponsors card. Kelly edits the sponsor email's wording with a preview and a test to herself, and every Friday sent is recorded (who got it, the email itself, the list) instead of copying Jonna and Kelly. System Health watches that each Friday went
 - Registration list to sponsors: Jonna and Kelly are copied on each sponsor's email
 - Registration list to sponsors: Fridays at noon Eastern from week 7 through the Friday before the Summit (was Mondays), and live for sponsors (was test mode)
 - Registration loads itself every Friday: the SummitHQ_Registration report is emailed from Aptify at 6 AM Eastern, the Summit HQ - Registration Weekly Pull flow saves it, and Summit HQ takes it in; System Health shows when it last came. A week already loaded or typed by hand is left as it was
