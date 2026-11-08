@@ -385,6 +385,10 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(w && w.total_registered === 2 && w.in_person === 1 && w.virtual === 1 && w.registration_revenue === 1098, 'that Friday\'s row was not added: ' + JSON.stringify(w));
     expect(d.files && d.files.pull && d.files.pull.receivedAt === '2026-10-30T11:02:00Z', 'the email was not marked as taken in');
     expect((d.weekly || []).filter(r => r.summit_year === 2027 && r.weeks_prior === w.weeks_prior).length === 1, 'the week was added twice');
+    await s.page.waitForTimeout(4000);
+    const sl = await s.page.evaluate(async () => { const db = await window.claude.use('db'); const x = await db.doc('feeds/sponsor-list').get(); return x.exists ? x.data() : null; });
+    const win = ((sl && sl.summits) || []).find(x => x.venue === 'nola');
+    expect(win && win.firstSend === '2026-11-20' && win.people.length === 2 && !JSON.stringify(win.people).includes('@'), 'the sponsors\' list does not start the Friday of week 7, or carries emails: ' + JSON.stringify(win).slice(0, 300));
     noErrors(s.errs); await s.close();
   });
 
