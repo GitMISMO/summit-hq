@@ -364,6 +364,29 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 18. The weekly Aptify registration email loads itself into Registration */
+  await check('The weekly Aptify registration email loads itself', async () => {
+    const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status';
+    const csv = [H,
+      '1001,Ann Lender,Sample Bank,ann@bank.example,In-Person,2026-10-01,899.00,CTO,Independent Mortgage Bank,Paid,Member,82690,MISMO Winter Summit,2027-01-11,SHIPPED',
+      '1002,Tom Tech,Tech Co,tom@tech.example,Virtual,2026-10-20,199.00,VP,Technology Solution Provider,Paid,Member,83115,MISMO Winter Summit Virtual,2027-01-11,SHIPPED',
+      '1003,Gone Person,Gone Co,gone@x.example,In-Person,2026-10-21,899.00,,Other,Paid,Member,82690,MISMO Winter Summit,2027-01-11,CANCELLED',
+      '9001,Pat Prior,Sample Bank,pat@bank.example,In-Person,2025-10-01,799.00,CEO,Independent Mortgage Bank,Paid,Member,80957,MISMO Summit 2026 Winter,2026-01-12,SHIPPED',
+      '7001,Fall Only,Fall Co,f@x.example,In-Person,2026-07-01,500.00,,Other,Paid,Member,81726,MISMO Fall Summit,2026-08-24,SHIPPED'].join('\r\n');
+    const store = { 'feed-registration-pull': { doc: { name: 'SummitHQ_Registration.csv', subject: 'Summit HQ Registration Pull', receivedAt: '2026-10-30T11:02:00Z', csv } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(5000);
+    const d = await s.page.evaluate(async () => { const db = await window.claude.use('db'); const x = await db.doc('registration/nola').get(); return x.exists ? x.data() : null; });
+    expect(d && d.current && d.current.rows.length === 2, 'this year\'s registrants did not load (the cancelled one must stay out): ' + JSON.stringify(d && d.current).slice(0, 300));
+    expect(d.prior && d.prior.rows.length === 1, 'last year\'s registrants did not load: ' + JSON.stringify(d.prior).slice(0, 200));
+    const ci = d.current.cols.indexOf('category'), cats = d.current.rows.map(r => r[ci]).sort().join('|');
+    expect(cats === 'Lender/Servicer|Tech Provider', 'categories were not given: ' + cats);
+    const w = (d.weekly || []).find(r => r.summit_year === 2027 && r.report_date === '2026-10-30');
+    expect(w && w.total_registered === 2 && w.in_person === 1 && w.virtual === 1 && w.registration_revenue === 1098, 'that Friday\'s row was not added: ' + JSON.stringify(w));
+    expect(d.files && d.files.pull && d.files.pull.receivedAt === '2026-10-30T11:02:00Z', 'the email was not marked as taken in');
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
