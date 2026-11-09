@@ -488,6 +488,24 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 21. Headshots download for the event app, from the person's panel */
+  await check('A headshot downloads from the panel as a JPG', async () => {
+    const s = await open(opts({}));
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/pat-shot').set({ i: 'pat-shot', n: 'Pat Shot', e: 'pat@example.org', st: { nola: { on: true, role: 'speaker', steps: {} } } });
+      localStorage.setItem('hq.people.v2', '1'); localStorage.setItem('hq.people.v2per', '0'); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(async () => { const c = document.createElement('canvas'); c.width = 40; c.height = 50; c.getContext('2d').fillRect(0, 0, 40, 50);
+      const b = await new Promise(r => c.toBlob(r, 'image/png')); await window.__hqHeadshots.set('pat-shot', new File([b], 'x.png', { type: 'image/png' })); });
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2500);
+    await s.page.evaluate(() => [...document.querySelectorAll('#app-people .v2-table tbody tr')].find(r => /Pat Shot/.test(r.innerText)).click());
+    await s.page.waitForTimeout(1500);
+    const [dl] = await Promise.all([s.page.waitForEvent('download', { timeout: 8000 }).catch(() => null),
+      s.page.evaluate(() => { const b = [...document.querySelectorAll('#hq-pane .v2-acts button')].find(x => x.textContent === 'Download'); if (b) b.click(); return !!b; })]);
+    expect(dl && dl.suggestedFilename() === 'Pat-Shot.jpg', 'the headshot did not download from the panel as Pat-Shot.jpg: ' + (dl && dl.suggestedFilename()));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
