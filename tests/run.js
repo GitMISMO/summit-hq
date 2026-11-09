@@ -435,6 +435,59 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 20. Champion codes: the list from Member 360, Bernie's note, the code email, a virtual request, codes used */
+  await check('Champion codes from Member 360 to the champion', async () => {
+    const orgs = { orgs: [
+      { k: 'c111', cid: '111', name: 'Alpha Lending', level: 'Associate', people: [{ email: 'ann.alpha@alpha.example', roles: ['Primary'] }, { email: 'bob.beta@alpha.example', roles: ['Alternate'] }, { email: 'vip@alpha.example', roles: ['VIP'] }] },
+      { k: 'c222', cid: '222', name: 'Bravo Tech', level: 'Chair', people: [{ email: 'cara@bravo.example', roles: ['Primary', 'Billing'] }] }] };
+    const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status,campaign_code';
+    const csv = [H,
+      '1,One,Alpha Lending,o@a.example,In-Person,2026-10-01,0,,,Comp,,82690,MISMO Winter Summit,2027-01-11,SHIPPED,MISMOCALPHA',
+      '2,Two,Alpha Lending,t@a.example,Virtual,2026-10-02,0,,,Comp,,83115,MISMO Winter Summit Virtual,2027-01-11,SHIPPED,MISMOCALPHAV',
+      '3,Three,Alpha Lending,x@a.example,In-Person,2026-10-03,0,,,Comp,,82690,MISMO Winter Summit,2027-01-11,CANCELLED,MISMOCALPHA'].join('\r\n');
+    const store = {
+      champions: { items: [{ name: 'Alpha Lending', level: 'Associate', type: 'Lender' }, { name: 'Bravo Tech', level: 'Chair', type: 'Industry' }, { name: 'Gamma Bank', level: 'Corporate', type: 'Lender' }], at: '2026-10-30T00:00:00Z' },
+      orgsdata: { chunked: { ver: 'v1', n: 1 } }, 'orgsdata--v1-0': { s: JSON.stringify(orgs) },
+      'feed-registration-pull': { doc: { name: 'r.csv', receivedAt: '2026-10-30T11:00:00Z', csv } }
+    };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(9000);
+    const codes = () => s.store['champion-codes'] && s.store['champion-codes'].docs['champion-codes/nola'];
+    let d = codes();
+    expect(d && d.rows && d.rows.c111 && d.rows.c222 && !d.rows.cundefined && Object.keys(d.rows).length === 2, 'the champions did not come from Member 360: ' + JSON.stringify(d).slice(0, 300));
+    expect(d.rows.c111.to === 'ann.alpha@alpha.example; bob.beta@alpha.example' && d.rows.c111.comps === 2 && d.rows.c222.comps === 6, 'contacts or comps are wrong: ' + JSON.stringify(d.rows).slice(0, 400));
+    const q = () => (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []);
+    const ask = q().find(r => /Champion Codes to Set Up/.test(r.subject));
+    expect(ask && ask.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(ask.subject) && /Alpha Lending/.test(ask.html) && /bjordan@mba\.org/.test(ask.html), 'Bernie\'s list did not go (to Jonna, as a test): ' + JSON.stringify(q().map(r => [r.to, r.subject])));
+    /* Bernie enters the code and confirms */
+    const row = s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' });
+    await row.locator('input[placeholder="Campaign code"]').fill('MISMOCALPHA'); await row.locator('input[placeholder="Campaign code"]').press('Enter');
+    await s.page.waitForTimeout(1500);
+    await s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' }).locator('button', { hasText: 'Confirm & Send' }).click();
+    await s.page.waitForTimeout(2000);
+    const mail = q().find(r => /Champion Code$/.test(r.subject) && /MISMOCALPHA/.test(r.html));
+    expect(mail && mail.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(mail.subject) && /Kelly Bradshaw/.test(mail.html) && /champion\.html\?t=/.test(mail.html) && /ann\.alpha@alpha\.example/.test(mail.html) && /Ann and Bob/.test(mail.html),
+      'the code email is not right: ' + JSON.stringify(mail || q().map(r => r.subject)).slice(0, 400));
+    d = codes(); expect(d.rows.c111.sentAt && d.rows.c111.code === 'MISMOCALPHA', 'the send was not recorded');
+    /* the form link's code, and the flow's lookup */
+    const form = s.store['feed-champion-form'] && s.store['feed-champion-form'].doc;
+    expect(form && form.tokens && form.tokens[d.rows.c111.tok] && form.tokens[d.rows.c111.tok].company === 'Alpha Lending' && form.to === 'jcritchley@mismo.org' && /\{company\}/.test(form.html), 'the champion form feed is not right: ' + JSON.stringify(form).slice(0, 300));
+    /* a virtual request comes back */
+    await s.page.evaluate(async t => { const db = await window.claude.use('db'); await db.doc('feeds/champion-answers').set({ answers: [{ t, n: '1', notes: 'For Sam', at: '2026-11-01T15:00:00Z' }] }); }, d.rows.c111.tok);
+    await s.page.waitForTimeout(4000);
+    d = codes(); expect(d.rows.c111.vReq && d.rows.c111.vReq.n === 1 && d.rows.c111.vReq.notes === 'For Sam', 'the virtual request did not land: ' + JSON.stringify(d.rows.c111));
+    const r2 = s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' });
+    await r2.locator('input[placeholder="Virtual code"]').fill('MISMOCALPHAV');
+    await r2.locator('button', { hasText: 'Send Virtual Code' }).click();
+    await s.page.waitForTimeout(2000);
+    const vm = q().find(r => /Virtual Registration Code$/.test(r.subject));
+    expect(vm && /MISMOCALPHAV/.test(vm.html) && vm.to === 'jcritchley@mismo.org', 'the virtual code email did not go: ' + JSON.stringify(q().map(r => r.subject)));
+    /* used, from the weekly email (the cancelled one does not count) */
+    await s.page.evaluate(() => window.__champions.sync()); await s.page.waitForTimeout(3000);
+    d = codes(); expect(d.rows.c111.used && d.rows.c111.used.ip === 1 && d.rows.c111.used.v === 1, 'codes used were not counted: ' + JSON.stringify(d.rows.c111.used));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
