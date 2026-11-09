@@ -439,7 +439,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
   /* 20. Champion codes: the list from Member 360, Bernie's note, the code email, a virtual request, codes used */
   await check('Champion codes from Member 360 to the champion', async () => {
     const orgs = { orgs: [
-      { k: 'c111', cid: '111', name: 'Alpha Lending', level: 'Associate', people: [{ email: 'ann.alpha@alpha.example', roles: ['Primary'] }, { email: 'bob.beta@alpha.example', roles: ['Alternate'] }, { email: 'vip@alpha.example', roles: ['VIP'] }] },
+      { k: 'c111', cid: '111', name: 'Alpha Lending', level: 'Associate', people: [{ email: 'ann.alpha@alpha.example', roles: ['Primary'] }, { email: 'bob.beta@alpha.example', roles: ['Alternate'] }, { email: 'vip@alpha.example', roles: ['VIP'] }, { email: 'mo.market@alpha.example', roles: ['Marketing'] }] },
       { k: 'c222', cid: '222', name: 'Bravo Tech', level: 'Chair', people: [{ email: 'cara@bravo.example', roles: ['Primary', 'Billing'] }] }] };
     const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status,campaign_code';
     const csv = [H,
@@ -456,7 +456,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const codes = () => s.store['champion-codes'] && s.store['champion-codes'].docs['champion-codes/nola'];
     let d = codes();
     expect(d && d.rows && d.rows.c111 && d.rows.c222 && !d.rows.cundefined && Object.keys(d.rows).length === 2, 'the champions did not come from Member 360: ' + JSON.stringify(d).slice(0, 300));
-    expect(d.rows.c111.to === 'ann.alpha@alpha.example; bob.beta@alpha.example' && d.rows.c111.comps === 2 && d.rows.c222.comps === 6, 'contacts or comps are wrong: ' + JSON.stringify(d.rows).slice(0, 400));
+    expect(d.rows.c111.to === 'ann.alpha@alpha.example; bob.beta@alpha.example; mo.market@alpha.example' && d.rows.c222.to === 'cara@bravo.example' && d.rows.c111.comps === 2 && d.rows.c222.comps === 6, 'contacts or comps are wrong: ' + JSON.stringify(d.rows).slice(0, 400));
     const q = () => (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []);
     const ask = q().find(r => /Champion Codes to Set Up/.test(r.subject));
     expect(ask && ask.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(ask.subject) && /Alpha Lending/.test(ask.html) && /bjordan@mba\.org/.test(ask.html), 'Bernie\'s list did not go (to Jonna, as a test): ' + JSON.stringify(q().map(r => [r.to, r.subject])));
@@ -469,7 +469,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' }).locator('button', { hasText: 'Confirm & Send' }).click();
     await s.page.waitForTimeout(2000);
     const mail = q().find(r => /Champion Code$/.test(r.subject) && /MISMOCALPHA/.test(r.html));
-    expect(mail && mail.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(mail.subject) && /Kelly Bradshaw/.test(mail.html) && /champion\.html\?t=/.test(mail.html) && /ann\.alpha@alpha\.example/.test(mail.html) && /Ann and Bob/.test(mail.html),
+    expect(mail && mail.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(mail.subject) && /Kelly Bradshaw/.test(mail.html) && /champion\.html\?t=/.test(mail.html) && /ann\.alpha@alpha\.example/.test(mail.html) && /Ann, Bob and Mo/.test(mail.html),
       'the code email is not right: ' + JSON.stringify(mail || q().map(r => r.subject)).slice(0, 400));
     d = codes(); expect(d.rows.c111.sentAt && d.rows.c111.code === 'MISMOCALPHA', 'the send was not recorded');
     expect(await bern() === 1, 'a champion stayed on For Bernie after Confirm & Send');
