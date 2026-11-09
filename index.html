@@ -7732,7 +7732,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
-        <li><b>Headshots for the event app.</b> On anyone&rsquo;s panel, <b>Download the Headshot</b> saves their picture as a JPG named for them. <b>Downloads &rsaquo; Speaker Headshots</b> saves every speaker on this summit who has one, in a single zip.</li>
+        <li><b>Headshots for the event app.</b> On anyone&rsquo;s panel, <b>Download</b> under their headshot saves their picture as a JPG named for them. <b>Downloads &rsaquo; Speaker Headshots</b> saves every speaker on this summit who has one, in a single zip.</li>
       </ul>
     </div>
   </details>
@@ -29603,7 +29603,14 @@ function v2HeadBio(p){
   const a1=el('div','v2-acts');
   if(hasShot(p)){ const rp=el('button','se-lnk','Replace'); rp.type='button'; rp.addEventListener('click',()=>inp.click()); a1.appendChild(rp);
     const rm=el('button','se-lnk v2-danger','Remove'); rm.type='button'; let armed=false;
-    rm.addEventListener('click',()=>{ if(!armed){ armed=true; rm.textContent='Click Again to Remove'; return; } clearPhoto(p.i); }); a1.appendChild(rm); }
+    rm.addEventListener('click',()=>{ if(!armed){ armed=true; rm.textContent='Click Again to Remove'; return; } clearPhoto(p.i); }); a1.appendChild(rm);
+    /* Jonna, 2026-11-09: the headshot for the event app, as a JPG named for them */
+    const dl=el('button','se-lnk','Download'); dl.type='button'; dl.title='Saves the headshot as a JPG named for them, ready for the event app';
+    dl.addEventListener('click',async()=>{ dl.disabled=true;
+      try{ const b=await headshotJpg(p); if(!b) throw 0; saveFile(b, headshotName(p)); }
+      catch(e){ if(p.purl) window.open(p.purl,'_blank','noopener'); else alert('That headshot could not be downloaded.'); }
+      dl.disabled=false; });
+    a1.insertBefore(dl, a1.firstChild); }
   else a1.appendChild(el('span','pnote','Any size; it is kept small'));
   c1.appendChild(a1);
   /* the bio: type or paste it, or drop their bio file on it */

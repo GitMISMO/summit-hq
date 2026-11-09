@@ -4,7 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-09
 
-- People: Download the Headshot on anyone's panel (a JPG named for them), and Downloads › Speaker Headshots (every speaker's in one zip), for the event app
+- People: Download under the headshot on anyone's panel (a JPG named for them), and Downloads › Speaker Headshots (every speaker's in one zip), for the event app
 - Registration: Champion Codes. Champions come from Member 360; Bernie gets the list the Monday after each summit and a note for every new Champion or level change; each code he confirms sends the Champion a branded code email as Kelly; Champions ask for virtual registrations on a form (champion.html) that emails Bernie; his virtual code goes back to them; the weekly Aptify email marks codes used. Test mode (to Jonna) until Live is switched on. Winter 2027's codes came in from the Smartsheet
 
 ## 2026-11-08
