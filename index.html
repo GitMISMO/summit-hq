@@ -7669,7 +7669,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Weekly List to Sponsors</b> and <b>Champion Codes</b> at the top of the page take you straight to those two cards.</li>
         <li><b>Champion Codes</b> (under Weekly List to Sponsors) is every MISMO Champion&rsquo;s complimentary registration code for the summit picked: Associate 2, Executive 3, Chair 6 a summit. The list comes from Member 360 on its own, with each Champion&rsquo;s Aptify ID and Primary and Alternate contacts, so a new Champion is never missed.</li>
         <li><b>The cycle.</b> Registration for the next summit opens on the Tuesday of a summit; the Monday after, the next summit&rsquo;s list opens here with each returning Champion&rsquo;s code from before, and Bernie gets one email with the list. A new Champion in Member 360, or a level change, sends Bernie a note right away.</li>
-        <li><b>Bernie</b> sets up each code in Aptify, enters or confirms it on its row and presses <b>Confirm &amp; Send</b> (or <b>Send All Ready</b>). That sends the Champion their code email, as Kelly, in her wording. <b>Already Sent</b> records one sent by hand.</li>
+        <li><b>Bernie</b> sets up each code in Aptify, enters or confirms it on its row and presses <b>Confirm &amp; Send</b> (or <b>Send All Ready</b>). <b>For Bernie</b> lists every Champion still waiting on him; one stays there until its email is sent (or marked Already Sent). That sends the Champion their code email, as Kelly, in her wording. <b>Already Sent</b> records one sent by hand.</li>
         <li><b>Virtual.</b> The code email&rsquo;s <b>Request Virtual Registrations</b> button opens a short form where the Champion says how many they want as virtual. Bernie is emailed at once and the request shows on their row; he enters the virtual code and how many and presses <b>Send Virtual Code</b>, which emails it to them.</li>
         <li><b>Used</b> counts come from the weekly Aptify registration email: each Champion&rsquo;s registrations on their code, in person and virtual, and how many are left. Winter 2027&rsquo;s codes and counts came in from the Smartsheet.</li>
         <li><b>Test and Live.</b> Until Live is switched on (top right of the card), every Champion and Bernie email goes to Jonna only, marked [Test]. <b>Email Wording and Tests</b> holds both champion emails&rsquo; wording (with a preview), and <b>Send Jonna Every Test Email</b>.</li>
@@ -32780,6 +32780,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     if(r.vReq && r.vReq.n>0 && !(r.vSentAt && String(r.vSentAt)>=String(r.vReq.at||''))) return ['info','Virtual Requested'];
     return ['ok', r.sentAt==='before'? 'Sent Before Summit HQ' : 'Sent '+when(r.sentAt)];
   }
+  /* Jonna, 2026-11-09: a champion stays on Bernie's list (and in his count) until he presses
+     Confirm & Send (or Already Sent), not just until a code is typed in */
+  const forBernie=r=>!r.gone && (!r.sentAt || !!r.needsResend);
   function render(){
     const host=$('rg-champ'); if(!host) return;
     const act=document.activeElement; if(act && host.contains(act) && /INPUT|TEXTAREA/.test(act.tagName)) return;
@@ -32803,7 +32806,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     if(rows.length){
       const n=f=>rows.filter(f).length;
       const st=r=>status(r)[1];
-      const T=[['all','Champions',n(r=>!r.gone)],['need','For Bernie',n(r=>!r.gone&&(!r.code||r.needsResend))],['ready','Ready to Send',n(r=>!r.gone&&r.code&&!r.needsResend&&!r.sentAt)],
+      const T=[['all','Champions',n(r=>!r.gone)],['need','For Bernie',n(forBernie)],['ready','Ready to Send',n(r=>!r.gone&&r.code&&!r.needsResend&&!r.sentAt)],
         ['virt','Virtual Requests',n(r=>st(r)==='Virtual Requested')],['sent','Codes Sent',n(r=>r.sentAt&&!r.gone)],
         ['used','Registered',rows.reduce((a,r)=>a+((r.used&&(r.used.ip+r.used.v))||0),0)]];
       const tiles=el('div','ch-tiles');
@@ -32833,7 +32836,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     const v=sid(), qq=S.q.trim().toLowerCase(), edit=canEdit();
     rowsOf(v).sort((a,b)=>String(a.company).localeCompare(String(b.company))).filter(r=>{
       const s=status(r)[1];
-      if(S.filter==='need' && !(!r.gone&&(!r.code||r.needsResend))) return false;
+      if(S.filter==='need' && !forBernie(r)) return false;
       if(S.filter==='ready' && !(!r.gone&&r.code&&!r.needsResend&&!r.sentAt)) return false;
       if(S.filter==='virt' && s!=='Virtual Requested') return false;
       if(S.filter==='sent' && !r.sentAt) return false;
