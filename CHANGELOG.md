@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-09
 
+- Champion Codes: a Champion's Marketing contact in Member 360 gets the code email too, with the Primary and Alternate
 - Champion Codes: a Champion stays on For Bernie until Confirm & Send (or Already Sent), not just until a code is typed in
 - Registration: Weekly List to Sponsors and Champion Codes buttons at the top go straight to those cards
 - People: Download under the headshot on anyone's panel (a JPG named for them), and Downloads › Speaker Headshots (every speaker's in one zip), for the event app
