@@ -464,12 +464,15 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const row = s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' });
     await row.locator('input[placeholder="Campaign code"]').fill('MISMOCALPHA'); await row.locator('input[placeholder="Campaign code"]').press('Enter');
     await s.page.waitForTimeout(1500);
+    const bern = async () => s.page.evaluate(() => { const b = [...document.querySelectorAll('#rg-champ .ch-tile')].find(x => /For Bernie/i.test(x.innerText)); return +b.querySelector('.v').textContent; });
+    expect(await bern() === 2, 'a champion left For Bernie when a code was typed in, before Confirm & Send');
     await s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' }).locator('button', { hasText: 'Confirm & Send' }).click();
     await s.page.waitForTimeout(2000);
     const mail = q().find(r => /Champion Code$/.test(r.subject) && /MISMOCALPHA/.test(r.html));
     expect(mail && mail.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(mail.subject) && /Kelly Bradshaw/.test(mail.html) && /champion\.html\?t=/.test(mail.html) && /ann\.alpha@alpha\.example/.test(mail.html) && /Ann and Bob/.test(mail.html),
       'the code email is not right: ' + JSON.stringify(mail || q().map(r => r.subject)).slice(0, 400));
     d = codes(); expect(d.rows.c111.sentAt && d.rows.c111.code === 'MISMOCALPHA', 'the send was not recorded');
+    expect(await bern() === 1, 'a champion stayed on For Bernie after Confirm & Send');
     /* the form link's code, and the flow's lookup */
     const form = s.store['feed-champion-form'] && s.store['feed-champion-form'].doc;
     expect(form && form.tokens && form.tokens[d.rows.c111.tok] && form.tokens[d.rows.c111.tok].company === 'Alpha Lending' && form.to === 'jcritchley@mismo.org' && /\{company\}/.test(form.html), 'the champion form feed is not right: ' + JSON.stringify(form).slice(0, 300));
