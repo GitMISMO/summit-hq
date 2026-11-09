@@ -36,6 +36,10 @@ Every connection is written down in the **MISMO Connections Map** (Claude Doc `U
 - Summit HQ cannot send email itself. Every email goes through a flow, and nothing goes to a list without a preview first. Test emails go to Jonna only.
 - The flows are in Jonna's Power Automate (environment `Default-867e5d11-…`), all named `Summit HQ - …`. Help section 14, Emails That Send on Their Own, lists each one, when it runs and who gets it.
 
+## Champion Codes
+
+Registration › Champion Codes replaces the Summit Codes - MISMO Champions Smartsheet. Each summit's codes are in `champion-codes/<summit>` (one row a Champion, keyed `c<Aptify ID>`), with the wording, Live switch and city in `champion-codes/settings`. The current Champions (Chair, Executive, Associate) come from Member 360's `data/champions`, matched by name to `orgsdata` for the Aptify ID and the Primary, Alternate and Marketing contacts; this runs when someone with Member 360 access opens Summit HQ. A summit's list opens the Monday after the summit before it, carrying each Champion's last code, and Bernie gets the list; a new Champion or a level change sends him a note. Confirm & Send queues the Champion's branded code email (as Kelly) on `feeds/speaker-email`. The email's button opens `champion.html`, which posts to the Summit HQ - Champion Virtual Requests flow (`champion-endpoint.txt`); that flow saves to `feeds/champion-answers` and emails Bernie in the words and addresses Summit HQ keeps in `feeds/champion-form`. Used counts come from `feeds/registration-pull` once its CSV has a campaign code column. Until Live is on, every Champion and Bernie email goes to Jonna only, marked [Test].
+
 ## System Health
 
 **System Health** in the left menu shows saving, storage, every incoming feed and the email flows, and when each last ran. An error catcher in the page `<head>` (`window.__hqErr`) records every error to `feeds/health-log`. The **Summit HQ - Daily Health Check** flow reads that log and the email feeds every day at 12:13 PM Mountain and emails Jonna only when something is wrong.
@@ -52,7 +56,7 @@ Every connection is written down in the **MISMO Connections Map** (Claude Doc `U
 
 ## The Checks
 
-`tests/harness.js` opens the page in a headless browser against a pretend sign-in and a pretend relay (with real version conflicts), with sample data and the clock fixed at November 1, 2026. Nothing real is read or changed. `tests/run.js` holds the checks: scripts parse, every tab opens, saving and merging, per-summit details, Past Summits, the Board and Team emails, System Health, the error log, outside files cannot run, the speaker automations, travel answers, and the People page (one row a person, the right-hand panel, pages, and merging the same person).
+`tests/harness.js` opens the page in a headless browser against a pretend sign-in and a pretend relay (with real version conflicts), with sample data and the clock fixed at November 1, 2026. Nothing real is read or changed. `tests/run.js` holds the checks: scripts parse, every tab opens, saving and merging, per-summit details, Past Summits, the Board and Team emails, System Health, the error log, outside files cannot run, the speaker automations, travel answers, the People page (one row a person, the right-hand panel, pages, and merging the same person, headshot download), the weekly Aptify registration email, the sponsors' weekly list (wording and sent record), and Champion Codes (from Member 360 to Bernie's note, the code email, a virtual request, codes used).
 
 ## Rules
 
@@ -61,4 +65,4 @@ Every connection is written down in the **MISMO Connections Map** (Claude Doc `U
 - **Never put a token, key or password** in the page, the repo or a doc. Jonna signs in herself.
 - **Page style:** MISMO navy and sky, Title Case headings and buttons, squared-off buttons and tags (never pill shapes; circles are fine), no monospace type, no big empty spaces, plain words.
 - **People page:** one list, one row a person whatever their roles; a person opens in the right-hand panel (the shared `window.__pane`, which overlays the page and widens with the expand button); edits save as you type. The older People cards are still built, hidden, because the menus open them in the panel. Keep them working.
-- **Who does what:** Amy places speakers on sessions and gets bios and headshots in; Jonna owns the agenda, the schedule and General Sessions; Vanessa puts speakers on the event app; Bernie registers people.
+- **Who does what:** Amy places speakers on sessions and gets bios and headshots in; Jonna owns the agenda, the schedule and General Sessions; Vanessa puts speakers on the event app; Bernie registers people and sets up the Champions' codes in Aptify; the sponsors' weekly list and the Champions' code emails go out as Kelly.

@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-09
 
+- Help: Champion Codes written into each person's part (Jonna, Kelly, Bernie), Where Everything Lives, How the Systems Connect, When Something Goes Wrong, Limits and Who Does What; Vanessa's part brought up to date (registration loads itself, no logo requests)
 - Champion Codes: a Champion's Marketing contact in Member 360 gets the code email too, with the Primary and Alternate
 - Champion Codes: a Champion stays on For Bernie until Confirm & Send (or Already Sent), not just until a code is typed in
 - Registration: Weekly List to Sponsors and Champion Codes buttons at the top go straight to those cards
