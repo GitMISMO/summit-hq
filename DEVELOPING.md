@@ -10,7 +10,8 @@ Summit HQ is where MISMO plans its Summits: the schedule, the Run of Show tasks,
 | `speaker.html` | The public form a speaker opens from their speaker email to send their bio and headshot. |
 | `travel.html` | The public form the MISMO Team uses to send their travel dates. |
 | `board.html` | The public page where a Board member answers In Person or Virtual. |
-| `speaker-endpoint.txt`, `travel-endpoint.txt` | The Power Automate addresses the public forms post to. They are public by design: a form answer only counts once Summit HQ matches its code to a real person. |
+| `champion.html` | The public page where a Champion asks for some of their complimentary registrations as virtual (from the button in their code email). |
+| `speaker-endpoint.txt`, `travel-endpoint.txt`, `champion-endpoint.txt` | The Power Automate addresses the public forms post to. They are public by design: a form answer only counts once Summit HQ matches its code to a real person. |
 | `lib/` | Big helpers loaded only when used: the Word export (`docx.js`), the PDF reader (`pdfjs-*`), and the bio file reader (`biotext.js`). |
 | `tests/` | The automatic checks (see below). |
 | `CHANGELOG.md` | One line per change people would notice, newest first. Add a line with every upload. |
@@ -29,8 +30,9 @@ Summit HQ is where MISMO plans its Summits: the schedule, the Run of Show tasks,
 Every connection is written down in the **MISMO Connections Map** (Claude Doc `UcBYh3aakukXcjYvjnWBY7`). Read it before changing a connection and update it in the same session. In short:
 
 - **Summit HQ writes feeds that Power Automate flows read** (`feeds/…` in the relay): queued emails (`speaker-email`), weekly follow-ups (`speaker-reminders`), Bernie's new speakers (`speaker-adds`) and Board list (`board-notify`), open tasks (`tasks`), the registrant list for sponsors with its finished email in Kelly's wording from `sponsor-email/main` (`sponsor-list`; the flow records each Friday sent in `sponsor-list-sent`), the speaker email map (`speaker-mail-map`), the error log (`health-log`), and the public agenda for the website (`website-agenda`: each summit's General Sessions and Workshop running order with speakers' names, titles, companies and headshot files; written only when Show on the Website Agenda is on, never emails or notes). Each flow notes what it sent in a matching `…-sent` feed so nothing goes twice.
+- **Champion Codes** (`champion-codes/<summit>`, `champion-codes/settings`) writes `feeds/champion-form` (who each form link belongs to and Bernie's note), which the Champion Virtual Requests flow reads; the flow writes `feeds/champion-answers`.
 - **Flows write answers back:** speaker form answers (`si-<code>`), emailed bios and headshots (`sm-<code>`, `speaker-mail-in`), travel and Board answers (`team-travel-answers`), and the Sponsorship Portal's applications (`portal-applications`, read only here).
-- **Summit HQ reads** Member 360's organization list (lenders) and the MMS's facilitator list (`/mms/facilitators.json`, names only, published by the MMS).
+- **Summit HQ reads** Member 360's organization list (lenders) and its current Champions (`data/champions`, matched to `orgsdata` for Aptify ID and Primary and Alternate contacts) for Champion Codes and the MMS's facilitator list (`/mms/facilitators.json`, names only, published by the MMS).
 - Summit HQ cannot send email itself. Every email goes through a flow, and nothing goes to a list without a preview first. Test emails go to Jonna only.
 - The flows are in Jonna's Power Automate (environment `Default-867e5d11-…`), all named `Summit HQ - …`. Help section 14, Emails That Send on Their Own, lists each one, when it runs and who gets it.
 
