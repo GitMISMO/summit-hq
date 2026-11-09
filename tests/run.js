@@ -412,6 +412,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const h = String(win.html || '');
     expect(h.includes('We have 2 registrants') && h.includes('Kelly Bradshaw') && h.includes('unable to provide email addresses') && !h.includes('{count}') && !h.includes('Amy Moses'),
       'the finished email is not right: ' + h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 400));
+    expect(await s.page.locator('#rg-acts button[data-jump="rg-spon"]').count() === 1 && await s.page.locator('#rg-acts button[data-jump="rg-champ"]').count() === 1, 'the buttons to the two cards are not at the top of Registration');
     const txt = await s.page.locator('#rg-spon').innerText();
     expect(/Weekly List to Sponsors/.test(txt) && /Next Send/i.test(txt) && /November 20/.test(txt), 'the card does not show the schedule: ' + txt.slice(0, 300));
     expect(await s.page.locator('#rg-spon iframe').count() >= 1, 'no preview of the email');
