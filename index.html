@@ -7681,7 +7681,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>The cycle.</b> Registration for the next summit opens on the Tuesday of a summit; the Monday after, the next summit&rsquo;s list opens here with each returning Champion&rsquo;s code from before, and Bernie gets one email with the list. A new Champion in Member 360, or a level change, sends Bernie a note right away.</li>
         <li><b>Bernie</b> sets up each code in Aptify, enters or confirms it on its row and presses <b>Confirm &amp; Send</b> (or <b>Send All Ready</b>). <b>For Bernie</b> lists every Champion still waiting on him; one stays there until its email is sent (or marked Already Sent). That sends the Champion their code email, as Kelly, in her wording. <b>Already Sent</b> records one sent by hand.</li>
         <li><b>Virtual.</b> The code email&rsquo;s <b>Request Virtual Registrations</b> button opens a short form where the Champion says how many they want as virtual. Bernie is emailed at once and the request shows on their row; he enters the virtual code and how many and presses <b>Send Virtual Code</b>, which emails it to them.</li>
-        <li><b>Used</b> counts come from the weekly Aptify registration email: each Champion&rsquo;s registrations on their code, in person and virtual, and how many are left. Winter 2027&rsquo;s codes and counts came in from the Smartsheet.</li>
+        <li><b>Used</b> counts come from the weekly Aptify registration email, which carries each registration&rsquo;s campaign code: each Champion&rsquo;s registrations on their code (in person) and on their virtual code (the one on their row, or their code with a V on the end), and how many are left. Winter 2027&rsquo;s codes and counts came in from the Smartsheet.</li>
         <li><b>Test and Live.</b> Until Live is switched on (top right of the card), every Champion and Bernie email goes to Jonna only, marked [Test]. <b>Email Wording and Tests</b> holds both champion emails&rsquo; wording (with a preview), and <b>Send Jonna Every Test Email</b>.</li>
       </ul>
     </div>
@@ -7858,7 +7858,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Nothing adds speakers to the Summit HQ People list automatically, so Bernie&rsquo;s email only goes when someone adds them there.</li>
                 <li>The Sponsorship Portal copy only refreshes when the portal saves. If the portal is quiet, the stamp still shows when Summit HQ last checked.</li>
         <li>Sponsors register themselves with their comp code; Summit HQ does not track their registration.</li>
-        <li>Champion Codes&rsquo; <b>Used</b> counts need the campaign code on the weekly SummitHQ_Registration report. Until it is added there, Winter 2027&rsquo;s counts are the ones from the Smartsheet.</li>
+        <li>Champion Codes&rsquo; <b>Used</b> counts come from the campaign code on the weekly SummitHQ_Registration report (added November 9, 2026), so they start with the Friday, November 13 email; until then Winter 2027&rsquo;s counts are the ones from the Smartsheet.</li>
         <li>Champion Codes refreshes from Member 360 only when someone with Member 360 access opens Summit HQ, and it cannot set up codes in Aptify; Bernie does that.</li>
       </ul>
     </div>
@@ -32766,7 +32766,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       const U=usedCounts(venue); if(!U||U.noCol) continue;
       const rows=own(d.rows); let changed=false;
       Object.keys(rows).forEach(k=>{ const r=rows[k]; if(!r.code) return;
-        const a=U.by[String(r.code).toUpperCase()]||{ip:0,v:0}, b=r.vCode? (U.by[String(r.vCode).toUpperCase()]||{ip:0,v:0}) : {ip:0,v:0};
+        /* their virtual code is the one on the row, or (as Bernie names them) the code with a V on the end */
+        const vc=String(r.vCode||(r.code+'V')).toUpperCase();
+        const a=U.by[String(r.code).toUpperCase()]||{ip:0,v:0}, b=vc!==String(r.code).toUpperCase()? (U.by[vc]||{ip:0,v:0}) : {ip:0,v:0};
         /* the in-person code counts in person; anyone on their virtual code counts virtual */
         const u={ip:a.ip, v:a.v+b.v+b.ip, at:U.at};
         if(!r.used || r.used.ip!==u.ip || r.used.v!==u.v || r.used.src){ r.used=u; changed=true; } });
