@@ -313,8 +313,8 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
-  /* 15. The website's agenda: General Sessions goes to feeds/website-agenda only once it is switched on */
-  await check('General Sessions reaches the website agenda once switched on', async () => {
+  /* 15. The website's agenda: only the General Sessions segments marked On Website go to feeds/website-agenda */
+  await check('General Sessions reaches the website agenda a segment at a time', async () => {
     const s = await open(opts());
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       await db.doc('people/gs-spk').set({ i: 'gs-spk', n: 'Gail Speaker', e: 'gail@example.org', t: 'CTO', c: 'Sample Bank', thumb: 'data:image/png;base64,iVBORw0KGgo=',
@@ -324,17 +324,21 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
         { id: 'g2', kind: 'Break', title: 'Networking Break', dur: 20, people: [] }] }); });
     await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
     await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
-    expect(!(s.store['feed-website-agenda']), 'the running order reached the website before it was switched on');
-    await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Website Agenda/.test(b.textContent)).click());
-    await s.page.waitForTimeout(5000);
-    const f = ((s.store['feed-website-agenda'] || {}).doc || {}).summits || {};
-    const gs = f.nola && f.nola.gs;
-    expect(gs && gs.sessions.length === 2 && gs.sessions[0].title === 'The Year Ahead' && gs.sessions[0].start === '9:00 AM', 'the running order was not written for the website: ' + JSON.stringify(f).slice(0, 300));
+    expect(!(s.store['feed-website-agenda']), 'the running order reached the website before anything was marked');
+    const tick = n => s.page.evaluate(n => { const c = [...document.querySelectorAll('#app-gs .gs-item')][n]; const b = [...c.querySelectorAll('label')].find(l => /On Website/.test(l.textContent)).querySelector('input'); b.click(); }, n);
+    await tick(0); await s.page.waitForTimeout(5000);
+    let f = ((s.store['feed-website-agenda'] || {}).doc || {}).summits || {};
+    let gs = f.nola && f.nola.gs;
+    expect(gs && gs.sessions.length === 1 && gs.sessions[0].title === 'The Year Ahead' && gs.sessions[0].start === '9:00 AM', 'only the marked segment should be on the website: ' + JSON.stringify(f).slice(0, 300));
     const p = gs.sessions[0].people[0];
     expect(p && p.name === 'Gail Speaker' && p.company === 'Sample Bank' && p.photo && !('email' in p) && !JSON.stringify(f).includes('gail@'), 'the speaker was not written right, or an email went out: ' + JSON.stringify(p));
-    await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Website Agenda/.test(b.textContent)).click());
+    await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Mark All for the Website/.test(b.textContent)).click());
     await s.page.waitForTimeout(5000);
-    expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola), 'switching it off did not take the running order off');
+    gs = ((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).gs;
+    expect(gs && gs.sessions.length === 2 && gs.sessions[1].start === '9:45 AM', 'Mark All did not put every segment on: ' + JSON.stringify(gs || {}).slice(0, 200));
+    expect(/2 of 2/.test(await s.page.evaluate(() => document.querySelector('#app-gs .gs-strip').textContent)), 'the On the Website Agenda figure is wrong');
+    await tick(0); await tick(1); await s.page.waitForTimeout(5000);
+    expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola), 'unticking every segment did not take the running order off');
     noErrors(s.errs); await s.close();
   });
 
