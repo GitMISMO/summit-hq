@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-13
+
+- General Sessions and the Workshop: each segment has its own On Website tick, so Amy can put segments on the website's agenda as they are ready (Mark All for the Website Agenda does them all)
+
 ## 2026-11-09
 
 - Registration report: SummitHQ_Registration now carries each registration's campaign code, so Champion Codes counts codes used (in person and virtual) from the Friday email

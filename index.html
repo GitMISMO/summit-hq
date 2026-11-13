@@ -7364,6 +7364,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Send the speaker email.</b> On the <b>Speaker Emails &amp; Follow-Ups</b> card on People, press <b>Choose Speakers to Email</b> and tick who gets it, or open one speaker and press <b>Send Speaker Email</b>. It carries the hotel booking link and rate from the Resume and each speaker&rsquo;s own link to send their bio and headshot, and it ticks <b>Asked for bio &amp; headshot</b> for you.</li>
           <li><b>Their bio and headshot come in on their own.</b> When a speaker sends the form, the bio, title, company and headshot land on their row and <b>Bio &amp; headshot in hand</b> ticks itself. Anyone who has not sent theirs gets a reminder every week on the day their email went, until it is in; see <b>Speaker Emails &amp; Follow-Ups</b> on People to see who is next, or to switch the reminders off for someone. You can still type a bio or add a headshot on the speaker&rsquo;s record yourself.</li>
           <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
+          <li><b>Put segments on the website&rsquo;s agenda when they are ready.</b> On General Sessions and the Workshop, tick <b>On Website</b> on each segment that is ready to show. Only the ticked ones go, so you can add the rest as they come together. Untick one to take it off.</li>
           <li><b>See who still owes you something</b> on People: the <b>Need Something From Us</b> box at the top.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
@@ -7625,7 +7626,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
-        <li><b>Show on the Website Agenda</b> lets the website&rsquo;s agenda show this running order: each segment&rsquo;s time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). It is off until you turn it on, one summit at a time, for General Sessions and the Workshop each. Changes made afterwards reach the website on their own. Click it again to take the running order off.</li>
+        <li><b>On Website</b>, on each segment, puts that segment on the website&rsquo;s agenda: its time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). Tick only the segments that are ready; the rest stay off until you tick them, so the agenda can go up a few segments at a time. Changes to a ticked segment reach the website on their own, and unticking it takes it off. <b>Mark All for the Website Agenda</b> at the top ticks every segment at once, and the <b>On the Website Agenda</b> figure shows how many are on. Each summit, and General Sessions and the Workshop, are marked separately.</li>
       </ul>
       <h4>The Workshop</h4>
       <p><b>Workshop</b> in the left menu works exactly the same way for Monday afternoon&rsquo;s Workshop. Start from a <b>Typical Workshop</b> (a welcome, sections, a break, a hands-on exercise and a wrap-up) or start blank, add sections, and drag speakers onto them from the <b>Confirmed Speakers</b> list on the right. Its start and end times come from the Workshop on the Schedule. Each Summit keeps its own Workshop, and its sections go into the event app&rsquo;s sessions file in place of the single Workshop block. A speaker put on a section shows it under <b>Sessions They Are In</b> on People, and the speaker email names it.</p>
@@ -7884,7 +7885,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed November 9, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed November 13, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
@@ -25316,6 +25317,7 @@ html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-w
 #app-people .v2-off-btn{align-self:flex-start}
 #app-people .v2-spon+.v2-spon{border-top:1px solid var(--line);padding-top:8px}
 #app-gs .gs-web-on,#app-wk .gs-web-on{background:var(--good,#1f7a4d);border-color:var(--good,#1f7a4d);color:#fff}
+:is(#app-gs,#app-wk) .gs-webpick.on{color:var(--good,#1f7a4d);font-weight:600}
 #app-people .v2-pager{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:13px;color:var(--ink-2)}
 #app-people .v2-pg-n{flex:1 1 auto}
 #app-people .v2-pg-per select{font:inherit;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--surface);color:var(--ink);margin-left:4px}
@@ -31201,7 +31203,7 @@ function photoFile(id){ try{ return window.__hqRelay? window.__hqRelay.place('ph
 function webEntry(){
   const fn=gsFn();
   return {label:C.label, day:C.dayName, date:tuesdayLabel(), room:(fn&&fn.room)||'',
-    sessions: timeline().map(r=>{ const it=r.it;
+    sessions: timeline().filter(r=>r.it.web).map(r=>{ const it=r.it;
       return {start:clock(r.s), end:clock(r.e), kind:it.kind, title:it.title||it.kind, desc:it.desc||'', sponsor:it.sponsor||'', brk:SOFT.has(it.kind),
         people:(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return null;
           return {name:p.n||'', title:p.t||'', company:p.c||'', role:ref.role||personRole(it), photo:p.thumb? photoFile(p.i) : '', photoUrl:p.purl||''}; }).filter(Boolean)}; })};
@@ -31210,8 +31212,9 @@ function webSync(){
   clearTimeout(webT); webT=setTimeout(async()=>{
     if(!db || !vid || !doc || !gsRead) return;
     /* never write a running order whose speakers have not loaded yet */
-    if(doc.web && (doc.items||[]).some(it=>(it.people||[]).length) && !people().length) return;
-    const want= doc.web? webEntry() : null, sig=JSON.stringify(want);
+    const marked=(doc.items||[]).filter(it=>it.web);
+    if(marked.some(it=>(it.people||[]).length) && !people().length) return;
+    const want= marked.length? webEntry() : null, sig=JSON.stringify(want);
     if(sig===webLast) return;
     let cur={}; try{ const s=await db.doc('feeds/website-agenda').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
     const summits=JSON.parse(JSON.stringify(cur.summits||{})), v=venue(), one=Object.assign({},summits[vid]||{});
@@ -31291,11 +31294,16 @@ function render(){
     try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(e){}
     render();
   });
-  /* Jonna, 2026-11-07: the website's agenda fills itself from here, once she says so */
-  const wb=el('button','btn'+(doc.web?' gs-web-on':' ghost'), doc.web? '\u2713 On the Website Agenda' : 'Show on the Website Agenda'); wb.type='button';
-  wb.title= doc.web? 'The website\u2019s agenda shows this running order, its speakers and their headshots'+(doc.webAt?' (since '+String(doc.webAt).slice(0,10)+')':'')+'. Click to take it off.'
-    : 'Let the website\u2019s agenda show this running order, with each speaker\u2019s name, title, company and headshot. Off until you turn it on.';
-  wb.addEventListener('click',()=>{ doc.web=!doc.web; doc.webAt=doc.web? new Date().toISOString() : ''; touch(); render(); });
+  /* Jonna, 2026-11-07: the website's agenda fills itself from here, once she says so.
+     Jonna, 2026-11-13: "amy needs the ability to just mark the ones she want to send to the website
+     agenda because not all of them will be ready at the same time" — each segment has its own
+     On Website mark; only the marked ones go. The old one-switch-for-all becomes every segment marked. */
+  if(doc.web && !doc.items.some(x=>'web' in x)){ doc.items.forEach(x=>{ x.web=true; }); }
+  if('web' in doc){ delete doc.web; delete doc.webAt; }
+  const onWeb=doc.items.filter(x=>x.web).length, allWeb=!!doc.items.length && onWeb===doc.items.length;
+  const wb=el('button','btn ghost', allWeb? 'Take All Off the Website Agenda' : 'Mark All for the Website Agenda'); wb.type='button';
+  wb.title= allWeb? 'Take every segment off the website\u2019s agenda' : 'Mark every segment to show on the website\u2019s agenda. Or tick On Website on just the ones that are ready.';
+  wb.addEventListener('click',()=>{ const to=!allWeb; doc.items.forEach(x=>{ x.web=to; }); touch(); render(); });
   acts.appendChild(add); acts.appendChild(pr); acts.appendChild(wb); acts.appendChild(so);
   webSync();
 
@@ -31319,6 +31327,8 @@ function render(){
   const t2=el('div','gs-tile'); t2.appendChild(el('b',null,String(prog))); t2.appendChild(el('span',null,'Sessions')); strip.appendChild(t2);
   const spk=new Set(); doc.items.forEach(x=>(x.people||[]).forEach(p=>spk.add(p.id)));
   const t3=el('div','gs-tile'); t3.appendChild(el('b',null,String(spk.size))); t3.appendChild(el('span',null,'Speakers')); strip.appendChild(t3);
+  const t6=el('div','gs-tile'+(onWeb?' ok':'')); t6.appendChild(el('b',null,onWeb+' of '+doc.items.length)); t6.appendChild(el('span',null,'On the Website Agenda'));
+  t6.title='Segments marked On Website show on the website\u2019s agenda, with their speakers'; strip.appendChild(t6);
   const progItems=doc.items.filter(x=>!SOFT.has(x.kind));
   const withL=progItems.filter(x=>(x.people||[]).some(r=>isLender(personById(r.id)))).length;
   const t5=el('div','gs-tile '+(progItems.length&&withL?'ok':'warn')); t5.appendChild(el('b',null,withL+' of '+progItems.length));
@@ -31462,13 +31472,18 @@ function card(row, over){
   pt.addEventListener('change',()=>{ it.at=pt.value; touch(); render(); });
   pin.appendChild(pc); pin.appendChild(document.createTextNode('Pin time')); pin.appendChild(pt);
   r1.appendChild(pin);
+  const wm=el('label','gs-pin gs-webpick'+(it.web?' on':'')); const wc=document.createElement('input'); wc.type='checkbox'; wc.checked=!!it.web;
+  wm.title= it.web? 'On the website\u2019s agenda, with its speakers. Untick to take it off.' : 'Tick when this segment is ready to show on the website\u2019s agenda';
+  wc.addEventListener('change',()=>{ it.web=wc.checked; touch(); render(); });
+  wm.appendChild(wc); wm.appendChild(document.createTextNode('On Website'));
+  r1.appendChild(wm);
   const tools=el('div','gs-tools');
   const up=el('button',null,'▲'); up.type='button'; up.title='Move up'; up.disabled=row.i===0;
   up.addEventListener('click',()=>{ moveTo(it.id,row.i-1); });
   const dn=el('button',null,'▼'); dn.type='button'; dn.title='Move down'; dn.disabled=row.i===doc.items.length-1;
   dn.addEventListener('click',()=>{ moveTo(it.id,row.i+2); });
   const cp=el('button',null,'⧉'); cp.type='button'; cp.title='Duplicate';
-  cp.addEventListener('click',()=>{ const n=Object.assign(JSON.parse(JSON.stringify(it)),{id:uid(),people:[],at:''}); doc.items.splice(row.i+1,0,n); touch(); render(); });
+  cp.addEventListener('click',()=>{ const n=Object.assign(JSON.parse(JSON.stringify(it)),{id:uid(),people:[],at:'',web:false}); doc.items.splice(row.i+1,0,n); touch(); render(); });
   const del=el('button',null,'✕'); del.type='button'; del.title='Delete this segment';
   let armed=false;
   del.addEventListener('click',()=>{ if(!armed){ armed=true; del.classList.add('armed'); del.title='Click again to delete'; setTimeout(()=>{ armed=false; del.classList.remove('armed'); },2500); return; }
