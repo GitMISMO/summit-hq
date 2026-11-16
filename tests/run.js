@@ -500,6 +500,33 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await r3().locator('button', { hasText: 'Send Again' }).click(); await s.page.waitForTimeout(1500);
     expect(q().length === n0, 'a code email went with no code and a broken address');
     expect(/Check this address/.test(await r3().innerText()), 'the broken address was not flagged on the row');
+    /* Amy, Nov 16: Undo puts both boxes back */
+    const undoOn = () => s.page.evaluate(() => { const b = document.getElementById('hq-undo'); return !!b && !b.disabled; });
+    expect(await undoOn(), 'Undo was greyed out after a Champion Codes change');
+    await s.page.evaluate(() => document.getElementById('hq-undo').click()); await s.page.waitForTimeout(1500);
+    await s.page.evaluate(() => document.getElementById('hq-undo').click()); await s.page.waitForTimeout(1500);
+    d = codes(); expect(d.rows.c111.code === 'MISMOCALPHA' && d.rows.c111.to === 'ann.alpha@alpha.example; bob.beta@alpha.example; mo.market@alpha.example' && d.rows.c111.sentAt,
+      'Undo did not put the code and the addresses back: ' + JSON.stringify({ code: d.rows.c111.code, to: d.rows.c111.to }));
+    noErrors(s.errs); await s.close();
+  });
+
+  /* 22. Undo reaches General Sessions (Amy, Nov 16: it was greyed out) */
+  await check('Undo takes back a General Sessions change', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
+        { id: 'u1', kind: 'Keynote', title: 'Keep Me', dur: 45, people: [] },
+        { id: 'u2', kind: 'Panel', title: 'Delete Me', dur: 60, people: [] }] }); });
+    await s.page.waitForTimeout(2000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(3000);
+    const del = () => s.page.evaluate(() => { const c = [...document.querySelectorAll('#app-gs .gs-item')].find(x => x.querySelector('.gs-title').value === 'Delete Me'); [...c.querySelectorAll('.gs-tools button')].find(b => b.title === 'Delete this segment' || b.title === 'Click again to delete').click(); });
+    await del(); await s.page.waitForTimeout(200); await del(); await s.page.waitForTimeout(500);
+    expect(await s.page.evaluate(() => document.querySelectorAll('#app-gs .gs-item').length) === 1, 'the segment was not deleted');
+    const dbg = await s.page.evaluate(() => ({ dis: document.getElementById('hq-undo').disabled, title: document.getElementById('hq-undo').title, steps: window.__hqUndo.steps() }));
+    expect(!dbg.dis && /General Sessions/.test(dbg.title), 'Undo was not lit for General Sessions after deleting a segment: ' + JSON.stringify(dbg));
+    await s.page.evaluate(() => document.getElementById('hq-undo').click()); await s.page.waitForTimeout(2500);
+    const titles = await s.page.evaluate(() => [...document.querySelectorAll('#app-gs .gs-title')].map(x => x.value));
+    expect(titles.join('|') === 'Keep Me|Delete Me', 'Undo did not bring the segment back: ' + titles.join('|'));
     noErrors(s.errs); await s.close();
   });
 
