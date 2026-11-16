@@ -7402,7 +7402,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <ol class="hp-steps">
           <li><b>The Monday after each summit</b> you get <b>Champion Codes to Set Up</b>: every current Champion for the next summit, their level and how many complimentary registrations they get (Associate 2, Executive 3, Chair 6), with last summit&rsquo;s code filled in.</li>
           <li><b>Set up each code in Aptify</b>, then open <b>Registration</b> and press <b>Champion Codes</b> at the top. <b>For Bernie</b> lists every Champion still waiting on you.</li>
-          <li><b>Enter or confirm the code</b> on their row (and the Code ID if you like), then press <b>Confirm &amp; Send</b>, or <b>Send All Ready</b> for everyone with a code. That emails the Champion their code and takes them off For Bernie. <b>Already Sent</b> records one you sent by hand.</li>
+          <li><b>Enter or confirm the code</b> on their row (and the Code ID if you like), then press <b>Confirm &amp; Send</b>, or <b>Send All Ready</b> for everyone with a code. That emails the Champion their code and takes them off For Bernie. <b>Already Sent</b> records one you sent by hand. Summit HQ will not send one with no code, or to an address that has a code in it or is not an email address; it says which address to check instead.</li>
           <li><b>A new Champion or a level change</b> in Member 360 sends you <b>New Champion Code to Set Up</b> or <b>Champion Level Changed</b>. Set up or change the code the same way; a level change shows <b>Send Updated Email</b> (or <b>No Email Needed</b>).</li>
           <li><b>Virtual.</b> When a Champion asks for some of their registrations as virtual, you get <b>Virtual Registrations Requested</b> and their row shows how many. Set up the virtual code in Aptify, enter it and how many on their row, and press <b>Send Virtual Code</b>.</li>
         </ol>
@@ -7885,7 +7885,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed November 13, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed November 16, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
@@ -32667,11 +32667,26 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     if(typeof window.__hqQueueMail!=='function') throw new Error('no queue');
     await window.__hqQueueMail(r);
   }
+  /* Jonna, 2026-11-16: ActiveComply's code email went out with no code — the code had been dragged
+     out of its box into one of the email addresses. Every send now reads the row as saved this moment
+     and stops if the code is empty or any address is not a real email address. */
+  const isEmail=e=>/^[^\s@;,<>]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);
+  /* a code pasted or dragged into an address (MISMOC…) makes a real-looking address that bounces */
+  function badTo(to, code){ const c=String(code||'').trim().toLowerCase();
+    return String(to||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean).filter(x=>!isEmail(x) || /MISMOC/.test(x) || (c.length>3 && x.toLowerCase().includes(c))); }
+  function fresh(v, r){ const n=rowsOf(v).find(x=>x.key===r.key); return Object.assign({}, n||r, (r.vCode!==undefined&&r.vQty!==undefined&&n)? {vCode:r.vCode, vQty:r.vQty} : {}); }
+  function stopIfWrong(r, needCode){
+    if(needCode && !String(r.code||'').trim()){ flash('No code on '+r.company+' — enter the code first. Nothing was sent.'); throw Object.assign(new Error('no code'),{shown:true}); }
+    if(!String(r.to||'').trim()){ flash('Add who the email goes to first. Nothing was sent.'); throw Object.assign(new Error('no to'),{shown:true}); }
+    const bad=badTo(r.to, r.code); if(bad.length){ flash('Check this address on '+r.company+': '+bad[0]+'. Nothing was sent.'); throw Object.assign(new Error('bad to'),{shown:true}); }
+  }
   async function sendCode(v, r){
+    r=fresh(v, r); stopIfWrong(r, true);
     const m=build('code', v, r); if(!m) throw new Error('not ready');
     await queue({to:r.to, cc:'', replyTo:KELLY_EMAIL, from:KELLY_EMAIL, subject:m.subject, html:m.html}, liveSet());
   }
   async function sendVirt(v, r){
+    r=fresh(v, r); stopIfWrong(r, true); if(!String(r.vCode||'').trim()){ flash('Enter the virtual code first. Nothing was sent.'); throw Object.assign(new Error('no vcode'),{shown:true}); }
     const m=build('virt', v, r); if(!m) throw new Error('not ready');
     await queue({to:r.to, cc:'', replyTo:KELLY_EMAIL, from:KELLY_EMAIL, subject:m.subject, html:m.html}, liveSet());
   }
@@ -32861,8 +32876,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       bar.appendChild(el('span','grow'));
       if(canEdit() && ready.length) bar.appendChild(btn('Send All Ready ('+ready.length+')','',async e=>{
         if(!await confirmBox('Send '+ready.length+' Code Emails?', liveSet()? 'Each ready champion gets their code email now, as Kelly.' : 'Test mode: they all go to Jonna only.')) return;
-        e.target.disabled=true; let ok=0; for(const r of ready){ try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?r.to:TEST_TO+' (test)'}); ok++; }catch(err){} }
-        flash(ok+' code email'+(ok===1?'':'s')+' on the way'); }));
+        e.target.disabled=true; let ok=0, held=[]; for(const r of ready){ try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)'}); ok++; }catch(err){ held.push(r.company); } }
+        flash(ok+' code email'+(ok===1?'':'s')+' on the way'+(held.length?'. Not sent, check the code and addresses: '+held.join(', '):'')); }));
       host.appendChild(bar);
       const box=el('div','ws-tablebox'), t=el('table','ws-table ch-table'), th=el('thead'), hr=el('tr');
       ['Champion','Email To','Code','Status','Virtual','Used'].forEach(h=>{ hr.appendChild(el('th',null)).appendChild(el('span','ws-plain',h)); });
@@ -32890,7 +32905,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       if(r.note) c0.appendChild(el('small',null,r.note));
       tr.appendChild(c0);
       const c1=el('td'); const toIn=inp(r.to||'','Primary; Alternate', x=>saveRow(v,r.key,{to:x, names:r.names||firstNames(x)}), !edit);
-      c1.appendChild(toIn); const nm=inp(r.names||'','Greeting names', x=>saveRow(v,r.key,{names:x}), !edit); nm.style.marginTop='4px'; c1.appendChild(nm);
+      const bt=badTo(r.to, r.code); if(bt.length){ toIn.style.borderColor='var(--bad,#b42318)'; toIn.title='Check this address: '+bt.join(', '); c1.appendChild(toIn); c1.appendChild(el('small','ch-sm','Check this address: '+bt.join(', '))); } else c1.appendChild(toIn);
+      const nm=inp(r.names||'','Greeting names', x=>saveRow(v,r.key,{names:x}), !edit); nm.style.marginTop='4px'; c1.appendChild(nm);
       tr.appendChild(c1);
       const c2=el('td'); const code=inp(r.code||'','Campaign code', x=>saveRow(v,r.key,{code:x.trim()}), !edit); c2.appendChild(code);
       const cid=inp(r.codeId||'','Code ID (optional)', x=>saveRow(v,r.key,{codeId:x.trim()}), !edit); cid.style.marginTop='4px'; c2.appendChild(cid);
@@ -32900,9 +32916,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       if(edit && !r.gone){ const a=el('div','ch-acts');
         if(r.code && (!r.sentAt || r.needsResend)) a.appendChild(btn(r.needsResend&&r.sentAt?'Send Updated Email':'Confirm & Send','',async e=>{
           if(!r.to){ flash('Add who the email goes to first'); return; }
-          e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?r.to:TEST_TO+' (test)', needsResend:false}); flash('Code email on the way to '+(liveSet()?r.company:'Jonna (test)')); }catch(err){ e.target.disabled=false; flash('Could not send it'); } }));
+          e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)', needsResend:false}); flash('Code email on the way to '+(liveSet()?r.company:'Jonna (test)')); }catch(err){ e.target.disabled=false; if(!(err&&err.shown)) flash('Could not send it'); } }));
         if(r.code && (!r.sentAt || r.needsResend)) a.appendChild(btn(r.needsResend&&r.sentAt?'No Email Needed':'Already Sent','ghost',async()=>{ await saveRow(v,r.key,{sentAt:r.sentAt||new Date().toISOString(), sentBy:r.sentBy||who(), sentTo:r.sentTo||'by hand', needsResend:false}); }));
-        if(r.sentAt && !r.needsResend) a.appendChild(btn('Send Again','ghost',async e=>{ e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?r.to:TEST_TO+' (test)'}); flash('Sent again'); }catch(err){ e.target.disabled=false; } }));
+        if(r.sentAt && !r.needsResend) a.appendChild(btn('Send Again','ghost',async e=>{ e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)'}); flash('Sent again'); }catch(err){ e.target.disabled=false; } }));
         c3.appendChild(a); }
       tr.appendChild(c3);
       const c4=el('td');
@@ -32912,7 +32928,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       if(r.vSentAt) c4.appendChild(el('small','ch-sm','Virtual code sent '+(r.vSentAt==='before'?'before Summit HQ':when(r.vSentAt))));
       if(edit && !r.gone && r.code){ const a=el('div','ch-acts'); a.appendChild(btn(r.vSentAt?'Send Virtual Code Again':'Send Virtual Code','ghost',async e=>{
         const vcode=vc.value.trim(), vqty=vq.value.trim(); if(!vcode||!vqty){ flash('Enter the virtual code and how many'); return; }
-        e.target.disabled=true; try{ const rr=Object.assign({},r,{vCode:vcode, vQty:vqty}); await sendVirt(v,rr); await saveRow(v,r.key,{vCode:vcode, vQty:vqty, vSentAt:new Date().toISOString(), vSentBy:who()}); flash('Virtual code on the way'); }catch(err){ e.target.disabled=false; flash('Could not send it'); } }));
+        e.target.disabled=true; try{ const rr=Object.assign({},r,{vCode:vcode, vQty:vqty}); await sendVirt(v,rr); await saveRow(v,r.key,{vCode:vcode, vQty:vqty, vSentAt:new Date().toISOString(), vSentBy:who()}); flash('Virtual code on the way'); }catch(err){ e.target.disabled=false; if(!(err&&err.shown)) flash('Could not send it'); } }));
         c4.appendChild(a); }
       tr.appendChild(c4);
       const c5=el('td'); const u=r.used;
