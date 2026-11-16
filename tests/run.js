@@ -493,6 +493,13 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     /* used, from the weekly email (the cancelled one does not count) */
     await s.page.evaluate(() => window.__champions.sync()); await s.page.waitForTimeout(3000);
     d = codes(); expect(d.rows.c111.used && d.rows.c111.used.ip === 1 && d.rows.c111.used.v === 1, 'codes used were not counted: ' + JSON.stringify(d.rows.c111.used));
+    /* Nov 16: the code dragged out of its box into an address must not send */
+    const n0 = q().length, r3 = () => s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' });
+    await r3().locator('input[placeholder="Campaign code"]').fill(''); await r3().locator('input[placeholder="Campaign code"]').press('Enter'); await s.page.waitForTimeout(800);
+    await r3().locator('input[placeholder="Primary; Alternate"]').fill('ann.alpha@alMISMOCALPHApha.example; bob.beta@alpha.example'); await r3().locator('input[placeholder="Primary; Alternate"]').press('Enter'); await s.page.waitForTimeout(1200);
+    await r3().locator('button', { hasText: 'Send Again' }).click(); await s.page.waitForTimeout(1500);
+    expect(q().length === n0, 'a code email went with no code and a broken address');
+    expect(/Check this address/.test(await r3().innerText()), 'the broken address was not flagged on the row');
     noErrors(s.errs); await s.close();
   });
 
