@@ -23,6 +23,7 @@ Summit HQ is where MISMO plans its Summits: the schedule, the Run of Show tasks,
 - **Saving never overwrites a teammate.** Every save sends the version it read; if someone saved in between, only the fields changed here are re-applied on top of theirs.
 - **Nothing saves before its own data has loaded**, so an empty-looking tab can never wipe real data.
 - **Every summit is kept on its own.** Anything per summit is keyed by the summit's id (`nola`, `slc`, `bethesda` and so on); a person's progress is in `st[<summit>]`. Past Summits keeps a finished summit's Run of Show. New features must work the same way, so they carry to each new summit and can be looked back on.
+- **Undo** at the foot of the left menu (`window.__hqUndo`) is one timeline for the whole page: a tab calls `register(src, fn)` once and `record(src, label)` for each step it keeps. Every part people edit must join it, or the button is greyed out after a change there (Amy hit this on Champion Codes, Nov 16). General Sessions and the Workshop keep the running order before each change (`gs`, `wk`); Champion Codes keeps the changed boxes of one row (`champ`, shown on Registration).
 - **Backup** at the foot of the left menu downloads everything as one file, or writes a backup file back. Removed records are retired (`gone:true`, kept), not deleted.
 
 ## How It Connects

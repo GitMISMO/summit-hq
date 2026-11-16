@@ -7502,7 +7502,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Search</b> finds a session, a task or a person wherever it lives and takes you to it.</li>
         <li><b>The pages</b>, in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions, Workshop), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). Each has its own section below.</li>
         <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
-        <li><b>Undo</b> steps back the last change, on any tab. Ctrl+Z (Cmd+Z on a Mac) does the same.</li>
+        <li><b>Undo</b> steps back the last change, on any tab, including General Sessions, the Workshop and Champion Codes. It takes you to where the change was. Ctrl+Z (Cmd+Z on a Mac) does the same once you have clicked out of the box you were typing in. It is greyed out when there is nothing to take back.</li>
         <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
         <li><b>System Health</b> shows whether saving, storage and the email flows are working. Its dot is green when all is well, amber for a warning and red when something needs attention; red also puts a bar across the top of the page for everyone.</li>
         <li><b>Help</b> is this page.</li>
@@ -7801,7 +7801,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
     <summary><span class="hp-n">15</span>Backups, Undo and History</summary>
     <div class="hp-in">
       <ul>
-        <li><b>Undo</b> takes back the last change on any tab, one step at a time.</li>
+        <li><b>Undo</b> takes back the last change on any tab, one step at a time, including General Sessions, the Workshop (speakers&rsquo; People links follow) and Champion Codes (a row&rsquo;s boxes, Already Sent and No Email Needed). Undo keeps the changes made since the page was opened; after a reload, use the backup or Perry&rsquo;s saved history instead. An email that has already gone cannot be called back.</li>
         <li><b>Backup &rarr; Download</b> saves everything (tasks, schedule, people and headshots, resume versions, registration) as one file. Do it monthly and before any big change. <b>Backup &rarr; Restore</b> writes a backup file back in. An empty Summit HQ offers to restore on its own.</li>
         <li>Every save is recorded in the data repository, so Perry can recover an earlier version of anything even without a backup.</li>
         <li>Every resume version ever issued is kept on the Resume tab.</li>
@@ -9751,7 +9751,10 @@ textarea,input,select{font-family:var(--ui,inherit)}
    ============================================================ */
 (function(){
   "use strict";
-  const TAB={grid:'Schedule', specs:'Hotel Specs', ros:'Run of Show', people:'People', resume:'Resume', trunk:'Trunk', reg:'Registration'};
+  const TAB={grid:'Schedule', specs:'Hotel Specs', ros:'Run of Show', people:'People', resume:'Resume', trunk:'Trunk', reg:'Registration',
+             gs:'General Sessions', wk:'Workshop', champ:'Champion Codes'};
+  /* Champion Codes lives on Registration (Amy, 2026-11-16: Undo was greyed out there) */
+  const HOME={champ:'reg'};
   const stack=[];        /* [{src, label}] — the merged timeline */
   const panes={};        /* src -> undo function */
   let btn=null, busy=false;
@@ -9767,6 +9770,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   }
   /* the step back has to be somewhere she can see it */
   function showTab(src){
+    src=HOME[src]||src;
     if(window.__hqGo){ window.__hqGo(src); }
     const b=document.querySelector('.hq nav button[data-hq="'+src+'"]');
     if(b && !b.hasAttribute('aria-current')) b.click();
@@ -31091,6 +31095,31 @@ let db=null, doc=null, vid='', unsub=null, saveT=null, dirty=false, savedAt=0, d
    here and their changes stay. */
 let seen;
 let dragPerson=null, sideQ='', sideMode='speakers';
+/* Amy, 2026-11-16: Undo in the left menu was greyed out here. Each change (typing settles
+   into one step) keeps the running order as it was before, and Undo puts it back, speakers'
+   People links included. Changes Summit HQ makes by itself are not steps. */
+let uStack=[], uBase=null, uPend=null, uT=null, uMuted=false, uOn=false;
+const uSnap=()=>doc? JSON.stringify(doc) : 'null';
+function uNote(){
+  if(uBase===null) return;
+  if(uMuted){ if(uPend===null) uBase=uSnap(); return; }
+  if(uPend===null){ uPend=uBase; uStack.push({vid, snap:uPend}); if(uStack.length>60) uStack.shift();
+    try{ uJoin(); window.__hqUndo.record(C.p, 'a '+C.label+' change'); }catch(e){} }
+  clearTimeout(uT); uT=setTimeout(uCommit,1200);
+}
+function uCommit(){ clearTimeout(uT); uT=null; uPend=null; uBase=uSnap(); }
+function uLinks(d){ const m=new Map(); ((d&&d.items)||[]).forEach(it=>(it.people||[]).forEach(r=>m.set(segKey(it)+'|'+r.id,{it,id:r.id}))); return m; }
+function uJoin(){ if(uOn || !window.__hqUndo) return; uOn=true; window.__hqUndo.register(C.p, async()=>{
+  if(uT||uPend!==null) uCommit();
+  const e=uStack.pop(); if(!e) return;
+  const back=JSON.parse(e.snap);
+  if(e.vid!==vid){ try{ if(back) await db.doc('schedule/'+C.p+'-'+e.vid).set(back); else await db.doc('schedule/'+C.p+'-'+e.vid).delete(); }catch(x){} return; }
+  const was=uLinks(doc), now=uLinks(back);
+  was.forEach((x,k)=>{ if(!now.has(k)) linkPerson(x.id,x.it,false); });
+  now.forEach((x,k)=>{ if(!was.has(k)) linkPerson(x.id,x.it,true); });
+  if(!back){ clearTimeout(saveT); dirty=false; doc=null; seen=null; uBase='null'; try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(x){} render(); return; }
+  doc=back; uMuted=true; touch(); uMuted=false; render();
+}); }
 
 /* ---------- who is a lender ----------
    Jonna, 2026-10-28: "highlight where lenders are engaged in sessions". Member 360 knows
@@ -31180,6 +31209,7 @@ function touch(){
   try{ const s=window.ResourcesSession&&window.ResourcesSession.current(); doc.updatedBy=(s&&s.name)||''; }catch(e){}
   clearTimeout(saveT); saveT=setTimeout(save,600);
   paintSaved('Saving…');
+  uNote();
 }
 let gsRead=false;
 async function save(){
@@ -31243,7 +31273,7 @@ window['__'+C.p+'Person']=function(pid,key,on){
   if(on && !has) it.people=(it.people||[]).concat({id:pid,role:personRole(it)});
   else if(!on && has) it.people=it.people.filter(r=>r.id!==pid);
   else return false;
-  touch(); render(); return true;
+  uMuted=true; touch(); uMuted=false; render(); return true;   /* People's own Undo takes this back */
 };
 /* and anyone already tagged that way before the fix lands on their segment when it draws */
 function syncFromPeople(){
@@ -31253,7 +31283,7 @@ function syncFromPeople(){
     ps.forEach(p=>{ const st=(p.st||{})[vid]||{};
       if(st.on && (st.ses||[]).indexOf(k)>=0 && !(it.people||[]).some(r=>r.id===p.i)){
         it.people=(it.people||[]).concat({id:p.i,role:personRole(it)}); ch=true; } }); });
-  if(ch) touch();
+  if(ch){ uMuted=true; touch(); uMuted=false; }
   return ch;
 }
 /* Jonna, 2026-10-29: who sponsors a segment — the portal's sponsors for this summit, or typed */
@@ -31289,8 +31319,10 @@ function render(){
   let soArmed=false;
   so.addEventListener('click',async()=>{
     if(!soArmed){ soArmed=true; so.classList.add('armed'); so.textContent='Click Again to Clear Everything'; setTimeout(()=>{ soArmed=false; so.classList.remove('armed'); so.textContent='Start Over'; },3000); return; }
+    if(uT||uPend!==null) uCommit();
+    if(uBase!==null){ uStack.push({vid, snap:uSnap()}); try{ uJoin(); window.__hqUndo.record(C.p, C.label+' cleared'); }catch(e){} }
     doc.items.forEach(it=>(it.people||[]).forEach(p=>linkPerson(p.id,it,false)));
-    clearTimeout(saveT); dirty=false; doc=null; seen=null;
+    clearTimeout(saveT); dirty=false; doc=null; seen=null; uBase='null';
     try{ await db.doc('schedule/'+C.p+'-'+vid).delete(); }catch(e){}
     render();
   });
@@ -31682,8 +31714,9 @@ function attach(){
   const v=venue(); const id=v? v.id : '';
   if(!db || !id || id===vid) return;
   if(dirty) save();
+  if(uT||uPend!==null) uCommit();
   if(unsub){ try{ unsub(); }catch(e){} unsub=null; }
-  vid=id; doc=null; seen=undefined; gsRead=false; finding=null; newFor=null; render(); loadLenders();
+  vid=id; doc=null; seen=undefined; gsRead=false; uBase=null; uPend=null; finding=null; newFor=null; render(); loadLenders();
   unsub=db.doc('schedule/'+C.p+'-'+vid).onSnapshot(s=>{
     gsRead=true;
     const d=s.exists? s.data() : null;
@@ -31695,6 +31728,7 @@ function attach(){
     }
     seen=d? JSON.parse(JSON.stringify(d)) : null;
     doc=d && Array.isArray(d.items) ? d : null;
+    if(uPend===null) uBase=uSnap();
     render();
   },()=>{});
 }
@@ -32620,9 +32654,22 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
   function liveSet(){ return !!(S.set&&S.set.live); }
   function tplOf(k){ const t=((S.set||{}).tpl||{})[k]||{}; return {subject:String(t.subject||'').trim()? t.subject : DEF[k].subject, body:String(t.body||'').trim()? t.body : DEF[k].body}; }
   function whereOf(v){ return ((S.set||{}).where||{})[v.id] || guessWhere(v); }
-  async function saveRow(v, key, patch){
+  /* Amy, 2026-11-16: Undo was greyed out after she changed a row here. Typing in a row's boxes
+     and Already Sent / No Email Needed are steps Undo can take back (only the boxes that changed,
+     so anything sent since stays recorded). An email that went cannot be called back. */
+  const U=[]; let uOn=false;
+  function uJoin(){ if(uOn || !window.__hqUndo) return; uOn=true; window.__hqUndo.register('champ', async()=>{
+    const e=U.pop(); if(!e) return;
+    await saveRow(e.v, e.key, e.prev);
+    setTimeout(()=>{ const c=$('rg-champ'); if(c) c.scrollIntoView({behavior:'smooth', block:'start'}); flash('Undone: '+e.label); },60);
+  }); }
+  async function saveRow(v, key, patch, label){
     const ref=S.db.doc('champion-codes/'+v);
     const cur=own(docOf(v)||{}); cur.rows=cur.rows||{};
+    if(label){ const was=cur.rows[key]||{}, prev={}; let ch=false;
+      Object.keys(patch).forEach(k=>{ prev[k]= was[k]===undefined? '' : JSON.parse(JSON.stringify(was[k])); if(JSON.stringify(was[k])!==JSON.stringify(patch[k])) ch=true; });
+      if(ch){ U.push({v, key, prev, label:label+(was.company?' on '+was.company:'')}); if(U.length>60) U.shift();
+        try{ uJoin(); window.__hqUndo.record('champ', U[U.length-1].label); }catch(e){} } }
     cur.rows[key]=Object.assign({}, cur.rows[key]||{}, patch);
     S.docs[v]={d:cur}; await ref.set(cur); render();
   }
@@ -32904,12 +32951,12 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       if(r.levelWas) c0.appendChild(el('small',null,'Was '+r.levelWas+' (Member 360 changed it)'));
       if(r.note) c0.appendChild(el('small',null,r.note));
       tr.appendChild(c0);
-      const c1=el('td'); const toIn=inp(r.to||'','Primary; Alternate', x=>saveRow(v,r.key,{to:x, names:r.names||firstNames(x)}), !edit);
+      const c1=el('td'); const toIn=inp(r.to||'','Primary; Alternate', x=>saveRow(v,r.key,{to:x, names:r.names||firstNames(x)},'an email address change'), !edit);
       const bt=badTo(r.to, r.code); if(bt.length){ toIn.style.borderColor='var(--bad,#b42318)'; toIn.title='Check this address: '+bt.join(', '); c1.appendChild(toIn); c1.appendChild(el('small','ch-sm','Check this address: '+bt.join(', '))); } else c1.appendChild(toIn);
-      const nm=inp(r.names||'','Greeting names', x=>saveRow(v,r.key,{names:x}), !edit); nm.style.marginTop='4px'; c1.appendChild(nm);
+      const nm=inp(r.names||'','Greeting names', x=>saveRow(v,r.key,{names:x},'a greeting change'), !edit); nm.style.marginTop='4px'; c1.appendChild(nm);
       tr.appendChild(c1);
-      const c2=el('td'); const code=inp(r.code||'','Campaign code', x=>saveRow(v,r.key,{code:x.trim()}), !edit); c2.appendChild(code);
-      const cid=inp(r.codeId||'','Code ID (optional)', x=>saveRow(v,r.key,{codeId:x.trim()}), !edit); cid.style.marginTop='4px'; c2.appendChild(cid);
+      const c2=el('td'); const code=inp(r.code||'','Campaign code', x=>saveRow(v,r.key,{code:x.trim()},'a code change'), !edit); c2.appendChild(code);
+      const cid=inp(r.codeId||'','Code ID (optional)', x=>saveRow(v,r.key,{codeId:x.trim()},'a Code ID change'), !edit); cid.style.marginTop='4px'; c2.appendChild(cid);
       tr.appendChild(c2);
       const c3=el('td'); const [k,l]=status(r); c3.appendChild(el('span','ch-flag '+k,l));
       if(r.sentTo && r.sentAt && r.sentAt!=='before') c3.appendChild(el('small','ch-sm','To '+r.sentTo+(r.sentBy?' by '+r.sentBy:'')));
@@ -32917,14 +32964,14 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
         if(r.code && (!r.sentAt || r.needsResend)) a.appendChild(btn(r.needsResend&&r.sentAt?'Send Updated Email':'Confirm & Send','',async e=>{
           if(!r.to){ flash('Add who the email goes to first'); return; }
           e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)', needsResend:false}); flash('Code email on the way to '+(liveSet()?r.company:'Jonna (test)')); }catch(err){ e.target.disabled=false; if(!(err&&err.shown)) flash('Could not send it'); } }));
-        if(r.code && (!r.sentAt || r.needsResend)) a.appendChild(btn(r.needsResend&&r.sentAt?'No Email Needed':'Already Sent','ghost',async()=>{ await saveRow(v,r.key,{sentAt:r.sentAt||new Date().toISOString(), sentBy:r.sentBy||who(), sentTo:r.sentTo||'by hand', needsResend:false}); }));
+        if(r.code && (!r.sentAt || r.needsResend)) a.appendChild(btn(r.needsResend&&r.sentAt?'No Email Needed':'Already Sent','ghost',async()=>{ await saveRow(v,r.key,{sentAt:r.sentAt||new Date().toISOString(), sentBy:r.sentBy||who(), sentTo:r.sentTo||'by hand', needsResend:false}, r.needsResend&&r.sentAt?'No Email Needed':'Already Sent'); }));
         if(r.sentAt && !r.needsResend) a.appendChild(btn('Send Again','ghost',async e=>{ e.target.disabled=true; try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)'}); flash('Sent again'); }catch(err){ e.target.disabled=false; } }));
         c3.appendChild(a); }
       tr.appendChild(c3);
       const c4=el('td');
       if(r.vReq && r.vReq.n>0){ c4.appendChild(el('small','ch-sm','Asked for '+r.vReq.n+' virtual, '+when(r.vReq.at)+(r.vReq.notes?': “'+r.vReq.notes+'”':''))); }
-      const vc=inp(r.vCode||'','Virtual code', x=>saveRow(v,r.key,{vCode:x.trim()}), !edit); vc.style.marginTop='4px'; c4.appendChild(vc);
-      const vq=inp(r.vQty!=null?String(r.vQty):(r.vReq&&r.vReq.n?String(r.vReq.n):''),'Qty', x=>saveRow(v,r.key,{vQty:x.trim()}), !edit); vq.classList.add('n'); vq.title='How many virtual'; vq.style.marginTop='4px'; c4.appendChild(vq);
+      const vc=inp(r.vCode||'','Virtual code', x=>saveRow(v,r.key,{vCode:x.trim()},'a virtual code change'), !edit); vc.style.marginTop='4px'; c4.appendChild(vc);
+      const vq=inp(r.vQty!=null?String(r.vQty):(r.vReq&&r.vReq.n?String(r.vReq.n):''),'Qty', x=>saveRow(v,r.key,{vQty:x.trim()},'a virtual quantity change'), !edit); vq.classList.add('n'); vq.title='How many virtual'; vq.style.marginTop='4px'; c4.appendChild(vq);
       if(r.vSentAt) c4.appendChild(el('small','ch-sm','Virtual code sent '+(r.vSentAt==='before'?'before Summit HQ':when(r.vSentAt))));
       if(edit && !r.gone && r.code){ const a=el('div','ch-acts'); a.appendChild(btn(r.vSentAt?'Send Virtual Code Again':'Send Virtual Code','ghost',async e=>{
         const vcode=vc.value.trim(), vqty=vq.value.trim(); if(!vcode||!vqty){ flash('Enter the virtual code and how many'); return; }

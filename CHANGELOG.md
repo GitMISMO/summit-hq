@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-16
 
+- Undo: General Sessions, the Workshop and Champion Codes changes can now be undone (Undo was greyed out there)
 - Champion Codes: a code email will not send with no code, or to an address with a code in it or that is not an email address; the row flags the address to check
 
 ## 2026-11-13
