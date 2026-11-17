@@ -5309,6 +5309,23 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 /* the portal's sponsors */
 #app-people .sprow{display:flex;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 #app-people .sprow:last-child{border-bottom:0}
+.cc-top{padding:10px 16px 4px}
+.cc-q{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.cc-top .pnote{margin-top:6px}
+.cc-co{padding:10px 16px;border-bottom:1px solid var(--line)}
+.cc-co:last-child{border-bottom:0}
+.cc-hd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cc-hd b{font-size:13.5px}
+.cc-tag{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:3px;border:1px solid var(--accent);color:var(--accent)}
+.cc-tag.champ{border-color:var(--good,#1f7a4d);color:var(--good,#1f7a4d)}
+.cc-why{font-size:11.5px;color:var(--accent);margin-top:3px}
+.cc-kv{display:grid;grid-template-columns:max-content 1fr;gap:3px 12px;margin-top:6px;font-size:12px}
+.cc-k{color:var(--ink-3)}
+.cc-used{margin-top:6px;font-size:12px;color:var(--ink-2,var(--ink))}
+.cc-uline{margin-top:2px;line-height:1.4}
+.cc-names{color:var(--ink-3)}
+.cc-none:empty{display:none}
+.cc-none{padding:8px 16px 12px}
 #app-people .sprow.due{box-shadow:inset 3px 0 0 -1px var(--warn);background:var(--warn-soft)}
 #app-people .sprow.done{opacity:.72}
 #app-people .pp-stepbar{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px 2px}
@@ -7366,6 +7383,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Build the Workshop</b> on the Workshop page: add sections and drag speakers onto them from your Confirmed Speakers.</li>
           <li><b>Put segments on the website&rsquo;s agenda when they are ready.</b> On General Sessions and the Workshop, tick <b>On Website</b> on each segment that is ready to show. Only the ticked ones go, so you can add the rest as they come together. Untick one to take it off.</li>
           <li><b>See who still owes you something</b> on People: the <b>Need Something From Us</b> box at the top.</li>
+          <li><b>Look up anyone&rsquo;s comp codes.</b> On People, <b>Full Lists &rarr; Comp Codes</b> shows every sponsor and Champion code for this summit by company, with who has registered with each one so far. Search a company, a person or a code. A person&rsquo;s own panel shows the codes for their company, and the code they registered with.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
         </ol>
         <h4>Emails You Get</h4>
@@ -7715,6 +7733,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>The sponsor applies on the Prospectus, and the team works it in the Sponsorship Portal through approval and payment.</li>
         <li>Approved sponsors appear on the <b>Sponsors From The Portal</b> card on their own, with their status (Approved, Pending Payment or Paid), level, what they are sponsoring, and their <b>comp code</b> and number of comps. They register themselves with the code, so sponsors are never registered from Summit HQ.</li>
         <li>Once approved, the website&rsquo;s Summit Sponsor Feed puts them on the website agenda by itself, within the hour on weekdays.</li>
+        <li><b>Comp Codes</b> (People, <b>Full Lists</b>). There are two kinds of comp code: a sponsor&rsquo;s, which Bernie sets in the Sponsorship Portal with their invoice, and a Champion&rsquo;s, which he sets on Registration, Champion Codes. Speakers have no code; Bernie registers them. Comp Codes gathers both by company, nothing typed twice, and shows who has registered with each code and how many of their comps that is, from the Friday Aptify report. Search a company, a person or a code; searching a person finds their company, whether they registered with a code or are on People.</li>
         <li><b>On the event app</b> (Vanessa). <b>Downloads &rarr; Sponsors File</b> lists every approved sponsor with their level, what they sponsor, website and logo; she presses <b>Mark On the Event App</b> on each once they are in. Until then their Next Step reads <b>Vanessa: Put them on the event app</b>.</li>
         <li>Breakfasts, breaks and receptions they sponsor show on Hotel Specs automatically once the day is set in the portal.</li>
       </ol>
@@ -7885,7 +7904,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed November 16, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed November 17, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
@@ -25539,6 +25558,63 @@ function compRowFor(p){
   return portalRows().find(r=>r.compCode && (
     (em && String(r.email||'').trim().toLowerCase()===em) || (co && normCo(r.company)===co))) || null;
 }
+/* Amy, 2026-11-17: "pull a person or company in the summit hq and see all the comp codes for
+   that person or company". Two kinds of code: sponsor codes (made in the Sponsorship Portal with
+   the invoice, so Bernie stays in one place) and Champion codes (Registration, Champion Codes).
+   Speakers have none; Bernie registers them. Nothing is typed here: this only gathers both, by
+   company, with who has registered with each code on the Friday Aptify report. */
+const coKey=x=>String(x||'').toLowerCase().replace(/&/g,' and ').replace(/\b(inc|llc|corp|corporation|co|company|ltd|the|lp|llp|na|fsb)\b\.?/g,' ').replace(/[^a-z0-9]+/g,'');
+function compCodes(){
+  const v=venueNow();
+  let reg=null; try{ reg=window.__champions&&window.__champions.registrants? window.__champions.registrants(v) : null; }catch(e){}
+  const byCode={}; ((reg&&reg.list)||[]).forEach(r=>{ (byCode[r.code]||(byCode[r.code]=[])).push(r); });
+  const cos=new Map();
+  const get=name=>{ const k=coKey(name); if(!k) return null; let c=cos.get(k); if(!c){ c={k, name:String(name).trim(), spon:[], champ:null, codes:[]}; cos.set(k,c); } return c; };
+  portalRows().forEach(r=>{ if(!String(r.compCode||'').trim()) return; const c=get(r.company); if(c) c.spon.push(r); });
+  let ch=[]; try{ ch=(window.__champions? window.__champions.rows(v) : [])||[]; }catch(e){}
+  ch.filter(r=>!r.gone).forEach(r=>{ const c=get(r.company); if(c){ c.champ=r; c.name=String(r.company||c.name).trim(); } });
+  cos.forEach(c=>{
+    const add=(code,kind,allow)=>{ code=String(code||'').trim().toUpperCase(); if(!code || c.codes.some(x=>x.code===code)) return;
+      c.codes.push({code, kind, allow, used:(byCode[code]||[]).slice()}); };
+    c.spon.forEach(r=>add(r.compCode,'Sponsor',r.comps||''));
+    if(c.champ && c.champ.code){ add(c.champ.code,'Champion',c.champ.comps||'');
+      add(c.champ.vCode||(c.champ.code+'V'),'Champion Virtual',c.champ.vQty||(c.champ.vReq&&c.champ.vReq.n)||''); }
+    c.used=[].concat(...c.codes.map(x=>x.used.map(u=>Object.assign({kind:x.kind},u))));
+  });
+  return {list:[...cos.values()].sort((a,b)=>a.name.localeCompare(b.name)), at:(reg&&reg.at)||'', col:!!(reg&&reg.col)};
+}
+function ccMatch(c, q, ppl){
+  if(!q) return '';
+  const hit=t=>String(t||'').toLowerCase().includes(q);
+  if(hit(c.name) || c.codes.some(x=>hit(x.code))) return 'company';
+  const u=c.used.find(x=>hit(x.name)||hit(x.email)); if(u) return u.name+' registered with '+u.code;
+  const p=(ppl||[]).find(x=>coKey(x.c)===c.k && (hit(x.n)||hit(x.e))); if(p) return p.n+' works at '+c.name+' (on People)';
+  return null;
+}
+function ccCard(c, why){
+  const row=el('div','cc-co');
+  const hd=el('div','cc-hd'); hd.appendChild(el('b',null,c.name));
+  if(c.spon.length) hd.appendChild(el('span','cc-tag spon','Sponsor'));
+  if(c.champ) hd.appendChild(el('span','cc-tag champ',(c.champ.level||'')+' Champion'));
+  row.appendChild(hd);
+  if(why && why!=='company') row.appendChild(el('div','cc-why','Found by: '+why));
+  const kv=el('div','cc-kv');
+  const line=(k,v)=>{ kv.appendChild(el('span','cc-k',k)); kv.appendChild(el('span','cc-v',v)); };
+  c.spon.forEach(r=>{ const [,lab]=sponStatus(r); line('Sponsor Code', String(r.compCode).trim()+(r.comps?' · '+r.comps+' comp'+(String(r.comps)==='1'?'':'s'):'')+' · '+lab+' · from the Sponsorship Portal'); });
+  if(c.champ){ const r=c.champ;
+    line('Champion Code', r.code? r.code+' · '+(r.comps||0)+' complimentary · '+(r.sentAt? 'sent'+(r.sentAt==='before'?' before Summit HQ':'') : 'not sent yet') : 'Not set up yet (Bernie, on Registration)');
+    if(r.vCode) line('Virtual Code', r.vCode+(r.vQty?' · '+r.vQty:'')+(r.vSentAt?' · sent':' · not sent yet'));
+    else if(r.vReq&&r.vReq.n) line('Virtual Code','Asked for '+r.vReq.n+' virtual; Bernie has not sent the code yet'); }
+  row.appendChild(kv);
+  const ul=el('div','cc-used');
+  c.codes.forEach(x=>{ const ip=x.used.filter(u=>u.format!=='Virtual').length, vv=x.used.length-ip;
+    const t=el('div','cc-uline'); t.appendChild(el('b',null,x.code));
+    t.appendChild(document.createTextNode(' '+(x.used.length? x.used.length+' registered'+(ip&&vv? ' ('+ip+' in person, '+vv+' virtual)' : vv? ' (virtual)' : '')+(x.allow? ' of '+x.allow : '')+': ' : 'Nobody has registered with it yet'+(x.allow?' ('+x.allow+' allowed)':''))));
+    if(x.used.length) t.appendChild(el('span','cc-names',x.used.map(u=>u.name+(u.format==='Virtual'&&!/virtual/i.test(x.kind)?' (Virtual)':'')).join(', ')));
+    ul.appendChild(t); });
+  if(c.codes.length) row.appendChild(ul);
+  return row;
+}
 const applies=(p,k)=>stepsFor(p).some(s=>s.k===k);
 function nextStep(p){ for(const s of stepsFor(p)){ if(!stepDone(p,s.k)) return s; } return null; }
 const ready=p=>!nextStep(p);
@@ -25836,6 +25912,7 @@ const PP_SAY={
   lOpen:    n=>n? n+(ST.step?' to go':' speaker'+(n===1?'':'s')) : (ST.step?'No tasks at this time':'No speakers yet'),
   elseOpen: n=>n+' on the master list',
   sponOpen: n=>n? n+' sponsor'+(n===1?'':'s')+' from the portal' : 'None from the portal',
+  codesOpen:n=>n? n+' compan'+(n===1?'y':'ies')+' with a sponsor or Champion code' : 'No comp codes for this summit yet',
   prosOpen: n=>n? n+' prospect'+(n===1?'':'s') : 'No prospects yet',
   boardOpen:n=>n? n+' still to register' : 'Everyone is registered',
   ttOpen:   n=>n? n+' still need travel dates' : 'Everyone\u2019s dates are in',
@@ -26015,6 +26092,7 @@ function textField(label,val,on,key){
    out of the page while the browser is still moving the cursor into it — so the
    cursor lands nowhere and the next thing typed is lost. Waiting a frame lets the
    cursor arrive first; then the rebuild can put it back where it now is. */
+window.addEventListener('hq:champions',()=>{ const a=document.getElementById('app-people'); if(a && a.offsetParent!==null) renderSoon(); });
 let soonT=null;
 function renderSoon(){
   if(soonT) return;
@@ -26576,6 +26654,25 @@ function render(){
   /* Jonna, 2026-10-29: Speaker Prospects sits beside On This Summit */
   if(boardSec.parentNode===left) left.insertBefore(prosSec, boardSec); else left.appendChild(prosSec);
   if(sponSec) right.appendChild(sponSec);
+  /* Amy, 2026-11-17: every comp code, by company or person */
+  try{ const CC=compCodes();
+    const ccSec=section('Comp Codes','Sponsor and Champion codes, and who has used them',CC.list.length,'codesOpen',false,box=>{
+      const top=el('div','cc-top');
+      const q=document.createElement('input'); q.type='search'; q.className='cc-q'; q.placeholder='Search a company, a person or a code'; q.dataset.keep='cc:q';
+      q.value=ST.ccQ||''; top.appendChild(q);
+      top.appendChild(el('div','pnote','Sponsor codes come from the Sponsorship Portal; Champion codes from Registration, Champion Codes. Speakers have no code; Bernie registers them.'
+        +(CC.col? ' Who registered with each code is from the Friday Aptify report'+(CC.at?' of '+pretty(String(CC.at).slice(0,10)):'')+'.' : ' Who has registered with each code shows once the Friday Aptify report is in.')));
+      box.appendChild(top);
+      const list=el('div','cc-list'); box.appendChild(list);
+      const none=el('div','pnote cc-none'); box.appendChild(none);
+      const paint=()=>{ const qq=String(ST.ccQ||'').trim().toLowerCase(); list.textContent=''; let n=0;
+        const ppl=qq? all() : []; CC.list.forEach(c=>{ const why=ccMatch(c,qq,ppl); if(why===null) return; n++; list.appendChild(ccCard(c,why)); });
+        none.textContent= n? '' : (CC.list.length? 'No sponsor or Champion code matches \u201c'+(ST.ccQ||'')+'\u201d. Speakers and others without a code do not show here.' : 'No sponsor or Champion codes for this summit yet.'); };
+      q.addEventListener('input',()=>{ ST.ccQ=q.value; paint(); });
+      paint();
+    });
+    ccSec.id='pp-codes'; right.appendChild(ccSec);
+  }catch(e){ try{ console.error(e); }catch(x){} }
   /* Jonna, 2026-10-31: the MISMO team going under the MISMO banner */
   right.appendChild(ttSection());
   right.appendChild(elseSec);
@@ -29280,6 +29377,7 @@ function v2Render(host){
     ['Board of Directors','The whole Board, with Notify Bernie and the tally',()=>v2Card('boardOpen')],
     ['MISMO Team at the Summit','Dates, parking and Rooms by Night',()=>v2Card('ttOpen')],
     ['Sponsors From The Portal','Status, comp codes and the agenda marks',()=>v2Card('sponOpen')],
+    ['Comp Codes','Every sponsor and Champion code by company or person, and who has used it',()=>v2Card('codesOpen')],
     ['Speaker Prospects','To invite, invited, accepted, declined',()=>v2Card('prosOpen')],
     ['Master List of Speakers','Everyone who has ever spoken',()=>v2Card('elseOpen')]
   ]));
@@ -29474,6 +29572,7 @@ function v2Person(x){
     if(x.team) R.appendChild(v2Team(x));
     if(x.board) R.appendChild(v2Board(x));
     if(x.spon.length) R.appendChild(v2Sponsor(x));
+    try{ const cs=v2Codes(x); if(cs) R.appendChild(cs); }catch(e){}
     if(x.pros || (p && isProspect(p))) R.appendChild(v2Prospect(x));
     /* a role they do not have yet */
     if(p){ const ar=el('div','v2-addrole');
@@ -29807,6 +29906,17 @@ function v2Board(x){
   rb.addEventListener('click',()=>{ const r=Object.assign({},boardDoc().reg||{}); if(r[m.i]) delete r[m.i]; else r[m.i]=today(); setBoard({reg:r},'a board registration'); render(); });
   const rw=el('span'); rw.appendChild(rb); kv.appendChild(rw);
   s.body.appendChild(kv);
+  return s;
+}
+/* Amy, 2026-11-17: on anyone's panel, the comp codes for their company and whether they registered with one */
+function v2Codes(x){
+  const CC=compCodes(), k=coKey(x.c), em=String(x.e||'').trim().toLowerCase(), nm=String(x.n||'').trim().toLowerCase();
+  const c=k? CC.list.find(y=>y.k===k) : null;
+  let mine=null; CC.list.some(y=>{ const u=y.used.find(u=>(em&&u.email===em)||(nm&&u.name.toLowerCase()===nm)); if(u){ mine={u, co:y}; return true; } return false; });
+  if(!c && !mine) return null;
+  const s=v2Sec('Comp Codes', el('small',null,'Sponsor and Champion'));
+  if(mine) { const kv=el('div','v2-kv'); kv.appendChild(el('span',null,'Registered With')); kv.appendChild(el('span',null,mine.u.code+' · '+mine.u.format+(mine.co!==c?' · '+mine.co.name+'\u2019s code':''))); s.body.appendChild(kv); }
+  if(c) s.body.appendChild(ccCard(c,'company'));
   return s;
 }
 function v2Sponsor(x){
@@ -32827,6 +32937,17 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     if(!out.length) return {cols:[], rows:[]};
     const cols=out[0].map(c=>c.trim().toLowerCase()); return {cols, rows:out.slice(1).map(r=>Object.fromEntries(cols.map((c,i)=>[c,r[i]==null?'':String(r[i]).trim()])))};
   }
+  /* Amy, 2026-11-17: who has registered with each code, by name, for the Comp Codes lookup on People */
+  function registrants(v){
+    const venue=venueOf(v), f=S.pull; if(!venue) return null;
+    if(!f||!f.csv) return {at:'', col:false, list:[]};
+    const P=csvRows(f.csv), cc=P.cols.find(c=>/campaign|promo|coupon|discount/.test(c)); if(!cc) return {at:f.receivedAt||'', col:false, list:[]};
+    const fd=venue.first.getTime(), near=x=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(x||'')) || (()=>{ const d=new Date(x); return isNaN(d)?null:[0,d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')]; })();
+      if(!m) return false; return Math.abs(Date.UTC(+m[1],+m[2]-1,+m[3],12)-fd)<=10*86400000; };
+    const list=P.rows.filter(r=>!/cancel/i.test(r.status||'') && near(r.meeting_date) && String(r[cc]||'').trim())
+      .map(r=>({code:String(r[cc]).trim().toUpperCase(), name:String(r.name||'').trim(), company:String(r.company||'').trim(), email:String(r.email||'').trim().toLowerCase(), format:/virt/i.test(r.format||'')?'Virtual':'In Person'}));
+    return {at:f.receivedAt||'', col:true, list};
+  }
   function usedCounts(venue){
     const f=S.pull; if(!f||!f.csv) return null;
     const P=csvRows(f.csv), cc=P.cols.find(c=>/campaign|promo|coupon|discount/.test(c)); if(!cc) return {noCol:true};
@@ -33056,7 +33177,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
   async function start(){
     try{ S.db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ S.db=null; }
     if(!S.db) return;
-    const soon=(()=>{ let t=null; return ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(); sync(); },1500); }; })();
+    const soon=(()=>{ let t=null; return ()=>{ clearTimeout(t); t=setTimeout(()=>{ render(); sync(); try{ window.dispatchEvent(new Event('hq:champions')); }catch(e){} },1500); }; })();
     S.db.doc('champion-codes/settings').onSnapshot(s=>{ S.set=s.exists?(s.data()||{}):{}; S.setReady=true; soon(); }, ()=>{ S.set={}; S.setReady=true; soon(); });
     const watched=new Set();
     const watch=()=>venues().forEach(v=>{ if(watched.has(v.id)) return; watched.add(v.id);
@@ -33068,7 +33189,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     const vp=$('venue-pick'); if(vp) vp.addEventListener('change',()=>setTimeout(render,50));
     setInterval(sync, 30*60000);
   }
-  window.__champions={sync:()=>sync(), build, rows:rowsOf, m360:()=>S.m360, reset:()=>{ S.m360=null; }};
+  window.__champions={sync:()=>sync(), build, rows:rowsOf, registrants, m360:()=>S.m360, reset:()=>{ S.m360=null; }};
   const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
       try{ window.ResourcesSession.onChange(()=>{ if(!S.db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
     setTimeout(start,2200); };

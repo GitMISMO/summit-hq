@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-17
+
+- People: Comp Codes (Full Lists) shows every sponsor and Champion code by company, with who has registered with each; search a company, person or code; a person's panel shows their company's codes and the code they used
+
 ## 2026-11-16
 
 - Undo: General Sessions, the Workshop and Champion Codes changes can now be undone (Undo was greyed out there)
