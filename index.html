@@ -25574,11 +25574,14 @@ function compCodes(){
   let ch=[]; try{ ch=(window.__champions? window.__champions.rows(v) : [])||[]; }catch(e){}
   ch.filter(r=>!r.gone).forEach(r=>{ const c=get(r.company); if(c){ c.champ=r; c.name=String(r.company||c.name).trim(); } });
   cos.forEach(c=>{
-    const add=(code,kind,allow)=>{ code=String(code||'').trim().toUpperCase(); if(!code || c.codes.some(x=>x.code===code)) return;
-      c.codes.push({code, kind, allow, used:(byCode[code]||[]).slice()}); };
+    const add=(code,kind,allow,onlyIfUsed)=>{ const show=String(code||'').trim(), k=show.toUpperCase(); if(!k || c.codes.some(x=>x.key===k)) return;
+      const used=(byCode[k]||[]).slice(); if(onlyIfUsed && !used.length) return;
+      c.codes.push({code:show, key:k, kind, allow, used}); };
     c.spon.forEach(r=>add(r.compCode,'Sponsor',r.comps||''));
     if(c.champ && c.champ.code){ add(c.champ.code,'Champion',c.champ.comps||'');
-      add(c.champ.vCode||(c.champ.code+'V'),'Champion Virtual',c.champ.vQty||(c.champ.vReq&&c.champ.vReq.n)||''); }
+      /* their virtual code; with none entered yet, Bernie's naming (the code with a V) shows only once someone has used it */
+      if(c.champ.vCode) add(c.champ.vCode,'Champion Virtual',c.champ.vQty||(c.champ.vReq&&c.champ.vReq.n)||'');
+      else add(c.champ.code+'V','Champion Virtual','',true); }
     c.used=[].concat(...c.codes.map(x=>x.used.map(u=>Object.assign({kind:x.kind},u))));
   });
   return {list:[...cos.values()].sort((a,b)=>a.name.localeCompare(b.name)), at:(reg&&reg.at)||'', col:!!(reg&&reg.col)};
