@@ -5309,6 +5309,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 /* the portal's sponsors */
 #app-people .sprow{display:flex;gap:14px;align-items:center;padding:9px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 #app-people .sprow:last-child{border-bottom:0}
+.bd-noem{color:var(--warn-ink,#8a5a00)}
+.v2-in-email{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
 .cc-top{padding:10px 16px 4px}
 .cc-q{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
 .cc-top .pnote{margin-top:6px}
@@ -7761,7 +7763,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
             <li>Every speaker email and every reminder goes out <b>from Amy</b> (amoses@mismo.org, through Jonna&rsquo;s Outlook, which has Send As for Amy&rsquo;s mailbox). Amy and Jonna are copied, and replies go to Amy.</li>
           </ul></li>
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
-        <li><b>Board of Directors</b> lists the Board from the MISMO Leadership page. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
+        <li><b>Board of Directors</b> lists the Board from Elections HQ&rsquo;s Board list: everyone whose term covers that summit&rsquo;s first day, so a member joining January 1 is on the Winter Summit and one whose term ended December 31 is not. Brian Vieaux is staff and is left off; Alexandra Brinton and Michael Briggs from MBA stay on. It updates itself when someone with Elections HQ access opens People; past summits keep the list they had. Elections HQ has no emails, so a new member shows <b>No email yet</b> until their email is typed on their panel (Board of Directors, Email); the ask cannot go to them until then. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
         <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
         <li><b>Headshots for the event app.</b> On anyone&rsquo;s panel, <b>Download</b> under their headshot saves their picture as a JPG named for them. <b>Downloads &rsaquo; Speaker Headshots</b> saves every speaker on this summit who has one, in a single zip.</li>
@@ -26413,6 +26415,7 @@ function render(){
   const lb=$('pp-left'); if(lb) lb.setAttribute('aria-pressed',ST.left?'true':'false');
   foundLine();
 
+  try{ syncBoardRoster(); }catch(e){}
   const host=$('pp-panels');
   const typing=keepTyping(host);
   host.textContent='';
@@ -26534,6 +26537,7 @@ function render(){
         L.appendChild(el('div','sp-me',[m.t,m.c].filter(Boolean).join(' \u00b7 ')));
         const ask=bdAsk(m.i);
         const sb=bnSent(m.i);
+        if(!/@/.test(m.e||'')) L.appendChild(el('div','bd-ask bd-noem','No email yet: open them to add it, so the ask can go'));
         if(ask || m.via || sb){ const an=el('div','bd-ask'+(ask&&ask.respAt?' ok':''),
           [ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'')+(ask.note?': \u201c'+ask.note+'\u201d':'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' \u00b7 no answer yet') : '',
            sb && !at? 'Sent to Bernie '+localDay(sb).replace(/ at .*/,'') : '', m.via||''].filter(Boolean).join(' \u00b7 '));
@@ -26561,7 +26565,10 @@ function render(){
         box.appendChild(row);
       });
     });
-    box.appendChild(el('div','pnote pp-when bd-src','From the MISMO Leadership page on mismo.org.'));
+    const rf=boardDoc().rosterFrom;
+    box.appendChild(el('div','pnote pp-when bd-src', rf&&rf.src==='Elections HQ'
+      ? 'From Elections HQ\u2019s Board list: everyone whose term covers this summit, checked '+pretty(String(rf.at).slice(0,10))+'. Emails are kept here; add a missing one on the person\u2019s panel.'
+      : 'From the MISMO Leadership page on mismo.org. Opening this summit with Elections HQ access brings in Elections HQ\u2019s Board list.'));
   }, bs.left?'warn':'');
 
   /* Jonna, 2026-09-22: the row reads What Still Has To Happen, On This Summit,
@@ -26973,6 +26980,63 @@ function setBoardAtt(id,v){
   pushBoardHeadcount(); render();
 }
 function setBoard(fields,label){ if(!Array.isArray(boardDoc().roster)) fields=Object.assign({roster:JSON.parse(JSON.stringify(BOARD))},fields); saveColl('board',ST.board,fields,label); }
+/* Jonna, 2026-11-17: "revise the board based on the election HQ board list, those are the ones
+   I need to see if they're in person or virtual". Elections HQ keeps the Board (leaders, gtype
+   board) with each member's term. For each summit still to come, the Board card lists the members
+   whose term covers the summit's first day (a member starting January 1 is on it; one ending
+   December 31 is not). Brian Vieaux is staff and stays off; the two from MBA stay on, as asked.
+   Emails, titles and who schedules for them are kept from the card; Elections HQ has no emails,
+   so a new member's email is typed on their panel. Read-only on Elections HQ; it needs Elections HQ
+   access, and without it the card keeps the list it has. Past summits keep theirs. */
+const ELEC_LEADERS='https://rgvdi67cg27o5kcmiytcqbqnrm0hmztx.lambda-url.us-east-1.on.aws/elections-hq/data/leaders';
+let elecBoard=null;
+async function loadElectionsBoard(){
+  let tk=null; try{ tk=window.ResourcesSession&&window.ResourcesSession.token&&window.ResourcesSession.token(); }catch(e){}
+  if(!tk) return;
+  try{ const r=await fetch(ELEC_LEADERS,{cache:'no-store',headers:{Authorization:'Bearer '+tk}}); if(!r.ok) return;
+    const b=await r.json(); const docs=(b&&b.data&&b.data.docs)||null; if(!docs) return;
+    elecBoard={at:(b.data.savedAt||new Date().toISOString()), list:Object.values(docs).filter(l=>l&&l.gtype==='board')};
+    syncBoardRoster(); }catch(e){}
+}
+const BD_MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december'];
+function venueFirstDay(){
+  const m=/([A-Za-z]+)\s+(\d{1,2})\D[\s\S]*?(\d{4})/.exec(String(venueInfo().dates||'')); if(!m) return '';
+  const mo=BD_MONTHS.indexOf(m[1].toLowerCase()); if(mo<0) return '';
+  return m[3]+'-'+String(mo+1).padStart(2,'0')+'-'+String(m[2]).padStart(2,'0');
+}
+function boardNameKey(n){ const w=String(n||'').replace(/,.*$/,'').replace(/[\u201c"][^\u201d"]*[\u201d"]/g,' ').toLowerCase().replace(/[^a-z\s-]/g,'').trim().split(/\s+/).filter(Boolean);
+  return w.length? w[0].charAt(0)+'|'+w[w.length-1] : ''; }
+function electionsRoster(day){
+  const known=new Map(); boardList().concat(BOARD).forEach(b=>{ const k=boardNameKey(b.n); if(k && !known.has(k)) known.set(k,b); });
+  const slug=n=>String(n||'').toLowerCase().replace(/[\u201c\u201d"]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const out=[];
+  elecBoard.list.filter(l=>l.status!=='former' && !/president/i.test(l.position||'')
+      && (!l.termStart || String(l.termStart)<=day) && (!l.termEnd || String(l.termEnd)>=day))
+    .forEach(l=>{ const m=known.get(boardNameKey(l.name));
+      const r= m? (m.r||'') : (/director|mba seat/i.test(l.position||'')? '' : 'Ex-Officio');
+      const x= m? Object.assign({},m,{r}) : {i:slug(l.name), n:String(l.name||'').trim(), t:'', c:String(l.company||'').trim(), r, e:''};
+      if(!out.some(y=>y.i===x.i)) out.push(x); });
+  boardList().filter(b=>b.r==='MBA').forEach(b=>{ if(!out.some(y=>y.i===b.i)) out.push(Object.assign({},b)); });
+  const rank=b=>b.r==='Chair'?0:b.r==='Vice Chair'?1:2, last=b=>boardNameKey(b.n).split('|')[1]||'';
+  return out.sort((a,b)=>rank(a)-rank(b) || last(a).localeCompare(last(b)));
+}
+function syncBoardRoster(){
+  if(!elecBoard || !elecBoard.list.length || !ST.db || !(ST.collsRead && ST.collsRead.has('board'))) return;
+  const day=venueFirstDay(); if(!day || day<today()) return;          /* past summits keep their list */
+  const now=electionsRoster(day); if(!now.length) return;
+  const cur=boardList();
+  if(JSON.stringify(cur)===JSON.stringify(now)) return;
+  /* not an Undo step: it is Elections HQ's list, and it would only come back */
+  const v=venueNow(), d=Object.assign({},ST.board.get(v)||{},{roster:now, rosterFrom:{src:'Elections HQ', at:new Date().toISOString(), was:cur.map(b=>b.i)}});
+  ST.board.set(v,d); try{ ST.db.doc('board/'+v).set(JSON.parse(JSON.stringify(d))); }catch(e){}
+  renderSoon();
+}
+function setBoardEmail(id,e){
+  const r=JSON.parse(JSON.stringify(boardList())), m=r.find(b=>b.i===id); if(!m) return;
+  m.e=String(e||'').trim(); setBoard({roster:r},'a Board member\u2019s email'); renderSoon();
+}
+setTimeout(loadElectionsBoard,4000); setInterval(loadElectionsBoard,30*60000);
+try{ const vp=document.getElementById('venue-pick'); if(vp) vp.addEventListener('change',()=>setTimeout(syncBoardRoster,800)); }catch(e){}
 /* Notify Bernie: Summit HQ cannot send mail, so it writes the list to feeds/board-notify
    and the "Summit HQ - Board Members to Register" flow emails it to him. The flow looks
    every 15 minutes for a request made 5 to 20 minutes earlier, so each press sends once. */
@@ -29566,7 +29630,7 @@ function v2Person(x){
     } else { const kv=el('div','v2-kv');
       [['Email',x.e||'—'],['Title',x.t||'—'],['Company',x.c||'—']].forEach(([k,v])=>{ kv.appendChild(el('span',null,k)); kv.appendChild(el('span',null,v)); });
       ct.body.appendChild(kv);
-      ct.body.appendChild(el('div','pnote', x.board? 'From the MISMO Leadership page on mismo.org.' : 'From the Sponsorship Portal; change it there.')); }
+      ct.body.appendChild(el('div','pnote', x.board? 'From Elections HQ\u2019s Board list. Their email can be changed under Board of Directors.' : 'From the Sponsorship Portal; change it there.')); }
     L.appendChild(ct);
     /* headshot and bio, side by side and the same height */
     if(p) L.appendChild(v2HeadBio(p));
@@ -29892,6 +29956,9 @@ function v2Board(x){
   const add=(k,v)=>{ kv.appendChild(el('span',null,k)); kv.appendChild(typeof v==='string'? el('span',null,v) : v); };
   add('Group', m.r==='Ex-Officio'?'Ex-Officio':m.r==='MBA'?'From MBA':('Board Members'+(m.r?' · '+m.r:'')));
   if(m.via) add('Schedules Through', m.via);
+  /* Elections HQ has no emails, so a new member's is typed here (Nov 17, 2026) */
+  const ei=document.createElement('input'); ei.type='email'; ei.className='v2-in-email'; ei.value=m.e||''; ei.placeholder='Their email, for the ask'; ei.dataset.keep='bde:'+m.i;
+  ei.addEventListener('change',()=>setBoardEmail(m.i, ei.value)); add('Email', ei);
   const ask=bdAsk(m.i);
   const aw=el('span',null, ask? (ask.respAt? 'Answered '+localDay(ask.respAt).replace(/ at .*/,'') : 'Asked '+localDay(ask.at).replace(/ at .*/,'')+' · no answer yet') : 'Not asked yet');
   const ab=el('button','se-lnk',ask? 'Ask Again' : 'Ask In Person or Virtual'); ab.type='button'; ab.addEventListener('click',()=>openBoardAsk());
