@@ -560,6 +560,36 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 24. The Board comes from Elections HQ: whoever's term covers the summit (Jonna, Nov 17) */
+  await check('The Board card follows Elections HQ\'s Board list', async () => {
+    const L = (name, company, position, status, termStart, termEnd, gtype) => ({ gtype: gtype || 'board', name, company, position, status, termStart, termEnd });
+    const store = {
+      leaders: { docs: {
+        'leaders/a': L('Tim Bowler', 'ICE Mortgage Technology', 'Director', 'active', '2024-01-01', '2027-12-31'),
+        'leaders/b': L('Michele Bodda', 'Experian', 'Director', 'active', '2024-01-01', '2026-12-31'),
+        'leaders/c': L('Erin Dee', 'BankSouth Mortgage', 'Director', 'active', '2027-01-01', ''),
+        'leaders/d': L('Leslie Peeler', 'Cenlar FSB', 'Director', 'former', '2026-01-01', '2029-12-31'),
+        'leaders/e': L('Brian Vieaux', 'MISMO', 'MISMO President', 'active', '2025-10-01', ''),
+        'leaders/f': L('Rusty Emory', 'PrimeLending', 'Res Gov Committee Chair', 'active', '2024-01-01', ''),
+        'leaders/g': L('Pat Chair', 'Some Co', 'Co-Chair', 'active', '2026-01-01', '', 'aof') } },
+      board: { docs: { 'board/nola': { att: { 'timothy-j-bowler': 'in' } } } }
+    };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(9000);
+    const d = s.store.board && s.store.board.docs && s.store.board.docs['board/nola'];
+    const ids = d && d.roster ? d.roster.map(b => b.i) : [];
+    expect(ids.join(',') === 'timothy-j-bowler,rusty-emory,erin-dee,alexandra-brinton,michael-briggs' || ids.slice().sort().join(',') === ['alexandra-brinton', 'erin-dee', 'michael-briggs', 'rusty-emory', 'timothy-j-bowler'].join(','),
+      'the Board is not Elections HQ\'s list for the summit: ' + ids.join(','));
+    const tim = d.roster.find(b => b.i === 'timothy-j-bowler'), erin = d.roster.find(b => b.i === 'erin-dee'), rusty = d.roster.find(b => b.i === 'rusty-emory');
+    expect(tim.e === 'timothy.bowler@ice.com' && tim.r === 'Chair' && d.att['timothy-j-bowler'] === 'in' && erin.e === '' && erin.c === 'BankSouth Mortgage' && rusty.r === 'Ex-Officio',
+      'emails, roles or answers were not kept: ' + JSON.stringify({ tim, erin, rusty, att: d.att }));
+    await s.page.evaluate(() => window.__pane.open('people:boardOpen')); await s.page.waitForTimeout(1200);
+    const t = await s.page.evaluate(() => document.getElementById('hq-pane').innerText);
+    expect(/Erin Dee/.test(t) && /No email yet/.test(t) && /Elections HQ/.test(t) && !/Michele Bodda/.test(t) && !/Leslie Peeler/.test(t) && !/Brian Vieaux/.test(t),
+      'the Board card is not right: ' + t.slice(0, 500));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
