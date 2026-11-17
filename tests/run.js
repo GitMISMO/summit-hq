@@ -530,6 +530,36 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 23. Comp Codes on People: sponsor and Champion codes by company or person, and who used them (Amy, Nov 17) */
+  await check('Comp Codes finds a company or person and who used each code', async () => {
+    const orgs = { orgs: [{ k: 'c111', cid: '111', name: 'Alpha Lending', level: 'Associate', people: [{ email: 'ann.alpha@alpha.example', roles: ['Primary'] }] }] };
+    const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status,campaign_code';
+    const csv = [H,
+      '1,One Person,Alpha Lending,one@a.example,In-Person,2026-10-01,0,,,Comp,,82690,MISMO Winter Summit,2027-01-11,SHIPPED,MISMOCALPHA',
+      '2,Two Person,Alpha Lending,two@a.example,Virtual,2026-10-02,0,,,Comp,,83115,MISMO Winter Summit Virtual,2027-01-11,SHIPPED,MISMOCALPHAV',
+      '3,Zed Sponsor,Bravo Tech,zed@b.example,In-Person,2026-10-03,0,,,Comp,,82690,MISMO Winter Summit,2027-01-11,SHIPPED,MISMOSBRAVO',
+      '4,Gone Person,Bravo Tech,gone@b.example,In-Person,2026-10-03,0,,,Comp,,82690,MISMO Winter Summit,2027-01-11,CANCELLED,MISMOSBRAVO'].join('\r\n');
+    const store = {
+      champions: { items: [{ name: 'Alpha Lending', level: 'Associate', type: 'Lender' }], at: '2026-10-30T00:00:00Z' },
+      orgsdata: { chunked: { ver: 'v1', n: 1 } }, 'orgsdata--v1-0': { s: JSON.stringify(orgs) },
+      'feed-registration-pull': { doc: { name: 'r.csv', receivedAt: '2026-11-13T11:00:00Z', csv } },
+      'champion-codes': { docs: { 'champion-codes/nola': { opened: '2026-11-09', rows: { c111: { cid: '111', company: 'Alpha Lending', level: 'Associate', comps: 2, to: 'ann.alpha@alpha.example', names: 'Ann', code: 'MISMOCALPHA', sentAt: 'before' } } } } },
+      'portal-applications': { docs: { 'P-9': { appNo: 'P-9', company: 'Bravo Tech, Inc.', contactEmail: 'zed@b.example', contactName: 'Zed Sponsor', status: 'Approved', level2027: 'GOLD', event: 'Winter 2027', opportunity: 'Breakfast', compCode: 'MISMOSBRAVO', numComps: 3 } } }
+    };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(7000);
+    await s.page.evaluate(() => window.__pane.open('people:codesOpen')); await s.page.waitForTimeout(1500);
+    const txt = () => s.page.evaluate(() => (document.getElementById('hq-pane') || document.body).innerText);
+    let t = await txt();
+    expect(/Alpha Lending/.test(t) && /MISMOCALPHA/.test(t) && /One Person/.test(t) && /Two Person/.test(t) && /Bravo Tech/.test(t) && /MISMOSBRAVO/.test(t) && /Zed Sponsor/.test(t) && !/Gone Person/.test(t),
+      'Comp Codes did not list both companies, their codes and who used them: ' + t.slice(0, 600));
+    expect(/1 registered of 3/.test(t), 'the sponsor code did not count its one registration against 3 comps: ' + t.slice(0, 600));
+    await s.page.locator('#hq-pane .cc-q').fill('zed'); await s.page.waitForTimeout(500);
+    t = await txt();
+    expect(/Bravo Tech/.test(t) && !/Alpha Lending/.test(t) && /Found by: Zed Sponsor registered with MISMOSBRAVO/.test(t), 'searching a person did not find their company: ' + t.slice(0, 500));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
