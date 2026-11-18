@@ -5826,6 +5826,15 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .tkl-sec[data-s=kit],.tkp-chip[data-s=kit],.tkl-row[data-s=kit]{--c:var(--pc-trunk)}
 .tkl-sec[data-s=rib],.tkp-chip[data-s=rib],.tkl-row[data-s=rib]{--c:#2f80c8}
 .tkl-sec[data-s=merch],.tkp-chip[data-s=merch],.tkl-row[data-s=merch]{--c:var(--pc-people)}
+.tkl-sec[data-s=swag],.tkp-chip[data-s=swag],.tkl-row[data-s=swag]{--c:#0d314c}
+.tkl-row[data-s=swag]{grid-template-columns:14px auto minmax(0,3.2fr) minmax(0,1fr) auto auto 22px}
+.tkl-cost .cur{font-size:12.5px;color:var(--ink-3);margin-right:-4px}
+.tkl-cost{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tkl-row .tkl-cost input[type=text]{width:58px;font-weight:500;font-size:12.5px;color:var(--ink-2);text-align:right}
+.tkl-tot{min-width:62px;text-align:right;font:700 12.5px/1 var(--ui);color:var(--ink)}
+.tkl-tot.need{font-weight:600;color:var(--warn-ink,#8a5200)}
+.tkl-swag{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink-2);letter-spacing:.02em;text-transform:none}
+.tkl-swag.need{color:var(--warn-ink,#8a5200)}
 .tkl-all{font-size:12px;color:var(--good);font-weight:600;padding:2px 0 8px}
 .tkl-none{font-size:12px;color:var(--ink-3);font-style:italic;padding:2px 0 8px}
 .tkl-row{display:grid;grid-template-columns:14px auto minmax(0,2.2fr) minmax(0,1fr) auto 22px;gap:8px;align-items:center;
@@ -6014,6 +6023,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
         <select id="tkp-add-sec" aria-label="Which list">
           <option value="kit">The Standard Kit</option>
           <option value="rib">Ribbons &amp; Pins</option>
+          <option value="swag">MISMO Merch</option>
           <option value="merch">Sponsor Merch</option>
         </select>
         <input type="text" id="tkp-add-q" inputmode="numeric" placeholder="How many" aria-label="How many">
@@ -6081,13 +6091,20 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   ];
   const SEED_RIB=['AMSP','CMSP + pins','MISMO Champion','MISMO Newcomer','MISMO Ambassador',
     'Sponsor','Speaker','Press','Staff'].map(t=>({q:'', t:t}));
+  /* Amy, 2026-11-13 ("Merch Categories"): MISMO's own merch, kept like the kit — one list for
+     every summit. Item, color and unit cost from Amy; Bernie fills in how many (c = unit cost). */
+  const SEED_SWAG=[['Peter Millar polo','Navy','105.00'],['Peter Millar polo','Black','105.00'],['Travis Mathew polo','White','70.00'],
+    ['District Very Important Tee','Light blue','10.00'],['Gildan Softstyle Women\u2019s T-Shirt','Bright blue','10.00'],
+    ['Next Level Apparel Women\u2019s Cotton Tee','Navy','10.00'],['Travis Mathew Coveside 1/2 zip','Light blue','110.00'],
+    ['Tote bag','Navy','11.85'],['20 oz Joe Tumbler','Blue','16.18'],['Cap, white back','White','18.00'],['Cap, blue back','Blue','18.00']]
+    .map(([t,n,c])=>({q:'', t, n, c}));
 
   const ST={db:null, standing:null, summit:null, sid:'', rows:null, unsub:[], tasks:[], ready:false};
   let saveT=null;
 
   const uid=()=>'i'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
-  const clean=r=>({k:(r&&r.k)||uid(), q:String(r&&r.q!=null?r.q:''), t:String(r&&r.t!=null?r.t:''),
-    n:String(r&&r.n!=null?r.n:'')});
+  const clean=r=>Object.assign({k:(r&&r.k)||uid(), q:String(r&&r.q!=null?r.q:''), t:String(r&&r.t!=null?r.t:''),
+    n:String(r&&r.n!=null?r.n:'')}, r&&r.c!=null&&r.c!==''? {c:String(r.c)} : {});
   const list=a=>Array.isArray(a)? a.map(clean) : [];
 
   /* Jonna, 2026-09-23: the store hands back READ-ONLY objects. Keeping one as the
@@ -6107,6 +6124,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     const o=own(d);
     return {kit:list(Array.isArray(o.kit)?o.kit:SEED_KIT),
             rib:list(Array.isArray(o.rib)?o.rib:SEED_RIB),
+            swag:list(Array.isArray(o.swag)?o.swag:SEED_SWAG),
             reviewers:Array.isArray(o.reviewers)?o.reviewers.map(String):[]};
   }
   function takeSummit(d){
@@ -6119,6 +6137,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     if(!ST.standing) ST.standing=takeStanding(null);
     if(!Array.isArray(ST.standing.kit)) ST.standing.kit=list(SEED_KIT);
     if(!Array.isArray(ST.standing.rib)) ST.standing.rib=list(SEED_RIB);
+    if(!Array.isArray(ST.standing.swag)) ST.standing.swag=list(SEED_SWAG);
     return ST.standing;
   }
   function summit(){
@@ -6387,7 +6406,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 
   function stats(){
     const s=standing(), v=summit(), p=v.packed||{};
-    const all=s.kit.concat(s.rib, v.merch);
+    const all=s.kit.concat(s.rib, s.swag||[], v.merch);
     const total=all.length, packed=all.filter(r=>p[r.k]).length;
     /* the card on The Plan says who owns the work and when the first of the trunk
        tasks is due, not their names — the names are on the page and would run the
@@ -6419,7 +6438,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
      • Lines go in by dragging, or by their Pack button. A tap on a line never moves it.
      • A packed line is pressed to change it or take it out.
      • The review lives on this summit's trunk document, beside the ticks. */
-  const TKP_SECS=[['kit','The Standard Kit'],['rib','Ribbons & Pins'],['merch','Sponsor Merch']];
+  const TKP_SECS=[['kit','The Standard Kit'],['rib','Ribbons & Pins'],['swag','MISMO Merch'],['merch','Sponsor Merch']];
   const TKP={drag:null, later:false, peek:false, fresh:'', thunk:false, holding:false, flying:false, pop:null};
   const REVIEW_URL='https://resources.mismo.org/summit-hq/#trunk';
   const BERNIE={name:'Bernardo Jordan', email:'bjordan@mba.org'};
@@ -6432,7 +6451,12 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
   const MAIL=()=>window.__hqMail||null;
   const flashMsg=t=>{ try{ window.__hqFlash && window.__hqFlash(t); }catch(e){} };
   const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const rowsOf=sec=>{ const s=standing(), v=summit(); return sec==='kit'? s.kit : sec==='rib'? s.rib : v.merch; };
+  const rowsOf=sec=>{ const s=standing(), v=summit(); return sec==='kit'? s.kit : sec==='rib'? s.rib : sec==='swag'? s.swag : v.merch; };
+  /* MISMO Merch: what each line is worth, and the list's total */
+  const money=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const unitOf=r=>{ const c=parseFloat(String(r.c||'').replace(/[$,\s]/g,'')); return isNaN(c)? null : c; };
+  const qtyOf=r=>{ const q=parseInt(String(r.q||''),10); return isNaN(q)? null : q; };
+  const lineTotal=r=>{ const c=unitOf(r), q=qtyOf(r); return c!=null && q!=null? c*q : null; };
   const storeOf=sec=>sec==='merch'?'summit':'standing';
   const niceDay=iso=>{ const d=new Date(iso); return isNaN(d)? '' : d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
   const initials=n=>String(n||'?').split(/[\s@.]+/).filter(Boolean).slice(0,2).map(x=>x.charAt(0).toUpperCase()).join('');
@@ -6483,7 +6507,8 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     TKP_SECS.forEach(([sec,label])=>{ const rows=rowsOf(sec); if(!rows.length) return;
       h+='<tr><td colspan="3" style="padding:14px 8px 6px;border-bottom:2px solid #74bfeb;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#0d314c">'+esc(label)+'</td></tr>';
       rows.forEach(r=>{ const it={r:r}; h+='<tr><td style="'+td+';width:44px;font-weight:700;color:#0d314c">'+esc(r.q||'')+'</td><td style="'+td+'"><b>'+esc(tkName(it))+'</b>'
-        +(tkNote(it)?' <span style="color:#6c899f">'+esc(tkNote(it))+'</span>':'')+'</td><td style="'+td+';width:70px;text-align:right;color:'+(p[r.k]?'#175e43':'#8a5200')+'">'+(p[r.k]?'&#10003; In':'Not in')+'</td></tr>'; });
+        +(tkNote(it)?' <span style="color:#6c899f">'+esc(tkNote(it))+'</span>':'')
+        +(sec==='swag' && unitOf(r)!=null? ' <span style="color:#6c899f">· '+esc(money(unitOf(r)))+' each'+(lineTotal(r)!=null?' · '+esc(money(lineTotal(r))):'')+'</span>' : '')+'</td><td style="'+td+';width:70px;text-align:right;color:'+(p[r.k]?'#175e43':'#8a5200')+'">'+(p[r.k]?'&#10003; In':'Not in')+'</td></tr>'; });
     });
     return '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:4px 0 18px"><tbody>'+h+'</tbody></table>';
   }
@@ -6687,6 +6712,14 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     rows.splice(i,1); delete summit().packed[it.r.k];
     save(storeOf(it.sec)); save('summit'); changed(); render(true);
   }
+  /* Bernie fills in how many of each; the header says what is still uncounted and what it is all worth */
+  function paintSwag(){
+    const sw=document.getElementById('tkl-swag'); if(!sw) return;
+    const rows=standing().swag||[], need=rows.filter(r=>qtyOf(r)==null).length;
+    const total=rows.reduce((a,r)=>a+(lineTotal(r)||0),0);
+    sw.textContent=(need? need+' still need a count · ' : '')+'Total '+money(total);
+    sw.classList.toggle('need', !!need);
+  }
   function floorRow(it){
     const d=el('div','tkl-row'); d.dataset.k=it.r.k; d.dataset.s=it.sec;
     if(TKP.fresh===it.r.k) d.classList.add('is-new');
@@ -6700,6 +6733,18 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     nt.setAttribute('aria-label','Note');
     nt.addEventListener('input',()=>{ it.r.n=nt.value; save(storeOf(it.sec)); changed(); });
     d.appendChild(nt);
+    if(it.sec==='swag'){
+      const cw=el('span','tkl-cost');
+      const ci=document.createElement('input'); ci.type='text'; ci.inputMode='decimal'; ci.value=it.r.c||''; ci.placeholder='$ each';
+      ci.setAttribute('aria-label','Cost each'); ci.title='Cost each'; cw.appendChild(el('span','cur','$'));
+      const tot=el('span','tkl-tot');
+      const paintTot=()=>{ const t=lineTotal(it.r); tot.textContent= t!=null? money(t) : (qtyOf(it.r)==null? '—' : ''); tot.title= qtyOf(it.r)==null? 'Needs a count' : 'Total for this line'; tot.classList.toggle('need', qtyOf(it.r)==null); };
+      ci.addEventListener('input',()=>{ it.r.c=ci.value.replace(/^\$\s*/,'').trim(); save('standing'); changed(); paintTot(); paintSwag(); });
+      nm.title=[it.r.t,it.r.n].filter(Boolean).join(', ');
+      d.addEventListener('input',e=>{ if(e.target!==ci) setTimeout(()=>{ paintTot(); paintSwag(); },0); });
+      d.addEventListener('click',e=>{ if(e.target.closest && e.target.closest('.tkq button')) setTimeout(()=>{ paintTot(); paintSwag(); },0); });
+      cw.appendChild(ci); cw.appendChild(tot); d.appendChild(cw); paintTot();
+    }
     const pk=el('button','tkl-pack'); pk.type='button'; pk.innerHTML='Pack '+ICON_IN; pk.setAttribute('aria-label','Pack '+tkName(it));
     pk.addEventListener('click',()=>tkpFly(d,it));
     d.appendChild(pk);
@@ -6874,6 +6919,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
       const h=el('div','tkl-sh'); h.appendChild(el('i'));
       h.appendChild(document.createTextNode(label));
       h.appendChild(el('span','n', all.length? (g.length? g.length+' to pack' : '')+(g.length && all.length>g.length? ' · ' : '')+(all.length>g.length? (all.length-g.length)+' in' : '') : ''));
+      if(sec==='swag'){ const sw=el('span','tkl-swag'); sw.id='tkl-swag'; h.appendChild(sw); }
       if(sec==='merch'){ const pb=el('button','btn ghost','Bring In This Summit’s Sponsors'); pb.type='button';
         pb.title='Adds a line for every sponsor on this summit that is not already on the list'; pb.addEventListener('click',bringSponsors); h.appendChild(pb); }
       box.appendChild(h);
@@ -6883,6 +6929,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
       floor.appendChild(box);
     });
     floor.scrollTop=keepF;
+    paintSwag();
 
     const inn=$('#tkp-in'), keep=inn.scrollTop; inn.textContent='';
     if(!on.length) inn.appendChild(el('div','tkp-empty','The trunk is empty. Drag a line in from the packing list, or press its Pack button.'));
@@ -7432,6 +7479,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <ol class="hp-steps">
           <li><b>Open The Trunk.</b> The road across the top shows your Packing List task and its due date, the Team Review, and the day the trunk ships.</li>
           <li><b>Update the list</b> on the left: the &minus; and + buttons change how many, and you can type over any name or note. Add anything new with <b>Add something to pack</b> at the bottom. For Sponsor Merch, press <b>Bring In This Summit&rsquo;s Sponsors</b>.</li>
+          <li><b>Count the MISMO Merch.</b> The <b>MISMO Merch</b> list (Amy&rsquo;s polos, tees, quarter-zip, totes, tumblers and caps) has each item&rsquo;s color and cost each; fill in how many we have with the &minus; and + buttons or by typing. Each line shows its total, and the list&rsquo;s heading shows how many still need a count and the total value. It is one list for every summit, like the Standard Kit.</li>
           <li><b>Pack</b> each line by dragging it into the trunk, or press its <b>Pack</b> button. On a phone, press and hold a line, then drag. To change or take out something already packed, press it in the trunk.</li>
           <li><b>Send for Review</b> when you are ready. Pick who reviews it (Jonna, Amy and Kelly to start), add a note if you like, and send. The team gets an email with the list and a button straight to the trunk.</li>
           <li><b>You get an email back</b> when someone presses Looks Good or Needs a Change. Make any change on the list and press <b>Send Again</b>.</li>
@@ -7680,6 +7728,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>The road</b> across the top shows the Packing List task (with how much is in the trunk), the Team Review, and the trunk shipping, each with its due date and how many days are left. Press a task to open it.</li>
         <li><b>Pack a line</b> by dragging it into the trunk, or with its <b>Pack</b> button. On a phone, press and hold a line for a moment to pick it up. A tap never moves anything.</li>
         <li><b>Amounts and names</b> are changed right on the packing list: the &minus; and + buttons set how many, and the item and note are typed straight in. <b>Add something to pack</b> at the foot of the list adds a new line to whichever list you pick. Sponsor Merch can bring in this Summit&rsquo;s sponsors in one press.</li>
+        <li><b>MISMO Merch</b> is MISMO&rsquo;s own merch inventory (from Amy): item, color and cost each, with the quantity Bernie fills in. Each line shows its total cost and the heading the total value and how many lines still need a count. It is kept once for every summit, like the Standard Kit; Sponsor Merch stays per summit.</li>
         <li><b>A packed line</b> is pressed to change it, take it out or delete it.</li>
         <li><b>Send for Review</b> emails the team you pick (Jonna, Amy and Kelly to start) with the packing list and a button straight to the trunk. There they press <b>Looks Good</b> or <b>Needs a Change</b>, and Bernie is emailed either way. Change the list after it has gone out and it says so, with <b>Send Again</b>.</li>
         <li><b>Packing List PDF</b> makes a branded, printable packing list with a box to tick for every line; choose Save as PDF in the print window to download it.</li>
