@@ -7768,6 +7768,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <ul>
         <li><b>The dark band and the speaker faces stay at the top.</b> Click a tile (Bios in Hand, Registered, On the Event App, Board Registered) or one of the five step bars to list just the people behind it; click a face to open that speaker on the right.</li>
         <li><b>The list comes a page at a time</b>, 20 to start. <b>Per Page</b> under the list changes it to 10, 20, 30, 40, 50 or All (remembered in this browser), and <b>Back</b> and <b>Next</b> move through the pages. Changing the filter or the search starts again at page 1.</li>
+        <li><b>Contact Person and Contact Email</b>, on a person&rsquo;s panel under Contact, are for whoever handles things for a speaker (an assistant, manager or marketing contact). That email is copied on every speaker email to them: the first email, the weekly reminders and any sent from Choose Speakers to Email.</li>
+        <li><b>Adding someone already on the list</b> (on People, as a prospect, or with + Add Speaker on General Sessions or the Workshop) uses their existing record when the email, or the first and last name, matches; anything typed that the record is missing is filled in, and a note says so. No second record is made.</li>
         <li><b>The same person twice?</b> Open the one to keep. If another record has the same email, or the same first name at the same company, a note at the top says so; <b>Same Person Twice?</b> on the right lists them, or finds any other record by name, email or company. <b>Merge Into This One</b> (click twice) keeps the open record, fills in anything it is missing from the other one (email, title, bio, headshot, the fuller name), puts together their progress on every summit (sessions, steps done, the latest invitation), and retires the other record. Undo puts both back. Nothing is emailed.</li>
         <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
         <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
@@ -25554,6 +25556,24 @@ function all(){
   return [...out.values()].sort((a,b)=>a.n.localeCompare(b.n));
 }
 const byId=id=>all().find(p=>p.i===id);
+/* Jonna, 2026-11-18: "I saw Kevin Cuff in the search twice, I fear that Amy is creating new records for
+   ones we have". Every way of adding someone (People, prospects, General Sessions and the Workshop)
+   now looks for them first: the same email, or the same first and last name. Found, that record is
+   used (missing email, title or company filled in from what was typed) instead of a second one. */
+const personNameKey=n=>{ const w=String(n||'').toLowerCase().replace(/^(dr|mr|ms|mrs|mx)\.?\s+/,'').replace(/,.*$/,'')
+  .replace(/[\u201c\u201d"][^\u201c\u201d"]*[\u201c\u201d"]/g,' ').replace(/\([^)]*\)/g,' ').replace(/[^a-z\s'-]/g,'').trim().split(/\s+/).filter(Boolean);
+  return w.length>1? w[0]+'|'+w[w.length-1] : ''; };
+function samePerson(o){
+  const em=String(o&&o.e||'').split(/[;,]/)[0].trim().toLowerCase(), nk=personNameKey(o&&o.n);
+  const ppl=all();
+  return (em && ppl.find(p=>String(p.e||'').split(/[;,]/)[0].trim().toLowerCase()===em))
+      || (nk && ppl.filter(p=>personNameKey(p.n)===nk).sort((a,b)=>(b.e?1:0)-(a.e?1:0))[0]) || null;
+}
+function fillIn(p,o,label){
+  const f={}; ['e','t','c'].forEach(k=>{ const v=String(o&&o[k]||'').trim(); if(v && !String(p[k]||'').trim()) f[k]=v; });
+  if(Object.keys(f).length) patch(p.i,f,label);
+}
+function usedExisting(p){ try{ window.__hqFlash && window.__hqFlash((p.n||'They')+' is already on the People list, so that record was used rather than adding a second one.'); }catch(e){} }
 const stOf=p=>(p.st&&p.st[venueNow()])||{};
 const onSummit=p=>!!stOf(p).on;
 const roleOf=p=>stOf(p).role||'speaker';
@@ -26809,11 +26829,18 @@ function addForm(){
   b.title='Adds them to this summit as a speaker, and to the master list for every summit after it.';
   const go=()=>{
     const nm=n.value.trim(); if(!nm){ n.focus(); return; }
-    let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
-    if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
-    rec(id,'a person added');
-    write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,
-      st:{[venueNow()]:{on:true,role:'speaker',steps:{}}}});
+    const had=samePerson({n:nm,e:e.value.trim()});
+    let id;
+    if(had){ id=had.i; fillIn(had,{e:e.value,t:t.value,c:c.value},'details for '+had.n);
+      const st=stOf(had); if(!st.on || (st.role&&st.role!=='speaker')) patchSt(id,{on:true, role:'speaker'},'a speaker on this summit');
+      usedExisting(had); }
+    else {
+      id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
+      if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
+      rec(id,'a person added');
+      write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,
+        st:{[venueNow()]:{on:true,role:'speaker',steps:{}}}});
+    }
     speakerAdded(id);
     n.value=e.value=t.value=c.value=''; ST.open.add(id); ST.q=''; const qq=$('pp-q'); if(qq) qq.value='';
     ST.clearAdd=true;           /* they are on the list now; the form starts fresh */
@@ -27706,7 +27733,7 @@ async function openSpeakerEmail(id){
   const itok=stOf(p).itok||seTok();
   const v=seVars(p,itok);
   const dr=stOf(p).seDraft;
-  seOpen={id, itok, mode:'one', to:p.e||'', cc:SE_CC, subject: dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), body: dr&&dr.body!=null? dr.body : seFill(tpl.body,v),
+  seOpen={id, itok, mode:'one', to:p.e||'', cc:seCcFor(p), subject: dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), body: dr&&dr.body!=null? dr.body : seFill(tpl.body,v),
     tSubject:tpl.subject, tBody:tpl.body, carried:tpl.carried||'', sending:false, dirtyOne:false, dirtyTpl:false, saved:'', draft:!!dr};
   drawSpeakerEmail();
 }
@@ -28109,6 +28136,9 @@ function siLine(p){
    looks for the speaker's form answer: anybody who has already sent theirs is skipped, even
    when nobody has opened Summit HQ since. */
 const SE_CC='amoses@mismo.org; jcritchley@mismo.org';
+/* Amy, 2026-11-18: "include the person's email and then the email of the person who may be their handler
+   (admin or manager or marketing person)". A speaker's contact person (he) is copied on every speaker email. */
+const seCcFor=p=>{ const h=String((p&&p.he)||'').trim(); return h && /@/.test(h) && SE_CC.toLowerCase().indexOf(h.toLowerCase())<0 ? (SE_CC? SE_CC+'; ' : '')+h : SE_CC; };
 /* Amy, 2026-11-04: the speaker emails and the follow-ups go out from Amy herself; the flow
    sends "as" this address (Jonna's Outlook needs Send As or Send on Behalf for Amy's mailbox) */
 const SE_FROM='amoses@mismo.org';
@@ -28181,7 +28211,7 @@ async function remSync(){
       remDates(p).map(ymd).filter(d=>d>=floor && sent.indexOf(d)<0).slice(0,3).forEach(d=>{
         const vv=Object.assign(seVars(p,tok),{missing:seMissing(p)});
         const subject=seFill(tpl.subject,vv), bd=seFill(tpl.body,vv);
-        mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email, from:SE_FROM,
+        mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:seCcFor(p), replyTo:SE_AMY.email, from:SE_FROM,
           subject, html:seHtml(subject,bd), person:p.i, summit:v, graphic:''});
       });
     });
@@ -28241,7 +28271,7 @@ async function autoSend(){
       const st=stOf(p), itok=st.itok||seTok(), v=seVars(p,itok);
       const dr=st.seDraft;
       const subject= dr&&dr.subject!=null? dr.subject : seFill(tpl.subject,v), bd= dr&&dr.body!=null? dr.body : seFill(tpl.body,v);
-      reqs.push({id:'auto-'+venueNow()+'-'+p.i, requestedAt:at, requestedBy:'Summit HQ (automatic)', to:String(p.e).trim(), cc:SE_CC,
+      reqs.push({id:'auto-'+venueNow()+'-'+p.i, requestedAt:at, requestedBy:'Summit HQ (automatic)', to:String(p.e).trim(), cc:seCcFor(p),
         replyTo:SE_AMY.email, from:SE_FROM, subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const steps=Object.assign({},st.steps||{}); if(!steps.contacted && bd.indexOf(itok)>=0) steps.contacted=today();
@@ -28378,7 +28408,7 @@ function drawSpeakerBulk(){
       const st=stOf(p), itok=st.itok||seTok(), v=Object.assign(seVars(p,itok),{missing:seMissing(p)||'bio and headshot'});
       const own= seBulk.kind==='welcome' && st.seDraft;
       const subject= own&&own.subject!=null? own.subject : seFill(seBulk.subject,v), bd= own&&own.body!=null? own.body : seFill(seBulk.body,v);
-      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:SE_CC, replyTo:SE_AMY.email, from:SE_FROM,
+      reqs.push({id:'se-'+Date.now().toString(36)+'-'+ix, requestedAt:at, requestedBy:who, to:String(p.e).trim(), cc:seCcFor(p), replyTo:SE_AMY.email, from:SE_FROM,
         subject, html:seHtml(subject,bd), person:p.i, summit:venueNow(),
         graphic: seBulk.kind==='welcome' && g&&g.name ? 'speaker-graphic-'+venueNow() : ''});
       const f={};
@@ -28618,11 +28648,17 @@ function prospectAdd(){
   const go=el('button','btn','Add New Prospect'); go.type='button';
   go.addEventListener('click',()=>{
     const nm=n.value.trim(); if(!nm){ n.focus(); return; }
-    let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
-    if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
-    rec(id,'a speaker prospect');
-    write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,pros:true,
-      st:{[venueNow()]:{on:false,prospect:true,steps:{}}}});
+    const had=samePerson({n:nm,e:e.value.trim()});
+    if(had){ fillIn(had,{e:e.value,t:t.value,c:c.value},'details for '+had.n);
+      if(!onSummit(had) && !isProspect(had)) patchSt(had.i,{prospect:true},'a speaker prospect');
+      usedExisting(had); }
+    else {
+      let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
+      if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
+      rec(id,'a speaker prospect');
+      write(id,{i:id,n:nm,e:e.value.trim(),t:t.value.trim(),c:c.value.trim(),add:true,pros:true,
+        st:{[venueNow()]:{on:false,prospect:true,steps:{}}}});
+    }
     n.value=c.value=t.value=e.value='';
     ST.clearAdd=true; render(); ST.clearAdd=false;
   });
@@ -29880,7 +29916,10 @@ function v2Person(x){
       g.appendChild(textField('Email',p.e,v=>{ patch(p.i,{e:v},'an email'); renderSoon(); }, p.i+':v2e'));
       g.appendChild(textField('Title',p.t,v=>{ patch(p.i,{t:v},'a title'); renderSoon(); }, p.i+':v2t'));
       g.appendChild(textField('Company',p.c,v=>{ patch(p.i,{c:v},'a company'); renderSoon(); }, p.i+':v2c'));
+      g.appendChild(textField('Contact Person',p.hn,v=>{ patch(p.i,{hn:v},'a contact person'); renderSoon(); }, p.i+':v2hn'));
+      g.appendChild(textField('Contact Email',p.he,v=>{ patch(p.i,{he:v},'a contact email'); renderSoon(); }, p.i+':v2he'));
       ct.body.appendChild(g);
+      ct.body.appendChild(el('div','pnote','Contact Person is whoever handles things for them (an assistant, manager or marketing contact). Their email is copied on every speaker email.'));
     } else if(x.team){ const g=el('div','pgrid');
       g.appendChild(textField('Name',x.team.n,v=>{ if(v) ttSet(x.team.id,{n:v},'a name on the MISMO team'); }, 'v2tn:'+x.team.id));
       g.appendChild(textField('Email',x.team.e,v=>ttSet(x.team.id,{e:v},'an email on the MISMO team'), 'v2te:'+x.team.id));
@@ -30375,6 +30414,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 /* what the rail's search may look through, and how to open somebody */
 window.__people={
   all:()=>all(),
+  merge:(keepId,dropId)=>v2Merge(keepId,dropId),
   /* Jonna, 2026-10-28: the General Sessions tab puts speakers on its segments. Linking
      puts them on this summit, ticks Added to the Agenda and records the segment as one
      of their sessions; unlinking only takes that segment off. */
@@ -30393,6 +30433,8 @@ window.__people={
   },
   add:o=>{
     const nm=String(o&&o.n||'').trim(); if(!nm) return null;
+    const had=samePerson({n:nm,e:o.e});
+    if(had){ fillIn(had,o,'details for '+had.n); usedExisting(had); render(); return had.i; }   /* the segment link puts them on this summit */
     let id=nm.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('p'+Date.now().toString(36));
     if(byId(id)) id=id+'-'+Date.now().toString(36).slice(-3);
     rec(id,'a new speaker');

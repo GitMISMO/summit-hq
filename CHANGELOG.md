@@ -4,6 +4,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-18
 
+- People: Contact Person and Contact Email on a speaker (an assistant, manager or marketing contact), copied on every speaker email
+- People: adding someone who is already on the list (same email, or same first and last name) uses their record instead of making a second one, from People, prospects, General Sessions and the Workshop
 - Trunk: MISMO Merch list (Amy's items with color and cost each); Bernie fills in how many, and each line and the list show the total cost
 - MISMO Team: Bernie's email is registration only (names and emails, no dates); a separate MISMO Team Rooming List goes to Ros once everyone's dates are in, and again if dates change
 - Schedule: Show on the Website Agenda publishes the whole week (every public session, all four days) for the website's agenda page, one summit at a time
