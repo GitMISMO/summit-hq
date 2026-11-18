@@ -608,6 +608,25 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 26. The Schedule's week reaches the website's agenda once switched on (website's Claude, Nov 18) */
+  await check('The Schedule reaches the website agenda once switched on', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(() => window.__hqGo('grid')); await s.page.waitForTimeout(3000);
+    expect(!(s.store['feed-website-agenda']), 'the week reached the website before it was switched on');
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    const g = (((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola) || {}).grid;
+    const ses = (g && g.sessions) || [];
+    const by = t => ses.find(x => x.title === t);
+    expect(g && g.updated && ses.length > 20 && ['Monday', 'Tuesday', 'Wednesday', 'Thursday'].every(d => ses.some(x => x.day === d)), 'the week was not written: ' + JSON.stringify(g || {}).slice(0, 300));
+    const ai = ses.find(x => /^Artificial Intelligence/.test(x.title));
+    expect(ai && ai.date === '2027-01-11' && ai.start === '09:00' && ai.end === '12:00' && ai.type === 'Community of Practice' && ai.room && /^(confirmed|tentative)$/.test(ai.status), 'a workgroup row is not right: ' + JSON.stringify(ai));
+    expect(by('Joint Committee Meeting') && by('Joint Committee Meeting').type === 'Invite Only' && !ses.some(x => /lounge|member engagement/i.test(x.title)), 'invite-only or internal items are wrong');
+    expect(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(g)), 'an email address reached the website');
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).grid, 'switching it off did not take the week off');
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
