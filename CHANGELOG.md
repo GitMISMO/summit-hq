@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-17
 
+- Board of Directors: Elections HQ notes that end a term early (Exiting Board, an approved replacement) take the member off; Take Off This Summit's Board List on a member's panel
 - Board of Directors: the list now comes from Elections HQ (whoever's term covers the summit), keeping emails, answers and registrations; a missing email is typed on the person's panel
 - People: Comp Codes (Full Lists) shows every sponsor and Champion code by company, with who has registered with each; search a company, person or code; a person's panel shows their company's codes and the code they used
 
