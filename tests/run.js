@@ -627,6 +627,45 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 27. The MISMO team: Bernie only registers; the rooming list goes to Ros once every date is in (Jonna, Nov 18) */
+  await check('MISMO team: Bernie registers, Ros gets the rooming list', async () => {
+    const store = { resume: { docs: { 'resume/slc': { details: { hotelName: 'Sample Hotel' } } } },
+      'team-travel': { docs: { 'team-travel/slc': { order: ['a', 'b'], ppl: {
+        a: { n: 'Ann Staff', e: 'ann@example.org', role: 'staff', arr: '2027-06-06', dep: '2027-06-10' },
+        b: { n: 'Bob Staff', e: 'bob@example.org', role: 'staff' } } } } } };
+    const s = await open(opts({ store }));
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2000);
+    await s.page.evaluate(() => { const p = document.getElementById('venue-pick'); p.value = 'slc'; p.dispatchEvent(new Event('change', { bubbles: true })); });
+    await s.page.waitForTimeout(4000);
+    const open_ = () => s.page.evaluate(() => { const c = [...document.querySelectorAll('.psec')].find(c => /MISMO Team/.test(c.querySelector('.psec-hd').textContent)); c.querySelector('.psec-hd').click(); });
+    await open_(); await s.page.waitForTimeout(2000);
+    const btn = re => s.page.evaluate(re => { const b = [...document.querySelectorAll('.tt-acts .btn')].find(b => new RegExp(re).test(b.textContent)); return b ? { t: b.textContent, d: b.disabled } : null; }, re);
+    const press = async re => { for (let i = 0; i < 2; i++) { await s.page.evaluate(re => [...document.querySelectorAll('.tt-acts .btn')].find(b => new RegExp(re).test(b.textContent)).click(), re); await s.page.waitForTimeout(600); } await s.page.waitForTimeout(2000); };
+    const q = () => (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []);
+    expect(/Send to Bernie \(2 Checked\)/.test((await btn('Send to Bernie')).t), 'both team members should start checked for Bernie, dates or not');
+    const ros0 = await btn('Ros');
+    expect(ros0 && ros0.d && /1 Still Need Dates/.test(ros0.t), 'the rooming list should wait until everyone has dates: ' + JSON.stringify(ros0));
+    await press('Bernie');
+    const bern = q().find(r => r.to === 'bjordan@mba.org');
+    const bt = bern ? bern.html.replace(/<[^>]+>/g, ' ') : '';
+    expect(bern && /Please register/.test(bt) && /Ann Staff/.test(bt) && /Bob Staff/.test(bt) && !/Arrives|Departs|rooming list for the/i.test(bt) && !/Here is the MISMO team going/.test(bt),
+      'Bernie\'s email should be registration only: ' + bt.slice(0, 400));
+    await s.page.evaluate(async () => { const db = await window.claude.use('db'); const d = (await db.doc('team-travel/slc').get()).data(); d.ppl.b.arr = '2027-06-07'; d.ppl.b.dep = '2027-06-10'; await db.doc('team-travel/slc').set(d); });
+    await s.page.waitForTimeout(2500); await s.page.reload(); await s.page.waitForTimeout(4000);
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(1500);
+    await s.page.evaluate(() => { const p = document.getElementById('venue-pick'); p.value = 'slc'; p.dispatchEvent(new Event('change', { bubbles: true })); });
+    await s.page.waitForTimeout(3500); await open_(); await s.page.waitForTimeout(2000);
+    const ros1 = await btn('Ros');
+    expect(ros1 && !ros1.d && /Send the Rooming List to Ros/.test(ros1.t), 'the rooming list did not open up once every date was in: ' + JSON.stringify(ros1));
+    await press('Ros');
+    const ros = q().find(r => r.to === 'rmilliken@mba.org');
+    const rt = ros ? ros.html.replace(/<[^>]+>/g, ' ') : '';
+    expect(ros && /Hi Ros/.test(rt) && /Ann Staff/.test(rt) && /Bob Staff/.test(rt) && /Arrives/.test(rt) && /Rooms needed each night/.test(rt) && /Sample Hotel/.test(rt) && /jcritchley@mismo\.org/.test(ros.cc),
+      'the rooming list to Ros is not right: ' + rt.slice(0, 500));
+    expect(/Rooming List Sent to Ros/.test((await btn('Ros')).t), 'the rooming list was not marked sent');
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
