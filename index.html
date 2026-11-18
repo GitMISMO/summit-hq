@@ -6474,7 +6474,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     let l=[]; try{ l=(MAIL() && MAIL().team && MAIL().team())||[]; }catch(e){ l=[]; }
     const out=[], seen=new Set();
     l.forEach(p=>{ const e=String(p.e||'').trim().toLowerCase(); if(!/@/.test(e) || seen.has(e)) return;
-      if(p.role==='guest') return; seen.add(e); out.push({name:p.n||e, email:e}); });
+      if(p.role==='guest'||p.role==='mba'||p.role==='speaker') return; seen.add(e); out.push({name:p.n||e, email:e}); });
     [['Jonna Critchley','jcritchley@mismo.org'],['Amy Moses','amoses@mismo.org'],['Kelly Bradshaw','kbradshaw@mismo.org']]
       .forEach(([n,e])=>{ if(!seen.has(e)){ seen.add(e); out.push({name:n,email:e}); } });
     return out;
@@ -7501,7 +7501,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Read the set-up notes</b> under How the Rooms Are Set. A note that names a room shows on that room&rsquo;s tile; press the room name to find it. Press <b>&#10003; Done</b> once it is handled.</li>
           <li><b>Fill in the Resume.</b> <b>Fill Next</b> takes you to the next detail still TBD. Open a function to see it exactly as it prints beside its fields.</li>
           <li><b>Fill in your travel form</b> when it arrives, so you are on the rooming list.</li>
-          <li><b>Book the MISMO team&rsquo;s rooms</b> from the <b>MISMO Team Rooming List</b> email, which comes once everyone&rsquo;s arrival and departure dates are in: each person&rsquo;s dates and nights (and parking, when the hotel includes it), and the rooms needed each night. If dates change afterwards, an updated list follows.</li>
+          <li><b>Book the MISMO team&rsquo;s rooms</b> from the <b>MISMO Team Rooming List</b> email, which comes once everyone&rsquo;s arrival and departure dates are in: each person&rsquo;s dates and nights (and parking, when the hotel includes it), in separate lists for the MISMO Team, MBA and Speakers, and the rooms needed each night. If dates change afterwards, an updated list follows.</li>
         </ol>
         <h4>Emails You Get</h4>
         <ul><li>New Summit Sponsor &middot; Tasks Due This Week &middot; the MISMO team travel form &middot; MISMO Team Rooming List.</li></ul>
@@ -7648,7 +7648,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
         <li><b>Facilitator</b> choices on each session come from the MMS (People and Roles &rsaquo; Facilitators), so a facilitator added or removed there shows here too. <b>Walk-on</b> types a name for this Summit only, and <b>TBD</b> holds the spot.</li>
         <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
-        <li><b>Show on the Website Agenda</b>, on the Schedule, puts this week on mismo.org&rsquo;s agenda page: every public session on all four days with its day, time, room and name, labeled the way the website shows it (Community of Practice, Development Workgroup, Office Hours, Networking, Invite Only for the Board, Sr. Advisors and the Joint Committee). A workgroup not yet confirmed goes as tentative. The Champions Lounge, Member Engagement and rooms held with nothing in them stay off, and nothing private goes (no emails, notes or headcounts). Once it is on, changes on the Schedule reach the website on their own, within about half an hour on weekdays. It is off until you turn it on, one summit at a time; click it again to take the week off. The General Sessions and Workshop running orders still go segment by segment with <b>On Website</b> on those pages.</li>
+        <li><b>Show on the Website Agenda</b>, on the Schedule, puts this week on mismo.org&rsquo;s agenda page: every public session on all four days with its day, time, room and name, labeled the way the website shows it (Community of Practice, Development Workgroup, Office Hours, Networking, Invite Only for the Board, Sr. Advisors and the Joint Committee). A workgroup not yet confirmed goes as tentative. The Champions Lounge, Member Engagement and rooms held with nothing in them stay off, and nothing private goes (no emails, notes or headcounts). Once it is on, changes on the Schedule reach the website on their own, usually within about five minutes (the website&rsquo;s job is started each time this agenda changes). It is off until you turn it on, one summit at a time; click it again to take the week off. The General Sessions and Workshop running orders still go segment by segment with <b>On Website</b> on those pages.</li>
       </ul>
       <p>General Sessions on Tuesday sit at the top of the grid in the main ballroom. MISMO Link Office Hours and the Champions Lounge are in separate rooms.</p>
     </div>
@@ -7698,7 +7698,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
-        <li><b>On Website</b>, on each segment, puts that segment on the website&rsquo;s agenda: its time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). Tick only the segments that are ready; the rest stay off until you tick them, so the agenda can go up a few segments at a time. Changes to a ticked segment reach the website on their own, and unticking it takes it off. <b>Mark All for the Website Agenda</b> at the top ticks every segment at once, and the <b>On the Website Agenda</b> figure shows how many are on. Each summit, and General Sessions and the Workshop, are marked separately.</li>
+        <li><b>On Website</b>, on each segment, puts that segment on the website&rsquo;s agenda: its time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). Tick only the segments that are ready; the rest stay off until you tick them, so the agenda can go up a few segments at a time. Changes to a ticked segment reach the website on their own, usually within about five minutes, and unticking it takes it off. <b>Mark All for the Website Agenda</b> at the top ticks every segment at once, and the <b>On the Website Agenda</b> figure shows how many are on. Each summit, and General Sessions and the Workshop, are marked separately.</li>
       </ul>
       <h4>The Workshop</h4>
       <p><b>Workshop</b> in the left menu works exactly the same way for Monday afternoon&rsquo;s Workshop. Start from a <b>Typical Workshop</b> (a welcome, sections, a break, a hands-on exercise and a wrap-up) or start blank, add sections, and drag speakers onto them from the <b>Confirmed Speakers</b> list on the right. Its start and end times come from the Workshop on the Schedule. Each Summit keeps its own Workshop, and its sections go into the event app&rsquo;s sessions file in place of the single Workshop block. A speaker put on a section shows it under <b>Sessions They Are In</b> on People, and the speaker email names it.</p>
@@ -7819,7 +7819,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           </ul></li>
         <li><b>Ask In Person or Virtual</b> on the Board of Directors card emails board members a branded note from Jonna: their registration is complimentary, and two buttons, <b>In Person</b> and <b>Virtually</b> (with a link for not able to attend). They confirm on a short MISMO page, and their answer marks them on the card by itself, with any note they add. Pick who gets it (No Answer Yet or Everyone), preview each one, and use <b>Send a Test to Me</b> first. Tim Bowler&rsquo;s, Michele Bodda&rsquo;s and Peter Grace&rsquo;s emails copy the assistants who do their scheduling. The email gives the Board meeting&rsquo;s day, hours and room from the Schedule. Alexandra Brinton and Michael Briggs from MBA are asked too (their email says their registration is complimentary as part of the Board meeting); Brian Vieaux and MISMO staff are not.</li>
         <li><b>Board of Directors</b> lists the Board from Elections HQ&rsquo;s Board list: everyone whose term covers that summit&rsquo;s first day, so a member joining January 1 is on the Winter Summit and one whose term ended December 31 is not. A note in Elections HQ that ends a term early counts too: &ldquo;Exiting Board 12/31/2026&rdquo;, or &ldquo;[name] to join 01/01/2027 &hellip; Approved&rdquo; on the member being replaced (one that still needs approval does not). Brian Vieaux is staff and is left off; the MBA guests (Alexandra Brinton and Justin Wiseman) stay on. Anyone who will not be on the Board at that summit can be taken off by hand on their panel (<b>Take Off This Summit&rsquo;s Board List</b>); they stay off even if Elections HQ still lists them. It updates itself when someone with Elections HQ access opens People; past summits keep the list they had. Elections HQ has no emails, so a new member shows <b>No email yet</b> until their email is typed on their panel (Board of Directors, Email); the ask cannot go to them until then. Mark each person <b>In Person</b>, <b>Virtual</b> or <b>Not Attending</b> (or let their answer to the email do it); the tally at the top keeps count, and the In Person number becomes the Board of Directors headcount on Hotel Specs so Rosalyn orders the right amount of food. Press <b>Registered</b> once Bernie has registered someone. Check the box at the start of each board member&rsquo;s row that Bernie should register, then press <b>Notify Bernie</b> (it shows how many are checked; click it twice to send). Everyone who answered In Person or Virtual and is not registered or sent to him yet starts checked; <b>Check Everyone Ready</b> and <b>Clear</b> sit beside the button. He gets one email with the people you ticked, within about 20 minutes, and each row shows when they were sent to him.</li>
-        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, and guests added if there is room. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
+        <li><b>MISMO Team at the Summit</b> is everyone going under the MISMO banner: staff, Ros and Bernie, the facilitators, the architect, <b>MBA</b>, <b>Speakers</b> who need a room in our block, and guests added if there is room. Pick each person&rsquo;s group on their row or panel. A speaker is registered through the speaker process, so they do not start checked for Bernie. Everyone on the list is going; what the card collects is their arrival and departure, for the hotel. <b>Ask for Travel Dates</b> opens the email first: pick who gets it (<b>Not Asked Yet</b>, <b>Waiting on Form</b> or <b>Everyone</b>), preview each one, use <b>Send a Test to Me</b>, and only then send. Each gets a branded email from you with their own link to enter when they arrive and leave and, when the hotel includes it, whether they need parking. Their answers fill in their row, the <b>Rooms by night</b> count (what to tell the hotel) and, on their own, the Resume&rsquo;s <b>Guestroom and Rate Assignments</b>: everyone with dates is added there with their Arrives &ndash; Departs. To send people to Bernie, check the box at the start of their row (everyone with dates not yet sent to him starts checked) and press <b>Send to Bernie</b>; you and Amy are copied. The team is never on Bernie&rsquo;s speaker list. Each Summit keeps its own list; a new Summit starts from the last one&rsquo;s team (names, emails and groups, without guests or dates), so you only add or take off who changed.</li>
         <li><b>Speakers file</b> and <b>Sessions file</b> download the event app&rsquo;s upload files, column for column, ready for Vanessa.</li>
         <li><b>Headshots for the event app.</b> On anyone&rsquo;s panel, <b>Download</b> under their headshot saves their picture as a JPG named for them. <b>Downloads &rsaquo; Speaker Headshots</b> saves every speaker on this summit who has one, in a single zip.</li>
       </ul>
@@ -23511,7 +23511,7 @@ startClock();
       seen.add(k); return true; });
     team.forEach(t=>{ const k=nk(t.n);
       if(!t.n || !(t.arr && t.dep) || seen.has(k)) return;
-      keep.push({name:t.n, rate:t.role==='guest'?'group':'staff', billing:'R&T to Master', vip:false, auto:true}); seen.add(k); changed=true; });
+      keep.push({name:t.n, rate:(t.role==='guest'||t.role==='mba'||t.role==='speaker')?'group':'staff', billing:'R&T to Master', vip:false, auto:true}); seen.add(k); changed=true; });
     if(changed){ setDetail('people', JSON.parse(JSON.stringify(keep))); rerenderSoon(); }
   }
   function getDetail(path){
@@ -28678,7 +28678,13 @@ function prospectAdd(){
    what to tell the hotel, and Send to Bernie emails him the team to register — they are
    never on his speaker list.
    ============================================================ */
-const TT_ROLES=[['staff','MISMO Staff'],['meetings','Meetings Team'],['facilitator','Facilitator'],['architect','Architect'],['guest','Guest']];
+/* Jonna, 2026-11-18: "like you gave me an MBA section in the MISMO team can you give me a speaker
+   section", and Ros's rooming list split into MISMO Team, MBA and Speakers. MBA and Speakers work like
+   guests (not carried to the next summit, the group rate on the Resume); a speaker is registered through
+   the speaker process, so they do not start checked for Bernie. */
+const TT_ROLES=[['staff','MISMO Staff'],['meetings','Meetings Team'],['facilitator','Facilitator'],['architect','Architect'],['mba','MBA'],['speaker','Speakers'],['guest','Guest']];
+const ttOutside=r=>r==='guest'||r==='mba'||r==='speaker';
+const ttTeamLabel=r=>r==='guest'?'MISMO Team (Guest)':r==='mba'?'MISMO Team (MBA)':r==='speaker'?'MISMO Team (Speaker)':'MISMO Team';
 const TT_ROLE=Object.fromEntries(TT_ROLES);
 const TT_SEED=[
   ['Brian Vieaux','bvieaux@mismo.org','staff'],['Jonathan Kearns','jkearns@mismo.org','staff'],
@@ -28729,7 +28735,7 @@ function ttSeed(){
   if(from){
     const fp=from.ppl||{}, ford=(from.order||Object.keys(fp)).filter(k=>fp[k]);
     Object.keys(fp).forEach(k=>{ if(ford.indexOf(k)<0) ford.push(k); });
-    ford.forEach(k=>{ const x=fp[k]; if(!x || x.role==='guest') return; ppl[k]={n:x.n, e:x.e||'', role:x.role||'staff', go:''}; order.push(k); });
+    ford.forEach(k=>{ const x=fp[k]; if(!x || ttOutside(x.role)) return; ppl[k]={n:x.n, e:x.e||'', role:x.role||'staff', go:''}; order.push(k); });
   }
   if(!order.length) TT_SEED.forEach(([n,e,role])=>{ const id=ttSlug(n).slice(0,30); ppl[id]={n,e,role,go:''}; order.push(id); });
   saveColl('team-travel',ST.travel,{ppl,order,park:false},'the MISMO team list');
@@ -28758,9 +28764,9 @@ function ttStat(){
 /* ready for Bernie: not sent to him yet. Jonna, 2026-11-18: "Bernie technically doesn't do the rooms
    just registering" — he needs who to register, not their dates, so everyone on the team list is
    ready for him (a guest only once their dates are in, since a guest comes only if there is room). */
-const ttReady=()=>ttList().filter(p=>!p.sentB && (p.role!=='guest' || ttHasDates(p)));
+const ttReady=()=>ttList().filter(p=>!p.sentB && p.role!=='speaker' && (!ttOutside(p.role) || ttHasDates(p)));
 /* the rooming list for Ros: complete once everyone on the list has both dates */
-const ttRoomSig=()=>JSON.stringify(ttList().filter(ttHasDates).map(p=>[p.n,p.arr,p.dep,ttDoc().park?p.park||'':'']).sort());
+const ttRoomSig=()=>JSON.stringify(ttList().filter(ttHasDates).map(p=>[p.n,p.arr,p.dep,ttDoc().park?p.park||'':''].concat(p.role==='mba'||p.role==='speaker'?[p.role]:[])).sort());
 function ttBSel(){ const v=venueNow();
   if(!ST.travelLoaded) return new Set();
   if(!ST.ttBSel || ST.ttBSel.v!==v) ST.ttBSel={v, s:new Set(), seen:new Set()};
@@ -28788,7 +28794,7 @@ function ttHtml(subject, paras, button, sign){
 }
 function ttLink(p,tok){
   const v=venueInfo(), q=new URLSearchParams({t:tok, v:venueNow(), n:String(p.n||'').split(/\s+/)[0]||'', s:v.name||'Summit',
-    d:seDates()||'', c:v.city||'', a:ttDay(-1), z:ttDay(3), lo:ttDay(-3), hi:ttDay(5), p:ttDoc().park?'1':'0', g:p.role==='guest'?'1':'0'});
+    d:seDates()||'', c:v.city||'', a:ttDay(-1), z:ttDay(3), lo:ttDay(-3), hi:ttDay(5), p:ttDoc().park?'1':'0', g:ttOutside(p.role)?'1':'0'});
   return TT_FORM+'?'+q.toString();
 }
 /* queue one email through the "Summit HQ - Speaker Emails" flow (every minute) */
@@ -28810,7 +28816,7 @@ function ttEmail(p,tok){
     'You’re on the list to attend the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+(hotel?' at the '+hotel:v.city?' in '+v.city:'')+' with the MISMO team.',
     'So we can register you with the hotel and give them our rooming list, please tell us when you’re arriving and when you’re leaving'
       +(ttDoc().park?', and whether you’ll need parking.':'.')+' It takes about a minute.'];
-  if(p.role==='guest') paras.push('We’ll confirm your room once we know we have space in our block.');
+  if(ttOutside(p.role)) paras.push('We’ll confirm your room once we know we have space in our block.');
   paras.push('If anything changes, use the same link again.');
   return {subject, html:ttHtml(subject, paras, {url:ttLink(p,tok), label:'Enter My Travel Dates'})};
 }
@@ -28835,12 +28841,12 @@ async function ttSendForms(ids){
    Jonna, 2026-11-18: Bernie only registers them; the rooms are Ros's, so his email has no dates and
    the rooming list goes to Ros on its own once every date is in (ttSendRos). */
 const TT_ROS={name:'Rosalyn Milliken', first:'Ros', email:'rmilliken@mba.org'};
-function ttMailTable(heads, rows){
+function ttMailTable(heads, rows, widths){
   const e=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const td='padding:10px 8px;border-bottom:1px solid #e3e8ee;font-family:Arial,Helvetica,sans-serif;font-size:13.5px;line-height:1.4;color:#1b2733;vertical-align:top';
   const th='padding:8px;border-bottom:2px solid #74bfeb;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#0d314c;text-align:left';
-  return '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:6px 0 16px"><tbody><tr>'
-    +heads.map(h=>'<td style="'+th+'">'+e(h)+'</td>').join('')+'</tr>'
+  return '<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:6px 0 16px'+(widths?';table-layout:fixed':'')+'"><tbody><tr>'
+    +heads.map((h,k)=>'<td style="'+th+(widths&&widths[k]?';width:'+widths[k]:'')+'">'+e(h)+'</td>').join('')+'</tr>'
     +rows.map(r=>'<tr>'+r.map((c,k)=>'<td style="'+td+'">'+(c&&c.html!=null? c.html : (k===0? '<b style="color:#0d314c">'+e(c)+'</b>' : e(c)))+'</td>').join('')+'</tr>').join('')
     +'</tbody></table>';
 }
@@ -28854,8 +28860,7 @@ async function ttSendBernie(ids){
   const subject='MISMO Team to Register — '+(v.name||'Summit')+' ('+go.length+')';
   const html=ttHtml('MISMO Team to Register',['Hi Bernie,',
     'Please register the '+(go.length===1?'MISMO team member':go.length+' MISMO team members')+' below for the '+(v.name||'Summit')+(seDates()?' ('+seDates()+')':'')+'. They are attending as part of the MISMO team.',
-    {html:table},
-    'Hotel rooms are not needed from you; Ros gets the rooming list separately once everyone’s travel dates are in.']);
+    {html:table}]);
   await ttQueue([{id:'ttb-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:ttWho(),
     to:'bjordan@mba.org', cc:TT_JONNA.email+'; '+SE_AMY.email, replyTo:TT_JONNA.email, subject, html, person:'', summit:venueNow(), graphic:''}]);
   const at=new Date().toISOString(), ppl=Object.assign({},ttDoc().ppl||{});
@@ -28872,8 +28877,14 @@ async function ttSendRos(){
   const park=!!ttDoc().park;
   const nights=p=>Math.max(0,Math.round((Date.parse(p.dep+'T12:00:00Z')-Date.parse(p.arr+'T12:00:00Z'))/86400000));
   const people=l.slice().sort((a,b)=>String(a.arr).localeCompare(String(b.arr))||String(a.n).localeCompare(String(b.n)));
-  const table=ttMailTable(['Name','Arrives','Departs','Nights'].concat(park?['Parking']:[]),
-    people.map(p=>[p.n, ttNice(p.arr), ttNice(p.dep), String(nights(p))].concat(park?[p.park==='yes'?'Yes':p.park==='no'?'No':'—']:[])));
+  /* one table each for the MISMO Team, MBA and Speakers (Jonna, 2026-11-18) */
+  const ttGroupOf=p=>p.role==='mba'?'mba':p.role==='speaker'?'speaker':'team';
+  const groups=[['team','MISMO Team'],['mba','MBA'],['speaker','Speakers']].map(([k,lab])=>[lab, people.filter(p=>ttGroupOf(p)===k)]).filter(g=>g[1].length);
+  const esc=x=>String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const table=groups.map(([lab,list])=>'<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;color:#0d314c;margin:14px 0 2px">'+esc(lab)+' ('+list.length+')</div>'
+    +ttMailTable(['Name','Arrives','Departs','Nights'].concat(park?['Parking']:[]),
+      list.map(p=>[p.n, ttNice(p.arr), ttNice(p.dep), String(nights(p))].concat(park?[p.park==='yes'?'Yes':p.park==='no'?'No':'—']:[])),
+      park? ['34%','20%','20%','12%','14%'] : ['38%','24%','24%','14%'])).join('');
   const nts=ttNights().filter(x=>x.n);
   const byNight=ttMailTable(['Night','Rooms'], nts.map(x=>[ttNice(x.iso)+' night', String(x.n)]));
   const total=nts.reduce((a,x)=>a+x.n,0);
@@ -28881,7 +28892,7 @@ async function ttSendRos(){
   const subject='MISMO Team Rooming List'+(again?' (Updated)':'')+' — '+(v.name||'Summit');
   const html=ttHtml('MISMO Team Rooming List',['Hi '+TT_ROS.first+',',
     (again? 'Here is the updated rooming list' : 'Here is the rooming list')+' for the MISMO team at the '+(v.name||'Summit')+(hotel?' at the '+hotel:'')+'. Everyone’s arrival and departure dates are in, so this is the complete list for the reservations: '
-      +people.length+' '+(people.length===1?'person':'people')+', '+total+' room night'+(total===1?'':'s')+'.',
+      +people.length+' '+(people.length===1?'person':'people')+', '+total+' room night'+(total===1?'':'s')+(groups.length>1?', split into '+groups.map(g=>g[0]).join(', ').replace(/, ([^,]*)$/,' and $1'):'')+'.',
     {html:table},
     'Rooms needed each night:',
     {html:byNight},
@@ -29014,7 +29025,7 @@ function ttSection(){
     /* the people, by group */
     TT_ROLES.forEach(([rk,rl])=>{
       const grp=l.filter(p=>(p.role||'staff')===rk); if(!grp.length) return;
-      box.appendChild(el('div','bd-grp tt-grp', rl+(rk==='guest'?' — added if we have room':'')));
+      box.appendChild(el('div','bd-grp tt-grp', rl+(rk==='guest'?' — added if we have room':rk==='speaker'?' — rooms only; Bernie registers speakers through the speaker process':'')));
       grp.forEach(p=>box.appendChild(ttRow(p)));
     });
     box.appendChild(ttAdd());
@@ -29626,7 +29637,7 @@ function v2Roles(x){
   const r=[];
   if(x.spk) r.push('Speaker');
   if(x.board) r.push(x.board.r==='Ex-Officio'?'Board (Ex-Officio)':x.board.r==='MBA'?'Board (From MBA)':'Board of Directors');
-  if(x.team) r.push(x.team.role==='guest'?'MISMO Team (Guest)':'MISMO Team');
+  if(x.team) r.push(ttTeamLabel(x.team.role));
   if(x.spon.length || x.sponP) r.push('Sponsor');
   if(x.pros) r.push('Speaker Prospect');
   if(!r.length && x.p) r.push('Master List');
@@ -30213,7 +30224,7 @@ function v2Speaker(x){
   return s;
 }
 function v2Team(x){
-  const t=x.team, s=v2Sec(t.role==='guest'?'MISMO Team (Guest)':'MISMO Team');
+  const t=x.team, s=v2Sec(ttTeamLabel(t.role));
   const g=el('div','v2-g3');
   const dt=(lab,k)=>{ const w=el('label','fldmini'); w.appendChild(el('label',null,lab)); const i=document.createElement('input'); i.type='date'; i.value=t[k]||''; i.min=ttDay(-5); i.max=ttDay(7);
     i.dataset.keep='v2tt-'+k+':'+t.id; i.addEventListener('change',()=>ttSet(t.id,{[k]:i.value},'travel dates')); w.appendChild(i); return w; };

@@ -4,6 +4,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-18
 
+- MISMO Team: MBA and Speakers sections; Ros's rooming list is split into MISMO Team, MBA and Speakers; Bernie's email drops the hotel-rooms line, and speakers don't start checked for him
+- Website agenda: a change now reaches mismo.org's Summit agenda in about five minutes; summit-hq-data starts the website's Summit Agenda Feed job each time the agenda changes (Website Agenda Kick) instead of waiting for its timer
 - People: Contact Person and Contact Email on a speaker (an assistant, manager or marketing contact), copied on every speaker email
 - People: adding someone who is already on the list (same email, or same first and last name) uses their record instead of making a second one, from People, prospects, General Sessions and the Workshop
 - Trunk: MISMO Merch list (Amy's items with color and cost each); Bernie fills in how many, and each line and the list show the total cost
