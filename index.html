@@ -7368,6 +7368,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Champion Codes</b> on Registration: until you switch it to <b>Live</b>, every Champion and Bernie email comes to you only, marked [Test]. <b>Email Wording and Tests</b> &rsaquo; <b>Send Jonna Every Test Email</b> sends you one of each. Add contacts on any Champion row Member 360 has none for.</li>
           <li><b>Watch Ready for the Hotel</b> on Hotel Specs and the readiness on the Resume, and issue each new resume version from <b>Versions &amp; Changes</b>.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
+          <li><b>Name tag scanners (TrackPod).</b> On People, <b>Downloads &rarr; TrackPod Scanner Sheet</b> fills TrackPod&rsquo;s Excel from the Schedule: the Client and Event rows, and a Sessions row for every session the door is scanned at (the workgroup meetings, Newcomer Orientation, the Workshop and the Joint Committee; not General Sessions, the Board, Sr. Advisors, receptions or breakfasts), with its times, room, code and description. Check it, add a description for anything new, and send it to TrackPod. The shipping details for the scanners go in the Resume under <b>Overview &rarr; Shipping materials</b>.</li>
           <li><b>Keep this Help page current</b> whenever the way of working changes.</li>
         </ol>
         <h4>Emails You Get</h4>
@@ -7719,7 +7720,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>One list of everyone at this summit</b>, one row a person whatever their roles: a speaker who is also on the MISMO Team is one row. The boxes on top are the lists behind them: click <b>Need Something From Us</b>, <b>Speakers</b>, <b>Board of Directors</b>, <b>MISMO Team</b>, <b>Sponsors</b>, <b>Speaker Prospects</b> or <b>Master List of Speakers</b> to show just those people. Someone on the master list who is not on this summit opens the same way, with <b>+ Speaker on This Summit</b> and <b>+ Speaker Prospect</b>. The search also looks through the master list.</li>
         <li><b>Click anyone</b> and everything about them opens on the right, in the same panel as everywhere else (the expand button makes it wide, with two columns): the one next thing and whose it is; their contact details; the headshot and bio side by side (drop a photo on the headshot, or their Word, PDF or text bio file on the bio, and its words go in ready to edit); then a section for each role they hold: Speaker (the speaker email, the form link, weekly follow-ups, the five steps and their sessions), MISMO Team (arrives, departs, group, parking, the travel form and Bernie), Board of Directors (in person, virtually or not attending, the ask and Bernie), Sponsor (from the portal, with the agenda mark) and Speaker Prospect; then the note for this summit and their history. Every change saves as you go.</li>
         <li><b>Hotel Nights</b> shows the MISMO Team&rsquo;s stays as one bar a person with the rooms each night, and anything to check before it goes to the hotel.</li>
-        <li><b>Emails &amp; Asks</b>, <b>Full Lists</b>, <b>Downloads</b> and <b>+ Add a Person</b> open the very same tools as the cards (Choose Speakers to Email, the Board ask, Notify Bernie, the travel ask, the full Board and Team lists, the speakers and sessions files). Every email still opens its preview first; nothing goes out until you press Send.</li>
+        <li><b>Emails &amp; Asks</b>, <b>Full Lists</b>, <b>Downloads</b> and <b>+ Add a Person</b> open the very same tools as the cards (Choose Speakers to Email, the Board ask, Notify Bernie, the travel ask, the full Board and Team lists, the speakers and sessions files). <b>Downloads</b> also has the <b>TrackPod Scanner Sheet</b> for the name tag scanners. Every email still opens its preview first; nothing goes out until you press Send.</li>
       </ul>
       <h4>A Speaker</h4>
       <ol class="hp-steps">
@@ -7906,7 +7907,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed November 17, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed November 18, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
@@ -24742,7 +24743,7 @@ startClock();
      A backup with a lot of headshots in it is a big file; that is the cost of it being
      a real backup. */
   const COLLECTIONS=['meta','summits','tasks','discussion','notes','schedule','resume','people','photos','sponsors','trunk','registration','private',
-    'board','team-travel','speaker-email','sponsor-agenda','sponsor-email','champion-codes','archive'];
+    'board','team-travel','speaker-email','sponsor-agenda','sponsor-email','champion-codes','trackpod','archive'];
   const VENUES=(()=>{ try{ const v=(window.__scheduleVenues? window.__scheduleVenues() : []).map(x=>x.id); return v.length? v : ['nola','slc','bethesda']; }catch(e){ return ['nola','slc','bethesda']; } })();
   const mk=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
   let DB=null;
@@ -29292,6 +29293,128 @@ async function sessionFile(){
   await saveBlob(new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv'}), slugSummit()+'-sessions.csv');
 }
 
+/* ============================================================
+   THE NAME TAG SCANNERS' SHEET FOR TRACKPOD (Jonna, 2026-11-18: "did i build an automation to
+   complete the name tag scanner sheet?" — the task "Name Tag Scanners: Update TP Excel")
+   TrackPod's own template (lib/tp-template.xlsx, Jonna's 2026 Spring copy with the example rows
+   and her phone and email taken out) filled from this summit's Schedule: the Event row, and one
+   Sessions row for every session the door is scanned at, which is the workgroup meetings, the
+   Newcomer Orientation, the Workshop and the Joint Committee. Not General Sessions, the Board,
+   Sr. Advisors, the receptions, breakfasts, the lounge or office hours. The template's red
+   headers, column widths and Scan Directions dropdown are kept: only the rows change.
+   The Client row's phone and email live in Summit HQ's data (trackpod/settings), not in the page.
+   ============================================================ */
+const TP_STEM={ai:'AICOP',awg:'AWG',pavs:'PAVSCOP',newcomer:'NewO',workshop:'WKSHP','digital-interop':'DICOP',api:'APICOP',
+  servicing:'SVCCOP',transfers:'STDWG',bgloss:'BGLOSS',title:'TCCOP',emortgage:'EMORT','mtg-compliance':'MCDDWG',mi:'MICOP',
+  dgm:'DGMCOP','joint-committee':'JOINT',core:'COREDWG','decision-modeling':'DMCOP',origination:'ORIGCOP',secondary:'SECCOP',
+  hero:'HEROCOP',bpm:'BPMCOP','housing-counseling':'HCDWG',tie:'TIECOP',credit:'CRCOP',triparty:'EMCADWG'};
+/* the descriptions from the 2026 Spring sheet; anything new is left for TrackPod's sheet to fill */
+const TP_DESC={
+  AICOP:'The AI Community of Practice brings together industry experts to advance AI standards and help the mortgage community stay aligned on emerging AI trends and regulations.',
+  AWG:'The AWG provides overarching technical direction for MISMO work products and serves as the technical liaison group for all CoPs',
+  PAVSCOP:'The Property and Valuation Services Community of Practice develops and maintains MISMO standards and guidance supporting residential property data, valuation processes, and collateral risk assessment.',
+  NewO:'Join this session to learn how to navigate the Summit, engage in workgroups, and maximize the value of your experience. Lunch will be provided, so come ready to connect and learn.',
+  DICOP:'Digital Interoperability brings together eVault and document vendors, lenders, and the GSEs to improve scalable eNote adoption.',
+  APICOP:'The API Community of Practice aligns the industry on API design and implementation using the MISMO Reference Model.',
+  STDWG:'This group builds standards to streamline servicing transfers and reduce negative impacts on investors and borrowers.',
+  BGLOSS:'The Business Glossary Community of Practice maintains a clear, business‑friendly set of standardized mortgage industry terms to make MISMO standards more accessible and improve consistency across the industry.',
+  TCCOP:'The Title and Closing Community of Practice develops and maintains MISMO standards and guidance to support title, settlement, and closing processes across the mortgage industry.',
+  EMORT:'The eMortgage CoP develops specifications and guidance for electronic mortgage documents throughout the loan lifecycle.',
+  MCDDWG:'The MCD DWG maintains the Mortgage Compliance Dataset to help lenders provide standardized data during regulatory examinations.',
+  SVCCOP:'The Servicing CoP creates standards for electronic data exchange supporting all aspects of loan servicing.',
+  MICOP:'The MI CoP develops and maintains standards that support the mortgage insurance lifecycle from origination through servicing.',
+  DGMCOP:'DG&M promotes data governance and management best practices across the mortgage industry.',
+  JOINT:'This is a meeting of both the RSGC and CoC.',
+  COREDWG:'The group advances alignment around digital notes for commercial and other real estate transactions.',
+  DMCOP:'This group standardizes decision logic using the MISMO Reference Model to improve consistency between business rules and data.',
+  ORIGCOP:'The Origination CoP builds standards and guidance to support data and processes across the origination lifecycle.',
+  SECCOP:'The Secondary CoP aligns the industry on data and processes that support secondary market transactions and loan delivery.',
+  HEROCOP:'HERO identifies emerging risks and opportunities across the housing ecosystem to create resources that support consumers and stakeholders.',
+  BPMCOP:'This group aligns mortgage business processes with MISMO standards to map how MISMO products support the loan lifecycle.',
+  HCDWG:'This group standardizes housing counseling data to improve consistency, reporting, and consumer outcomes.',
+  TIECOP:'TIE identifies and evaluates emerging technologies that can strengthen mortgage processes, data standards, and industry innovation.'};
+function tpSessions(){
+  let feed=null; try{ feed=window.__resumeFunctions?window.__resumeFunctions():null; }catch(e){}
+  if(!feed || !feed.functions) return [];
+  const days=(feed.days||[]).map(d=>d.id);
+  const key=f=>String(f.key||f.sid||'');
+  const scanned=f=>{ const k=key(f), n=String(f.full||f.name||'');
+    if(/^workshop/.test(k) || k==='newcomer' || k==='joint-committee') return true;
+    if(f.kind!=='wg') return false;
+    return !(k==='bod' || /board of directors|advisors|breakfast|invite only|reception|lounge|office hours/i.test(n)); };
+  const clean=f=>{ let n=String(f.full||f.name||'').split(/\s+[—–-]\s+/)[0];
+    if(/^workshop/.test(key(f))){ const v=venueInfo(); if(v.workshopTitle && !/\[name\]/i.test(v.workshopTitle)) n=v.workshopTitle; }
+    return n.replace(/\s*\((?:NEW|[A-Z]{2,6})\)\s*/g,' ').replace(/\bCoP\b/g,'COP').replace(/\s+/g,' ').trim(); };
+  const stem=f=>{ const k=key(f).replace(/@.*$/,''); if(TP_STEM[k]) return TP_STEM[k];
+    const n=clean(f), kind=(/\bDWG\b/i.exec(n)||/\bCOP\b/i.exec(n)||[''])[0].toUpperCase();
+    return n.replace(/\b(COP|DWG|and|of|the|for|&)\b/gi,' ').split(/\s+/).filter(Boolean).map(w=>w[0].toUpperCase()).join('').slice(0,6)+kind; };
+  return feed.functions.filter(scanned).map(f=>({name:clean(f), stem:stem(f), room:f.room||'', idx:days.indexOf(f.day), start:f.start, end:f.end}))
+    .filter(x=>x.idx>=0 && x.start!=null && x.end!=null)
+    .sort((a,b)=>a.idx-b.idx || a.start-b.start || String(a.room).localeCompare(String(b.room)));
+}
+function tpTimezone(){ const c=String(venueInfo().city||'')+' '+String(venueInfo().name||'');
+  return /new orleans|chicago|dallas|houston|nashville|minneapolis|st\.? louis|kansas city|austin|san antonio/i.test(c)? 'CST'
+    : /salt lake|denver|phoenix|albuquerque|boise/i.test(c)? 'MST'
+    : /los angeles|san francisco|san diego|seattle|portland|las vegas/i.test(c)? 'PST' : 'EST'; }
+async function tpUnzip(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf);
+  let eocd=-1; for(let i=u8.length-22;i>=Math.max(0,u8.length-66000);i--){ if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; } }
+  if(eocd<0) throw new Error('the TrackPod template could not be read');
+  const n=dv.getUint16(eocd+10,true); let p=dv.getUint32(eocd+16,true); const out=[];
+  for(let k=0;k<n;k++){
+    const method=dv.getUint16(p+10,true), csize=dv.getUint32(p+20,true), nlen=dv.getUint16(p+28,true),
+          xlen=dv.getUint16(p+30,true), clen=dv.getUint16(p+32,true), off=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nlen)); p+=46+nlen+xlen+clen;
+    const lnl=dv.getUint16(off+26,true), lxl=dv.getUint16(off+28,true), start=off+30+lnl+lxl, raw=u8.subarray(start,start+csize);
+    let data=raw; if(method!==0){ const ds=new DecompressionStream('deflate-raw'); data=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(ds)).arrayBuffer()); }
+    out.push({name, data:new Uint8Array(data)});
+  }
+  return out;
+}
+async function trackpodFile(){
+  const v=venueInfo(), list=tpSessions();
+  if(!list.length){ alert('Nothing on the Schedule for this summit yet.'); return; }
+  let first=''; try{ first=(window.ResumeModel&&window.ResumeModel.firstDayFrom)?window.ResumeModel.firstDayFrom(v.dates||''):''; }catch(e){}
+  if(!first){ alert('This summit has no dates on the Schedule yet.'); return; }
+  const [Y,M,D]=first.split('-').map(Number), year=String(Y);
+  const serial=(idx,mins)=>(Date.UTC(Y,M-1,D+idx,Math.floor(mins/60),mins%60)-Date.UTC(1899,11,30))/86400000;
+  let client={}; try{ const sn=ST.db? await ST.db.doc('trackpod/settings').get() : null; client=(sn&&sn.exists&&sn.data()&&sn.data().client)||{}; }catch(e){}
+  const C=Object.assign({company:'MISMO', address1:'1919 M Street NW', address2:'5th Floor', city:'Washington', state:'DC', postal:'20036', country:'USA', phone:'', email:''}, client);
+  const r=await fetch('lib/tp-template.xlsx',{cache:'no-store'}); if(!r.ok){ alert('The TrackPod template could not be loaded.'); return; }
+  const files=await tpUnzip(await r.arrayBuffer());
+  const X=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const str=(ref,val,st)=>'<c r="'+ref+'"'+(st!=null?' s="'+st+'"':'')+' t="inlineStr"><is><t xml:space="preserve">'+X(val)+'</t></is></c>';
+  const num=(ref,val,st)=>'<c r="'+ref+'"'+(st!=null?' s="'+st+'"':'')+'><v>'+val+'</v></c>';
+  const firstDay=Math.min(...list.map(x=>x.idx)), lastDay=Math.max(...list.map(x=>x.idx));
+  const evStart=Math.min(...list.filter(x=>x.idx===firstDay).map(x=>x.start)), evEnd=Math.max(...list.filter(x=>x.idx===lastDay).map(x=>x.end));
+  const evName=String(v.name||'Summit').replace(/^(\d{4})\s+(?!MISMO)/,'$1 MISMO ');
+  /* row 2 of each sheet replaced; the header row and the "Red * Required" note stay as they are */
+  const swapRow2=(xml,row)=>xml.replace(/<row r="2"[\s\S]*?<\/row>/,row);
+  const edit={
+    'xl/worksheets/sheet1.xml':xml=>swapRow2(xml,'<row r="2" spans="1:10">'+'<c r="A2" s="4"/>'+str('B2',C.company)+str('C2',C.address1)+str('D2',C.address2)+str('E2',C.city)+str('F2',C.state)
+        +(/^\d+$/.test(String(C.postal))? num('G2',C.postal,36) : str('G2',C.postal,36))+str('H2',C.country)+str('I2',C.phone,36)+str('J2',C.email,37)+'</row>'),
+    'xl/worksheets/sheet2.xml':xml=>swapRow2(xml,'<row r="2" spans="1:9">'+str('B2',tpTimezone())+str('C2','Dev to Complete')+str('D2','BoD (*this row will always be "BoD")')
+        +str('G2',evName)+num('H2',serial(firstDay,evStart),38)+num('I2',serial(lastDay,evEnd),38)+'</row>'),
+    'xl/worksheets/sheet3.xml':xml=>{
+      const rows=list.map((x,i)=>{ const n=i+2;
+        return '<row r="'+n+'" spans="1:13" ht="12.75" customHeight="1">'
+          +(i===0? str('A'+n,'[leave empty]',12)+str('B'+n,'[leave empty]',12) : '<c r="A'+n+'" s="12"/><c r="B'+n+'" s="12"/>')
+          +str('C'+n,x.name,13)+str('D'+n,'Session key from AMS',13)+num('E'+n,serial(x.idx,x.start),14)+num('F'+n,serial(x.idx,x.end),14)
+          +str('G'+n,'1',15)+str('H'+n,'0',15)+str('I'+n,'1',15)+str('J'+n,x.stem+year,13)+str('K'+n,TP_DESC[x.stem]||'',13)+str('L'+n,x.room,13)+str('M'+n,'Scan In',13)+'</row>'; }).join('');
+      const last=list.length+1;
+      return xml.replace(/(<sheetData>[\s\S]*?<\/row>)[\s\S]*?<\/sheetData>/, (m,head)=>head+rows+'</sheetData>')
+        .replace(/<dimension ref="[^"]*"\/>/,'<dimension ref="A1:M'+last+'"/>')
+        .replace(/<xm:sqref>M2:M\d+<\/xm:sqref>/,'<xm:sqref>M2:M'+Math.max(last,26)+'</xm:sqref>');
+    }
+  };
+  const out=files.map(f=>{ if(!edit[f.name]) return f;
+    return {name:f.name, data:new TextEncoder().encode(edit[f.name](new TextDecoder().decode(f.data)))}; });
+  const name='TP - '+evName+'.xlsx';
+  await saveBlob(new Blob([zipFiles(out)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}), name);
+  return {name, sessions:list.length};
+}
+window.__trackpod={sessions:tpSessions, file:trackpodFile};
+
 /* ---------- wiring ---------- */
 /* ============================================================
    THE NEW PEOPLE PAGE (Jonna, 2026-11-07: "there really has to be a better organized way
@@ -29471,6 +29594,7 @@ function v2Render(host){
   bar.appendChild(v2Menu('Downloads',[
     ['Speakers File','For the event app upload',()=>appFile()],
     ['Sessions File','Session Keys matching the speakers file',()=>sessionFile()],
+    ['TrackPod Scanner Sheet','The name tag scanners\u2019 Excel for TrackPod: every scanned session, its room and times',()=>trackpodFile()],
     ['Speaker Headshots','Every speaker\u2019s headshot as a JPG named for them, in one zip',()=>downloadHeadshots()],
     ['Sponsors File','Each approved sponsor: level, what they sponsor, website and logo',()=>sponsorFile()]
   ]));

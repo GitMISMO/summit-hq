@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-18
+
+- People: Downloads › TrackPod Scanner Sheet fills TrackPod's name tag scanner Excel (their template, kept as it is) from the Schedule: the event, and every scanned session with its times, room, code and description
+
 ## 2026-11-17
 
 - Board of Directors: Elections HQ notes that end a term early (Exiting Board, an approved replacement) take the member off; Take Off This Summit's Board List on a member's panel

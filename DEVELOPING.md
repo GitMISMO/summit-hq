@@ -43,6 +43,10 @@ Registration › Champion Codes replaces the Summit Codes - MISMO Champions Smar
 
 **Comp Codes** on People (`compCodes()`, card `codesOpen`, and `v2Codes` on a person's panel) only reads: sponsor codes from the portal rows (`compCode`, `numComps`), Champion codes from `window.__champions.rows`, and who registered with each from `window.__champions.registrants` (the Friday report's campaign code column). Companies are matched by name with suffixes dropped (`coKey`). Speakers have no comp code.
 
+## TrackPod Scanner Sheet
+
+`lib/tp-template.xlsx` is TrackPod's import template (Jonna's 2026 Spring copy with the example rows, her phone and email, and file metadata taken out). `trackpodFile()` on People unzips it in the page, replaces row 2 of Client and Event and the data rows of Sessions with inline-string cells that keep the template's style ids, updates the Scan Directions dropdown range, and zips it back (stored). Which sessions are scanned, their codes (`TP_STEM` + year) and descriptions (`TP_DESC`) are in the page. The Client row's phone and email come from `trackpod/settings` (`client`) in Summit HQ's data, never the repo.
+
 ## System Health
 
 **System Health** in the left menu shows saving, storage, every incoming feed and the email flows, and when each last ran. An error catcher in the page `<head>` (`window.__hqErr`) records every error to `feeds/health-log`. The **Summit HQ - Daily Health Check** flow reads that log and the email feeds every day at 12:13 PM Mountain and emails Jonna only when something is wrong.
