@@ -666,6 +666,20 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 28. The Trunk's MISMO Merch: Amy's items with cost each; Bernie fills in how many (Amy, Nov 18) */
+  await check('Trunk MISMO Merch: Bernie fills in how many, totals follow', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(() => window.__hqGo('trunk')); await s.page.waitForTimeout(3000);
+    const rows = s.page.locator('#tkp-floor .tkl-row[data-s="swag"]');
+    expect(await rows.count() === 11, 'the MISMO Merch list should start with Amy\'s 11 items: ' + await rows.count());
+    expect(/11 still need a count/.test(await s.page.locator('#tkl-swag').textContent()), 'the heading should say every item needs a count');
+    await rows.first().locator('.tkq button').nth(1).click(); await rows.first().locator('.tkq button').nth(1).click(); await s.page.waitForTimeout(1500);
+    expect(/\$210\.00/.test(await rows.first().textContent()) && /10 still need a count · Total \$210\.00/.test(await s.page.locator('#tkl-swag').textContent()), 'the line and list totals did not follow the count');
+    const st = s.store.trunk && s.store.trunk.docs && s.store.trunk.docs['trunk/standing'];
+    expect(st && st.swag && st.swag[0].q === '2' && st.swag[0].c === '105.00' && st.swag[0].n === 'Navy', 'the count was not saved with the item: ' + JSON.stringify(st && st.swag && st.swag[0]));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
