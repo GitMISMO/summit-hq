@@ -4386,6 +4386,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button class="btn ghost" id="add-session" type="button">+ New session</button>
     <button class="btn ghost" id="pdf-btn" type="button">Print / PDF</button>
     <button class="btn ghost" id="survey-btn" type="button" title="Email each workgroup's Chair(s) and Vice Chair the draft grid">Chair Survey</button>
+    <button class="btn ghost" id="grid-web" type="button" aria-pressed="false">Show on the Website Agenda</button>
     <button class="btn ghost" id="grid-big" type="button" aria-pressed="false" title="Open the week full screen, as large as it fits (Esc closes)"><svg viewBox="0 0 16 16" aria-hidden="true" width="13" height="13" style="vertical-align:-2px;margin-right:6px"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>Enlarge</button>
     <span class="spacer"></span>
     <label class="gfind"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
@@ -7598,6 +7599,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
         <li><b>Facilitator</b> choices on each session come from the MMS (People and Roles &rsaquo; Facilitators), so a facilitator added or removed there shows here too. <b>Walk-on</b> types a name for this Summit only, and <b>TBD</b> holds the spot.</li>
         <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
+        <li><b>Show on the Website Agenda</b>, on the Schedule, puts this week on mismo.org&rsquo;s agenda page: every public session on all four days with its day, time, room and name, labeled the way the website shows it (Community of Practice, Development Workgroup, Office Hours, Networking, Invite Only for the Board, Sr. Advisors and the Joint Committee). A workgroup not yet confirmed goes as tentative. The Champions Lounge, Member Engagement and rooms held with nothing in them stay off, and nothing private goes (no emails, notes or headcounts). Once it is on, changes on the Schedule reach the website on their own, within about half an hour on weekdays. It is off until you turn it on, one summit at a time; click it again to take the week off. The General Sessions and Workshop running orders still go segment by segment with <b>On Website</b> on those pages.</li>
       </ul>
       <p>General Sessions on Tuesday sit at the top of the grid in the main ballroom. MISMO Link Office Hours and the Champions Lounge are in separate rooms.</p>
     </div>
@@ -25342,6 +25344,7 @@ html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-w
 #app-people .v2-seg2{align-self:flex-start}
 #app-people .v2-off-btn{align-self:flex-start}
 #app-people .v2-spon+.v2-spon{border-top:1px solid var(--line);padding-top:8px}
+#app-grid #grid-web.on{background:var(--good,#1f7a4d);border-color:var(--good,#1f7a4d);color:#fff}
 #app-gs .gs-web-on,#app-wk .gs-web-on{background:var(--good,#1f7a4d);border-color:var(--good,#1f7a4d);color:#fff}
 :is(#app-gs,#app-wk) .gs-webpick.on{color:var(--good,#1f7a4d);font-weight:600}
 #app-people .v2-pager{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 4px;font-size:13px;color:var(--ink-2)}
@@ -31577,7 +31580,7 @@ function webSync(){
     let cur={}; try{ const s=await db.doc('feeds/website-agenda').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
     const summits=JSON.parse(JSON.stringify(cur.summits||{})), v=venue(), one=Object.assign({},summits[vid]||{});
     if(want) one[C.p]=want; else delete one[C.p];
-    if(one.gs||one.wk){ Object.assign(one,{name:(v&&v.name)||'', city:(v&&v.city)||'', dates:(v&&v.dates)||''}); summits[vid]=one; }
+    if(one.gs||one.wk||one.grid){ Object.assign(one,{name:(v&&v.name)||'', city:(v&&v.city)||'', dates:(v&&v.dates)||''}); summits[vid]=one; }
     else delete summits[vid];
     if(JSON.stringify(cur.summits||{})===JSON.stringify(summits)){ webLast=sig; return; }
     try{ await db.doc('feeds/website-agenda').set({updatedAt:new Date().toISOString(), summits}); webLast=sig; }catch(e){}
@@ -32084,6 +32087,114 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
   kinds:['Welcome','Section','Presentation','Panel','Hands-On Exercise','Breakout','Demo','Case Study','Discussion','Q&A','Break','Networking','Closing','Other'],
   startBtn:'Start From a Typical Workshop', startNote:'Start from a typical Monday afternoon workshop — welcome, sections, a break, a hands-on exercise and a wrap-up — and change it, or start with a blank page.',
   tpl:[['Welcome','Welcome and What We Will Cover',10],['Section','',40],['Panel','',40],['Break','Break',15],['Hands-On Exercise','',45],['Q&A','Questions and Discussion',20],['Closing','Wrap-Up and Next Steps',10]]});
+
+/* ============================================================
+   THE SCHEDULE ON THE WEBSITE'S AGENDA (website's Claude, via Jonna, 2026-11-18: "publish the
+   grid's sessions in the feed too", so a change on the Schedule reaches mismo.org/events/agenda
+   instead of being typed there by hand)
+   With Show on the Website Agenda on for a summit (the button on the Schedule, one summit at a
+   time), feeds/website-agenda carries summits.<id>.grid: every public item on the week, all four
+   days, with day, date, start and end (24-hour, the hotel's local time), type (as the website's
+   cards label them), title, room and status (confirmed, or tentative for a workgroup not yet
+   confirmed). Board, Sr. Advisors and the Joint Committee go as Invite Only, as the website shows
+   them; the Champions Lounge, Member Engagement and rooms held with nothing in them stay off.
+   Public only: no emails, phones, notes or attendance. General Sessions and the Workshop are in
+   the grid as one block each too; their running orders stay in gs and wk.
+   The switch is kept in schedule/web-grid ({on:{<summit>:date}}).
+   ============================================================ */
+(function(){
+  'use strict';
+  let db=null, cfg=null, t=null, last='';
+  const DAYS={mon:['Monday',0],tue:['Tuesday',1],wed:['Wednesday',2],thu:['Thursday',3]};
+  const vid=()=>{ const p=document.getElementById('venue-pick'); return (p&&p.value)||''; };
+  const venue=()=>{ try{ return (window.__scheduleVenues?window.__scheduleVenues():[]).find(v=>v.id===vid())||null; }catch(e){ return null; } };
+  const isOn=id=>!!(cfg&&cfg.on&&cfg.on[id]);
+  const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  function firstDay(v){ try{ return (window.ResumeModel&&window.ResumeModel.firstDayFrom)? window.ResumeModel.firstDayFrom((v&&v.dates)||'') : ''; }catch(e){ return ''; } }
+  function typeOf(f, key, title){
+    const n=String(f.full||'')+' '+String(f.name||'');
+    if(/^general-sessions/.test(key)) return 'General Session';
+    if(/^workshop/.test(key)) return 'Workshop';
+    if(key==='bod' || key==='sr-advisors' || key==='joint-committee' || /invite only/i.test(n)) return 'Invite Only';
+    if(/office hours/i.test(n)) return 'Office Hours';
+    if(/^breakfast/.test(key)) return 'Breakfast';
+    if(/reception/i.test(n)) return 'Networking';
+    if(key==='newcomer') return 'Session';
+    if(/\bCoP\b/i.test(title)) return 'Community of Practice';
+    if(/\bDWG\b/i.test(title)) return 'Development Workgroup';
+    if(/workgroup/i.test(title)) return 'Workgroup';
+    return f.kind==='wg'? 'Session' : 'Meeting';
+  }
+  function titleOf(f, key){
+    const name=String(f.name||'').trim(), full=String(f.full||'').trim();
+    let t=name;
+    if(full && full!==name && !/^(breakfast|reception)/.test(key) && !/^(monday|tuesday|wednesday|thursday)\b/i.test(full) && !/held, nothing else/i.test(full)) t=full.split(/\s+[—–]\s+/)[0];
+    return t.replace(/\s*\((?:invite only|new)\)\s*/ig,' ').replace(/\bCoP\b/g,'COP').replace(/\s+/g,' ').trim();
+  }
+  function gridSessions(){
+    let feed=null; try{ feed=window.__resumeFunctions? window.__resumeFunctions() : null; }catch(e){}
+    const v=venue(), first=firstDay(v); if(!feed || !feed.functions || !first) return null;
+    const [Y,M,D]=first.split('-').map(Number);
+    const out=[];
+    feed.functions.forEach(f=>{
+      const key=String(f.key||f.sid||''), base=key.replace(/@.*$/,'');
+      if(/^(champions|member-engagement)$/.test(base)) return;
+      if(f.kind==='hold' || (/held, nothing else scheduled/i.test(String(f.full||'')) && base!=='breakfast')) return;
+      const d=DAYS[f.day]; if(!d || f.start==null || f.end==null) return;
+      const dt=new Date(Date.UTC(Y,M-1,D+d[1])).toISOString().slice(0,10);
+      const title=titleOf(f, base); if(!title) return;
+      out.push({id:key+(/@/.test(key)?'':'@'+f.day), day:d[0], date:dt, start:hm(f.start), end:hm(f.end), type:typeOf(f, base, title), title,
+        room:String(f.room||''), desc:'', sponsor:'', status:(f.kind==='wg' && !f.confirmed)? 'tentative' : 'confirmed'});
+    });
+    return out.sort((a,b)=>a.date.localeCompare(b.date) || a.start.localeCompare(b.start) || a.room.localeCompare(b.room));
+  }
+  async function publish(){
+    if(!db || cfg===null) return;
+    const id=vid(); if(!id) return;
+    const want=isOn(id)? gridSessions() : null;
+    if(isOn(id) && !want) return;                       /* the week has not loaded yet: never write an empty grid */
+    const sig=id+'|'+JSON.stringify(want);
+    if(sig===last) return;
+    let cur={}; try{ const sn=await db.doc('feeds/website-agenda').get(); cur=(sn.exists&&sn.data())||{}; }catch(e){ return; }
+    const summits=JSON.parse(JSON.stringify(cur.summits||{})), one=Object.assign({},summits[id]||{});
+    const prev=one.grid||null;
+    if(want){ const same=prev && JSON.stringify(prev.sessions)===JSON.stringify(want);
+      one.grid={updated: same? prev.updated : new Date().toISOString(), sessions:want}; }
+    else delete one.grid;
+    const v=venue();
+    if(one.gs||one.wk||one.grid){ Object.assign(one,{name:(v&&v.name)||one.name||'', city:(v&&v.city)||one.city||'', dates:(v&&v.dates)||one.dates||''}); summits[id]=one; }
+    else delete summits[id];
+    if(JSON.stringify(cur.summits||{})===JSON.stringify(summits)){ last=sig; return; }
+    try{ await db.doc('feeds/website-agenda').set({updatedAt:new Date().toISOString(), summits}); last=sig; }catch(e){}
+  }
+  const soon=()=>{ clearTimeout(t); t=setTimeout(publish,2500); };
+  function paint(){
+    const b=document.getElementById('grid-web'); if(!b) return;
+    const on=isOn(vid());
+    b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on));
+    b.textContent= on? '✓ On the Website Agenda' : 'Show on the Website Agenda';
+    b.title= on? 'The website’s agenda shows this week’s sessions from the Schedule (since '+String(cfg.on[vid()]).slice(0,10)+'). Changes reach it on their own. Click to take them off.'
+      : 'Let the website’s agenda show this week’s sessions from the Schedule: day, time, room and name. Off until you turn it on, one summit at a time.';
+    let can=true; try{ const R=window.ResourcesSession; if(R && R.canEdit) can=!!R.canEdit('summit-hq'); }catch(e){}
+    b.disabled=!can || cfg===null;
+  }
+  async function toggle(){
+    const id=vid(); if(!id || !db || cfg===null) return;
+    const on=Object.assign({},cfg.on||{}); if(on[id]) delete on[id]; else on[id]=new Date().toISOString();
+    cfg=Object.assign({},cfg,{on}); paint(); last='';
+    try{ await db.doc('schedule/web-grid').set(cfg); }catch(e){}
+    publish();
+  }
+  (async()=>{
+    try{ db=window.claude&&window.claude.use? await window.claude.use('db') : null; }catch(e){ db=null; }
+    if(!db) return;
+    db.doc('schedule/web-grid').onSnapshot(s=>{ cfg=(s.exists&&s.data())||{on:{}}; if(!cfg.on) cfg.on={}; last=''; paint(); soon(); }, ()=>{});
+    window.addEventListener('hq:schedule',soon);
+    const p=document.getElementById('venue-pick'); if(p) p.addEventListener('change',()=>{ last=''; paint(); soon(); });
+    const b=document.getElementById('grid-web'); if(b) b.addEventListener('click',toggle);
+  })();
+  window.__webGrid={sessions:gridSessions, publish:()=>{ last=''; return publish(); }};
+})();
 </script>
 
 <script src="lib/biotext.js" defer></script>

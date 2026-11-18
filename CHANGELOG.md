@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-18
 
+- Schedule: Show on the Website Agenda publishes the whole week (every public session, all four days) for the website's agenda page, one summit at a time
 - People: Downloads › TrackPod Scanner Sheet fills TrackPod's name tag scanner Excel (their template, kept as it is) from the Schedule: the event, and every scanned session with its times, room, code and description
 
 ## 2026-11-17
