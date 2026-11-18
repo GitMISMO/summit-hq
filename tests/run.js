@@ -592,6 +592,22 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 25. The TrackPod sheet for the name tag scanners fills itself from the Schedule (Jonna, Nov 18) */
+  await check('The TrackPod scanner sheet fills from the Schedule', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(4000);
+    const [dl] = await Promise.all([s.page.waitForEvent('download', { timeout: 15000 }).catch(() => null), s.page.evaluate(() => window.__trackpod.file())]);
+    expect(dl && /^TP - .*Summit\.xlsx$/.test(dl.suggestedFilename()), 'no TrackPod sheet downloaded: ' + (dl && dl.suggestedFilename()));
+    const buf = require('fs').readFileSync(await dl.path()).toString('latin1');
+    const i = buf.indexOf('xl/worksheets/sheet3.xml<?xml'), sheet = buf.slice(i, buf.indexOf('</worksheet>', i));
+    expect(/Artificial Intelligence COP/.test(sheet) && /AICOP20\d\d/.test(sheet) && /Newcomer Orientation/.test(sheet) && /Scan In/.test(sheet),
+      'the scanned sessions are missing from the Sessions sheet');
+    expect(!/General Sessions|Board of Directors|Reception|Breakfast/.test(sheet), 'a session nobody scans went on the sheet');
+    expect(/<c r="C1" s="8"/.test(sheet) && /<xm:sqref>M2:M\d+<\/xm:sqref>/.test(sheet), 'the template\'s red headers or Scan Directions dropdown were lost');
+    expect(!/jcritchley|245- 0356/.test(buf), 'a phone or email came from the page rather than Summit HQ\'s data');
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
