@@ -630,9 +630,11 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
   /* 27. The MISMO team: Bernie only registers; the rooming list goes to Ros once every date is in (Jonna, Nov 18) */
   await check('MISMO team: Bernie registers, Ros gets the rooming list', async () => {
     const store = { resume: { docs: { 'resume/slc': { details: { hotelName: 'Sample Hotel' } } } },
-      'team-travel': { docs: { 'team-travel/slc': { order: ['a', 'b'], ppl: {
+      'team-travel': { docs: { 'team-travel/slc': { order: ['a', 'b', 'c', 'd'], ppl: {
         a: { n: 'Ann Staff', e: 'ann@example.org', role: 'staff', arr: '2027-06-06', dep: '2027-06-10' },
-        b: { n: 'Bob Staff', e: 'bob@example.org', role: 'staff' } } } } } };
+        b: { n: 'Bob Staff', e: 'bob@example.org', role: 'staff' },
+        c: { n: 'Cal Mba', e: 'cal@example.org', role: 'mba', arr: '2027-06-07', dep: '2027-06-09' },
+        d: { n: 'Dee Speaker', e: 'dee@example.org', role: 'speaker', arr: '2027-06-07', dep: '2027-06-09' } } } } } };
     const s = await open(opts({ store }));
     await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(2000);
     await s.page.evaluate(() => { const p = document.getElementById('venue-pick'); p.value = 'slc'; p.dispatchEvent(new Event('change', { bubbles: true })); });
@@ -642,13 +644,15 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const btn = re => s.page.evaluate(re => { const b = [...document.querySelectorAll('.tt-acts .btn')].find(b => new RegExp(re).test(b.textContent)); return b ? { t: b.textContent, d: b.disabled } : null; }, re);
     const press = async re => { for (let i = 0; i < 2; i++) { await s.page.evaluate(re => [...document.querySelectorAll('.tt-acts .btn')].find(b => new RegExp(re).test(b.textContent)).click(), re); await s.page.waitForTimeout(600); } await s.page.waitForTimeout(2000); };
     const q = () => (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []);
-    expect(/Send to Bernie \(2 Checked\)/.test((await btn('Send to Bernie')).t), 'both team members should start checked for Bernie, dates or not');
+    expect(/Send to Bernie \(3 Checked\)/.test((await btn('Send to Bernie')).t), 'the team and MBA should start checked for Bernie, a speaker should not: ' + (await btn('Send to Bernie')).t);
+    const grps = await s.page.evaluate(() => [...document.querySelectorAll('.tt-grp')].map(g => g.textContent));
+    expect(grps.some(g => /^MBA/.test(g)) && grps.some(g => /^Speakers/.test(g)), 'the MBA and Speakers sections are missing: ' + JSON.stringify(grps));
     const ros0 = await btn('Ros');
     expect(ros0 && ros0.d && /1 Still Need Dates/.test(ros0.t), 'the rooming list should wait until everyone has dates: ' + JSON.stringify(ros0));
     await press('Bernie');
     const bern = q().find(r => r.to === 'bjordan@mba.org');
     const bt = bern ? bern.html.replace(/<[^>]+>/g, ' ') : '';
-    expect(bern && /Please register/.test(bt) && /Ann Staff/.test(bt) && /Bob Staff/.test(bt) && !/Arrives|Departs|rooming list for the/i.test(bt) && !/Here is the MISMO team going/.test(bt),
+    expect(bern && /Please register/.test(bt) && /Ann Staff/.test(bt) && /Bob Staff/.test(bt) && !/Arrives|Departs|rooming list for the/i.test(bt) && !/Here is the MISMO team going/.test(bt) && !/Hotel rooms are not needed/.test(bt) && !/Dee Speaker/.test(bt) && /Cal Mba/.test(bt),
       'Bernie\'s email should be registration only: ' + bt.slice(0, 400));
     await s.page.evaluate(async () => { const db = await window.claude.use('db'); const d = (await db.doc('team-travel/slc').get()).data(); d.ppl.b.arr = '2027-06-07'; d.ppl.b.dep = '2027-06-10'; await db.doc('team-travel/slc').set(d); });
     await s.page.waitForTimeout(2500); await s.page.reload(); await s.page.waitForTimeout(4000);
@@ -660,7 +664,8 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await press('Ros');
     const ros = q().find(r => r.to === 'rmilliken@mba.org');
     const rt = ros ? ros.html.replace(/<[^>]+>/g, ' ') : '';
-    expect(ros && /Hi Ros/.test(rt) && /Ann Staff/.test(rt) && /Bob Staff/.test(rt) && /Arrives/.test(rt) && /Rooms needed each night/.test(rt) && /Sample Hotel/.test(rt) && /jcritchley@mismo\.org/.test(ros.cc),
+    expect(ros && /Hi Ros/.test(rt) && /Ann Staff/.test(rt) && /Bob Staff/.test(rt) && /Arrives/.test(rt) && /Rooms needed each night/.test(rt) && /Sample Hotel/.test(rt) && /jcritchley@mismo\.org/.test(ros.cc)
+      && /MISMO Team \(2\)/.test(rt) && /MBA \(1\)/.test(rt) && /Speakers \(1\)/.test(rt) && rt.indexOf('MISMO Team (2)') < rt.indexOf('MBA (1)') && rt.indexOf('MBA (1)') < rt.indexOf('Speakers (1)'),
       'the rooming list to Ros is not right: ' + rt.slice(0, 500));
     expect(/Rooming List Sent to Ros/.test((await btn('Ros')).t), 'the rooming list was not marked sent');
     noErrors(s.errs); await s.close();
