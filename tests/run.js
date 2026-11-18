@@ -680,6 +680,20 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 29. Adding someone already on People uses their record instead of a second one (Jonna, Nov 18) */
+  await check('Adding someone already on People does not duplicate them', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(3000);
+    const r = await s.page.evaluate(() => { const id0 = window.__people.add({ n: 'Kevin Cuff', e: 'kevin.cuff@example.gov' });
+      const id = window.__people.add({ n: 'Kevin  Cuff', c: 'MA Regulator' });
+      const id2 = window.__people.add({ n: 'K Cuff', e: 'Kevin.Cuff@example.gov' });
+      return { id, id2, n: window.__people.all().filter(p => /cuff/i.test(p.n)).length, c: (window.__people.all().find(p => p.i === 'kevin-cuff') || {}).c }; });
+    expect(r.id === 'kevin-cuff' && r.id2 === 'kevin-cuff' && r.n === 1 && r.c === 'MA Regulator', 'a second Kevin Cuff was made, or the company was not filled in: ' + JSON.stringify(r));
+    const r2 = await s.page.evaluate(() => ({ id: window.__people.add({ n: 'Brand New Person', c: 'Co' }), n: window.__people.all().length }));
+    expect(r2.id === 'brand-new-person', 'someone new was not added: ' + JSON.stringify(r2));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 21. Headshots download for the event app, from the person's panel */
   await check('A headshot downloads from the panel as a JPG', async () => {
     const s = await open(opts({}));
