@@ -464,7 +464,10 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const q = () => (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []);
     const ask = q().find(r => /Champion Codes to Set Up/.test(r.subject));
     expect(ask && ask.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(ask.subject) && /Alpha Lending/.test(ask.html) && /bjordan@mba\.org/.test(ask.html), 'Bernie\'s list did not go (to Jonna, as a test): ' + JSON.stringify(q().map(r => [r.to, r.subject])));
-    /* Bernie enters the code and confirms */
+    /* Registration shows the list read-only (Nov 19): Bernie enters the code and confirms on his Registration Desk */
+    expect(await s.page.evaluate(() => { const i = document.querySelector('#ch-body input[placeholder="Campaign code"]'); return !!i && i.disabled && !document.querySelector('#ch-body .ch-acts'); }), 'codes can still be entered on Registration');
+    await s.page.evaluate(() => { window.ResourcesSession.current = () => ({ email: 'bjordan@mba.org', name: 'Bernardo Jordan' }); window.__hqGo('desk'); });
+    await s.page.waitForTimeout(1500);
     const row = s.page.locator('#ch-body tr', { hasText: 'Alpha Lending' });
     await row.locator('input[placeholder="Campaign code"]').fill('MISMOCALPHA'); await row.locator('input[placeholder="Campaign code"]').press('Enter');
     await s.page.waitForTimeout(1500);
@@ -714,6 +717,68 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const [dl] = await Promise.all([s.page.waitForEvent('download', { timeout: 8000 }).catch(() => null),
       s.page.evaluate(() => { const b = [...document.querySelectorAll('#hq-pane .v2-acts button')].find(x => x.textContent === 'Download'); if (b) b.click(); return !!b; })]);
     expect(dl && dl.suggestedFilename() === 'Pat-Shot.jpg', 'the headshot did not download from the panel as Pat-Shot.jpg: ' + (dl && dl.suggestedFilename()));
+    noErrors(s.errs); await s.close();
+  });
+
+  /* 30. The Registration Desk: Bernie's registrations in one place (Jonna, Nov 19) */
+  await check('The Registration Desk gathers Bernie\'s work and saves it', async () => {
+    const store = { resume: { docs: { 'resume/slc': { details: { hotelName: 'Sample Hotel' } } } },
+      'team-travel': { docs: { 'team-travel/slc': { order: ['a', 'c'], ppl: {
+        a: { n: 'Ann Staff', e: 'ann@example.org', role: 'staff' }, c: { n: 'Dee Speaker', e: 'dee@example.org', role: 'speaker' } } } } },
+      applications: { docs: {
+        'app-1': { appNo: 'AN1', event: 'Spring 2027', status: 'Approved', company: 'Northwind Lending', contactName: 'Avery Test', contactEmail: 'avery@example.org', opportunity: 'Breakfast Sponsor' },
+        'app-2': { appNo: 'AN2', event: 'Spring 2027', status: 'Pending Payment', company: 'Contoso Mortgage', contactName: 'Blake Test', contactEmail: 'blake@example.org', invoiceNumber: '990102', invoiceDate: '2026-09-01', compCode: 'CON27', numComps: 4 },
+        'app-3': { appNo: 'AN3', event: 'Winter 2027', status: 'Approved', company: 'Elsewhere Co', contactEmail: 'x@example.org' } } } };
+    const s = await open(opts({ store, hash: '?desk' }));
+    /* someone not on the Desk's list sees the note, not the work */
+    await s.page.evaluate(() => window.__hqGo('desk')); await s.page.waitForTimeout(800);
+    expect(await s.page.evaluate(() => !!document.querySelector('#app-desk .dk-gate') && document.querySelector('#app-desk .ws-body').hidden), 'someone other than Bernie, Jonna, Amy or Kelly got into the Desk');
+    await s.page.evaluate(() => { window.ResourcesSession.current = () => ({ email: 'bjordan@mba.org', name: 'Bernardo Jordan' }); });
+    await s.page.evaluate(() => { const p = document.getElementById('venue-pick'); p.value = 'slc'; p.dispatchEvent(new Event('change', { bubbles: true })); });
+    await s.page.waitForTimeout(2500);
+    await s.page.evaluate(() => window.__people.add({ n: 'Sam Speaker', e: 'sam@example.org', t: 'CTO', c: 'Acme Lending' }));
+    await s.page.waitForTimeout(1200);
+    await s.page.evaluate(() => { window.__deskView.refresh(); window.__hqGo('desk'); }); await s.page.waitForTimeout(2500);
+    const look = await s.page.evaluate(() => ({ title: document.title, nav: [...document.querySelectorAll('.hq nav button')].filter(b => getComputedStyle(b).display !== 'none').map(b => b.dataset.hq),
+      champ: document.getElementById('rg-champ').closest('#app-desk') !== null, spon: document.getElementById('dk-spon').innerText, spk: document.getElementById('dk-spk').innerText, team: document.getElementById('dk-team').innerText }));
+    expect(look.title === 'Registration Desk' && look.nav.join() === 'desk,trunk', 'Desk mode should show only the Desk and The Trunk: ' + JSON.stringify(look.nav));
+    expect(look.champ, 'the Champion Codes list did not move onto the Desk');
+    expect(/Northwind Lending/.test(look.spon) && /Contoso Mortgage/.test(look.spon) && !/Elsewhere Co/.test(look.spon) && /Raise the Invoice/i.test(look.spon) && /Time to Chase/i.test(look.spon),
+      'the Desk\'s sponsors are not this summit\'s, or the invoice and chase are not flagged: ' + look.spon.slice(0, 400));
+    expect(/Sam Speaker/.test(look.spk) && /Ann Staff/.test(look.team) && !/Dee Speaker/.test(look.team), 'speakers or the MISMO team are not right on the Desk');
+    /* Registered on the Desk is the same mark People makes */
+    await s.page.evaluate(() => [...document.querySelectorAll('#dk-spk button')].find(b => b.textContent === 'Registered').click()); await s.page.waitForTimeout(1500);
+    expect(await s.page.evaluate(() => { const p = window.__desk.speakers().find(x => x.n === 'Sam Speaker'); return !!(p && p.reg); }), 'Registered on the Desk did not mark the speaker registered');
+    await s.page.evaluate(() => [...document.querySelectorAll('#dk-team button')].find(b => b.textContent === 'Registered').click()); await s.page.waitForTimeout(2000);
+    expect(await s.page.evaluate(() => !!(window.__desk.team().find(x => x.n === 'Ann Staff') || {}).reg), 'Registered on the Desk did not mark the team member registered');
+    /* the invoice and code go to the feed the portal reads; the code email goes to Jonna in Test */
+    await s.page.evaluate(async () => { const inp = [...document.querySelectorAll('#dk-spon tbody tr')].find(r => /Northwind/.test(r.innerText)).querySelectorAll('input');
+      inp[0].value = '991234'; inp[0].dispatchEvent(new Event('change')); });
+    await s.page.waitForTimeout(1500);
+    await s.page.evaluate(async () => { const inp = [...document.querySelectorAll('#dk-spon tbody tr')].find(r => /Northwind/.test(r.innerText)).querySelectorAll('input');
+      inp[2].value = 'NWL27'; inp[2].dispatchEvent(new Event('change')); });
+    await s.page.waitForTimeout(1500);
+    await s.page.evaluate(async () => { const inp = [...document.querySelectorAll('#dk-spon tbody tr')].find(r => /Northwind/.test(r.innerText)).querySelectorAll('input');
+      inp[3].value = '6'; inp[3].dispatchEvent(new Event('change')); });
+    await s.page.waitForTimeout(1500);
+    const ent = ((s.store['feed-desk-sponsor'] || {}).doc || {}).entries || {};
+    expect(ent['app-1'] && ent['app-1'].invoiceNumber === '991234' && ent['app-1'].invoiceDate && ent['app-1'].compCode === 'NWL27' && ent['app-1'].numComps === '6' && ent['app-1'].appNo === 'AN1',
+      'the invoice and code did not reach feeds/desk-sponsor: ' + JSON.stringify(ent));
+    await s.page.evaluate(() => [...document.querySelectorAll('#dk-spon tbody tr')].find(r => /Northwind/.test(r.innerText)).querySelector('button.dk-btn:not(.ghost)').click());
+    await s.page.waitForTimeout(800);
+    await s.page.evaluate(() => document.querySelector('.hq-replace .yes').click()); await s.page.waitForTimeout(2000);
+    const q = (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []).filter(r => /^dk-/.test(r.id));
+    const m = q[q.length - 1] || {};
+    expect(m.to === 'jcritchley@mismo.org' && /^\[Test\]/.test(m.subject) && /NWL27/.test(m.html) && /avery@example\.org/.test(m.html) && /6 complimentary/.test(m.html.replace(/<[^>]+>/g, ' ')),
+      'the sponsor code email did not go to Jonna as a test with the code: ' + JSON.stringify({ to: m.to, subject: m.subject }));
+    const ent2 = ((s.store['feed-desk-sponsor'] || {}).doc || {}).entries || {};
+    expect(ent2['app-1'] && ent2['app-1'].codeSentAt, 'the code email was not recorded as sent');
+    await s.page.evaluate(() => [...document.querySelectorAll('#dk-spon button')].find(b => b.textContent === 'Log a Follow-Up').click()); await s.page.waitForTimeout(1500);
+    const ent3 = ((s.store['feed-desk-sponsor'] || {}).doc || {}).entries || {};
+    expect(ent3['app-2'] && (ent3['app-2'].followUps || []).length === 1, 'Log a Follow-Up was not recorded');
+    /* on Registration the champion list is read-only again */
+    await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(1200);
+    expect(await s.page.evaluate(() => document.getElementById('rg-champ').closest('#app-reg') !== null && /Registration Desk/.test(document.getElementById('rg-champ').innerText)), 'Champion Codes did not go back to Registration, read-only');
     noErrors(s.errs); await s.close();
   });
 
