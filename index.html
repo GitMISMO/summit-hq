@@ -2201,14 +2201,14 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
    These restate the full sizes with a `:root` prefix so neither the Schedule's own
    `body.compact` class (set below 860px) nor source order can take them back. */
 :root #app-grid .mast h1,:root #app-ros .mast h1,:root #app-specs .mast h1,:root #app-resume .rz-title,
-:root :is(#app-gs,#app-wk) .mast h1,:root #app-reg .mast h1{
+:root :is(#app-gs,#app-wk) .mast h1,:root :is(#app-reg,#app-desk) .mast h1{
   font-size:clamp(22px,3.4vw,34px);font-weight:900;letter-spacing:-.02em;line-height:1.05}
 :root #app-grid .mast .eyebrow,:root #app-ros .mast .eyebrow,
 :root #app-specs .mast .eyebrow,:root #app-resume .rz-eyebrow,
-:root :is(#app-gs,#app-wk) .mast .eyebrow,:root #app-reg .mast .eyebrow{display:block;font-size:11px;letter-spacing:.11em}
+:root :is(#app-gs,#app-wk) .mast .eyebrow,:root :is(#app-reg,#app-desk) .mast .eyebrow{display:block;font-size:11px;letter-spacing:.11em}
 :root #app-grid .mast .sub,:root #app-ros .mast .sub,
 :root #app-specs .mast .sub,:root #app-resume .rz-sub,
-:root :is(#app-gs,#app-wk) .mast .sub,:root #app-reg .mast .sub{display:block;font-size:13px;margin-top:4px}
+:root :is(#app-gs,#app-wk) .mast .sub,:root :is(#app-reg,#app-desk) .mast .sub{display:block;font-size:13px;margin-top:4px}
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{
   gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
 
@@ -2232,13 +2232,13 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 :root #app-grid .mast,:root #app-ros .mast,:root #app-specs .mast,:root #app-resume .rz-mast{align-items:flex-start}
 :root #app-grid .meters,:root #app-ros .meters,:root #app-specs .meters,:root #app-resume .rz-status{align-items:flex-start}
 /* Jonna, 2026-10-28: General Sessions and Registration carry the same header as the rest */
-:root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{align-items:flex-start;gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
+:root :is(#app-gs,#app-wk) .mast,:root :is(#app-reg,#app-desk) .mast{align-items:flex-start;gap:16px 28px;padding-bottom:14px;margin-bottom:16px}
 @media(max-height:940px){
-  :root :is(#app-gs,#app-wk) .wrap,:root #app-reg .wrap{padding-block:12px 30px}
-  :root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{padding-bottom:10px;margin-bottom:10px}
+  :root :is(#app-gs,#app-wk) .wrap,:root :is(#app-reg,#app-desk) .wrap{padding-block:12px 30px}
+  :root :is(#app-gs,#app-wk) .mast,:root :is(#app-reg,#app-desk) .mast{padding-bottom:10px;margin-bottom:10px}
 }
-@media(max-height:780px){ :root :is(#app-gs,#app-wk) .mast,:root #app-reg .mast{padding-bottom:8px;margin-bottom:8px} }
-:root :is(#app-gs,#app-wk) .gs-acts,:root #app-reg .rg-acts{align-self:flex-start}
+@media(max-height:780px){ :root :is(#app-gs,#app-wk) .mast,:root :is(#app-reg,#app-desk) .mast{padding-bottom:8px;margin-bottom:8px} }
+:root :is(#app-gs,#app-wk) .gs-acts,:root :is(#app-reg,#app-desk) .rg-acts{align-self:flex-start}
 
 /* EVERY FIGURE TILE IS THE SAME HEIGHT, ON EVERY TAB (Jonna, 2026-09-19: all the
    boxes the height of the 114 days box, and the same across the whole of HQ). One
@@ -4342,6 +4342,10 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <button type="button" data-hq="reg" title="Registration">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
       <span>Registration</span></button>
+    <!-- Jonna, 2026-11-19: Bernie's Registration Desk; only Bernie, Jonna, Amy and Kelly see it -->
+    <button type="button" data-hq="desk" title="Registration Desk" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l2 2 3-3M7 15l2 2 3-3M14 10h4M14 16h4"/></svg>
+      <span>Registration Desk</span></button>
     <div class="rail-grp">The Hotel</div>
     <button type="button" data-hq="specs" title="Hotel Specs">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M8 21v-5h8v5M8 10h.01M12 10h.01M16 10h.01M8 13h.01M12 13h.01M16 13h.01"/></svg>
@@ -5518,9 +5522,9 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 .se-frame{width:100%;height:100%;border:0;background:#f1f6fa}
 #bd-ask .se-who,#tt-ask .se-who{max-height:min(520px,calc(100vh - 360px))} .bn-box{width:min(620px,96vw);height:auto;max-height:94vh} .bn-edit{flex:1;min-height:0;overflow:auto} #bd-notify .se-who{max-height:min(560px,calc(100vh - 330px))} .se-prev.bd-prev{display:flex;flex-direction:column} .bd-prevh{padding:8px 14px;font-size:12px;color:var(--ink-2);background:var(--surface);border-bottom:1px solid var(--line)} .bd-prev .se-frame{flex:1 1 auto;height:auto;min-height:0}
 @media (max-width:760px){ .se-body{grid-template-columns:1fr;grid-template-rows:auto 420px} .se-edit{border-right:0;border-bottom:1px solid var(--line)} }
-#app-reg .ws-title.ws-edit{cursor:text}
-#app-reg .ws-title.ws-edit:hover{background:var(--accent-soft)}
-#app-reg .ws-title-in{width:100%;min-width:120px;font:inherit;font-size:inherit;padding:2px 5px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-title.ws-edit{cursor:text}
+:is(#app-reg,#app-desk) .ws-title.ws-edit:hover{background:var(--accent-soft)}
+:is(#app-reg,#app-desk) .ws-title-in{width:100%;min-width:120px;font:inherit;font-size:inherit;padding:2px 5px;border:1px solid var(--accent);border-radius:3px;background:var(--surface);color:var(--ink)}
 /* speaker prospects */
 #app-people .pros-add{padding:12px 16px;border-bottom:1px solid var(--line)}
 #app-people .pros-add .addform::before{content:"\2026 or add somebody new \2014  they go on the prospect list and the master list"}
@@ -7084,158 +7088,158 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
    her page's own values: the six tiles, the paired cards, the two pace charts, the history
    and registrant tables, her chips and her segmented buttons. Her tokens are mapped onto
    Summit HQ's (her panel = --surface, her line = --line-2, her muted = --ink-3), so it
-   follows the light / dark switch. Every rule hangs off #app-reg. */
-#app-reg{--ws-sky:#74bfeb; --ws-navy:#0d314c; --ws-navy-deep:#06202f;
+   follows the light / dark switch. Every rule hangs off :is(#app-reg,#app-desk). */
+:is(#app-reg,#app-desk){--ws-sky:#74bfeb; --ws-navy:#0d314c; --ws-navy-deep:#06202f;
   --s-cur:#2f80c8; --s-prior:#e2662f; --ws-r:8px;
   font-variant-numeric:tabular-nums}
-#app-reg .ws-body{display:grid;gap:28px}
-#app-reg .mast{margin-bottom:22px}
-#app-reg .rg-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#app-reg #rg-spon,#app-reg #rg-champ{scroll-margin-top:84px}
+:is(#app-reg,#app-desk) .ws-body{display:grid;gap:28px}
+:is(#app-reg,#app-desk) .mast{margin-bottom:22px}
+:is(#app-reg,#app-desk) .rg-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+:is(#app-reg,#app-desk) #rg-spon,:is(#app-reg,#app-desk) #rg-champ{scroll-margin-top:84px}
 /* the heading under the masthead */
-#app-reg .ws-head h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.012em;color:var(--ink);line-height:1.25}
-#app-reg .ws-head .ws-sub{margin:6px 0 0;color:var(--ink-3);font-size:14px;line-height:1.5}
-#app-reg .ws-head .ws-takeaway{margin:10px 0 0;font-size:16px;line-height:1.45;color:var(--ink)}
-#app-reg .ws-head b{font-weight:600}
+:is(#app-reg,#app-desk) .ws-head h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.012em;color:var(--ink);line-height:1.25}
+:is(#app-reg,#app-desk) .ws-head .ws-sub{margin:6px 0 0;color:var(--ink-3);font-size:14px;line-height:1.5}
+:is(#app-reg,#app-desk) .ws-head .ws-takeaway{margin:10px 0 0;font-size:16px;line-height:1.45;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-head b{font-weight:600}
 /* Jonna, 2026-10-28: the week stands out, in the navy panel the Run of Show opens with */
-#app-reg .ws-head.rg-hero{display:flex;gap:26px;align-items:stretch;background:#0f314c;color:#fff;border:1px solid #0f314c;
+:is(#app-reg,#app-desk) .ws-head.rg-hero{display:flex;gap:26px;align-items:stretch;background:#0f314c;color:#fff;border:1px solid #0f314c;
   border-radius:8px;padding:20px 24px;box-shadow:0 2px 10px rgba(6,32,47,.12)}
-:root[data-theme="dark"] #app-reg .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-reg .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}}
-#app-reg .rg-wk{flex:0 0 auto;min-width:132px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+:root[data-theme="dark"] :is(#app-reg,#app-desk) .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(#app-reg,#app-desk) .ws-head.rg-hero{background:#14304A;border-color:#2E4F70}}
+:is(#app-reg,#app-desk) .rg-wk{flex:0 0 auto;min-width:132px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
   padding-right:26px;border-right:1px solid rgba(255,255,255,.18)}
-#app-reg .rg-wk-k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
-#app-reg .rg-wk-n{font-family:var(--display);font-size:68px;font-weight:900;line-height:.95;letter-spacing:-.03em;color:#fff;margin:2px 0 4px}
-#app-reg .rg-wk-n.rg-wk-post{font-size:48px}
-#app-reg .rg-wk-s{font-size:13px;font-weight:600;color:rgba(255,255,255,.78)}
-#app-reg .rg-hero-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center}
-#app-reg .rg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fd2f2}
-#app-reg .rg-line{margin:8px 0 12px;font-size:19px;font-weight:700;line-height:1.4;color:#fff;max-width:72ch}
-#app-reg .rg-line .hl{color:#7fc6f0}
-#app-reg .rg-line .hl.down{color:#ffa69c}
-#app-reg .rg-line .hl.up{color:#8fd6a8}
-#app-reg .rg-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:rgba(255,255,255,.74)}
-#app-reg .rg-meta span+span{position:relative}
-#app-reg .rg-meta span+span::before{content:"";position:absolute;left:-10px;top:50%;width:3px;height:3px;margin-top:-1.5px;background:rgba(255,255,255,.45)}
+:is(#app-reg,#app-desk) .rg-wk-k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#9fd2f2}
+:is(#app-reg,#app-desk) .rg-wk-n{font-family:var(--display);font-size:68px;font-weight:900;line-height:.95;letter-spacing:-.03em;color:#fff;margin:2px 0 4px}
+:is(#app-reg,#app-desk) .rg-wk-n.rg-wk-post{font-size:48px}
+:is(#app-reg,#app-desk) .rg-wk-s{font-size:13px;font-weight:600;color:rgba(255,255,255,.78)}
+:is(#app-reg,#app-desk) .rg-hero-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;justify-content:center}
+:is(#app-reg,#app-desk) .rg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9fd2f2}
+:is(#app-reg,#app-desk) .rg-line{margin:8px 0 12px;font-size:19px;font-weight:700;line-height:1.4;color:#fff;max-width:72ch}
+:is(#app-reg,#app-desk) .rg-line .hl{color:#7fc6f0}
+:is(#app-reg,#app-desk) .rg-line .hl.down{color:#ffa69c}
+:is(#app-reg,#app-desk) .rg-line .hl.up{color:#8fd6a8}
+:is(#app-reg,#app-desk) .rg-meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:rgba(255,255,255,.74)}
+:is(#app-reg,#app-desk) .rg-meta span+span{position:relative}
+:is(#app-reg,#app-desk) .rg-meta span+span::before{content:"";position:absolute;left:-10px;top:50%;width:3px;height:3px;margin-top:-1.5px;background:rgba(255,255,255,.45)}
 @media(max-width:640px){
-  #app-reg .ws-head.rg-hero{flex-direction:column;gap:14px;padding:18px}
-  #app-reg .rg-wk{flex-direction:row;align-items:baseline;gap:10px;padding:0 0 12px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}
-  #app-reg .rg-wk-n{font-size:48px;margin:0}
-  #app-reg .rg-line{font-size:17px}
+  :is(#app-reg,#app-desk) .ws-head.rg-hero{flex-direction:column;gap:14px;padding:18px}
+  :is(#app-reg,#app-desk) .rg-wk{flex-direction:row;align-items:baseline;gap:10px;padding:0 0 12px;border-right:0;border-bottom:1px solid rgba(255,255,255,.18)}
+  :is(#app-reg,#app-desk) .rg-wk-n{font-size:48px;margin:0}
+  :is(#app-reg,#app-desk) .rg-line{font-size:17px}
 }
 /* the six tiles */
-#app-reg .ws-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-@media(min-width:760px){#app-reg .ws-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:1680px){#app-reg .ws-tiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
-#app-reg .ws-tile{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
+:is(#app-reg,#app-desk) .ws-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:760px){:is(#app-reg,#app-desk) .ws-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1680px){:is(#app-reg,#app-desk) .ws-tiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
+:is(#app-reg,#app-desk) .ws-tile{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
   padding:12px 20px;display:grid;gap:4px;align-content:start;min-height:128px}
-#app-reg .ws-tile.is-key{border-top:3px solid var(--ws-sky)}
-#app-reg .ws-tile .k{white-space:nowrap;font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
-#app-reg .ws-tile .v{font-size:30px;font-weight:500;line-height:1.15;color:var(--ink)}
-#app-reg .ws-tile .p{font-size:12px;color:var(--ink-3)}
-#app-reg .ws-tile .p b{color:var(--ink);font-weight:600}
-#app-reg .ws-tile .d{font-size:12px;font-weight:600;white-space:nowrap}
-#app-reg .up{color:var(--good)} #app-reg .down{color:var(--bad)} #app-reg .flat{color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-tile.is-key{border-top:3px solid var(--ws-sky)}
+:is(#app-reg,#app-desk) .ws-tile .k{white-space:nowrap;font-size:12px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em}
+:is(#app-reg,#app-desk) .ws-tile .v{font-size:30px;font-weight:500;line-height:1.15;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-tile .p{font-size:12px;color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-tile .p b{color:var(--ink);font-weight:600}
+:is(#app-reg,#app-desk) .ws-tile .d{font-size:12px;font-weight:600;white-space:nowrap}
+:is(#app-reg,#app-desk) .up{color:var(--good)} :is(#app-reg,#app-desk) .down{color:var(--bad)} :is(#app-reg,#app-desk) .flat{color:var(--ink-3)}
 /* cards, two to a row */
-#app-reg .ws-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:12px}
-#app-reg .ws-card{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
+:is(#app-reg,#app-desk) .ws-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:12px}
+:is(#app-reg,#app-desk) .ws-card{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--ws-r);
   padding:20px;min-width:0;display:grid;gap:8px;align-content:start}
-#app-reg .ws-card h2{margin:0;font-size:16px;font-weight:500;letter-spacing:-.012em;color:var(--ink)}
-#app-reg .ws-card .note{margin:0;font-size:12px;color:var(--ink-3);line-height:1.5}
-#app-reg .ws-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-#app-reg .ws-row .grow{flex:1 1 auto}
+:is(#app-reg,#app-desk) .ws-card h2{margin:0;font-size:16px;font-weight:500;letter-spacing:-.012em;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-card .note{margin:0;font-size:12px;color:var(--ink-3);line-height:1.5}
+:is(#app-reg,#app-desk) .ws-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+:is(#app-reg,#app-desk) .ws-row .grow{flex:1 1 auto}
 /* her buttons: solid navy, 5px corners */
-#app-reg .ws-btn{font:inherit;font-size:12px;font-weight:600;background:var(--ws-navy);color:#fff;border:1px solid var(--ws-navy);
+:is(#app-reg,#app-desk) .ws-btn{font:inherit;font-size:12px;font-weight:600;background:var(--ws-navy);color:#fff;border:1px solid var(--ws-navy);
   border-radius:5px;padding:6px 12px;cursor:pointer;white-space:nowrap;min-width:max-content}
-#app-reg .ws-btn:hover{background:var(--ws-navy-deep)}
-#app-reg .ws-btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
-#app-reg .ws-btn.ghost:hover{background:var(--sunk)}
-#app-reg .ws-btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
-:root[data-theme="dark"] #app-reg .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app-reg .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}}
-#app-reg .ws-btn:focus-visible,#app-reg .ws-seg button:focus-visible,#app-reg .ws-th:focus-visible,#app-reg .ws-search:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
-#app-reg .ws-copied{font-size:12px;color:var(--good)}
-#app-reg .ws-email{margin:0;white-space:pre-wrap;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;
+:is(#app-reg,#app-desk) .ws-btn:hover{background:var(--ws-navy-deep)}
+:is(#app-reg,#app-desk) .ws-btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
+:is(#app-reg,#app-desk) .ws-btn.ghost:hover{background:var(--sunk)}
+:is(#app-reg,#app-desk) .ws-btn.danger{background:transparent;color:var(--bad);border-color:var(--bad)}
+:root[data-theme="dark"] :is(#app-reg,#app-desk) .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) :is(#app-reg,#app-desk) .ws-btn:not(.ghost):not(.danger){background:var(--ws-sky);border-color:var(--ws-sky);color:var(--ws-navy-deep)}}
+:is(#app-reg,#app-desk) .ws-btn:focus-visible,:is(#app-reg,#app-desk) .ws-seg button:focus-visible,:is(#app-reg,#app-desk) .ws-th:focus-visible,:is(#app-reg,#app-desk) .ws-search:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
+:is(#app-reg,#app-desk) .ws-copied{font-size:12px;color:var(--good)}
+:is(#app-reg,#app-desk) .ws-email{margin:0;white-space:pre-wrap;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;
   background:var(--paper);border:1px solid var(--line-2);border-radius:var(--ws-r);padding:12px;max-height:340px;overflow:auto;min-height:120px;color:var(--ink)}
 /* the charts */
-#app-reg .ws-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
-#app-reg .ws-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
-#app-reg .ws-chart{position:relative;min-height:250px}
-#app-reg .ws-chart svg{display:block;overflow:visible}
-#app-reg .ws-tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line-2);
+:is(#app-reg,#app-desk) .ws-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+:is(#app-reg,#app-desk) .ws-chart{position:relative;min-height:250px}
+:is(#app-reg,#app-desk) .ws-chart svg{display:block;overflow:visible}
+:is(#app-reg,#app-desk) .ws-tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line-2);
   border-radius:var(--ws-r);box-shadow:var(--shadow);padding:4px 8px;font-size:12px;white-space:nowrap;z-index:2;color:var(--ink)}
-#app-reg .ws-tip .t{color:var(--ink-3);margin-bottom:2px}
-#app-reg .ws-tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+:is(#app-reg,#app-desk) .ws-tip .t{color:var(--ink-3);margin-bottom:2px}
+:is(#app-reg,#app-desk) .ws-tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
 /* her segmented buttons, search and counts */
-#app-reg .ws-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
-#app-reg .ws-seg button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;
+:is(#app-reg,#app-desk) .ws-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+:is(#app-reg,#app-desk) .ws-seg button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;
   padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
-#app-reg .ws-seg button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper)}
-#app-reg .ws-search{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
+:is(#app-reg,#app-desk) .ws-seg button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper)}
+:is(#app-reg,#app-desk) .ws-search{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
   background:var(--paper);color:var(--ink);min-width:0;width:15rem;max-width:100%}
-#app-reg .ws-count{font-size:12px;color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-count{font-size:12px;color:var(--ink-3)}
 /* tables */
-#app-reg .ws-tablebox{overflow:auto;max-height:460px;border:1px solid var(--line-2);border-radius:var(--ws-r)}
-#app-reg .ws-table{border-collapse:collapse;width:100%;font-size:12px}
-#app-reg .ws-table th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:600;color:var(--ink-3);
+:is(#app-reg,#app-desk) .ws-tablebox{overflow:auto;max-height:460px;border:1px solid var(--line-2);border-radius:var(--ws-r)}
+:is(#app-reg,#app-desk) .ws-table{border-collapse:collapse;width:100%;font-size:12px}
+:is(#app-reg,#app-desk) .ws-table th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:600;color:var(--ink-3);
   border-bottom:2px solid var(--line-2);padding:0;white-space:nowrap;z-index:1}
-#app-reg .ws-table td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
-#app-reg .ws-table.hist td{white-space:nowrap}
-#app-reg .ws-table.hist td:last-child{white-space:normal;min-width:16rem}
-#app-reg .ws-table td.n,#app-reg .ws-table th.n{text-align:right}
-#app-reg .ws-table tr.is-latest td{background:color-mix(in srgb,var(--ws-sky) 14%,transparent)}
-#app-reg .ws-table tr.wk{cursor:pointer}
-#app-reg .ws-table tr.wk:hover td,#app-reg .ws-table tr.wk.open td{background:color-mix(in srgb,var(--ws-sky) 22%,transparent)}
-#app-reg .ws-th{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:8px 10px;cursor:pointer;width:100%;text-align:inherit;white-space:nowrap}
-#app-reg .ws-th[aria-sort="ascending"]::after{content:" \2191"} #app-reg .ws-th[aria-sort="descending"]::after{content:" \2193"}
-#app-reg .ws-plain{padding:8px 10px;display:block}
-#app-reg .ws-chip{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;white-space:nowrap}
-#app-reg .ws-chip.ip{background:color-mix(in srgb,var(--s-cur) 16%,transparent);color:var(--ink)}
-#app-reg .ws-chip.vr{background:color-mix(in srgb,var(--s-prior) 16%,transparent);color:var(--ink)}
-#app-reg .ws-chip.new{background:var(--ws-sky);color:var(--ws-navy-deep);margin-left:6px}
-#app-reg .ws-muted{color:var(--ink-3)}
-#app-reg .ws-newlist{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-height:40px;max-height:340px;overflow:auto}
-#app-reg .ws-newlist li{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px;color:var(--ink)}
-#app-reg .ws-newlist .co{color:var(--ink-3);font-size:12px}
-#app-reg .ws-newlist .dt{margin-left:auto;color:var(--ink-3);font-size:12px}
-#app-reg .ws-method{font-size:12px;color:var(--ink-3);line-height:1.6}
-#app-reg .ws-method h2{color:var(--ink);font-size:16px;font-weight:500;margin:0 0 8px}
-#app-reg .ws-method ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
-#app-reg .ws-method b{color:var(--ink)}
-#app-reg .ws-blank{color:var(--ink-3);font-size:12.5px;font-style:italic;padding:6px 0}
+:is(#app-reg,#app-desk) .ws-table td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-table.hist td{white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-table.hist td:last-child{white-space:normal;min-width:16rem}
+:is(#app-reg,#app-desk) .ws-table td.n,:is(#app-reg,#app-desk) .ws-table th.n{text-align:right}
+:is(#app-reg,#app-desk) .ws-table tr.is-latest td{background:color-mix(in srgb,var(--ws-sky) 14%,transparent)}
+:is(#app-reg,#app-desk) .ws-table tr.wk{cursor:pointer}
+:is(#app-reg,#app-desk) .ws-table tr.wk:hover td,:is(#app-reg,#app-desk) .ws-table tr.wk.open td{background:color-mix(in srgb,var(--ws-sky) 22%,transparent)}
+:is(#app-reg,#app-desk) .ws-th{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:8px 10px;cursor:pointer;width:100%;text-align:inherit;white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-th[aria-sort="ascending"]::after{content:" \2191"} :is(#app-reg,#app-desk) .ws-th[aria-sort="descending"]::after{content:" \2193"}
+:is(#app-reg,#app-desk) .ws-plain{padding:8px 10px;display:block}
+:is(#app-reg,#app-desk) .ws-chip{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-chip.ip{background:color-mix(in srgb,var(--s-cur) 16%,transparent);color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-chip.vr{background:color-mix(in srgb,var(--s-prior) 16%,transparent);color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-chip.new{background:var(--ws-sky);color:var(--ws-navy-deep);margin-left:6px}
+:is(#app-reg,#app-desk) .ws-muted{color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-newlist{list-style:none;margin:0;padding:0;display:grid;gap:6px;min-height:40px;max-height:340px;overflow:auto}
+:is(#app-reg,#app-desk) .ws-newlist li{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:14px;border-bottom:1px solid var(--line);padding-bottom:6px;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-newlist .co{color:var(--ink-3);font-size:12px}
+:is(#app-reg,#app-desk) .ws-newlist .dt{margin-left:auto;color:var(--ink-3);font-size:12px}
+:is(#app-reg,#app-desk) .ws-method{font-size:12px;color:var(--ink-3);line-height:1.6}
+:is(#app-reg,#app-desk) .ws-method h2{color:var(--ink);font-size:16px;font-weight:500;margin:0 0 8px}
+:is(#app-reg,#app-desk) .ws-method ul{margin:0;padding-left:1.2em;display:grid;gap:4px}
+:is(#app-reg,#app-desk) .ws-method b{color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-blank{color:var(--ink-3);font-size:12.5px;font-style:italic;padding:6px 0}
 /* Summit HQ's additions: a Friday typed in, a week changed, the files loaded */
-#app-reg .ws-tool{border-left:3px solid var(--ws-sky)}
-#app-reg .ws-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px 12px;padding:4px 0 2px}
-#app-reg .ws-form label{display:grid;gap:3px;white-space:nowrap;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
-#app-reg .ws-form input{font:inherit;font-size:12.5px;letter-spacing:0;text-transform:none;font-weight:400;width:100%;min-width:0}
-#app-reg .ws-form .acts{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#app-reg .ws-form .acts .grow{flex:1 1 auto}
-#app-reg .ws-files{display:grid;gap:6px}
-#app-reg .ws-file{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px;align-items:center;
+:is(#app-reg,#app-desk) .ws-tool{border-left:3px solid var(--ws-sky)}
+:is(#app-reg,#app-desk) .ws-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px 12px;padding:4px 0 2px}
+:is(#app-reg,#app-desk) .ws-form label{display:grid;gap:3px;white-space:nowrap;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+:is(#app-reg,#app-desk) .ws-form input{font:inherit;font-size:12.5px;letter-spacing:0;text-transform:none;font-weight:400;width:100%;min-width:0}
+:is(#app-reg,#app-desk) .ws-form .acts{grid-column:1 / -1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+:is(#app-reg,#app-desk) .ws-form .acts .grow{flex:1 1 auto}
+:is(#app-reg,#app-desk) .ws-files{display:grid;gap:6px}
+:is(#app-reg,#app-desk) .ws-file{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:8px;align-items:center;
   padding:8px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--paper);font-size:12px;color:var(--ink)}
-#app-reg .ws-file .nm{font-weight:600;overflow-wrap:anywhere}
-#app-reg .ws-file .ab{color:var(--ink-3)}
-#app-reg .ws-file select{font:inherit;font-size:12px;min-width:0}
-#app-reg .ws-have{display:grid;gap:4px;font-size:12px}
-#app-reg .ws-have div{display:flex;gap:8px;flex-wrap:wrap}
-#app-reg .ws-have .k{font-weight:600;min-width:13.5rem;color:var(--ink)}
-#app-reg .ws-have .w{color:var(--ink-3)}
-#app-reg .ws-err{color:var(--bad);font-size:12px;margin:0}
-@media(max-width:700px){ #app-reg .ws-file{grid-template-columns:minmax(0,1fr)} }
+:is(#app-reg,#app-desk) .ws-file .nm{font-weight:600;overflow-wrap:anywhere}
+:is(#app-reg,#app-desk) .ws-file .ab{color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-file select{font:inherit;font-size:12px;min-width:0}
+:is(#app-reg,#app-desk) .ws-have{display:grid;gap:4px;font-size:12px}
+:is(#app-reg,#app-desk) .ws-have div{display:flex;gap:8px;flex-wrap:wrap}
+:is(#app-reg,#app-desk) .ws-have .k{font-weight:600;min-width:13.5rem;color:var(--ink)}
+:is(#app-reg,#app-desk) .ws-have .w{color:var(--ink-3)}
+:is(#app-reg,#app-desk) .ws-err{color:var(--bad);font-size:12px;margin:0}
+@media(max-width:700px){ :is(#app-reg,#app-desk) .ws-file{grid-template-columns:minmax(0,1fr)} }
 /* this week's stats, this year beside last year */
-#app-reg .ws-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px}
-#app-reg .ws-statcol{border:1px solid var(--line-2);border-radius:var(--ws-r);border-top:3px solid var(--s-cur);padding:10px 14px;background:var(--paper)}
-#app-reg .ws-statcol.prior{border-top-color:var(--s-prior)}
-#app-reg .ws-stath{font-size:14px;font-weight:600;color:var(--ink);margin:0 0 4px;white-space:nowrap}
-#app-reg .ws-stat{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
-#app-reg .ws-stat:last-child{border-bottom:0}
-#app-reg .ws-stat .k{color:var(--ink-3);white-space:nowrap}
-#app-reg .ws-stat .v{color:var(--ink);font-weight:600;white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));gap:12px}
+:is(#app-reg,#app-desk) .ws-statcol{border:1px solid var(--line-2);border-radius:var(--ws-r);border-top:3px solid var(--s-cur);padding:10px 14px;background:var(--paper)}
+:is(#app-reg,#app-desk) .ws-statcol.prior{border-top-color:var(--s-prior)}
+:is(#app-reg,#app-desk) .ws-stath{font-size:14px;font-weight:600;color:var(--ink);margin:0 0 4px;white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-stat{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+:is(#app-reg,#app-desk) .ws-stat:last-child{border-bottom:0}
+:is(#app-reg,#app-desk) .ws-stat .k{color:var(--ink-3);white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-stat .v{color:var(--ink);font-weight:600;white-space:nowrap}
 /* the category filter, the same box as the search */
-#app-reg .ws-select{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
+:is(#app-reg,#app-desk) .ws-select{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;
   background:var(--paper);color:var(--ink);min-width:0;max-width:100%;cursor:pointer}
-#app-reg .ws-select:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
-#app-reg .ws-table td.cat{white-space:nowrap}
+:is(#app-reg,#app-desk) .ws-select:focus-visible{outline:2px solid var(--ws-sky);outline-offset:2px}
+:is(#app-reg,#app-desk) .ws-table td.cat{white-space:nowrap}
 </style>
 
 <div id="app-gs" hidden>
@@ -7413,6 +7417,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Build Tuesday on General Sessions</b>: the running order, who is on each segment and who sponsors it.</li>
           <li><b>Add speakers on People.</b> Each one you add goes on Bernie&rsquo;s next morning list to register on its own.</li>
           <li><b>Ask the MISMO team for their travel dates</b> from <b>MISMO Team at the Summit</b> on People: press <b>Ask for Travel Dates</b>, check the email and send it. Check who Bernie should register and press <b>Send to Bernie</b>; he only registers them, so his email has names and emails, not dates. Once everyone&rsquo;s dates are in, press <b>Send the Rooming List to Ros</b> for the hotel reservations (it stays greyed out, naming who still needs dates, until then; if dates change after it goes, it offers <b>Send Ros the Updated Rooming List</b>).</li>
+          <li><b>The Registration Desk</b> (Registration Desk in the left menu, or resources.mismo.org/summit-hq/?desk) is Bernie&rsquo;s one page for every registration task: sponsor invoices, sponsor codes and payment chases from the Sponsorship Portal, Champion codes, speakers, the Board, and the MISMO Team and guests, with The Trunk one click away. Only Bernie, you, Amy and Kelly can open it. The sponsor code email starts in Test (to you only); only you can switch it to <b>Live</b>, on the Desk&rsquo;s Sponsors card.</li>
           <li><b>Champion Codes</b> on Registration: until you switch it to <b>Live</b>, every Champion and Bernie email comes to you only, marked [Test]. <b>Email Wording and Tests</b> &rsaquo; <b>Send Jonna Every Test Email</b> sends you one of each. Add contacts on any Champion row Member 360 has none for.</li>
           <li><b>Watch Ready for the Hotel</b> on Hotel Specs and the readiness on the Resume, and issue each new resume version from <b>Versions &amp; Changes</b>.</li>
           <li><b>Review the trunk</b> when Bernie sends it: open the link in the email and press <b>Looks Good</b> or <b>Needs a Change</b>.</li>
@@ -7458,19 +7463,21 @@ textarea,input,select{font-family:var(--ui,inherit)}
 
       <div class="hp-who" data-p="bernie" hidden>
         <div class="hp-whohd"><b>Bernardo (Bernie) Jordan</b><span>Registers speakers, the Board and the MISMO team; sets up the Champions&rsquo; codes; sends sponsorship invoices; keeps the Trunk.</span></div>
-        <div class="hp-go"><span>Your pages</span><button type="button" data-go="trunk">The Trunk</button><button type="button" data-go="people">People</button><button type="button" data-go="reg">Registration</button></div>
-        <h4>Registering People</h4>
+        <div class="hp-go"><span>Your pages</span><button type="button" data-go="desk">Registration Desk</button><button type="button" data-go="trunk">The Trunk</button></div>
+        <h4>Your Registration Desk</h4>
         <ol class="hp-steps">
-          <li><b>Every weekday morning</b> the <b>New Speakers to Register</b> email lists the speakers added since the last one, with their sessions. Register each one.</li>
-          <li><b>Mark them registered</b> on People: open the speaker and tick <b>Registered for the event</b>. Anyone registered before the email goes drops off the next list.</li>
-          <li><b>The Board</b>: when someone presses Notify Bernie, the <b>Board Members to Register</b> email lists who is still to register. Register them, then press <b>Registered</b> on their row on the Board of Directors card.</li>
-          <li><b>The MISMO team</b>: the <b>MISMO Team to Register</b> email lists the team members to register, with their emails. You only register them; the hotel rooms are Ros&rsquo;s, and she gets the rooming list separately.</li>
-          <li><b>Sponsors are never registered by you</b>; they use their comp code. You get each sponsorship invoice to send when the portal approves it.</li>
+          <li><b>Everything you do for registration is on one page</b>, the <b>Registration Desk</b> (resources.mismo.org/summit-hq/?desk). Opening Summit HQ takes you straight there. Pick the summit at the left. The tiles at the top count what is waiting on you; press one to jump to it. <b>Open The Trunk</b> is at the top, and <b>Open all of Summit HQ</b> is at the left if you ever need the rest.</li>
+          <li><b>Sponsors.</b> Every approved sponsorship for the summit, straight from the Sponsorship Portal, so you never need to open the portal. <b>Raise the Invoice</b>: create it in Aptify and type the <b>Aptify Order ID</b> (the date fills in as today; change it if you need to). Then the <b>Code</b> and <b>How Many</b>, and press <b>Send the Code</b>: you see the email first, then <b>Send</b> emails the sponsor contact their code (as Kelly, copied to you). <b>Already Sent</b> records one you sent yourself. When a payment is 30 days past the invoice it shows <b>Time to Chase</b>; once you have chased them, press <b>Log a Follow-Up</b>. Everything you enter goes onto the sponsorship&rsquo;s record in the portal; until the portal has picked it up, the row says so.</li>
+          <li><b>Champion Codes.</b> The whole Champion list is on the Desk (below), and this is now the only place codes are entered and sent.</li>
+          <li><b>Speakers.</b> Every speaker on the summit you still need to register. Register them, then press <b>Registered</b>. The morning <b>New Speakers to Register</b> email still comes.</li>
+          <li><b>The Board.</b> Each member attending, In Person or Virtual. Register them that way, then press <b>Registered</b>. The <b>Board Members to Register</b> email still comes when someone presses Notify Bernie.</li>
+          <li><b>The MISMO Team and guests.</b> Staff, the meetings team, facilitators, MBA and guests. Register them and press <b>Registered</b>. Hotel rooms are Ros&rsquo;s; speakers who need a room in our block are registered as speakers.</li>
+          <li><b>Everyone else who needs to see it</b>: Jonna, Amy and Kelly can open the Desk too (Registration Desk in the left menu). Nobody else sees it.</li>
         </ol>
         <h4>Champion Codes</h4>
         <ol class="hp-steps">
           <li><b>The Monday after each summit</b> you get <b>Champion Codes to Set Up</b>: every current Champion for the next summit, their level and how many complimentary registrations they get (Associate 2, Executive 3, Chair 6), with last summit&rsquo;s code filled in.</li>
-          <li><b>Set up each code in Aptify</b>, then open <b>Registration</b> and press <b>Champion Codes</b> at the top. <b>For Bernie</b> lists every Champion still waiting on you.</li>
+          <li><b>Set up each code in Aptify</b>, then open your <b>Registration Desk</b> and go to <b>Champion Codes</b>. <b>For Bernie</b> lists every Champion still waiting on you. (Registration in Summit HQ shows the same list, read-only, and People keeps the Comp Codes lookup for Amy.)</li>
           <li><b>Enter or confirm the code</b> on their row (and the Code ID if you like), then press <b>Confirm &amp; Send</b>, or <b>Send All Ready</b> for everyone with a code. That emails the Champion their code and takes them off For Bernie. <b>Already Sent</b> records one you sent by hand. Summit HQ will not send one with no code, or to an address that has a code in it or is not an email address; it says which address to check instead.</li>
           <li><b>A new Champion or a level change</b> in Member 360 sends you <b>New Champion Code to Set Up</b> or <b>Champion Level Changed</b>. Set up or change the code the same way; a level change shows <b>Send Updated Email</b> (or <b>No Email Needed</b>).</li>
           <li><b>Virtual.</b> When a Champion asks for some of their registrations as virtual, you get <b>Virtual Registrations Requested</b> and their row shows how many. Set up the virtual code in Aptify, enter it and how many on their row, and press <b>Send Virtual Code</b>.</li>
@@ -7486,7 +7493,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
           <li><b>Print the packing list</b> with <b>Packing List PDF</b>, or choose Save as PDF in the print window. It has a box to tick for every line and lines to sign.</li>
         </ol>
         <h4>Emails You Get</h4>
-        <ul><li>New Speakers to Register &middot; Board Members to Register &middot; MISMO Team to Register &middot; Champion Codes to Set Up &middot; New Champion Code to Set Up &middot; Champion Level Changed &middot; Virtual Registrations Requested &middot; sponsorship invoices and payment follow-ups &middot; The Trunk Looks Good / Needs a Change &middot; Tasks Due This Week.</li></ul>
+        <ul><li>New Speakers to Register &middot; Board Members to Register &middot; MISMO Team to Register &middot; Champion Codes to Set Up &middot; New Champion Code to Set Up &middot; Champion Level Changed &middot; Virtual Registrations Requested &middot; sponsorship invoices and payment follow-ups &middot; The Trunk Looks Good / Needs a Change &middot; Tasks Due This Week. They are the same as before; their buttons now open your Registration Desk.</li></ul>
       </div>
 
       <div class="hp-who" data-p="rosalyn" hidden>
@@ -7961,7 +7968,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
   </details>
 
   </div>
-  <p class="hp-foot">Last reviewed November 18, 2026. When the process changes, update this page with it.</p>
+  <p class="hp-foot">Last reviewed November 19, 2026. When the process changes, update this page with it.</p>
   </div>
 </div>
 </div>
@@ -7984,6 +7991,28 @@ textarea,input,select{font-family:var(--ui,inherit)}
   [1500,5000].forEach(t=>setTimeout(()=>{ if(!picked) show(mine()); },t));
 })();
 </script>
+
+<div id="app-desk" hidden>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Registration Desk</div>
+      <h1 id="dk-title">Registration Desk</h1>
+      <div class="sub" id="dk-sub"></div>
+    </div>
+    <div class="rg-acts" id="dk-acts"></div>
+  </header>
+  <div class="ws-body">
+    <section class="ws-head rg-hero" id="dk-head"></section>
+    <section class="ws-tiles dk-tiles" id="dk-tiles" aria-label="What is waiting"></section>
+    <section class="ws-card dk-card" id="dk-spon" aria-label="Sponsors"></section>
+    <div id="dk-champ-slot"></div>
+    <section class="ws-card dk-card" id="dk-spk" aria-label="Speakers"></section>
+    <section class="ws-card dk-card" id="dk-board" aria-label="Board of Directors"></section>
+    <section class="ws-card dk-card" id="dk-team" aria-label="MISMO Team and guests"></section>
+  </div>
+</div>
+</div>
 
 <div id="app-reg" hidden>
 <div class="wrap">
@@ -24692,12 +24721,13 @@ startClock();
   const panes={grid:document.getElementById("app-grid"),specs:document.getElementById("app-specs"),
     ros:document.getElementById("app-ros"),people:document.getElementById("app-people"),
     resume:document.getElementById("app-resume"),reg:document.getElementById("app-reg"),
-    gs:document.getElementById("app-gs"),wk:document.getElementById("app-wk"),trunk:document.getElementById("app-trunk"),help:document.getElementById("app-help")};
+    gs:document.getElementById("app-gs"),wk:document.getElementById("app-wk"),trunk:document.getElementById("app-trunk"),help:document.getElementById("app-help"),
+    desk:document.getElementById("app-desk")};
   const btns=[...document.querySelectorAll(".hq nav button")];
   const note=document.getElementById("hqNote");
   const LABEL={grid:"Schedule the week",specs:"What the hotel sets up",
     ros:"Track the work",people:"Speakers, sponsors and the board",resume:"Tell the hotel",reg:"Who has registered",
-    gs:"Build Tuesday's General Sessions",wk:"Build Monday's Workshop",trunk:"What goes to the Summit",help:"How Summit HQ works"};
+    gs:"Build Tuesday's General Sessions",wk:"Build Monday's Workshop",trunk:"What goes to the Summit",help:"How Summit HQ works",desk:"Bernie's registrations"};
   /* Hotel Specs and People are views of Run of Show now — they are the same
      cycle — so all three light the one tab and share the strip of chips. */
   /* Jonna, 2026-10-31: People, Hotel Specs and The Trunk are their own pages in the menu now */
@@ -24727,6 +24757,7 @@ startClock();
     }
     try{ if(window.__pane){ if(was!==which) window.__pane.close(); else window.__pane.refresh(); } }catch(e){}
     try{localStorage.setItem("hq.tab",which);}catch(e){}
+    try{ window.dispatchEvent(new CustomEvent("hq:tab",{detail:which})); }catch(e){}
     window.dispatchEvent(new Event("resize"));
   }
   window.__hqGo=show;
@@ -24742,7 +24773,8 @@ startClock();
      The remembered tab still decides WHERE INSIDE the Run of Show it lands - the week,
      the discussion or the task list - so coming back to it is still where you left it.
      It just no longer decides which of the three tabs you arrive on. */
-  show(lastInGroup());
+  /* the Registration Desk opens on itself (?desk) */
+  show(/[?&]desk\b/.test(location.search)? "desk" : lastInGroup());
 })();
 
 /* One button, the same code every MISMO page uses. The label names the theme it
@@ -29045,7 +29077,7 @@ function ttRow(p){
   em.addEventListener('change',()=>ttSet(p.id,{e:em.value.trim()},'an email on the MISMO team'));
   L.appendChild(em);
   const st=[p.respAt? 'Dates in '+localDay(p.respAt).replace(/ at .*/,'') : p.sentAt? (ttHasDates(p)? 'Form sent '+localDay(p.sentAt).replace(/ at .*/,'') : 'Form sent '+localDay(p.sentAt).replace(/ at .*/,'')+' — waiting') : (ttHasDates(p)? '' : 'Not asked yet'),
-    p.sentB? 'Sent to Bernie '+localDay(p.sentB).replace(/ at .*/,'') : ''].filter(Boolean).join(' · ');
+    p.sentB? 'Sent to Bernie '+localDay(p.sentB).replace(/ at .*/,'') : '', p.reg? 'Registered '+pretty(p.reg) : ''].filter(Boolean).join(' · ');
   if(st) L.appendChild(el('div','sp-me'+(ttHasDates(p)?' tt-ok':''),st));
   if(p.notes) L.appendChild(el('div','sp-me tt-note','“'+p.notes+'”'));
   row.appendChild(L);
@@ -29211,7 +29243,7 @@ function saFrame(){
    +'<tr><td style="padding:16px 32px 0;'+F+';font-size:15px;line-height:1.6;color:#0d314c"><p style="margin:0 0 6px">Good morning Bernie,</p><p style="margin:0">These speakers were added to the summit since the last list. Please register them as speakers.</p></td></tr>'
    +'<tr><td style="padding:8px 22px 0"><table cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;margin:8px 0 4px"><tbody>';
   const foot='</tbody></table></td></tr>'
-   +'<tr><td style="padding:16px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#55657a">Once they are registered, mark them <b>Registered</b> on their row in <a href="https://resources.mismo.org/summit-hq/" style="color:#0f6fa8;font-weight:700">Summit HQ</a> under People. This list goes out each weekday morning when speakers have been added.</td></tr>'
+   +'<tr><td style="padding:16px 32px 26px;'+F+';font-size:14px;line-height:1.5;color:#55657a">Once they are registered, mark them <b>Registered</b> on your <a href="https://resources.mismo.org/summit-hq/?desk" style="color:#0f6fa8;font-weight:700">Registration Desk</a>. This list goes out each weekday morning when speakers have been added.</td></tr>'
    +'<tr><td style="background:#0d314c;padding:14px 32px;border-radius:0 0 7px 7px;'+F+';font-size:12px;line-height:1.5;color:#a9d8f3">MISMO, 1919 M Street NW, 5th Floor, Washington, DC 20036</td></tr>'
    +'</tbody></table></td></tr></tbody></table>';
   return {head, foot, summitName:v.name||''};
@@ -30465,6 +30497,28 @@ window.__people={
     },240);
     return true;
   }
+};
+/* ============================================================
+   THE REGISTRATION DESK reads and marks Bernie's registrations through this (Jonna, 2026-11-19:
+   "create him a portal for all his registration tasks for speakers, sponsors, champions, mismo team
+   and guests all in one place"). Each mark is the same one People makes, so Summit HQ, Ros's
+   rooming list and the Board card see it at once.
+   ============================================================ */
+window.__desk={
+  ready:()=>!!ST.ready,
+  venue:()=>venueNow(), info:()=>venueInfo(), dates:()=>seDates(),
+  /* speakers on this summit Bernie registers (the MISMO team is registered from its own list) */
+  speakers:()=>all().filter(p=>onSummit(p) && roleOf(p)==='speaker' && !ttIsTeam(p)).map(p=>{
+    let ses=[]; try{ const S=summitSessions(); ses=((stOf(p).ses)||[]).map(k=>S.find(x=>x.key===k)).filter(Boolean).map(x=>x.name); }catch(e){}
+    return {id:p.i, n:p.n||'', e:p.e||'', t:p.t||'', c:p.c||'', ses, reg:stepDone(p,'reg')||'', role:roleOf(p)}; }),
+  setSpeakerReg:(id,on)=>{ const p=byId(id); if(!p) return; const steps=Object.assign({},stOf(p).steps||{});
+    if(on) steps.reg=today(); else delete steps.reg; patchSt(id,{steps,on:true},on?'Registered for the event':'Registered taken off'); render(); },
+  board:()=>boardList().filter(b=>!(boardOff()||{})[boardNameKey(b.n)]).map(b=>({id:b.i, n:b.n, e:b.e||'', r:b.r||'', att:boardAtt(b.i), reg:boardReg(b.i), sent:bnSent(b.i)})),
+  setBoardReg:(id,on)=>{ const reg=Object.assign({},boardDoc().reg||{}); if(on) reg[id]=today(); else delete reg[id]; setBoard({reg},'a board registration'); render(); },
+  team:()=>ttList().filter(p=>p.role!=='speaker').map(p=>({id:p.id, n:p.n||'', e:p.e||'', role:p.role||'staff', label:TT_ROLE[p.role||'staff']||'', reg:p.reg||'', sent:p.sentB||'', arr:p.arr||'', dep:p.dep||''})),
+  setTeamReg:(id,on)=>{ ttSet(id,{reg:on? today() : ''}, on?'a MISMO team registration':'a MISMO team registration taken off'); },
+  eventHere:ev=>{ const e=String(ev||'').trim().toLowerCase(); if(!e) return true; const on=eventVenues(e); return on? on.indexOf(venueNow())>=0 : false; },
+  pretty:iso=>pretty(iso)
 };
 })();
 </script>
@@ -32837,31 +32891,31 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
 
 <style>
 /* the sponsors' weekly list: the wording Kelly keeps, and what went (Jonna, 2026-11-08) */
-#app-reg #rg-spon .sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));gap:16px;align-items:start}
-#app-reg #rg-spon .sp-sec{display:grid;gap:8px;min-width:0}
-#app-reg #rg-spon h3{margin:4px 0 0;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-#app-reg #rg-spon label{display:grid;gap:3px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
-#app-reg #rg-spon input[type=text],#app-reg #rg-spon textarea{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);
+:is(#app-reg,#app-desk) #rg-spon .sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr));gap:16px;align-items:start}
+:is(#app-reg,#app-desk) #rg-spon .sp-sec{display:grid;gap:8px;min-width:0}
+:is(#app-reg,#app-desk) #rg-spon h3{margin:4px 0 0;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-spon label{display:grid;gap:3px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+:is(#app-reg,#app-desk) #rg-spon input[type=text],:is(#app-reg,#app-desk) #rg-spon textarea{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);
   background:var(--paper);border:1px solid var(--line-2);border-radius:6px;padding:7px 10px;width:100%;min-width:0;box-sizing:border-box}
-#app-reg #rg-spon textarea{min-height:22rem;line-height:1.5;resize:vertical}
-#app-reg #rg-spon input:focus-visible,#app-reg #rg-spon textarea:focus-visible{outline:2px solid var(--ws-sky);outline-offset:1px}
-#app-reg #rg-spon .sp-hint{font-size:12px;color:var(--ink-3);line-height:1.5}
-#app-reg #rg-spon .sp-stat{font-size:12px;color:var(--ink-3)}
-#app-reg #rg-spon .sp-stat.dirty{color:var(--warn,#b7791f);font-weight:600}
-#app-reg #rg-spon .sp-stat.ok{color:var(--good)}
-#app-reg #rg-spon .sp-stat.bad{color:var(--bad)}
-#app-reg #rg-spon iframe{width:100%;height:680px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
-#app-reg #rg-spon .sp-when{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:8px}
-#app-reg #rg-spon .sp-when > div{border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--paper);padding:8px 12px}
-#app-reg #rg-spon .sp-when .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-#app-reg #rg-spon .sp-when .v{font-size:14px;font-weight:600;color:var(--ink)}
-#app-reg #rg-spon .sp-run td{cursor:pointer}
-#app-reg #rg-spon .sp-run:hover td,#app-reg #rg-spon .sp-run.open td{background:color-mix(in srgb,var(--ws-sky) 18%,transparent)}
-#app-reg #rg-spon .sp-detail td{background:var(--paper);cursor:default}
-#app-reg #rg-spon .sp-detail .ws-row{margin:2px 0 8px}
-#app-reg #rg-spon .sp-to{border-collapse:collapse;width:100%;font-size:12px}
-#app-reg #rg-spon .sp-to td,#app-reg #rg-spon .sp-to th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left}
-#app-reg #rg-spon .sp-to th{color:var(--ink-3);font-weight:600}
+:is(#app-reg,#app-desk) #rg-spon textarea{min-height:22rem;line-height:1.5;resize:vertical}
+:is(#app-reg,#app-desk) #rg-spon input:focus-visible,:is(#app-reg,#app-desk) #rg-spon textarea:focus-visible{outline:2px solid var(--ws-sky);outline-offset:1px}
+:is(#app-reg,#app-desk) #rg-spon .sp-hint{font-size:12px;color:var(--ink-3);line-height:1.5}
+:is(#app-reg,#app-desk) #rg-spon .sp-stat{font-size:12px;color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-spon .sp-stat.dirty{color:var(--warn,#b7791f);font-weight:600}
+:is(#app-reg,#app-desk) #rg-spon .sp-stat.ok{color:var(--good)}
+:is(#app-reg,#app-desk) #rg-spon .sp-stat.bad{color:var(--bad)}
+:is(#app-reg,#app-desk) #rg-spon iframe{width:100%;height:680px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
+:is(#app-reg,#app-desk) #rg-spon .sp-when{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:8px}
+:is(#app-reg,#app-desk) #rg-spon .sp-when > div{border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--paper);padding:8px 12px}
+:is(#app-reg,#app-desk) #rg-spon .sp-when .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-spon .sp-when .v{font-size:14px;font-weight:600;color:var(--ink)}
+:is(#app-reg,#app-desk) #rg-spon .sp-run td{cursor:pointer}
+:is(#app-reg,#app-desk) #rg-spon .sp-run:hover td,:is(#app-reg,#app-desk) #rg-spon .sp-run.open td{background:color-mix(in srgb,var(--ws-sky) 18%,transparent)}
+:is(#app-reg,#app-desk) #rg-spon .sp-detail td{background:var(--paper);cursor:default}
+:is(#app-reg,#app-desk) #rg-spon .sp-detail .ws-row{margin:2px 0 8px}
+:is(#app-reg,#app-desk) #rg-spon .sp-to{border-collapse:collapse;width:100%;font-size:12px}
+:is(#app-reg,#app-desk) #rg-spon .sp-to td,:is(#app-reg,#app-desk) #rg-spon .sp-to th{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left}
+:is(#app-reg,#app-desk) #rg-spon .sp-to th{color:var(--ink-3);font-weight:600}
 </style>
 <script>
 /* ============================================================
@@ -33085,40 +33139,40 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
 </script>
 <style>
 /* Champion codes (Jonna, 2026-11-09) */
-#app-reg #rg-champ .ch-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-#app-reg #rg-champ .ch-top h2{margin-right:auto}
-#app-reg #rg-champ .ch-mode{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
-#app-reg #rg-champ .ch-mode button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent}
-#app-reg #rg-champ .ch-mode button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper)}
-#app-reg #rg-champ .ch-mode button.live[aria-pressed="true"]{border-bottom-color:var(--good)}
-#app-reg #rg-champ .ch-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:8px}
-#app-reg #rg-champ .ch-tile{border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--paper);padding:8px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
-#app-reg #rg-champ .ch-tile[aria-pressed="true"]{border-color:var(--ws-sky);box-shadow:inset 0 0 0 1px var(--ws-sky)}
-#app-reg #rg-champ .ch-tile .k{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-#app-reg #rg-champ .ch-tile .v{display:block;font-size:20px;font-weight:600}
-#app-reg #rg-champ .ch-tile.warn .v{color:var(--warn,#b7791f)}
-#app-reg #rg-champ .ch-table td{vertical-align:top}
-#app-reg #rg-champ .ch-co b{display:block;font-weight:600}
-#app-reg #rg-champ .ch-co small,#app-reg #rg-champ .ch-sm{display:block;color:var(--ink-3);font-size:11.5px;line-height:1.45}
-#app-reg #rg-champ .ch-flag{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;margin:2px 4px 0 0;white-space:nowrap}
-#app-reg #rg-champ .ch-flag.need{background:color-mix(in srgb,var(--warn,#b7791f) 18%,transparent);color:var(--ink)}
-#app-reg #rg-champ .ch-flag.ok{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--ink)}
-#app-reg #rg-champ .ch-flag.info{background:color-mix(in srgb,var(--ws-sky) 22%,transparent);color:var(--ink)}
-#app-reg #rg-champ .ch-flag.off{background:var(--sunk);color:var(--ink-3)}
-#app-reg #rg-champ input.ch-in{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--paper);color:var(--ink);width:100%;min-width:0;box-sizing:border-box}
-#app-reg #rg-champ input.ch-in.n{width:4.5rem}
-#app-reg #rg-champ .ch-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-#app-reg #rg-champ .ch-acts .ws-btn{padding:4px 10px;font-size:11.5px}
-#app-reg #rg-champ .ch-wording{border-top:1px solid var(--line);padding-top:10px}
-#app-reg #rg-champ .ch-wording summary{cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-#app-reg #rg-champ .ch-ed{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:14px;margin-top:10px}
-#app-reg #rg-champ .ch-ed label{display:grid;gap:3px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
-#app-reg #rg-champ .ch-ed input,#app-reg #rg-champ .ch-ed textarea{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box}
-#app-reg #rg-champ .ch-ed textarea{min-height:24rem;line-height:1.5;resize:vertical}
-#app-reg #rg-champ iframe{width:100%;height:600px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
-#app-reg #rg-champ .ch-note{font-size:12px;color:var(--ink-3);line-height:1.5;margin:0}
-#app-reg #rg-champ .ch-msg{font-size:12px;color:var(--good)}
-#app-reg #rg-champ .ch-msg.bad{color:var(--bad)}
+:is(#app-reg,#app-desk) #rg-champ .ch-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+:is(#app-reg,#app-desk) #rg-champ .ch-top h2{margin-right:auto}
+:is(#app-reg,#app-desk) #rg-champ .ch-mode{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+:is(#app-reg,#app-desk) #rg-champ .ch-mode button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent}
+:is(#app-reg,#app-desk) #rg-champ .ch-mode button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper)}
+:is(#app-reg,#app-desk) #rg-champ .ch-mode button.live[aria-pressed="true"]{border-bottom-color:var(--good)}
+:is(#app-reg,#app-desk) #rg-champ .ch-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:8px}
+:is(#app-reg,#app-desk) #rg-champ .ch-tile{border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--paper);padding:8px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
+:is(#app-reg,#app-desk) #rg-champ .ch-tile[aria-pressed="true"]{border-color:var(--ws-sky);box-shadow:inset 0 0 0 1px var(--ws-sky)}
+:is(#app-reg,#app-desk) #rg-champ .ch-tile .k{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-champ .ch-tile .v{display:block;font-size:20px;font-weight:600}
+:is(#app-reg,#app-desk) #rg-champ .ch-tile.warn .v{color:var(--warn,#b7791f)}
+:is(#app-reg,#app-desk) #rg-champ .ch-table td{vertical-align:top}
+:is(#app-reg,#app-desk) #rg-champ .ch-co b{display:block;font-weight:600}
+:is(#app-reg,#app-desk) #rg-champ .ch-co small,:is(#app-reg,#app-desk) #rg-champ .ch-sm{display:block;color:var(--ink-3);font-size:11.5px;line-height:1.45}
+:is(#app-reg,#app-desk) #rg-champ .ch-flag{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;margin:2px 4px 0 0;white-space:nowrap}
+:is(#app-reg,#app-desk) #rg-champ .ch-flag.need{background:color-mix(in srgb,var(--warn,#b7791f) 18%,transparent);color:var(--ink)}
+:is(#app-reg,#app-desk) #rg-champ .ch-flag.ok{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--ink)}
+:is(#app-reg,#app-desk) #rg-champ .ch-flag.info{background:color-mix(in srgb,var(--ws-sky) 22%,transparent);color:var(--ink)}
+:is(#app-reg,#app-desk) #rg-champ .ch-flag.off{background:var(--sunk);color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-champ input.ch-in{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--paper);color:var(--ink);width:100%;min-width:0;box-sizing:border-box}
+:is(#app-reg,#app-desk) #rg-champ input.ch-in.n{width:4.5rem}
+:is(#app-reg,#app-desk) #rg-champ .ch-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+:is(#app-reg,#app-desk) #rg-champ .ch-acts .ws-btn{padding:4px 10px;font-size:11.5px}
+:is(#app-reg,#app-desk) #rg-champ .ch-wording{border-top:1px solid var(--line);padding-top:10px}
+:is(#app-reg,#app-desk) #rg-champ .ch-wording summary{cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+:is(#app-reg,#app-desk) #rg-champ .ch-ed{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:14px;margin-top:10px}
+:is(#app-reg,#app-desk) #rg-champ .ch-ed label{display:grid;gap:3px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+:is(#app-reg,#app-desk) #rg-champ .ch-ed input,:is(#app-reg,#app-desk) #rg-champ .ch-ed textarea{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink);background:var(--paper);border:1px solid var(--line-2);border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box}
+:is(#app-reg,#app-desk) #rg-champ .ch-ed textarea{min-height:24rem;line-height:1.5;resize:vertical}
+:is(#app-reg,#app-desk) #rg-champ iframe{width:100%;height:600px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
+:is(#app-reg,#app-desk) #rg-champ .ch-note{font-size:12px;color:var(--ink-3);line-height:1.5;margin:0}
+:is(#app-reg,#app-desk) #rg-champ .ch-msg{font-size:12px;color:var(--good)}
+:is(#app-reg,#app-desk) #rg-champ .ch-msg.bad{color:var(--bad)}
 </style>
 <script>
 /* ============================================================
@@ -33156,8 +33210,11 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
   const COMPS={Associate:2, Executive:3, Chair:6};
   const TEST_TO='jcritchley@mismo.org';
   const BERNIE='bjordan@mba.org', JONNA='jcritchley@mismo.org', KELLY_EMAIL='kbradshaw@mismo.org';
+  /* Jonna, 2026-11-19: codes are entered and sent only on the Registration Desk; Registration shows them */
+  const onDesk=()=>{ const h=document.getElementById('rg-champ'); return !!(h && h.closest('#app-desk')); };
   const FORM='https://resources.mismo.org/summit-hq/champion.html';
-  const HQ_LINK='https://resources.mismo.org/summit-hq/#registration';
+  /* Jonna, 2026-11-19: Bernie enters and sends the codes on his Registration Desk now */
+  const HQ_LINK='https://resources.mismo.org/summit-hq/?desk';
   const SUMMIT_PAGE='https://www.mismo.org/events-education/mismo-summit';
   const DEF={
     code:{subject:'Your MISMO {summit} Champion Code',
@@ -33350,8 +33407,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       : kind==='level'? 'Member 360 shows a new Champion level for the companies below, so their number of complimentary registrations for the '+sn+' changes.'
       : 'Member 360 has '+(list.length===1?'a new Champion':list.length+' new Champions')+' who need'+(list.length===1?'s':'')+' a code for the '+sn+'.';
     const body=intro+'\n\n'+'Champions:\n'+list.map(line).join('\n')+'\n\n'
-      +'Set up each code in Aptify, then open Summit HQ, Registration, Champion Codes, and enter or confirm it. Each one you confirm sends that Champion their code email.\n\n'
-      +'[[Open Champion Codes]]('+HQ_LINK+')';
+      +'Set up each code in Aptify, then open your Registration Desk, Champion Codes, and enter or confirm it. Each one you confirm sends that Champion their code email.\n\n'
+      +'[[Open the Registration Desk]]('+HQ_LINK+')';
     const html=bernieHtml(subject, body, kind==='cycle'?'Champion Codes to Set Up':'Champion Codes'); if(!html) return false;
     await queue({id:'ch-ask-'+v+'-'+kind+'-'+list.map(r=>r.key).join('.').slice(0,80), to:BERNIE, cc:JONNA+'; '+KELLY_EMAIL, replyTo:JONNA, subject, html}, liveSet());
     return true;
@@ -33474,8 +33531,8 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     venues().forEach(venue=>{ rowsOf(venue.id).forEach(r=>{ if(r.tok) tokens[r.tok]={company:r.company, v:venue.id, summit:'MISMO '+summitName(venue)}; }); });
     const subject='Virtual Registrations Requested: {company}';
     const body='{company} would like {n} of their complimentary registrations for the {summit} as VIRTUAL.\n\nTheir note: {notes}\n\n'
-      +'Set up their virtual code in Aptify, then open Summit HQ, Registration, Champion Codes, enter the virtual code and how many, and press Send Virtual Code. That sends it to them.\n\n'
-      +'[[Open Champion Codes]]('+HQ_LINK+')';
+      +'Set up their virtual code in Aptify, then open your Registration Desk, Champion Codes, enter the virtual code and how many, and press Send Virtual Code. That sends it to them.\n\n'
+      +'[[Open the Registration Desk]]('+HQ_LINK+')';
     const live=liveSet();
     const doc={live, to: live? BERNIE : TEST_TO, cc: live? JONNA+'; '+KELLY_EMAIL : '', testTo:TEST_TO,
       subject:(live?'':'[Test] ')+subject, html:(live?'':'<p style="font-family:Arial;font-size:13px;color:#6c899f;margin:0 0 8px">Test: this would go to '+BERNIE+' (copy to '+JONNA+' and '+KELLY_EMAIL+').</p>')+bernieHtml(subject, body, 'Virtual Registrations Requested'), tokens};
@@ -33517,6 +33574,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     const rows=rowsOf(v).sort((a,b)=>String(a.company).localeCompare(String(b.company)));
     const open=opensOn(venue);
     let say=liveSet()? 'Live: emails go to the champions and to Bernie.' : 'Test mode: every champion and Bernie email goes to Jonna only, marked [Test].';
+    if(!onDesk()) say='Bernie enters each code and sends it on his Registration Desk; this is the list as it stands. '+say;
     if(!rows.length) say=(open && open>today()? 'This summit’s champion list opens '+longD(open)+', the Monday after the summit before it. Bernie gets the list then. ' : 'This summit’s list fills in from Member 360 the next time someone with Member 360 access opens this page. ')+say;
     host.appendChild(el('p','ch-note',say+(S.m360Err? ' '+S.m360Err : '')));
     if(rows.length){
@@ -33535,7 +33593,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
       const q=document.createElement('input'); q.type='search'; q.className='ws-search'; q.placeholder='Search champions or codes'; q.value=S.q;
       q.addEventListener('input',()=>{ S.q=q.value; paintRows(); }); bar.appendChild(q);
       bar.appendChild(el('span','grow'));
-      if(canEdit() && ready.length) bar.appendChild(btn('Send All Ready ('+ready.length+')','',async e=>{
+      if(canEdit() && onDesk() && ready.length) bar.appendChild(btn('Send All Ready ('+ready.length+')','',async e=>{
         if(!await confirmBox('Send '+ready.length+' Code Emails?', liveSet()? 'Each ready champion gets their code email now, as Kelly.' : 'Test mode: they all go to Jonna only.')) return;
         e.target.disabled=true; let ok=0, held=[]; for(const r of ready){ try{ await sendCode(v,r); await saveRow(v,r.key,{sentAt:new Date().toISOString(), sentBy:who(), sentTo:liveSet()?fresh(v,r).to:TEST_TO+' (test)'}); ok++; }catch(err){ held.push(r.company); } }
         flash(ok+' code email'+(ok===1?'':'s')+' on the way'+(held.length?'. Not sent, check the code and addresses: '+held.join(', '):'')); }));
@@ -33549,7 +33607,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
   }
   function paintRows(){
     const tb=$('ch-body'); if(!tb) return; tb.textContent='';
-    const v=sid(), qq=S.q.trim().toLowerCase(), edit=canEdit();
+    const v=sid(), qq=S.q.trim().toLowerCase(), edit=canEdit() && onDesk();
     rowsOf(v).sort((a,b)=>String(a.company).localeCompare(String(b.company))).filter(r=>{
       const s=status(r)[1];
       if(S.filter==='need' && !forBernie(r)) return false;
@@ -33682,13 +33740,482 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     const vp=$('venue-pick'); if(vp) vp.addEventListener('change',()=>setTimeout(render,50));
     setInterval(sync, 30*60000);
   }
-  window.__champions={sync:()=>sync(), build, rows:rowsOf, registrants, m360:()=>S.m360, reset:()=>{ S.m360=null; }};
+  window.__champions={sync:()=>sync(), build, rows:rowsOf, registrants, m360:()=>S.m360, reset:()=>{ S.m360=null; }, render:()=>render()};
   const go=()=>{ if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
       try{ window.ResourcesSession.onChange(()=>{ if(!S.db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
     setTimeout(start,2200); };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
 })();
 </script>
+<style>
+/* ============================================================
+   REGISTRATION DESK (Jonna, 2026-11-19). It wears the Registration look (the ws- styles hang off
+   #app-reg and #app-desk alike); these are its own pieces.
+   ============================================================ */
+#app-desk .dk-card{scroll-margin-top:84px}
+#app-desk .dk-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,8.6rem),1fr))!important}
+@media(min-width:1180px){#app-desk .dk-tiles{grid-template-columns:repeat(7,minmax(0,1fr))!important}}
+#app-desk .dk-tiles .ws-tile{cursor:pointer;text-align:left;font:inherit;color:var(--ink);min-width:0}
+#app-desk .dk-tiles .ws-tile .k{white-space:normal}
+#app-desk .dk-tiles .ws-tile.warn{border-top:3px solid var(--warn,#b7791f)}
+#app-desk .dk-tiles .ws-tile.ok{border-top:3px solid var(--good)}
+#app-desk .dk-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+#app-desk .dk-top h2{margin:0 auto 0 0;font-size:18px;font-weight:600;color:var(--ink)}
+#app-desk .dk-note{font-size:12.5px;color:var(--ink-3);line-height:1.5;margin:0 0 10px}
+#app-desk .dk-seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden}
+#app-desk .dk-seg button{font:inherit;font-size:12px;background:transparent;color:var(--ink-3);border:0;padding:6px 12px;cursor:pointer;border-bottom:3px solid transparent}
+#app-desk .dk-seg button[aria-pressed="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--ws-sky);background:var(--paper,var(--surface))}
+#app-desk .dk-seg button.live[aria-pressed="true"]{border-bottom-color:var(--good)}
+#app-desk table.dk-t{width:100%;border-collapse:collapse;font-size:13px}
+#app-desk table.dk-t th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:left;font-weight:600;padding:8px;border-bottom:2px solid var(--ws-sky)}
+#app-desk table.dk-t td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+#app-desk table.dk-t tr.done td{color:var(--ink-3)}
+#app-desk .dk-n{font-weight:600;color:var(--ink)}
+#app-desk .dk-s{display:block;font-size:11.5px;color:var(--ink-3)}
+#app-desk .dk-flag{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:4px;margin:2px 4px 2px 0;white-space:nowrap}
+#app-desk .dk-flag.need{background:color-mix(in srgb,var(--warn,#b7791f) 18%,transparent);color:var(--ink)}
+#app-desk .dk-flag.ok{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--ink)}
+#app-desk .dk-flag.info{background:color-mix(in srgb,var(--ws-sky) 22%,transparent);color:var(--ink)}
+#app-desk .dk-flag.off{background:var(--sunk,var(--line));color:var(--ink-3)}
+#app-desk .dk-btn{font:inherit;font-size:12px;font-weight:600;padding:5px 11px;border-radius:5px;border:1px solid var(--ws-navy);background:var(--ws-navy);color:#fff;cursor:pointer;white-space:nowrap}
+#app-desk .dk-btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-2)}
+#app-desk .dk-btn.on{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--ink);border-color:var(--good)}
+#app-desk .dk-btn:disabled{opacity:.5;cursor:default}
+#app-desk .dk-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+#app-desk input.dk-in{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line-2);border-radius:5px;background:var(--paper,var(--surface));color:var(--ink);width:100%;min-width:0;box-sizing:border-box}
+#app-desk label.dk-l{display:grid;gap:2px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+#app-desk .dk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px}
+#app-desk .dk-wait{font-size:11.5px;color:var(--warn,#b7791f)}
+#app-desk .dk-empty{font-size:13px;color:var(--ink-3);padding:10px 2px}
+#app-desk .dk-wording{border-top:1px solid var(--line);padding-top:10px;margin-top:12px}
+#app-desk .dk-wording summary{cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+#app-desk .dk-ed{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,24rem),1fr));gap:14px;margin-top:10px}
+#app-desk .dk-ed textarea,#app-desk .dk-ed input{font:inherit;font-size:13px;color:var(--ink);background:var(--paper,var(--surface));border:1px solid var(--line-2);border-radius:6px;padding:7px 10px;width:100%;box-sizing:border-box}
+#app-desk .dk-ed textarea{min-height:20rem;line-height:1.5;resize:vertical}
+#app-desk iframe.dk-pv{width:100%;height:560px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:#f1f6fa}
+#app-desk .dk-gate{padding:28px;border:1px solid var(--line-2);border-radius:var(--ws-r);background:var(--surface);font-size:15px;line-height:1.6}
+#app-desk .dk-tblbox{overflow-x:auto}
+@media(max-width:760px){#app-desk .dk-grid{grid-template-columns:1fr}}
+/* Desk mode (?desk): the Desk and The Trunk, nothing else to find your way through */
+body.desk-mode .hq nav button:not([data-hq="desk"]):not([data-hq="trunk"]),
+body.desk-mode .hq nav .rail-grp, body.desk-mode .railfind{display:none!important}
+body.desk-mode .hq nav button[data-hq="desk"]{display:flex}
+.dk-full{display:block;margin:10px 12px 0;font-size:12px;color:var(--ink-3)}
+.dk-full a{color:inherit}
+</style>
+<script>
+/* ============================================================
+   REGISTRATION DESK (Jonna, 2026-11-19)
+   ------------------------------------------------------------
+   "Bernie has a lot going on ... I'd like to create him a portal for all his registration tasks for
+   speakers, sponsors, champions, MISMO team and guests all in one place so that he doesn't have to go
+   to different places." Like the Membership Desk is for Member 360.
+
+   One page per summit, everything Bernie does:
+     Sponsors      from the Sponsorship Portal's own records (read, never written): raise the invoice
+                   (Aptify order ID, date), the comp code and number of comps, the code email to the
+                   sponsor, and logging a payment chase. What he enters is saved here, in
+                   feeds/desk-sponsor, and the Sponsorship Portal picks it up onto its record (the
+                   portal's own Claude does that side; until it does, his entries wait here, marked).
+     Champions     the Champion Codes list itself moves here: codes are entered and sent only on the
+                   Desk. Summit HQ's Registration keeps a read-only copy, and People keeps the Comp
+                   Codes lookup for Amy.
+     Speakers, the Board, the MISMO Team and guests: who to register, with Registered on each row
+                   (the same marks People, the Board card and the MISMO Team card make).
+     The Trunk     one click away.
+   Who: Bernie, Jonna, Amy and Kelly (the gate below; the data itself is Summit HQ's). Bernie opening
+   Summit HQ lands on the Desk; ?desk opens it on its own, ?full opens all of Summit HQ.
+   Bernie's emails stay as they were; their links now open the Desk. Ros's work does not change.
+   Nothing is sent unless someone presses Send, and the sponsor code email starts in Test (to Jonna).
+   ============================================================ */
+(function(){
+"use strict";
+const RELAY='https://rgvdi67cg27o5kcmiytcqbqnrm0hmztx.lambda-url.us-east-1.on.aws';
+const ALLOW=/^(bjordan|jcritchley|amoses|kbradshaw)@(mismo|mba)\.org$/i;
+const IS_BERNIE=/^bjordan@mba\.org$/i;
+const TEST_TO='jcritchley@mismo.org', BERNIE='bjordan@mba.org', KELLY='kbradshaw@mismo.org';
+const SUMMIT_PAGE='https://www.mismo.org/events-education/mismo-summit';
+const DESK_MODE=/[?&]desk\b/.test(location.search);
+const DEF={subject:'Your MISMO {summit} Sponsor Registration Code',
+  body:'Good Day {names},\n\n'
+    +'Thank you for sponsoring the MISMO {summit}! We’re looking forward to seeing you in {town}, {dates}.\n\n'
+    +'Your sponsorship includes {comps} complimentary registrations. Please share this code with the people from {company} who will be attending:\n\n'
+    +'Your Registration Code:\n{code}\n\n'
+    +'For the links to register, see '+SUMMIT_PAGE+'\n\n'
+    +'If you have any trouble with your code or questions about registering, just reply to this email.\n\n'
+    +'Thank you again for supporting MISMO!'};
+const $=id=>document.getElementById(id);
+const el=(t,c,x)=>{ const n=document.createElement(t); if(c) n.className=c; if(x!=null) n.textContent=x; return n; };
+const btn=(t,cls,fn)=>{ const b=el('button','dk-btn'+(cls?' '+cls:''),t); b.type='button'; b.addEventListener('click',fn); return b; };
+const flash=t=>{ try{ window.__hqFlash && window.__hqFlash(t); }catch(e){} };
+const sess=()=>{ try{ return (window.ResourcesSession&&window.ResourcesSession.current())||null; }catch(e){ return null; } };
+const me=()=>String((sess()||{}).email||'').trim();
+const who=()=>{ const s=sess()||{}; return s.name||s.email||''; };
+const allowed=()=>ALLOW.test(me());
+const D=()=>window.__desk||null;
+const todayISO=()=>{ try{ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }catch(e){ return new Date().toISOString().slice(0,10); } };
+const nice=iso=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); if(!m) return String(iso||''); return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const money=n=>{ const x=Number(n); return isFinite(x)&&x? '$'+x.toLocaleString('en-US',{maximumFractionDigits:0}) : ''; };
+const isEmail=e=>/^[^\s@;,<>]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);
+const own=o=>JSON.parse(JSON.stringify(o||{}));
+const S={db:null, apps:null, appsErr:'', appsAt:0, ent:null, set:null, f:{spk:'todo', board:'todo', team:'todo', spon:'todo'}, wOpen:false, sig:''};
+
+/* ---------- who gets in, and Desk mode ---------- */
+function chrome(){
+  const b=document.querySelector('.hq nav button[data-hq="desk"]'); if(b) b.hidden=!allowed();
+  if(!DESK_MODE) return;
+  document.body.classList.add('desk-mode');
+  document.title='Registration Desk';
+  const nm=document.querySelector('.hqtop .hqname'); if(nm) nm.textContent='Registration Desk';
+  const nav=document.querySelector('.hq nav');
+  if(nav && !nav.querySelector('.dk-full')){ const a=el('span','dk-full'); const l=el('a',null,'Open all of Summit HQ'); l.href='./?full'; a.appendChild(l); nav.appendChild(a); }
+}
+/* Bernie opening Summit HQ lands on his Desk (?full keeps the whole of Summit HQ) */
+function bernieHome(){
+  if(DESK_MODE || /[?&]full\b/.test(location.search)) return;
+  if(IS_BERNIE.test(me())) location.replace(location.pathname+'?desk');
+}
+
+/* ---------- the Sponsorship Portal's records, read with the viewer's own sign-in ---------- */
+async function loadApps(force){
+  if(!force && S.apps && Date.now()-S.appsAt<5*60000) return S.apps;
+  const tk=window.ResourcesSession&&window.ResourcesSession.token&&window.ResourcesSession.token(); if(!tk) return S.apps;
+  try{ const r=await fetch(RELAY+'/sponsorship/data/applications',{cache:'no-store',headers:{Authorization:'Bearer '+tk}});
+    if(r.status===401||r.status===403){ S.appsErr='The Sponsorship Portal could not be read with this sign-in (it needs Sponsorship Portal access).'; return S.apps; }
+    if(!r.ok) throw new Error(r.status);
+    const b=await r.json(); const docs=(b&&b.data&&b.data.docs)||{};
+    S.apps=Object.keys(docs).map(id=>Object.assign({id},docs[id])); S.appsAt=Date.now(); S.appsErr='';
+  }catch(e){ S.appsErr='The Sponsorship Portal could not be read just now.'; }
+  return S.apps;
+}
+/* what Bernie entered here, waiting for (or already picked up by) the portal */
+const entOf=id=>((S.ent&&S.ent.entries)||{})[id]||{};
+let entBusy=Promise.resolve();
+function saveEnt(id, patch, base){
+  entBusy=entBusy.then(async()=>{
+    const ref=S.db.doc('feeds/desk-sponsor');
+    let cur={}; try{ const s=await ref.get(); cur=(s.exists&&s.data())||{}; }catch(e){ flash('Could not save. Try again.'); return; }
+    const entries=own(cur.entries);
+    const was=entries[id]||{};
+    const nx=Object.assign({}, base||{}, was, patch, {by:who(), at:new Date().toISOString()});
+    if(patch.followUp){ nx.followUps=(was.followUps||[]).concat([{on:patch.followUp, by:who(), at:new Date().toISOString()}]); delete nx.followUp; }
+    entries[id]=nx;
+    const doc={updatedAt:new Date().toISOString(), about:'Registration Desk entries for the Sponsorship Portal to apply (keyed by the portal record id).', entries};
+    await ref.set(doc); S.ent=doc; paint(true);
+  }).catch(()=>flash('Could not save. Try again.'));
+  return entBusy;
+}
+/* the value to show: the portal's, unless Bernie has entered something it has not picked up yet */
+function val(a,k){ const e=entOf(a.id); return (e[k]!==undefined && e[k]!=='')? e[k] : (a[k]!==undefined? a[k] : ''); }
+const waiting=(a,k)=>{ const e=entOf(a.id); return e[k]!==undefined && e[k]!=='' && String(e[k])!==String(a[k]==null?'':a[k]); };
+function lastChase(a){ const e=entOf(a.id); const f=(e.followUps||[]).map(x=>x.on).concat([a.lastFollowUpDate||'']).filter(Boolean).sort(); return f.length? f[f.length-1] : ''; }
+function bizDays(fromISO, toISO){ let n=0; const d=new Date(fromISO+'T12:00:00'), t=new Date(toISO+'T12:00:00'); while(d<t){ d.setDate(d.getDate()+1); const w=d.getDay(); if(w&&w<6) n++; } return n; }
+const daysSince=iso=>Math.floor((Date.parse(todayISO()+'T12:00:00')-Date.parse(String(iso).slice(0,10)+'T12:00:00'))/864e5);
+function sponState(a){
+  const st=String(a.status||''), inKind=st==='In Kind'||!!a.inKind;
+  const inv=String(val(a,'invoiceNumber')||'').trim(), code=String(val(a,'compCode')||'').trim(), comps=Number(val(a,'numComps'))||0;
+  const sent=entOf(a.id).codeSentAt||'';
+  const paid=st==='Paid'||!!a.paymentReceivedDate;
+  const invDate=val(a,'invoiceDate');
+  let chase=false;
+  if(!paid && !inKind && inv && invDate && daysSince(invDate)>=30){ const lc=lastChase(a); chase=!lc || bizDays(lc,todayISO())>=10; }
+  return {inKind, inv, code, comps, sent, paid, chase, needInv:!inKind && !inv && /^(Approved|Pending Payment)$/.test(st), needCode:!(code&&comps), needSend:!!(code&&comps)&&!sent};
+}
+function sponRows(){
+  const d=D(); if(!S.apps||!d) return [];
+  return S.apps.filter(a=>/^(Approved|Pending Payment|Paid|In Kind)$/.test(String(a.status||'')) && d.eventHere(a.event))
+    .sort((x,y)=>String(x.company).localeCompare(String(y.company)));
+}
+
+/* ---------- the sponsor code email ---------- */
+const live=()=>!!(S.set&&S.set.sponLive);
+function tpl(){ const t=(S.set&&S.set.tpl)||{}; return {subject:String(t.subject||'').trim()? t.subject : DEF.subject, body:String(t.body||'').trim()? t.body : DEF.body}; }
+function summitShort(){ const n=String((D()&&D().info().name)||''); const m=/(Winter|Spring|Fall)/i.exec(n); return m? m[1][0].toUpperCase()+m[1].slice(1).toLowerCase()+' Summit' : (n||'Summit'); }
+/* the city, not the hotel (the same guess the Champion emails make) */
+function cityOf(){ const c=String((D()&&D().info().city)||'');
+  if(/new orleans/i.test(c)) return 'New Orleans, LA'; if(/salt lake/i.test(c)) return 'Salt Lake City, UT';
+  if(/bethesda/i.test(c)) return 'Bethesda, MD'; if(/washington|\bdc\b/i.test(c)) return 'Washington, DC'; return c; }
+function townOf(){ const c=cityOf(); return c.split(',')[0]||c; }
+function fillsFor(a){
+  const to=String(entOf(a.id).to||a.contactEmail||'');
+  const first=String(a.contactName||'').trim().split(/\s+/)[0]||'';
+  const opp=String(a.opportunity||'').trim();
+  return {names:first||'there', company:a.company||'', code:String(val(a,'compCode')||''), comps:String(val(a,'numComps')||''), summit:summitShort(),
+    dates:String((D()&&D().dates())||''), town:townOf(), city:cityOf(), opportunity:opp||'sponsorship', to};
+}
+const fill=(t,f)=>String(t||'').replace(/\{(\w+)\}/g,(m,k)=>f[k]!=null? f[k] : m);
+function buildMail(a, t){
+  if(typeof window.__mailHtml!=='function') return null;
+  t=t||tpl(); const f=fillsFor(a), subject=fill(t.subject,f), body=fill(t.body,f);
+  const K=(window.__sponMail&&window.__sponMail.KELLY)||{name:'Kelly Bradshaw', title:'Director, Strategic Growth, MISMO', email:'KBradshaw@mismo.org'};
+  return {subject, to:f.to, html:window.__mailHtml(subject, body, {sig:K, title:'Your Sponsor Registration Code', sub:'MISMO '+summitShort()+(f.dates?' · '+f.dates:'')})};
+}
+async function queue(req){
+  const r=Object.assign({id:'dk-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6), requestedAt:new Date().toISOString(), requestedBy:me()||who(), person:'', summit:(D()&&D().venue())||'', graphic:''}, req);
+  if(!live()){ r.html='<p style="font-family:Arial;font-size:13px;color:#6c899f;margin:0 0 8px">Test: this would go to '+String(req.to||'').replace(/</g,'&lt;')+(req.cc?' (copy to '+String(req.cc).replace(/</g,'&lt;')+')':'')+'.</p>'+r.html;
+    r.to=TEST_TO; r.cc=''; r.subject='[Test] '+r.subject; }
+  if(typeof window.__hqQueueMail!=='function') throw new Error('no queue');
+  await window.__hqQueueMail(r);
+}
+async function sendCode(a){
+  const s=sponState(a);
+  if(!s.code || !s.comps){ flash('Enter the code and the number of comps first. Nothing was sent.'); return false; }
+  const m=buildMail(a); if(!m) return false;
+  const bad=String(m.to||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean).filter(x=>!isEmail(x)||/MISMOC/i.test(x)||(s.code.length>3&&x.toLowerCase().includes(s.code.toLowerCase())));
+  if(!String(m.to||'').trim() || bad.length){ flash('Check who the email goes to'+(bad.length?': '+bad[0]:'')+'. Nothing was sent.'); return false; }
+  await queue({to:m.to, cc:BERNIE, replyTo:KELLY, from:KELLY, subject:m.subject, html:m.html});
+  await saveEnt(a.id,{codeSentAt:new Date().toISOString(), codeSentTo: live()? m.to : TEST_TO+' (test)', codeSentBy:who(), compCode:s.code, numComps:String(s.comps)}, {appNo:a.appNo||'', company:a.company||''});
+  flash(live()? 'Code email on the way to '+a.company : 'Test: the code email is on the way to Jonna');
+  return true;
+}
+function preview(a){
+  const m=buildMail(a); if(!m) return;
+  const box=el('div','hq-replace'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','The code email');
+  const scrim=el('div','hq-replace-scrim'), card=el('div','hq-replace-card'); card.style.maxWidth='760px'; card.style.width='min(760px,94vw)';
+  card.appendChild(el('div','h',(live()?'':'Test mode: ')+'Send '+a.company+' their code?'));
+  card.appendChild(el('div','p','To '+(live()? m.to : TEST_TO+' (test; it would go to '+m.to+')')+(live()?', copy to you':'')+'. Subject: '+m.subject));
+  const f=document.createElement('iframe'); f.setAttribute('sandbox',''); f.title='Preview'; f.style.cssText='width:100%;height:420px;border:1px solid var(--line-2);border-radius:6px;background:#f1f6fa;margin:8px 0';
+  f.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+m.html+'</body>'; card.appendChild(f);
+  const acts=el('div','acts'); const done=()=>box.remove();
+  const no=el('button','no','Cancel'); no.type='button'; no.addEventListener('click',done);
+  const yes=el('button','yes','Send'); yes.type='button'; yes.addEventListener('click',async()=>{ yes.disabled=true; try{ if(await sendCode(a)) done(); else yes.disabled=false; }catch(e){ yes.disabled=false; flash('Could not send it'); } });
+  acts.appendChild(no); acts.appendChild(yes); card.appendChild(acts);
+  scrim.addEventListener('click',done); box.appendChild(scrim); box.appendChild(card); document.body.appendChild(box); yes.focus();
+}
+
+/* ---------- drawing ---------- */
+function counts(){
+  const d=D(); if(!d) return null;
+  const spk=d.speakers(), bd=d.board(), tm=d.team(), sp=sponRows().map(sponState);
+  let ch=0; try{ const rows=(window.__champions&&window.__champions.rows(d.venue()))||[]; ch=rows.filter(r=>!r.gone && (!r.sentAt || r.needsResend || (r.vReq&&r.vReq.n>0&&!(r.vSentAt&&String(r.vSentAt)>=String(r.vReq.at||''))))).length; }catch(e){}
+  return {
+    spk:spk.filter(p=>!p.reg).length, spkAll:spk.length,
+    board:bd.filter(b=>!b.reg && (b.att==='in'||b.att==='virt')).length, boardAll:bd.filter(b=>b.att==='in'||b.att==='virt').length,
+    team:tm.filter(p=>!p.reg).length, teamAll:tm.length,
+    inv:sp.filter(s=>s.needInv).length, code:sp.filter(s=>s.needCode||s.needSend).length, chase:sp.filter(s=>s.chase).length, spAll:sp.length,
+    champ:ch};
+}
+function paintHead(c){
+  const h=$('dk-head'); if(!h) return; h.textContent='';
+  const d=D(), v=d? d.info() : {};
+  const total=c? c.spk+c.board+c.team+c.inv+c.code+c.chase+c.champ : 0;
+  const wk=el('div','rg-wk'); wk.appendChild(el('span','rg-wk-k','To Do')); wk.appendChild(el('span','rg-wk-n',String(total))); wk.appendChild(el('span','rg-wk-s',total===1?'thing waiting':'things waiting')); h.appendChild(wk);
+  const m=el('div','rg-hero-main'); m.appendChild(el('span','rg-eyebrow',(v.name||'Summit')+(d&&d.dates()?' · '+d.dates():'')));
+  const first=String((sess()||{}).name||'').split(/\s+/)[0];
+  m.appendChild(el('div','rg-line', total? (first? first+', ':'')+'here is everything waiting on registration for this summit, in one place.' : 'Nothing is waiting on registration for this summit right now.'));
+  const meta=el('div','rg-meta');
+  if(c){ [[c.inv,'invoice to raise','invoices to raise'],[c.code,'sponsor code','sponsor codes'],[c.chase,'payment to chase','payments to chase'],[c.champ,'Champion code','Champion codes'],[c.spk,'speaker','speakers'],[c.board,'Board member','Board members'],[c.team,'on the MISMO Team or a guest','on the MISMO Team and guests']].forEach(([n,a,b])=>{ if(n) meta.appendChild(el('span',null,n+' '+(n===1?a:b))); }); }
+  m.appendChild(meta); h.appendChild(m);
+  const sub=$('dk-sub'); if(sub) sub.textContent=[v.name, d&&d.dates(), v.city].filter(Boolean).join(' · ');
+  const t=$('dk-title'); if(t) t.textContent=(v.name||'Registration Desk');
+  const acts=$('dk-acts'); if(acts && !acts.children.length){
+    acts.appendChild(btn('Open The Trunk','ghost',()=>{ try{ window.__hqGo('trunk'); }catch(e){} }));
+    acts.appendChild(btn('Refresh the Portal','ghost',async e=>{ e.target.disabled=true; await loadApps(true); paint(true); e.target.disabled=false; flash('Sponsorship Portal read again'); })); }
+}
+function paintTiles(c){
+  const box=$('dk-tiles'); if(!box) return; box.textContent=''; if(!c) return;
+  [['dk-spon','Invoices to Raise',c.inv],['dk-spon','Sponsor Codes',c.code],['dk-spon','Payments to Chase',c.chase],['dk-champ-slot','Champion Codes',c.champ],
+   ['dk-spk','Speakers to Register',c.spk],['dk-board','Board to Register',c.board],['dk-team','Team and Guests',c.team]].forEach(([to,l,n])=>{
+    const b=el('button','ws-tile '+(n?'warn':'ok')); b.type='button';
+    b.appendChild(el('span','k',l)); b.appendChild(el('span','v',String(n))); b.appendChild(el('span','p',n?'waiting on you':'all done'));
+    b.addEventListener('click',()=>{ const t=$(to); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); });
+    box.appendChild(b); });
+}
+function seg(key, a, b){
+  const g=el('div','dk-seg'); g.setAttribute('role','group');
+  [['todo',a],['all',b]].forEach(([k,l])=>{ const x=el('button',null,l); x.type='button'; x.setAttribute('aria-pressed',String(S.f[key]===k)); x.addEventListener('click',()=>{ S.f[key]=k; paint(true); }); g.appendChild(x); });
+  return g;
+}
+function table(heads){ const box=el('div','dk-tblbox'), t=el('table','dk-t'), th=el('thead'), tr=el('tr'); heads.forEach(h=>tr.appendChild(el('th',null,h))); th.appendChild(tr); t.appendChild(th); const tb=el('tbody'); t.appendChild(tb); box.appendChild(t); return {box, tb}; }
+function regBtn(at, on, name){
+  const b=btn(at? '✓ Registered '+nice(at) : 'Registered', at?'on':'', ()=>on(!at)); b.setAttribute('aria-pressed',at?'true':'false');
+  b.title= at? 'Registered. Click to take it off.' : 'Click once '+name+' is registered.'; return b;
+}
+function mailLink(e){ if(!e) return el('span','dk-s','No email on file'); const a=el('a',null,e); a.href='mailto:'+e; a.style.color='inherit'; const s=el('span','dk-s'); s.appendChild(a); return s; }
+function paintSpk(){
+  const host=$('dk-spk'); if(!host) return; host.textContent=''; const d=D(); if(!d) return;
+  const list=d.speakers(), todo=list.filter(p=>!p.reg);
+  const top=el('div','dk-top'); top.appendChild(el('h2',null,'Speakers')); top.appendChild(seg('spk','To Register ('+todo.length+')','Everyone ('+list.length+')')); host.appendChild(top);
+  host.appendChild(el('p','dk-note','Speakers Amy has put on this summit. Register each one as a speaker, then press Registered. The morning email still lists the new ones.'));
+  const rows=(S.f.spk==='todo'? todo : list.slice().sort((a,b)=>(!!a.reg)-(!!b.reg)||a.n.localeCompare(b.n)));
+  if(!rows.length){ host.appendChild(el('div','dk-empty', list.length? 'Every speaker is registered.' : 'No speakers on this summit yet.')); return; }
+  const T=table(['Speaker','Session','Registered']);
+  rows.forEach(p=>{ const tr=el('tr',p.reg?'done':''); const c0=el('td'); c0.appendChild(el('span','dk-n',p.n)); if(p.t||p.c) c0.appendChild(el('span','dk-s',[p.t,p.c].filter(Boolean).join(' · '))); c0.appendChild(mailLink(p.e)); tr.appendChild(c0);
+    tr.appendChild(el('td',null,p.ses.length? p.ses.join(', ') : 'Session to be set'));
+    const c2=el('td'); c2.appendChild(regBtn(p.reg, on=>d.setSpeakerReg(p.id,on), p.n)); tr.appendChild(c2); T.tb.appendChild(tr); });
+  host.appendChild(T.box);
+}
+function paintBoard(){
+  const host=$('dk-board'); if(!host) return; host.textContent=''; const d=D(); if(!d) return;
+  const list=d.board(), going=list.filter(b=>b.att==='in'||b.att==='virt'), todo=going.filter(b=>!b.reg);
+  const top=el('div','dk-top'); top.appendChild(el('h2',null,'Board of Directors')); top.appendChild(seg('board','To Register ('+todo.length+')','Everyone ('+list.length+')')); host.appendChild(top);
+  host.appendChild(el('p','dk-note','Board registration is complimentary. Register each member the way they are attending, then press Registered. Members who have not answered yet show under Everyone.'));
+  const ATT={in:['ok','In Person'],virt:['info','Virtual'],no:['off','Not Attending'],'':['need','No Answer Yet']};
+  const rows=S.f.board==='todo'? todo : list;
+  if(!rows.length){ host.appendChild(el('div','dk-empty', going.length? 'Everyone attending is registered.' : 'No Board member has said they are attending yet.')); return; }
+  const T=table(['Board Member','Attending','Registered']);
+  rows.forEach(b=>{ const tr=el('tr',b.reg||b.att==='no'?'done':''); const c0=el('td'); c0.appendChild(el('span','dk-n',b.n)); if(b.r) c0.appendChild(el('span','dk-s',b.r==='MBA'?'From MBA':b.r)); c0.appendChild(mailLink(b.e)); tr.appendChild(c0);
+    const c1=el('td'); const [k,l]=ATT[b.att||'']||ATT['']; c1.appendChild(el('span','dk-flag '+k,l)); if(b.sent) c1.appendChild(el('span','dk-s','Sent to you '+nice(b.sent))); tr.appendChild(c1);
+    const c2=el('td'); if(b.att==='in'||b.att==='virt'||b.reg) c2.appendChild(regBtn(b.reg, on=>d.setBoardReg(b.id,on), b.n)); else c2.appendChild(el('span','dk-s','Nothing to do yet')); tr.appendChild(c2);
+    T.tb.appendChild(tr); });
+  host.appendChild(T.box);
+}
+function paintTeam(){
+  const host=$('dk-team'); if(!host) return; host.textContent=''; const d=D(); if(!d) return;
+  const list=d.team(), todo=list.filter(p=>!p.reg);
+  const top=el('div','dk-top'); top.appendChild(el('h2',null,'MISMO Team and Guests')); top.appendChild(seg('team','To Register ('+todo.length+')','Everyone ('+list.length+')')); host.appendChild(top);
+  host.appendChild(el('p','dk-note','Everyone going under the MISMO banner: staff, the meetings team, facilitators, MBA and guests. Hotel rooms are Ros’s; this is registration only. Speakers who need a room in our block are registered as speakers above.'));
+  const rows=S.f.team==='todo'? todo : list;
+  if(!rows.length){ host.appendChild(el('div','dk-empty', list.length? 'Everyone on the team is registered.' : 'The MISMO Team list for this summit is empty.')); return; }
+  const T=table(['Name','Group','Registered']);
+  rows.forEach(p=>{ const tr=el('tr',p.reg?'done':''); const c0=el('td'); c0.appendChild(el('span','dk-n',p.n)); c0.appendChild(mailLink(p.e)); tr.appendChild(c0);
+    const c1=el('td'); c1.appendChild(el('span',null,p.label||p.role)); if(p.sent) c1.appendChild(el('span','dk-s','Sent to you '+nice(String(p.sent).slice(0,10)))); tr.appendChild(c1);
+    const c2=el('td'); c2.appendChild(regBtn(p.reg, on=>d.setTeamReg(p.id,on), p.n)); tr.appendChild(c2); T.tb.appendChild(tr); });
+  host.appendChild(T.box);
+}
+function inp(v, ph, type, save){
+  const i=document.createElement('input'); i.className='dk-in'; i.type=type||'text'; i.value=v==null?'':String(v); i.placeholder=ph; i.setAttribute('aria-label',ph);
+  let last=i.value; const go=()=>{ if(i.value!==last){ last=i.value; save(i.value.trim()); } };
+  i.addEventListener('change',go); i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); i.blur(); } });
+  return i;
+}
+function paintSpon(){
+  const host=$('dk-spon'); if(!host) return;
+  const act=document.activeElement; if(act && host.contains(act) && /INPUT|TEXTAREA/.test(act.tagName)) return;
+  host.textContent='';
+  const top=el('div','dk-top'); top.appendChild(el('h2',null,'Sponsors'));
+  const rows=sponRows(), st=rows.map(a=>[a,sponState(a)]);
+  const todo=st.filter(([a,s])=>s.needInv||s.needCode||s.needSend||s.chase);
+  top.appendChild(seg('spon','To Do ('+todo.length+')','Everyone ('+rows.length+')'));
+  const mode=el('div','dk-seg'); mode.setAttribute('role','group'); mode.setAttribute('aria-label','Sponsor code emails');
+  [['test','Test: Emails to Jonna'],['live','Live']].forEach(([k,l])=>{ const b=el('button',k==='live'?'live':'',l); b.type='button'; b.setAttribute('aria-pressed',String(k==='live'? live() : !live()));
+    b.disabled=!/^jcritchley@/i.test(me());
+    b.title='Only Jonna switches this. '+(live()?'Code emails go to the sponsors.':'Code emails go to Jonna only, marked [Test].');
+    b.addEventListener('click',async()=>{ if((k==='live')===live()) return; await saveSet({sponLive:k==='live'}); }); mode.appendChild(b); });
+  top.appendChild(mode); host.appendChild(top);
+  host.appendChild(el('p','dk-note','From the Sponsorship Portal. Raise each approved sponsorship’s invoice in Aptify and enter the order ID and date, then the comp code and how many, and send the sponsor their code. Payments 30 days past the invoice come up to chase; press Log a Follow-Up once you have. What you enter here goes onto the portal’s record. '
+    +(live()? 'Code emails go to the sponsor, as Kelly, with a copy to you.' : 'Test mode: code emails go to Jonna only, marked [Test].')+(S.appsErr? ' '+S.appsErr : '')));
+  if(!S.apps){ host.appendChild(el('div','dk-empty',S.appsErr||'Reading the Sponsorship Portal…')); return; }
+  const list=S.f.spon==='todo'? todo : st;
+  if(!list.length){ host.appendChild(el('div','dk-empty', rows.length? 'Nothing waiting on sponsors for this summit.' : 'No approved sponsors for this summit yet.')); }
+  else{
+    const T=table(['Sponsor','Invoice','Comp Code','Payment']);
+    list.forEach(([a,s])=>{
+      const tr=el('tr',(s.paid||s.inKind)&&!s.needCode&&!s.needSend?'done':''); const base={appNo:a.appNo||'', company:a.company||''};
+      const c0=el('td'); c0.appendChild(el('span','dk-n',a.company||'')); c0.appendChild(el('span','dk-s',[a.opportunity, a.event, money(a.amountDue)].filter(Boolean).join(' · ')));
+      c0.appendChild(el('span','dk-s',[a.contactName, a.contactEmail].filter(Boolean).join(' · ')));
+      c0.appendChild(el('span','dk-flag '+(s.inKind?'off':'info'), s.inKind? 'In Kind' : String(a.status||''))); tr.appendChild(c0);
+      const c1=el('td');
+      if(s.inKind) c1.appendChild(el('span','dk-s','No invoice (in kind)'));
+      else{ const g=el('div','dk-grid');
+        const l1=el('label','dk-l','Aptify Order ID'); l1.appendChild(inp(val(a,'invoiceNumber'),'Order ID','text',x=>saveEnt(a.id,{invoiceNumber:x, invoiceDate: x && !val(a,'invoiceDate')? todayISO() : val(a,'invoiceDate')},base))); g.appendChild(l1);
+        const l2=el('label','dk-l','Invoice Date'); l2.appendChild(inp(String(val(a,'invoiceDate')||'').slice(0,10),'Invoice date','date',x=>saveEnt(a.id,{invoiceDate:x},base))); g.appendChild(l2);
+        c1.appendChild(g);
+        if(s.needInv) c1.appendChild(el('span','dk-flag need','Raise the Invoice'));
+        if(waiting(a,'invoiceNumber')||waiting(a,'invoiceDate')) c1.appendChild(el('span','dk-wait','Saved here; waiting for the portal to pick it up')); }
+      tr.appendChild(c1);
+      const c2=el('td'); const g2=el('div','dk-grid');
+      const l3=el('label','dk-l','Code'); l3.appendChild(inp(val(a,'compCode'),'Comp code','text',x=>saveEnt(a.id,{compCode:x},base))); g2.appendChild(l3);
+      const l4=el('label','dk-l','How Many'); l4.appendChild(inp(val(a,'numComps'),'Comps','number',x=>saveEnt(a.id,{numComps:x},base))); g2.appendChild(l4);
+      c2.appendChild(g2);
+      const l5=el('label','dk-l','Email To'); l5.style.marginTop='4px'; l5.appendChild(inp(entOf(a.id).to||a.contactEmail||'','Who gets the code','text',x=>saveEnt(a.id,{to:x},base))); c2.appendChild(l5);
+      if(waiting(a,'compCode')||waiting(a,'numComps')) c2.appendChild(el('span','dk-wait','Saved here; waiting for the portal to pick it up'));
+      const ac=el('div','dk-acts');
+      if(s.sent){ ac.appendChild(el('span','dk-flag ok','Code Sent '+nice(String(s.sent).slice(0,10)))); ac.appendChild(btn('Send Again','ghost',()=>preview(a))); }
+      else if(s.code&&s.comps) ac.appendChild(btn('Send the Code','',()=>preview(a)));
+      else ac.appendChild(el('span','dk-flag need','Needs a Code'));
+      if(!s.sent && s.code && s.comps) ac.appendChild(btn('Already Sent','ghost',()=>saveEnt(a.id,{codeSentAt:new Date().toISOString(), codeSentTo:'by hand', codeSentBy:who()},base)));
+      c2.appendChild(ac); tr.appendChild(c2);
+      const c3=el('td');
+      if(s.inKind) c3.appendChild(el('span','dk-s','Nothing to collect'));
+      else if(s.paid) c3.appendChild(el('span','dk-flag ok','Paid'+(a.paymentReceivedDate?' '+nice(a.paymentReceivedDate):'')));
+      else if(!s.inv) c3.appendChild(el('span','dk-s','Not invoiced yet'));
+      else{ const iv=val(a,'invoiceDate'); c3.appendChild(el('span','dk-s', iv? 'Invoiced '+nice(iv)+', '+daysSince(iv)+' days ago' : 'Invoice date not entered'));
+        const lc=lastChase(a); if(lc) c3.appendChild(el('span','dk-s','Last chased '+nice(lc)));
+        if(s.chase) c3.appendChild(el('span','dk-flag need','Time to Chase'));
+        const fb=btn('Log a Follow-Up','ghost',async()=>{ await saveEnt(a.id,{followUp:todayISO()},base); flash('Follow-up logged for '+a.company); }); fb.title='Press once you have chased '+a.company+' for payment. The next reminder comes 10 business days later.';
+        const x=el('div','dk-acts'); x.appendChild(fb); c3.appendChild(x); }
+      tr.appendChild(c3); T.tb.appendChild(tr);
+    });
+    host.appendChild(T.box);
+  }
+  paintWording(host);
+}
+async function saveSet(patch){
+  const cur=own(S.set||{}); Object.assign(cur, patch, {savedAt:new Date().toISOString(), savedBy:who()});
+  S.set=cur; await S.db.doc('desk/settings').set(cur); paint(true);
+}
+function paintWording(host){
+  const det=el('details','dk-wording'); if(S.wOpen) det.open=true; det.addEventListener('toggle',()=>{ S.wOpen=det.open; });
+  det.appendChild(el('summary',null,'Sponsor Code Email Wording and Test'));
+  const sample=Object.assign({id:'sample', company:'Sample Company', contactName:'Pat Sample', contactEmail:'pat@example.com', opportunity:'Breakfast Sponsor', compCode:'SAMPLE27', numComps:'4'}, sponRows().find(a=>val(a,'compCode'))||{});
+  const g=el('div','dk-ed'), L=el('div'), R=el('div'); const t=tpl();
+  const si=document.createElement('input'); si.value=t.subject; const bi=document.createElement('textarea'); bi.value=t.body;
+  const l1=el('label','dk-l','Subject'); l1.appendChild(si); L.appendChild(l1); const l2=el('label','dk-l','Message'); l2.appendChild(bi); L.appendChild(l2);
+  L.appendChild(el('p','dk-note','Fill-ins: {names} {company} {code} {comps} {summit} {dates} {town} {city} {opportunity} (what they sponsored, such as Breakfast Sponsor). A blank line starts a paragraph; [[Words]](link) is a button. Kelly’s signature is added.'));
+  const row=el('div','dk-acts'), msg=el('span','dk-s');
+  row.appendChild(btn('Save','',async()=>{ await saveSet({tpl:{subject:si.value, body:bi.value}}); msg.textContent='Saved. Every sponsor code email uses it.'; }));
+  row.appendChild(btn('Back to the Original','ghost',()=>{ si.value=DEF.subject; bi.value=DEF.body; draw(); }));
+  row.appendChild(btn('Send Jonna a Test','ghost',async e=>{ e.target.disabled=true; try{ const m=buildMail(sample,{subject:si.value, body:bi.value});
+    await window.__hqQueueMail({id:'dk-test-'+Date.now().toString(36), requestedAt:new Date().toISOString(), requestedBy:me()||who(), person:'', summit:(D()&&D().venue())||'', graphic:'', to:TEST_TO, cc:'', replyTo:KELLY, from:KELLY, subject:'[Test] '+m.subject,
+      html:'<p style="font-family:Arial;font-size:13px;color:#6c899f;margin:0 0 8px">Test: this would go to '+m.to+' (copy to '+BERNIE+').</p>'+m.html});
+    msg.textContent='A test is on the way to Jonna.'; }catch(err){ msg.textContent='Could not send the test.'; e.target.disabled=false; } }));
+  row.appendChild(msg); L.appendChild(row);
+  const pv=el('div'); R.appendChild(pv);
+  const draw=()=>{ const m=buildMail(sample,{subject:si.value, body:bi.value}); pv.textContent=''; if(!m) return;
+    pv.appendChild(el('p','dk-note','Subject: '+m.subject+' (shown for '+sample.company+')'));
+    const f=document.createElement('iframe'); f.className='dk-pv'; f.setAttribute('sandbox',''); f.title='Preview'; f.srcdoc='<!doctype html><meta charset="utf-8"><body style="margin:0">'+m.html+'</body>'; pv.appendChild(f); };
+  let tm=null; [si,bi].forEach(x=>x.addEventListener('input',()=>{ clearTimeout(tm); tm=setTimeout(draw,250); }));
+  draw(); g.appendChild(L); g.appendChild(R); det.appendChild(g); host.appendChild(det);
+}
+/* the Champion Codes list itself sits on the Desk; Registration keeps a read-only copy */
+function placeChamp(which){
+  const c=$('rg-champ'); if(!c) return;
+  if(which==='desk'){ const slot=$('dk-champ-slot'); if(slot && c.parentNode!==slot){ slot.appendChild(c); try{ window.__champions && window.__champions.render(); }catch(e){} } }
+  else if(which==='reg'){ const m=$('rg-method'); if(m && c.parentNode!==m.parentNode){ m.parentNode.insertBefore(c,m); try{ window.__champions && window.__champions.render(); }catch(e){} } }
+}
+function gate(){
+  const host=$('app-desk'); if(!host) return false;
+  let g=host.querySelector('.dk-gate');
+  const ok=allowed();
+  host.querySelectorAll('.ws-body, .mast').forEach(n=>{ n.hidden=!ok; });
+  if(!ok){ if(!g){ g=el('div','dk-gate'); host.querySelector('.wrap').appendChild(g); }
+    g.textContent='The Registration Desk is Bernie’s page for summit registrations. Jonna, Amy and Kelly can open it too. Ask Jonna if you need it.'; return false; }
+  if(g) g.remove(); return true;
+}
+function paint(force){
+  const pane=$('app-desk'); if(!pane || pane.hidden) return;
+  if(!gate()) return;
+  const d=D(); if(!d || !d.ready()) return;
+  const c=counts();
+  const sig=JSON.stringify([c, d.speakers(), d.board(), d.team(), S.apps&&S.apps.length, S.ent&&S.ent.updatedAt, S.set&&S.set.savedAt, S.f, d.venue()]);
+  if(!force && sig===S.sig) return; S.sig=sig;
+  const act=document.activeElement; const typing=act && pane.contains(act) && /INPUT|TEXTAREA/.test(act.tagName);
+  paintHead(c); paintTiles(c);
+  if(!typing){ paintSpon(); paintSpk(); paintBoard(); paintTeam(); }
+}
+async function start(){
+  chrome(); bernieHome();
+  try{ S.db = window.claude && window.claude.use ? await window.claude.use('db') : null; }catch(e){ S.db=null; }
+  if(!S.db) return;
+  S.db.doc('feeds/desk-sponsor').onSnapshot(s=>{ S.ent=s.exists? s.data() : {entries:{}}; paint(true); }, ()=>{ S.ent={entries:{}}; });
+  S.db.doc('desk/settings').onSnapshot(s=>{ S.set=s.exists? (s.data()||{}) : {}; paint(true); }, ()=>{ S.set={}; });
+  window.addEventListener('hq:tab',e=>{ const w=e&&e.detail; placeChamp(w); if(w==='desk'){ loadApps(false).then(()=>paint(true)); paint(true); } });
+  window.addEventListener('hq:champions',()=>paint(false));
+  const vp=$('venue-pick'); if(vp) vp.addEventListener('change',()=>setTimeout(()=>paint(true),80));
+  setInterval(()=>paint(false), 2500);
+  setInterval(()=>{ if(!$('app-desk').hidden) loadApps(false).then(()=>paint(false)); }, 5*60000);
+  if(!$('app-desk').hidden){ placeChamp('desk'); await loadApps(false); paint(true); }
+}
+window.__deskView={paint:()=>paint(true), entries:()=>S.ent, apps:()=>S.apps, loadApps:f=>loadApps(f), refresh:()=>{ chrome(); paint(true); }, sendCode, state:a=>sponState(a)};
+const go=()=>{ chrome();
+  if(window.ResourcesSession && window.ResourcesSession.current && !window.ResourcesSession.current()){
+    try{ window.ResourcesSession.onChange(()=>{ if(!S.db && window.ResourcesSession.current()) start(); }); }catch(e){} return; }
+  setTimeout(start, 1500); };
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go); else go();
+})();
+</script>
+
 <script>
 /* ============================================================
    FEEDS — what the scheduled emails read (Jonna, 2026-10-28)
