@@ -7467,7 +7467,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <h4>Your Registration Desk</h4>
         <ol class="hp-steps">
           <li><b>Everything you do for registration is on one page</b>, the <b>Registration Desk</b> (resources.mismo.org/summit-hq/?desk). Opening Summit HQ takes you straight there. Pick the summit at the left. The tiles at the top count what is waiting on you; press one to jump to it. <b>Open The Trunk</b> is at the top, and <b>Open all of Summit HQ</b> is at the left if you ever need the rest.</li>
-          <li><b>Sponsors.</b> Every approved sponsorship for the summit, straight from the Sponsorship Portal, so you never need to open the portal. <b>Raise the Invoice</b>: create it in Aptify and type the <b>Aptify Order ID</b> (the date fills in as today; change it if you need to). Then the <b>Code</b> and <b>How Many</b>, and press <b>Send the Code</b>: you see the email first, then <b>Send</b> emails the sponsor contact their code (as Kelly, copied to you). <b>Already Sent</b> records one you sent yourself. When a payment is 30 days past the invoice it shows <b>Time to Chase</b>; once you have chased them, press <b>Log a Follow-Up</b>. Everything you enter goes onto the sponsorship&rsquo;s record in the portal; until the portal has picked it up, the row says so.</li>
+          <li><b>Sponsors.</b> Every approved sponsorship for the summit, straight from the Sponsorship Portal, so you never need to open the portal. <b>Raise the Invoice</b>: create it in Aptify and type the <b>Aptify Order ID</b> (the date fills in as today; change it if you need to). Then the <b>Code</b> and <b>How Many</b>, and press <b>Send the Code</b>: you see the email first, then <b>Send</b> emails the sponsor contact their code (as Kelly, copied to you). <b>Already Sent</b> records one you sent yourself. When a payment is 30 days past the invoice it shows <b>Time to Chase</b>; once you have chased them, press <b>Log a Follow-Up</b>. For a payment that never reaches MISMO Money (an MBA ACH payment or a credit memo), open <b>Paid Another Way</b> on a Pending Payment sponsor, pick the date (and the amount if you have it) and press <b>Mark Paid</b>; the portal marks it Paid and sends the usual Payment Made email. Everything you enter goes onto the sponsorship&rsquo;s record in the portal; until the portal has picked it up, the row says so.</li>
           <li><b>Champion Codes.</b> The whole Champion list is on the Desk (below), and this is now the only place codes are entered and sent.</li>
           <li><b>Speakers.</b> Every speaker on the summit you still need to register. Register them, then press <b>Registered</b>. The morning <b>New Speakers to Register</b> email still comes.</li>
           <li><b>The Board.</b> Each member attending, In Person or Virtual. Register them that way, then press <b>Registered</b>. The <b>Board Members to Register</b> email still comes when someone presses Notify Bernie.</li>
@@ -33786,6 +33786,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
 #app-desk label.dk-l{display:grid;gap:2px;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
 #app-desk .dk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px}
 #app-desk .dk-wait{font-size:11.5px;color:var(--warn,#b7791f)}
+#app-desk details.dk-paid{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
+#app-desk details.dk-paid summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--ink)}
+#app-desk details.dk-paid .dk-grid{margin-top:6px;grid-template-columns:1fr}
 #app-desk .dk-empty{font-size:13px;color:var(--ink-3);padding:10px 2px}
 #app-desk .dk-wording{border-top:1px solid var(--line);padding-top:10px;margin-top:12px}
 #app-desk .dk-wording summary{cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
@@ -33917,7 +33920,7 @@ function sponState(a){
   /* a code already on the portal's record before the Desk (none entered here) went out by hand then */
   const e0=entOf(a.id), before=!e0.compCode && String(a.compCode||'').trim() && Number(a.numComps)>0;
   const sent=e0.codeSentAt||(before? 'before' : '');
-  const paid=st==='Paid'||!!a.paymentReceivedDate;
+  const paid=st==='Paid'||!!a.paymentReceivedDate||!!entOf(a.id).paymentReceivedDate;
   const invDate=val(a,'invoiceDate');
   let chase=false;
   if(!paid && !inKind && inv && invDate && daysSince(invDate)>=30){ const lc=lastChase(a); chase=!lc || bizDays(lc,todayISO())>=10; }
@@ -33969,6 +33972,17 @@ async function sendCode(a){
   await saveEnt(a.id,{codeSentAt:new Date().toISOString(), codeSentTo: live()? m.to : TEST_TO+' (test)', codeSentBy:who(), compCode:s.code, numComps:String(s.comps)}, {appNo:a.appNo||'', company:a.company||''});
   flash(live()? 'Code email on the way to '+a.company : 'Test: the code email is on the way to Jonna');
   return true;
+}
+function confirmPaid(a, d, amt, go){
+  const box=el('div','hq-replace'); box.setAttribute('role','dialog'); box.setAttribute('aria-label','Mark paid');
+  const scrim=el('div','hq-replace-scrim'), card=el('div','hq-replace-card');
+  card.appendChild(el('div','h','Mark '+a.company+' Paid?'));
+  card.appendChild(el('div','p','Paid '+nice(d)+(amt? ', '+money(amt) : '')+'. The Sponsorship Portal marks the sponsorship Paid and sends the usual Payment Made email to Jonna, Amy and Kelly.'));
+  const acts=el('div','acts'); const done=()=>box.remove();
+  const no=el('button','no','Cancel'); no.type='button'; no.addEventListener('click',done);
+  const yes=el('button','yes','Mark Paid'); yes.type='button'; yes.addEventListener('click',()=>{ done(); go(); });
+  acts.appendChild(no); acts.appendChild(yes); card.appendChild(acts);
+  scrim.addEventListener('click',done); box.appendChild(scrim); box.appendChild(card); document.body.appendChild(box); yes.focus();
 }
 function preview(a){
   const m=buildMail(a); if(!m) return;
@@ -34130,13 +34144,31 @@ function paintSpon(){
       c2.appendChild(ac); tr.appendChild(c2);
       const c3=el('td');
       if(s.inKind) c3.appendChild(el('span','dk-s','Nothing to collect'));
-      else if(s.paid) c3.appendChild(el('span','dk-flag ok','Paid'+(a.paymentReceivedDate?' '+nice(a.paymentReceivedDate):'')));
+      else if(s.paid){ const pd=a.paymentReceivedDate||entOf(a.id).paymentReceivedDate||'';
+        c3.appendChild(el('span','dk-flag ok','Paid'+(pd?' '+nice(pd):'')));
+        if(!a.paymentReceivedDate && String(a.status)!=='Paid' && entOf(a.id).paymentReceivedDate) c3.appendChild(el('span','dk-wait','Saved here; waiting for the portal to pick it up')); }
       else if(!s.inv) c3.appendChild(el('span','dk-s','Not invoiced yet'));
       else{ const iv=val(a,'invoiceDate'); c3.appendChild(el('span','dk-s', iv? 'Invoiced '+nice(iv)+', '+daysSince(iv)+' days ago' : 'Invoice date not entered'));
         const lc=lastChase(a); if(lc) c3.appendChild(el('span','dk-s','Last chased '+nice(lc)));
         if(s.chase) c3.appendChild(el('span','dk-flag need','Time to Chase'));
         const fb=btn('Log a Follow-Up','ghost',async()=>{ await saveEnt(a.id,{followUp:todayISO()},base); flash('Follow-up logged for '+a.company); }); fb.title='Press once you have chased '+a.company+' for payment. The next reminder comes 10 business days later.';
-        const x=el('div','dk-acts'); x.appendChild(fb); c3.appendChild(x); }
+        const x=el('div','dk-acts'); x.appendChild(fb); c3.appendChild(x);
+        /* Jonna, 2026-11-19: a payment that never reaches MISMO Money (an MBA ACH payment, a credit memo).
+           The portal marks the record Paid from it and sends the usual Payment Made email. */
+        if(String(a.status)==='Pending Payment'){
+          const det=el('details','dk-paid'); det.appendChild(el('summary',null,'Paid Another Way'));
+          det.appendChild(el('span','dk-s','For a payment that never reaches MISMO Money, such as an MBA ACH payment or a credit memo.'));
+          const g=el('div','dk-grid');
+          const l1=el('label','dk-l','Paid On'); const di=document.createElement('input'); di.type='date'; di.className='dk-in'; di.value=todayISO(); di.setAttribute('aria-label','Paid on'); l1.appendChild(di); g.appendChild(l1);
+          const l2=el('label','dk-l','Amount (Optional)'); const ai=document.createElement('input'); ai.type='number'; ai.min='0'; ai.step='0.01'; ai.className='dk-in'; ai.placeholder=a.amountDue? String(a.amountDue) : 'Amount'; ai.setAttribute('aria-label','Amount paid'); l2.appendChild(ai); g.appendChild(l2);
+          det.appendChild(g);
+          const pa=el('div','dk-acts'); pa.appendChild(btn('Mark Paid','',()=>{
+            const d=di.value; if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ flash('Pick the date it was paid'); return; }
+            const amt=String(ai.value||'').trim(); if(amt && !(Number(amt)>=0)){ flash('Check the amount'); return; }
+            confirmPaid(a, d, amt, ()=>saveEnt(a.id, Object.assign({paymentReceivedDate:d}, amt? {amountPaid:Number(amt)} : {}), base).then(()=>flash(a.company+' marked paid '+nice(d)+'. The portal picks it up and sends the Payment Made email.')));
+          }));
+          det.appendChild(pa); c3.appendChild(det); }
+      }
       tr.appendChild(c3); T.tb.appendChild(tr);
     });
     host.appendChild(T.box);

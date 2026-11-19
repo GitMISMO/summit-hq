@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-19
 
+- Registration Desk: Paid Another Way on a Pending Payment sponsor, for an MBA ACH payment or a credit memo that never reaches MISMO Money; the portal marks it Paid and sends the Payment Made email
 - Registration Desk: Bernie's one page for every registration task (sponsor invoices, codes and payment chases from the Sponsorship Portal, Champion codes, speakers, the Board, the MISMO Team and guests), with The Trunk one click away; Bernie opening Summit HQ lands on it; only Bernie, Jonna, Amy and Kelly can open it
 - Champion Codes: codes are entered and sent only on the Registration Desk; Registration shows the list read-only; Bernie's emails link to the Desk
 - Sponsor code email from the Desk (as Kelly, copied to Bernie), in Test until Jonna switches it Live
