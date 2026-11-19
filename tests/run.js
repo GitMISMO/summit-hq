@@ -778,6 +778,14 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.evaluate(() => [...document.querySelectorAll('#dk-spon button')].find(b => b.textContent === 'Log a Follow-Up').click()); await s.page.waitForTimeout(1500);
     const ent3 = ((s.store['feed-desk-sponsor'] || {}).doc || {}).entries || {};
     expect(ent3['app-2'] && (ent3['app-2'].followUps || []).length === 1, 'Log a Follow-Up was not recorded');
+    /* Nov 19: paid another way (an MBA ACH payment, a credit memo), only on Pending Payment */
+    await s.page.evaluate(() => [...document.querySelectorAll('#dk-spon .dk-seg button')].find(b => /^Everyone/.test(b.textContent)).click()); await s.page.waitForTimeout(600);
+    expect(await s.page.evaluate(() => { const rows = [...document.querySelectorAll('#dk-spon tbody tr')]; const c = rows.find(r => /Contoso/.test(r.innerText)), n = rows.find(r => /Northwind/.test(r.innerText)); return !!(c && c.querySelector('details.dk-paid')) && !(n && n.querySelector('details.dk-paid')); }), 'Paid Another Way should show only on Pending Payment sponsors');
+    await s.page.evaluate(() => { const r = [...document.querySelectorAll('#dk-spon tbody tr')].find(x => /Contoso/.test(x.innerText)); const d = r.querySelector('details.dk-paid'); d.open = true;
+      const i = d.querySelectorAll('input'); i[0].value = '2026-11-18'; i[1].value = '27000'; [...d.querySelectorAll('button')].find(b => b.textContent === 'Mark Paid').click(); });
+    await s.page.waitForTimeout(500); await s.page.evaluate(() => document.querySelector('.hq-replace .yes').click()); await s.page.waitForTimeout(1500);
+    const ent4 = ((s.store['feed-desk-sponsor'] || {}).doc || {}).entries || {};
+    expect(ent4['app-2'] && ent4['app-2'].paymentReceivedDate === '2026-11-18' && ent4['app-2'].amountPaid === 27000 && ent4['app-2'].at, 'the paid date did not reach feeds/desk-sponsor: ' + JSON.stringify(ent4['app-2']));
     /* on Registration the champion list is read-only again */
     await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(1200);
     expect(await s.page.evaluate(() => document.getElementById('rg-champ').closest('#app-reg') !== null && /Registration Desk/.test(document.getElementById('rg-champ').innerText)), 'Champion Codes did not go back to Registration, read-only');
