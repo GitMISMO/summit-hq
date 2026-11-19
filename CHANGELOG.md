@@ -2,6 +2,12 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-19
+
+- Registration Desk: Bernie's one page for every registration task (sponsor invoices, codes and payment chases from the Sponsorship Portal, Champion codes, speakers, the Board, the MISMO Team and guests), with The Trunk one click away; Bernie opening Summit HQ lands on it; only Bernie, Jonna, Amy and Kelly can open it
+- Champion Codes: codes are entered and sent only on the Registration Desk; Registration shows the list read-only; Bernie's emails link to the Desk
+- Sponsor code email from the Desk (as Kelly, copied to Bernie), in Test until Jonna switches it Live
+
 ## 2026-11-18
 
 - MISMO Team: MBA and Speakers sections; Ros's rooming list is split into MISMO Team, MBA and Speakers; Bernie's email drops the hotel-rooms line, and speakers don't start checked for him

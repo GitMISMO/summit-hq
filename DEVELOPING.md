@@ -73,3 +73,12 @@ Registration › Champion Codes replaces the Summit Codes - MISMO Champions Smar
 - **Page style:** MISMO navy and sky, Title Case headings and buttons, squared-off buttons and tags (never pill shapes; circles are fine), no monospace type, no big empty spaces, plain words.
 - **People page:** one list, one row a person whatever their roles; a person opens in the right-hand panel (the shared `window.__pane`, which overlays the page and widens with the expand button); edits save as you type. The older People cards are still built, hidden, because the menus open them in the panel. Keep them working.
 - **Who does what:** Amy places speakers on sessions and gets bios and headshots in; Jonna owns the agenda, the schedule and General Sessions; Vanessa puts speakers on the event app; Bernie registers people and sets up the Champions' codes in Aptify; the sponsors' weekly list and the Champions' code emails go out as Kelly.
+
+## Registration Desk (Nov 19, 2026)
+
+`?desk` opens Summit HQ as Bernie's Registration Desk (`#app-desk`, script "REGISTRATION DESK"): only the Desk and The Trunk in the menu, `body.desk-mode`. Bernie (bjordan@mba.org) opening Summit HQ is sent there; `?full` keeps all of Summit HQ. The page gate allows bjordan, jcritchley, amoses and kbradshaw (@mismo.org or @mba.org); the data itself is Summit HQ's, as everywhere else.
+
+- People exposes `window.__desk` (speakers, board, team and their Registered marks: speaker step `reg`, `board/<summit>.reg`, `team-travel/<summit>.ppl[id].reg`).
+- Sponsors are read live from the Sponsorship Portal (`/sponsorship/data/applications`, the viewer's sign-in) and never written. Bernie's entries go to `feeds/desk-sponsor` (`entries[<portal record id>] = {appNo, company, invoiceNumber, invoiceDate, compCode, numComps, to, codeSentAt, codeSentTo, codeSentBy, followUps:[{on,by,at}], by, at}`); the Sponsorship Portal's Claude applies them to its records. The sponsor code email (wording and Test/Live in `desk/settings`: `{sponLive, tpl}`) goes through the speaker-email queue as Kelly, cc Bernie; only Jonna can switch it Live.
+- The Champion Codes card (`#rg-champ`) moves into `#dk-champ-slot` while the Desk shows (`hq:tab` event from `show()`), and back to Registration; codes and sends are editable only while it sits on the Desk.
+- Styles: every `#app-reg` rule is written `:is(#app-reg,#app-desk)` so the Desk wears the Registration look.
