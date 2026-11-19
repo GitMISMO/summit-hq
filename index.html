@@ -33914,7 +33914,9 @@ const daysSince=iso=>Math.floor((Date.parse(todayISO()+'T12:00:00')-Date.parse(S
 function sponState(a){
   const st=String(a.status||''), inKind=st==='In Kind'||!!a.inKind;
   const inv=String(val(a,'invoiceNumber')||'').trim(), code=String(val(a,'compCode')||'').trim(), comps=Number(val(a,'numComps'))||0;
-  const sent=entOf(a.id).codeSentAt||'';
+  /* a code already on the portal's record before the Desk (none entered here) went out by hand then */
+  const e0=entOf(a.id), before=!e0.compCode && String(a.compCode||'').trim() && Number(a.numComps)>0;
+  const sent=e0.codeSentAt||(before? 'before' : '');
   const paid=st==='Paid'||!!a.paymentReceivedDate;
   const invDate=val(a,'invoiceDate');
   let chase=false;
@@ -34121,7 +34123,7 @@ function paintSpon(){
       const l5=el('label','dk-l','Email To'); l5.style.marginTop='4px'; l5.appendChild(inp(entOf(a.id).to||a.contactEmail||'','Who gets the code','text',x=>saveEnt(a.id,{to:x},base))); c2.appendChild(l5);
       if(waiting(a,'compCode')||waiting(a,'numComps')) c2.appendChild(el('span','dk-wait','Saved here; waiting for the portal to pick it up'));
       const ac=el('div','dk-acts');
-      if(s.sent){ ac.appendChild(el('span','dk-flag ok','Code Sent '+nice(String(s.sent).slice(0,10)))); ac.appendChild(btn('Send Again','ghost',()=>preview(a))); }
+      if(s.sent){ ac.appendChild(el('span','dk-flag ok', s.sent==='before'? 'Code Sent Before the Desk' : 'Code Sent '+nice(String(s.sent).slice(0,10)))); ac.appendChild(btn('Send Again','ghost',()=>preview(a))); }
       else if(s.code&&s.comps) ac.appendChild(btn('Send the Code','',()=>preview(a)));
       else ac.appendChild(el('span','dk-flag need','Needs a Code'));
       if(!s.sent && s.code && s.comps) ac.appendChild(btn('Already Sent','ghost',()=>saveEnt(a.id,{codeSentAt:new Date().toISOString(), codeSentTo:'by hand', codeSentBy:who()},base)));
