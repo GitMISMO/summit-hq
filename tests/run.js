@@ -728,7 +728,8 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
       applications: { docs: {
         'app-1': { appNo: 'AN1', event: 'Spring 2027', status: 'Approved', company: 'Northwind Lending', contactName: 'Avery Test', contactEmail: 'avery@example.org', opportunity: 'Breakfast Sponsor' },
         'app-2': { appNo: 'AN2', event: 'Spring 2027', status: 'Pending Payment', company: 'Contoso Mortgage', contactName: 'Blake Test', contactEmail: 'blake@example.org', invoiceNumber: '990102', invoiceDate: '2026-09-01', compCode: 'CON27', numComps: 4 },
-        'app-3': { appNo: 'AN3', event: 'Winter 2027', status: 'Approved', company: 'Elsewhere Co', contactEmail: 'x@example.org' } } } };
+        'app-3': { appNo: 'AN3', event: 'Winter 2027', status: 'Approved', company: 'Elsewhere Co', contactEmail: 'x@example.org' },
+        'app-4': { appNo: 'AN4', event: 'Spring 2027', status: 'Paid', company: 'Fabrikam Data', contactEmail: 'f@example.org', invoiceNumber: '990200', invoiceDate: '2026-08-01', compCode: 'FAB27', numComps: 2, paymentReceivedDate: '2026-08-20' } } } };
     const s = await open(opts({ store, hash: '?desk' }));
     /* someone not on the Desk's list sees the note, not the work */
     await s.page.evaluate(() => window.__hqGo('desk')); await s.page.waitForTimeout(800);
@@ -746,6 +747,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(/Northwind Lending/.test(look.spon) && /Contoso Mortgage/.test(look.spon) && !/Elsewhere Co/.test(look.spon) && /Raise the Invoice/i.test(look.spon) && /Time to Chase/i.test(look.spon),
       'the Desk\'s sponsors are not this summit\'s, or the invoice and chase are not flagged: ' + look.spon.slice(0, 400));
     expect(/Sam Speaker/.test(look.spk) && /Ann Staff/.test(look.team) && !/Dee Speaker/.test(look.team), 'speakers or the MISMO team are not right on the Desk');
+    expect(!/Fabrikam/.test(look.spon), 'a paid sponsor whose code was already on the portal record still shows as to do');
     /* Registered on the Desk is the same mark People makes */
     await s.page.evaluate(() => [...document.querySelectorAll('#dk-spk button')].find(b => b.textContent === 'Registered').click()); await s.page.waitForTimeout(1500);
     expect(await s.page.evaluate(() => { const p = window.__desk.speakers().find(x => x.n === 'Sam Speaker'); return !!(p && p.reg); }), 'Registered on the Desk did not mark the speaker registered');
