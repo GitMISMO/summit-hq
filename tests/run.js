@@ -389,6 +389,15 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(w && w.total_registered === 2 && w.in_person === 1 && w.virtual === 1 && w.registration_revenue === 1098, 'that Friday\'s row was not added: ' + JSON.stringify(w));
     expect(d.files && d.files.pull && d.files.pull.receivedAt === '2026-10-30T11:02:00Z', 'the email was not marked as taken in');
     expect((d.weekly || []).filter(r => r.summit_year === 2027 && r.weeks_prior === w.weeks_prior).length === 1, 'the week was added twice');
+    /* Nov 20: Download Excel saves the list as it shows */
+    await s.page.evaluate(() => window.__hqGo('reg')); await s.page.waitForTimeout(1500);
+    await s.page.evaluate(() => [...document.querySelectorAll('#rg-list .ws-seg button')].find(b => b.dataset.format === 'Virtual').click()); await s.page.waitForTimeout(500);
+    const [xl] = await Promise.all([s.page.waitForEvent('download', { timeout: 8000 }).catch(() => null),
+      s.page.evaluate(() => { const b = [...document.querySelectorAll('#rg-list button')].find(x => x.textContent === 'Download Excel'); if (b) b.click(); return !!b; })]);
+    expect(xl && /Registrants .*\.xlsx$/.test(xl.suggestedFilename()), 'the registrant list did not download as Excel: ' + (xl && xl.suggestedFilename()));
+    if (xl) { const buf = require('fs').readFileSync(await xl.path()); const txt = buf.toString('latin1');
+      expect(buf[0] === 0x50 && buf[1] === 0x4b && /Tom Tech/.test(txt) && !/Ann Lender/.test(txt) && /Registrants/.test(txt) && /<v>199<\/v>/.test(txt), 'the Excel file is not the filtered list'); }
+    await s.page.evaluate(() => [...document.querySelectorAll('#rg-list .ws-seg button')].find(b => b.dataset.format === '').click());
     /* Nov 20: the report comes daily; a Tuesday fills the week ending that Friday and leaves last Friday's row as it was */
     await s.page.evaluate(async c => { const db = await window.claude.use('db'); await db.doc('feeds/registration-pull').set({ name: 'SummitHQ_Registration.csv', receivedAt: '2026-11-03T11:02:00Z', csv: c }); },
       csv + '\r\n1004,New Person,New Co,n@x.example,In-Person,2026-11-02,899.00,,Other,Paid,Member,82690,MISMO Winter Summit,2027-01-11,SHIPPED');
