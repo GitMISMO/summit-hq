@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-20
 
+- Registration: Download Excel on Registrant Lists saves the list as it shows (search, format, category and order)
 - Registration: the Aptify registration report comes every day at 6 AM Eastern instead of Fridays; each day's report fills this week's row on Week-by-Week History (Saturday to Friday, Friday's stands), and System Health flags it after two days without one
 
 ## 2026-11-19

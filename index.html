@@ -7755,6 +7755,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Registrations come from the Aptify view <b>Event Attendance w/ Prompt</b>, run with the Summit&rsquo;s name so it counts in-person and virtual. Sponsorship dollars come from the Sponsorship Portal&rsquo;s Money tab.</li>
         <li>Each week is kept as it was reported. Cancelled orders drop out of Aptify, so rebuilding an old week from today&rsquo;s export can come out lower.</li>
         <li>The bottom of the tab explains exactly how each number is counted.</li>
+        <li><b>Registrant Lists</b> shows this year&rsquo;s or last year&rsquo;s registrants for the Summit picked. Search, pick In-Person or Virtual and a category, and click a heading to sort. <b>Download Excel</b> saves the list exactly as it shows (those choices and that order) as an Excel file: name, title, company, category, email, format, the date they registered and revenue, with the header row frozen and filters on.</li>
         <li><b>Weekly List to Sponsors.</b> The card under the registrant lists shows when the Friday list to sponsors goes (12:00 PM Eastern, from week 7 through the Friday before the Summit), the email&rsquo;s wording and a preview. Kelly (or anyone who edits Summit HQ) can change the subject and message and press <b>Save</b>; the next Friday&rsquo;s email uses it. Fill-ins: {summit}, {opens}, {count} and {asof}. <b>Send a Test to Me</b> sends it to you only, marked [Test]. Kelly&rsquo;s signature and the line about email addresses are always added.</li>
         <li><b>Sent</b> lists every Friday that went: when, how many sponsors and registrants, and the subject. Click one to see who got it (company, contact and email), the email exactly as it went, and the list that was attached. This is the record instead of copying Jonna and Kelly.</li>
         <li><b>Weekly List to Sponsors</b> and <b>Champion Codes</b> at the top of the page take you straight to those two cards.</li>
@@ -8966,6 +8967,11 @@ textarea,input,select{font-family:var(--ui,inherit)}
     cs.addEventListener('change',()=>{ ST.category=cs.value; paint(); });
     r1.appendChild(cs);
     const cnt=el('span','ws-count grow'); r1.appendChild(cnt);
+    /* Jonna, 2026-11-20: download the list as it shows (the summit, search, format and category picked, in its order) */
+    let shown=[];
+    const dl=el('button','ws-btn ghost','Download Excel'); dl.type='button'; dl.title='Download the list as it shows here, as an Excel file';
+    dl.addEventListener('click',()=>{ try{ downloadList(shown); }catch(e){ console.error(e); alert('The list could not be downloaded.'); } });
+    r1.appendChild(dl);
     c.appendChild(r1);
     const box=el('div','ws-tablebox'), t=el('table','ws-table'), th=el('thead'), hr=el('tr');
     /* Kelly, 2026-10-30: job title sits beside the name */
@@ -9026,8 +9032,51 @@ textarea,input,select{font-family:var(--ui,inherit)}
         tb.appendChild(tr); });
       if(!rows.length){ const tr=el('tr'), td=el('td','ws-muted', all.length? 'Nobody matches.' : 'This list has not been loaded.'); td.colSpan=8; tr.appendChild(td); tb.appendChild(tr); }
       cnt.textContent = rows.length===all.length? nf.format(all.length)+' registrations' : nf.format(rows.length)+' of '+nf.format(all.length)+' registrations';
+      shown=rows; dl.disabled=!rows.length;
     }
     paint();
+    /* the list as an Excel workbook: one sheet, a bold header row that stays put and filters, real dates and dollars */
+    function downloadList(rows){
+      if(!rows.length) return;
+      const X=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+      const col=i=>String.fromCharCode(65+i);
+      const serial=iso=>{ const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso||'')); return m? Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/86400000) : null; };
+      const H=[['Name',28],['Title',30],['Company',32],['Category',20],['Email',34],['Format',12],['Registered',13],['Revenue',12]];
+      const cellS=(ref,v,st)=>'<c r="'+ref+'" t="inlineStr"'+(st?' s="'+st+'"':'')+'><is><t xml:space="preserve">'+X(v)+'</t></is></c>';
+      const cellN=(ref,v,st)=>'<c r="'+ref+'"'+(st?' s="'+st+'"':'')+'><v>'+v+'</v></c>';
+      let xml='<row r="1">'+H.map((h,i)=>cellS(col(i)+'1',h[0],1)).join('')+'</row>';
+      rows.forEach((r,j)=>{ const n=j+2, d=serial(r.order_date), rev=num(r.reg_revenue);
+        xml+='<row r="'+n+'">'+[r.name,r.title,r.company,r.category,r.email,r.format].map((v,i)=>cellS(col(i)+n,v||'')).join('')
+          +(d!=null? cellN('G'+n,d,2) : cellS('G'+n,String(r.order_date||'').slice(0,10)))
+          +(rev!=null? cellN('H'+n,rev,3) : cellS('H'+n,''))+'</row>'; });
+      const last='H'+(rows.length+1);
+      const sheet='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+        +'<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+        +'<cols>'+H.map((h,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+h[1]+'" customWidth="1"/>').join('')+'</cols>'
+        +'<sheetData>'+xml+'</sheetData><autoFilter ref="A1:'+last+'"/></worksheet>';
+      const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        +'<numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0.00"/></numFmts>'
+        +'<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'
+        +'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
+        +'<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+        +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+        +'<cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+        +'<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'
+        +'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+      const summit=String(ST.list==='prior'? ((report()||{}).prior_summit||'Last Year') : ((report()||{}).current_summit||(venue()&&venue().name)||'Summit'));
+      const E=t=>new TextEncoder().encode(t);
+      const files=[
+        {name:'[Content_Types].xml', data:E('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>')},
+        {name:'_rels/.rels', data:E('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')},
+        {name:'xl/workbook.xml', data:E('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Registrants" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">Registrants!$A$1:$H$'+(rows.length+1)+'</definedName></definedNames></workbook>')},
+        {name:'xl/_rels/workbook.xml.rels', data:E('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>')},
+        {name:'xl/worksheets/sheet1.xml', data:E(sheet)},
+        {name:'xl/styles.xml', data:E(styles)}];
+      const bytes=zipFiles(files);
+      const name=(summit.replace(/[^\w\s-]/g,'').trim()+' Registrants '+todayIso()+'.xlsx').replace(/\s+/g,' ');
+      const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+      a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+    }
   }
 
   function paintMethod(){
