@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-20
+
+- Registration: the Aptify registration report comes every day at 6 AM Eastern instead of Fridays; each day's report fills this week's row on Week-by-Week History (Saturday to Friday, Friday's stands), and System Health flags it after two days without one
+
 ## 2026-11-19
 
 - Registration Desk: Paid Another Way on a Pending Payment sponsor, for an MBA ACH payment or a credit memo that never reaches MISMO Money; the portal marks it Paid and sends the Payment Made email
