@@ -368,8 +368,8 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
-  /* 18. The weekly Aptify registration email loads itself into Registration */
-  await check('The weekly Aptify registration email loads itself', async () => {
+  /* 18. The Aptify registration email (daily since Nov 20) loads itself into Registration */
+  await check('The daily Aptify registration email loads itself', async () => {
     const H = 'registration_id,name,company,email,format,order_date,reg_revenue,title,company_type,paid_comp,member_class,meeting_id,meeting,meeting_date,status';
     const csv = [H,
       '1001,Ann Lender,Sample Bank,ann@bank.example,In-Person,2026-10-01,899.00,CTO,Independent Mortgage Bank,Paid,Member,82690,MISMO Winter Summit,2027-01-11,SHIPPED',
@@ -389,10 +389,18 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(w && w.total_registered === 2 && w.in_person === 1 && w.virtual === 1 && w.registration_revenue === 1098, 'that Friday\'s row was not added: ' + JSON.stringify(w));
     expect(d.files && d.files.pull && d.files.pull.receivedAt === '2026-10-30T11:02:00Z', 'the email was not marked as taken in');
     expect((d.weekly || []).filter(r => r.summit_year === 2027 && r.weeks_prior === w.weeks_prior).length === 1, 'the week was added twice');
+    /* Nov 20: the report comes daily; a Tuesday fills the week ending that Friday and leaves last Friday's row as it was */
+    await s.page.evaluate(async c => { const db = await window.claude.use('db'); await db.doc('feeds/registration-pull').set({ name: 'SummitHQ_Registration.csv', receivedAt: '2026-11-03T11:02:00Z', csv: c }); },
+      csv + '\r\n1004,New Person,New Co,n@x.example,In-Person,2026-11-02,899.00,,Other,Paid,Member,82690,MISMO Winter Summit,2027-01-11,SHIPPED');
+    await s.page.waitForTimeout(800); await s.page.evaluate(() => window.__regPullNow()); await s.page.waitForTimeout(2500);
+    const d2 = await s.page.evaluate(async () => { const db = await window.claude.use('db'); const x = await db.doc('registration/nola').get(); return x.exists ? x.data() : null; });
+    const fri = (d2.weekly || []).find(r => r.summit_year === 2027 && r.weeks_prior === w.weeks_prior), tue = (d2.weekly || []).find(r => r.summit_year === 2027 && r.report_date === '2026-11-03');
+    expect(fri && fri.total_registered === 2 && tue && tue.weeks_prior === w.weeks_prior - 1 && tue.total_registered === 3 && d2.current.rows.length === 3,
+      'a daily report did not fill this week\'s row while keeping last Friday\'s: ' + JSON.stringify({ fri, tue }));
     await s.page.waitForTimeout(4000);
     const sl = await s.page.evaluate(async () => { const db = await window.claude.use('db'); const x = await db.doc('feeds/sponsor-list').get(); return x.exists ? x.data() : null; });
     const win = ((sl && sl.summits) || []).find(x => x.venue === 'nola');
-    expect(win && win.firstSend === '2026-11-20' && win.people.length === 2 && !JSON.stringify(win.people).includes('@'), 'the sponsors\' list does not start the Friday of week 7, or carries emails: ' + JSON.stringify(win).slice(0, 300));
+    expect(win && win.firstSend === '2026-11-20' && win.people.length === 3 && !JSON.stringify(win.people).includes('@'), 'the sponsors\' list does not start the Friday of week 7, or carries emails: ' + JSON.stringify(win).slice(0, 300));
     noErrors(s.errs); await s.close();
   });
 
