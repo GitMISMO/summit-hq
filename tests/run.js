@@ -639,7 +639,17 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const by = t => ses.find(x => x.title === t);
     expect(g && g.updated && ses.length > 20 && ['Monday', 'Tuesday', 'Wednesday', 'Thursday'].every(d => ses.some(x => x.day === d)), 'the week was not written: ' + JSON.stringify(g || {}).slice(0, 300));
     const ai = ses.find(x => /^Artificial Intelligence/.test(x.title));
-    expect(ai && ai.date === '2027-01-11' && ai.start === '09:00' && ai.end === '12:00' && ai.type === 'Community of Practice' && ai.room && /^(confirmed|tentative)$/.test(ai.status), 'a workgroup row is not right: ' + JSON.stringify(ai));
+    expect(ai && ai.date === '2027-01-11' && ai.start === '09:00' && ai.end === '12:00' && ai.type === 'Community of Practice' && ai.room && ai.status === 'confirmed', 'a workgroup row is not right: ' + JSON.stringify(ai));
+    /* Nov 20: no tentative tags, and the Board is always there and confirmed */
+    expect(g.sessions.every(x => x.status === 'confirmed'), 'a session went to the website as tentative');
+    const bod = g.sessions.find(x => x.id === 'bod@wed');
+    expect(bod && bod.day === 'Wednesday' && bod.start === '09:00' && bod.end === '12:00' && bod.type === 'Invite Only', 'the Board meeting is not Wednesday 9 to 12, invite only: ' + JSON.stringify(bod));
+    const bf = await s.page.evaluate(() => (window.__resumeFunctions().functions || []).find(f => /^bod/.test(String(f.key || f.sid || ''))));
+    expect(bf && bf.confirmed === true, 'the Board meeting is not confirmed on the Schedule: ' + JSON.stringify(bf && { key: bf.key, confirmed: bf.confirmed }));
+    const nid = await s.page.evaluate(() => window.__scheduleAddVenue({ name: 'Test Summit', city: 'Test City', dates: 'March 1–4, 2028', rooms: [{ nm: 'Big Room', cap: 200 }, { nm: 'Boardroom', role: 'board', board: 30 }] }));
+    await s.page.waitForTimeout(2500);
+    const nb = await s.page.evaluate(id => (schedules[id] || {}).bod || null, nid);
+    expect(nb && nb.b === 'wed-am' && nb.confirmed === true && /boardroom/.test(nb.r), 'a new summit did not get the Board meeting on its own: ' + JSON.stringify(nb));
     expect(by('Joint Committee Meeting') && by('Joint Committee Meeting').type === 'Invite Only' && !ses.some(x => /lounge|member engagement/i.test(x.title)), 'invite-only or internal items are wrong');
     expect(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(g)), 'an email address reached the website');
     await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
