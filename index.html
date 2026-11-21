@@ -28304,11 +28304,16 @@ async function remSync(){
     const today=ymd(seEastDay()), floor=ymd(new Date(seEastDay().getTime()-6*864e5));
     const tpl={subject:seDoc().remSubject||SE_REMIND.subject, body:seDoc().remBody||SE_REMIND.body};
     const mine=[]; const needTok=[];
+    let cur={}; try{ const s=await ST.db.doc('feeds/speaker-reminders').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
+    /* Jonna, 2026-11-21: a follow-up whose day has already gone is only kept if it was already waiting
+       for the flow (a run that was missed). One that appears only now (a speaker put back on the summit)
+       could never go, and System Health kept saying it had not. */
+    const queued=new Set((Array.isArray(cur.requests)?cur.requests:[]).map(r=>r&&r.id));
     seMailable().forEach(p=>{
       if(!seWaiting(p) || !remOn(p)) return;
       const st=stOf(p); let tok=st.itok; if(!tok){ tok=seTok(); needTok.push([p.i,tok]); }
       const sent=remSent(p);
-      remDates(p).map(ymd).filter(d=>d>=floor && sent.indexOf(d)<0).slice(0,3).forEach(d=>{
+      remDates(p).map(ymd).filter(d=>d>=floor && sent.indexOf(d)<0 && (d>=today || queued.has('rem-'+p.i+'-'+d))).slice(0,3).forEach(d=>{
         const vv=Object.assign(seVars(p,tok),{missing:seMissing(p)});
         const subject=seFill(tpl.subject,vv), bd=seFill(tpl.body,vv);
         mine.push({id:'rem-'+p.i+'-'+d, on:d, tok, to:String(p.e).trim(), cc:seCcFor(p), replyTo:SE_AMY.email, from:SE_FROM,
@@ -28316,8 +28321,11 @@ async function remSync(){
       });
     });
     needTok.forEach(([id,tok])=>patchSt(id,{itok:tok},'a bio and headshot link'));
-    let cur={}; try{ const s=await ST.db.doc('feeds/speaker-reminders').get(); cur=(s.exists&&s.data())||{}; }catch(e){ return; }
-    const others=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>r && r.summit!==v && String(r.on||'')>=floor);
+    /* Jonna, 2026-11-21: a follow-up for someone no longer speaking at that summit (taken off, now a
+       prospect) is dropped even while another summit is the one open; it was left waiting and
+       System Health kept saying it had not gone */
+    const stillOn=r=>{ const pp=byId(r.person); return !pp || !!(pp.st && pp.st[r.summit] && pp.st[r.summit].on); };
+    const others=(Array.isArray(cur.requests)?cur.requests:[]).filter(r=>r && r.summit!==v && String(r.on||'')>=floor && stillOn(r));
     /* nearest first, and never so big the flow cannot read it in one go */
     let list=others.concat(mine).sort((a,b)=>String(a.on).localeCompare(String(b.on)));
     while(list.length && JSON.stringify(list).length>650000) list.pop();
@@ -33495,6 +33503,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
         let d=docOf(v);
         if(!d || !d.rows || !Object.keys(d.rows).length){
           if(open && open>t) continue;                               /* its list opens later */
+          /* read it again from the server first: only a list that is really empty is started */
+          let fresh0=null; try{ const x=await S.db.doc('champion-codes/'+v).get(); fresh0=x&&x.exists? x.data() : null; }catch(e){ continue; }
+          if(fresh0 && fresh0.rows && Object.keys(fresh0.rows).length){ S.docs[v]={d:fresh0}; continue; }
           d={opened:new Date().toISOString(), rows:{}};
           M.list.forEach(c=>{ const last=lastCode(c.key, v)||{};
             d.rows[c.key]={cid:c.cid, company:c.company, level:c.level, comps:c.comps, to:c.to, names:firstNames(c.to), code:last.code||'', codeId:last.codeId||'', tok:tok(), asked:{kind:'cycle', at:new Date().toISOString()}}; });
@@ -33799,7 +33810,9 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
     S.db.doc('champion-codes/settings').onSnapshot(s=>{ S.set=s.exists?(s.data()||{}):{}; S.setReady=true; soon(); }, ()=>{ S.set={}; S.setReady=true; soon(); });
     const watched=new Set();
     const watch=()=>venues().forEach(v=>{ if(watched.has(v.id)) return; watched.add(v.id);
-      S.db.doc('champion-codes/'+v.id).onSnapshot(s=>{ S.docs[v.id]={d:s.exists?(s.data()||null):null}; soon(); }, ()=>{ S.docs[v.id]={d:null}; }); });
+      /* Jonna, 2026-11-21: a failed read is not an empty list. It used to count as one, and on Nov 19
+         Winter's 81 sent codes were replaced by a fresh list of 80 waiting on Bernie. */
+      S.db.doc('champion-codes/'+v.id).onSnapshot(s=>{ S.docs[v.id]={d:s.exists?(s.data()||null):null}; soon(); }, ()=>{}); });
     watch(); setInterval(watch, 60000);
     let n=0; const iv=setInterval(()=>{ watch(); if(watched.size || ++n>40) clearInterval(iv); }, 3000);
     S.db.doc('feeds/champion-answers').onSnapshot(s=>{ S.answers=s.exists?s.data():null; soon(); }, ()=>{});
@@ -34598,6 +34611,9 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
     for(const r of due.slice(0,12)){
       let done=false;
       if(r.tok){ try{ done=!!(await read('feeds/si-'+r.tok)) || !!(await read('feeds/sm-'+r.tok)); }catch(e){} }
+      /* someone taken off that summit since (now a prospect, say) is not owed a follow-up */
+      if(!done){ try{ const pp=window.__people && window.__people.all().find(x=>x.i===r.person);
+        if(pp && !(pp.st && pp.st[r.summit] && pp.st[r.summit].on)) done=true; }catch(e){} }
       if(!done) missed.push(r);
     }
     const next=reqs.filter(r=>r.on>=m.ymd && !sent.has(r.id)).map(r=>r.on).sort()[0];
