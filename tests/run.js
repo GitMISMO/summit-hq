@@ -215,13 +215,18 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const s = await open(opts());
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       await db.doc('people/zz-spk').set({ i: 'zz-spk', n: 'Pat Speaker', e: 'pat@example.org', t: 'CTO', c: 'Sample Co',
-        st: { nola: { on: true, role: 'speaker', itok: 'zztok1', welcome: { at: '2026-10-28T15:00:00Z' } } } }); });
+        st: { nola: { on: true, role: 'speaker', itok: 'zztok1', welcome: { at: '2026-10-28T15:00:00Z' } } } });
+      /* Nov 21: put back on the summit after a follow-up day went by; that day's follow-up could never go */
+      await db.doc('people/zz-back').set({ i: 'zz-back', n: 'Bo Back', e: 'bo@example.org', t: 'VP', c: 'Back Co',
+        st: { nola: { on: true, role: 'speaker', itok: 'zztok2', welcome: { at: '2026-10-22T15:00:00Z' } } } }); });
     await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
     await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(9000);
     const rem = (s.store['feed-speaker-reminders'] || {}).doc || {};
     const mine = (rem.requests || []).filter(r => r.person === 'zz-spk');
     expect(mine.length > 0, 'no weekly follow-up was written for a speaker still owing a bio and headshot');
     expect(mine.every(r => r.to === 'pat@example.org' && /Bio/.test(r.subject) && r.html), 'a follow-up was written without its address, subject or email');
+    const back = (rem.requests || []).filter(r => r.person === 'zz-back').map(r => r.on);
+    expect(back.length && back.every(d => d >= '2026-11-01'), 'a follow-up whose day had already gone was queued (it can never send): ' + JSON.stringify(back));
     const map = ((s.store['feed-speaker-mail-map'] || {}).doc || {}).speakers || [];
     expect(map.some(x => x.e === 'pat@example.org' && x.t === 'zztok1'), 'the speaker was not put on the email-in map');
     await s.page.evaluate(() => window.__speakerAdds.added('zz-spk')); await s.page.waitForTimeout(3000);
