@@ -7655,7 +7655,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
         <li><b>Facilitator</b> choices on each session come from the MMS (People and Roles &rsaquo; Facilitators), so a facilitator added or removed there shows here too. <b>Walk-on</b> types a name for this Summit only, and <b>TBD</b> holds the spot.</li>
         <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
-        <li><b>Show on the Website Agenda</b>, on the Schedule, puts this week on mismo.org&rsquo;s agenda page: every public session on all four days with its day, time, room and name, labeled the way the website shows it (Community of Practice, Development Workgroup, Office Hours, Networking, Invite Only for the Board, Sr. Advisors and the Joint Committee). A workgroup not yet confirmed goes as tentative. The Champions Lounge, Member Engagement and rooms held with nothing in them stay off, and nothing private goes (no emails, notes or headcounts). Once it is on, changes on the Schedule reach the website on their own, usually within about five minutes (the website&rsquo;s job is started each time this agenda changes). It is off until you turn it on, one summit at a time; click it again to take the week off. The General Sessions and Workshop running orders still go segment by segment with <b>On Website</b> on those pages.</li>
+        <li><b>Show on the Website Agenda</b>, on the Schedule, puts this week on mismo.org&rsquo;s agenda page: every public session on all four days with its day, time, room and name, labeled the way the website shows it (Community of Practice, Development Workgroup, Office Hours, Networking, Invite Only for the Board, Sr. Advisors and the Joint Committee). Every session goes as confirmed; the website shows no tentative tags (Jonna, Nov 20, 2026). The Board of Directors is on every summit on its own: Wednesday 9:00 to 12:00, confirmed and invite only, in a board room when the hotel has one (change the room if you need to). The Champions Lounge, Member Engagement and rooms held with nothing in them stay off, and nothing private goes (no emails, notes or headcounts). Once it is on, changes on the Schedule reach the website on their own, usually within about five minutes (the website&rsquo;s job is started each time this agenda changes). It is off until you turn it on, one summit at a time; click it again to take the week off. The General Sessions and Workshop running orders still go segment by segment with <b>On Website</b> on those pages.</li>
       </ul>
       <p>General Sessions on Tuesday sit at the top of the grid in the main ballroom. MISMO Link Office Hours and the Champions Lounge are in separate rooms.</p>
     </div>
@@ -13535,7 +13535,7 @@ function lockedCard(l, blockId){
   return c;
 }
 
-function render(){ try{ render_(); fitBoard(); try{ wireSurvey(); renderSurvey(); }catch(e){} }catch(err){ showFatal(err); } }
+function render(){ try{ try{ standBoardAll(); }catch(e){} render_(); fitBoard(); try{ wireSurvey(); renderSurvey(); }catch(e){} }catch(err){ showFatal(err); } }
 function notice(msg){
   let n=$('notice');
   if(!n){ n=el('div'); n.id='notice'; n.className='notice';
@@ -17511,7 +17511,7 @@ function renderSurvey(){
          showstopper takes the confirmation off again */
       const pl=place()[g.id];
       if(pl && v==='ok') pl.confirmed=true;
-      else if(pl && (v==='change'||v==='stop')) pl.confirmed=false;
+      else if(pl && (v==='change'||v==='stop') && g.id!=='bod') pl.confirmed=false;
       nameUndo('the chair survey'); save(); render(); renderSurvey(); });
     r2.appendChild(field('Status', sel));
     r2.appendChild(field('Note', textInput(r.note||'', v=>{ const W=surveyState().rows; const rr=W[g.id]||(W[g.id]={}); rr.note=v; nameUndo('the chair survey'); save(); renderSurvey(); }, 'What they said')));
@@ -17840,7 +17840,7 @@ function renderEditor(){
     const no = el('button','no','Not confirmed'); no.type='button';
     no.setAttribute('aria-pressed', p.confirmed?'false':'true');
     no.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setPlacement(s.id,{confirmed:false},true);});
-    sb.appendChild(yes); sb.appendChild(no);
+    sb.appendChild(yes); if(s.id!=='bod') sb.appendChild(no);
     form.appendChild(field('Placement status', sb, 'Your confirmation that this slot is settled.'));
   }
 
@@ -18910,6 +18910,19 @@ function slugOf(txt, taken){
   return id;
 }
 const ROOM_KEYS=['cap','clsrm','thtr','banq','cres','board','hollow'];
+/* Jonna (via the website's Claude), 2026-11-20: "The Board meets at every summit, on the same day and
+   at the same time." Every summit has the Board of Directors on Wednesday 9:00 to 12:00, confirmed, invite
+   only; it is never Not Confirmed. A new summit gets it on its own (in a board room when there is one);
+   the room stays the team's to change. */
+function standBoard(vid){
+  const sc=schedules[vid]; if(!sc) return false;
+  if(sc.bod){ if(sc.bod.confirmed) return false; sc.bod.confirmed=true; return true; }
+  const v=venues.find(x=>x.id===vid); const rooms=(v&&v.rooms)||[]; if(!rooms.length) return false;
+  const pick=rooms.find(r=>r.role==='board') || rooms.find(r=>/board|acadian/i.test(r.nm||'')) || rooms.slice().sort((a,b)=>(b.board||0)-(a.board||0))[0];
+  sc.bod={b:'wed-am', r:pick.id, s:0, setup:'u', fac:null, confirmed:true};
+  return true;
+}
+function standBoardAll(){ let ch=false; Object.keys(schedules).forEach(k=>{ if(standBoard(k)) ch=true; }); return ch; }
 window.__scheduleAddVenue = spec=>{
   spec=spec||{};
   const id=slugOf(spec.id||spec.name||spec.city, venues.map(v=>v.id).concat(removedVenues));
@@ -18930,6 +18943,7 @@ window.__scheduleAddVenue = spec=>{
   venues.push(v);
   removedVenues=removedVenues.filter(x=>x!==id);
   if(!schedules[id]) schedules[id]={};
+  standBoard(id);
   render(); save();
   return id;
 };
@@ -19840,7 +19854,9 @@ prevState = snapState();
  });
       if(!schedules[activeVenue]) schedules[activeVenue]={};
       window.__scheduleLoaded=true;
+      const boardFix=standBoardAll();
       render(); prevState=snapState(); $('savestate').textContent='· restored'; mark('saved');
+      if(boardFix) setTimeout(()=>{ try{ const R=window.ResourcesSession; if(!(R && R.canEdit) || R.canEdit('summit-hq')) save(); }catch(e){} },1500);
     } else {
       /* migrate a schedule saved by the earlier single-venue version */
       const old=await db.doc('schedule/winter2027').get();
@@ -19850,7 +19866,7 @@ prevState = snapState();
         render(); $('savestate').textContent='· restored';
       }
       gridSeen=null;                 /* there was no Schedule to start from */
-      window.__scheduleLoaded=true; render();
+      window.__scheduleLoaded=true; standBoardAll(); render();
     }
     dbRef.onSnapshot(s=>{
       if(!s.exists||s.metadata.hasPendingWrites) return;
@@ -32365,8 +32381,7 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
    With Show on the Website Agenda on for a summit (the button on the Schedule, one summit at a
    time), feeds/website-agenda carries summits.<id>.grid: every public item on the week, all four
    days, with day, date, start and end (24-hour, the hotel's local time), type (as the website's
-   cards label them), title, room and status (confirmed, or tentative for a workgroup not yet
-   confirmed). Board, Sr. Advisors and the Joint Committee go as Invite Only, as the website shows
+   cards label them), title, room and status (always confirmed since Nov 20, 2026: no tentative tags). Board, Sr. Advisors and the Joint Committee go as Invite Only, as the website shows
    them; the Champions Lounge, Member Engagement and rooms held with nothing in them stay off.
    Public only: no emails, phones, notes or attendance. General Sessions and the Workshop are in
    the grid as one block each too; their running orders stay in gs and wk.
@@ -32414,7 +32429,7 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
       const dt=new Date(Date.UTC(Y,M-1,D+d[1])).toISOString().slice(0,10);
       const title=titleOf(f, base); if(!title) return;
       out.push({id:key+(/@/.test(key)?'':'@'+f.day), day:d[0], date:dt, start:hm(f.start), end:hm(f.end), type:typeOf(f, base, title), title,
-        room:String(f.room||''), desc:'', sponsor:'', status:(f.kind==='wg' && !f.confirmed)? 'tentative' : 'confirmed'});
+        room:String(f.room||''), desc:'', sponsor:'', status:'confirmed'});   /* Jonna, 2026-11-20: no tentative tags on the website */
     });
     return out.sort((a,b)=>a.date.localeCompare(b.date) || a.start.localeCompare(b.start) || a.room.localeCompare(b.room));
   }

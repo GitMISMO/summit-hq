@@ -4,6 +4,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-20
 
+- Website agenda: every session goes as confirmed (no tentative tags)
+- Schedule: the Board of Directors meeting is always confirmed and goes on every new summit by itself, Wednesday 9:00 to 12:00, invite only (room still the team's to change)
 - Registration: Download Excel on Registrant Lists saves the list as it shows (search, format, category and order)
 - Registration: the Aptify registration report comes every day at 6 AM Eastern instead of Fridays; each day's report fills this week's row on Week-by-Week History (Saturday to Friday, Friday's stands), and System Health flags it after two days without one
 
