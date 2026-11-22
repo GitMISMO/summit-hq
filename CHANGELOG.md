@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-21
 
+- Board of Directors: Send a Friendly Nudge to board members asked who have not answered (preview, test, send twice)
 - Champion Codes: a failed read no longer counts as an empty list (on Nov 19 Winter's 81 sent codes were replaced by a fresh list; restored from the Nov 18 copy); a list is only started after reading it again from the server
 - Speaker follow-ups: one whose day has already gone is no longer added when a speaker is put back on a summit (System Health kept flagging it), and one for someone no longer speaking is dropped
 
