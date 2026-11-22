@@ -138,6 +138,21 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const board = await s.page.evaluate(() => { const f = document.querySelector('#bd-ask iframe'); return f ? new DOMParser().parseFromString(f.srcdoc, 'text/html').body.innerText : ''; });
     expect(/Spring Summit/.test(board) && /In Person/i.test(board), 'the Board email did not draw for the Spring Summit');
     await s.page.evaluate(() => document.querySelector('#bd-ask .se-x').click());
+    /* Nov 21: a friendly nudge for a board member asked who has not answered */
+    const bm = await s.page.evaluate(async () => { const m = window.__desk.board().find(b => /@/.test(b.e)); const db = await window.claude.use('db');
+      const ref = db.doc('board/slc'); const cur = (await ref.get()).data() || {}; await ref.set(Object.assign({}, cur, { ask: { [m.id]: { tok: 'nudgetok1', at: '2026-10-20T15:00:00Z', by: 'Jonna' } } })); return m; });
+    await s.page.waitForTimeout(2500);
+    const nbtn = await s.page.evaluate(() => { const b = [...document.querySelectorAll('.bd-top .btn')].find(x => /Friendly Nudge/.test(x.textContent)); return b ? { t: b.textContent, d: b.disabled } : null; });
+    expect(nbtn && !nbtn.d && /\(1\)/.test(nbtn.t), 'the Friendly Nudge button is missing or off: ' + JSON.stringify(nbtn));
+    await s.page.evaluate(() => [...document.querySelectorAll('.bd-top .btn')].find(x => /Friendly Nudge/.test(x.textContent)).click()); await s.page.waitForTimeout(1500);
+    const nprev = await s.page.evaluate(() => { const f = document.querySelector('#bd-ask iframe'); return f ? new DOMParser().parseFromString(f.srcdoc, 'text/html').body.innerText : ''; });
+    expect(/friendly nudge/i.test(nprev) && /nudgetok1/.test(await s.page.evaluate(() => document.querySelector('#bd-ask iframe').srcdoc)), 'the nudge did not draw with their own buttons');
+    for (let i = 0; i < 2; i++) { await s.page.evaluate(() => [...document.querySelectorAll('#bd-ask .se-acts .btn')].find(b => /Send the Nudge/.test(b.textContent) || /Click Again/.test(b.textContent)).click()); await s.page.waitForTimeout(800); }
+    await s.page.waitForTimeout(2000);
+    const nq = (((s.store['feed-speaker-email'] || {}).doc || {}).requests || []).find(r => /^bdn-/.test(r.id));
+    expect(nq && nq.to === bm.e && /Friendly Nudge/.test(nq.subject), 'the nudge was not queued to the board member: ' + JSON.stringify(nq && { to: nq.to, subject: nq.subject }));
+    const bd = await s.page.evaluate(async id => { const db = await window.claude.use('db'); return ((await db.doc('board/slc').get()).data().ask || {})[id]; }, bm.id);
+    expect(bd && bd.at === '2026-10-20T15:00:00Z' && (bd.nudges || []).length === 1, 'the nudge was not noted on the member (the first ask must stay): ' + JSON.stringify(bd));
     await card('MISMO Team'); await s.page.waitForTimeout(2500);
     await s.page.evaluate(() => [...document.querySelectorAll('.tt-acts .btn')].find(b => /Ask for Travel/.test(b.textContent)).click()); await s.page.waitForTimeout(1800);
     const team = await s.page.evaluate(() => { const f = document.querySelector('#tt-ask iframe'); return f ? new DOMParser().parseFromString(f.srcdoc, 'text/html').body.innerText : ''; });
