@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-22
+
+- Board of Directors: Elections HQ is now called Leadership HQ in the Board card, its panels and Help (it reads the same Board list; lists saved earlier show as Leadership HQ)
+
 ## 2026-11-21
 
 - Board of Directors: Send a Friendly Nudge to board members asked who have not answered (preview, test, send twice)
