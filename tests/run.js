@@ -600,8 +600,8 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
-  /* 24. The Board comes from Elections HQ: whoever's term covers the summit (Jonna, Nov 17) */
-  await check('The Board card follows Elections HQ\'s Board list', async () => {
+  /* 24. The Board comes from Leadership HQ: whoever's term covers the summit (Jonna, Nov 17) */
+  await check('The Board card follows Leadership HQ\'s Board list', async () => {
     const L = (name, company, position, status, termStart, termEnd, gtype) => ({ gtype: gtype || 'board', name, company, position, status, termStart, termEnd });
     const store = {
       leaders: { docs: {
@@ -621,15 +621,26 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const d = s.store.board && s.store.board.docs && s.store.board.docs['board/nola'];
     const ids = d && d.roster ? d.roster.map(b => b.i) : [];
     expect(ids.slice().sort().join(',') === ['alexandra-brinton', 'erin-dee', 'kevin-peranio', 'michael-briggs', 'rusty-emory', 'timothy-j-bowler'].join(','),
-      'the Board is not Elections HQ\'s list for the summit: ' + ids.join(','));
+      'the Board is not Leadership HQ\'s list for the summit: ' + ids.join(','));
     const tim = d.roster.find(b => b.i === 'timothy-j-bowler'), erin = d.roster.find(b => b.i === 'erin-dee'), rusty = d.roster.find(b => b.i === 'rusty-emory');
     expect(tim.e === 'timothy.bowler@ice.com' && tim.r === 'Chair' && d.att['timothy-j-bowler'] === 'in' && erin.e === '' && erin.c === 'BankSouth Mortgage' && rusty.r === 'Ex-Officio',
       'emails, roles or answers were not kept: ' + JSON.stringify({ tim, erin, rusty, att: d.att }));
     await s.page.evaluate(() => window.__pane.open('people:boardOpen')); await s.page.waitForTimeout(1200);
     const t = await s.page.evaluate(() => document.getElementById('hq-pane').innerText);
-    expect(/Erin Dee/.test(t) && /No email yet/.test(t) && /Elections HQ/.test(t) && !/Michele Bodda/.test(t) && !/Leslie Peeler/.test(t) && !/Brian Vieaux/.test(t),
+    expect(/Erin Dee/.test(t) && /No email yet/.test(t) && /Leadership HQ/.test(t) && !/Elections HQ/.test(t) && !/Michele Bodda/.test(t) && !/Leslie Peeler/.test(t) && !/Brian Vieaux/.test(t),
       'the Board card is not right: ' + t.slice(0, 500));
+    expect(d.rosterFrom && d.rosterFrom.src === 'Leadership HQ', 'a new list is not saved as from Leadership HQ: ' + JSON.stringify(d.rosterFrom));
     noErrors(s.errs); await s.close();
+    /* a list saved before the rename (src 'Elections HQ') is left as saved and shows as Leadership HQ (Nov 22) */
+    const old = JSON.parse(JSON.stringify(d)); old.rosterFrom.src = 'Elections HQ';
+    const s2 = await open(opts({ store: Object.assign({}, store, { board: { docs: { 'board/nola': old } } }) }));
+    await s2.page.evaluate(() => window.__hqGo('people')); await s2.page.waitForTimeout(9000);
+    await s2.page.evaluate(() => window.__pane.open('people:boardOpen')); await s2.page.waitForTimeout(1200);
+    const t2 = await s2.page.evaluate(() => document.getElementById('hq-pane').innerText);
+    const d2 = s2.store.board.docs['board/nola'];
+    expect(/From Leadership HQ\u2019s Board list/.test(t2) && !/Elections HQ/.test(t2) && d2.rosterFrom.src === 'Elections HQ',
+      'an older saved list does not show as Leadership HQ, or was rewritten: ' + JSON.stringify(d2.rosterFrom) + ' ' + t2.slice(0, 300));
+    noErrors(s2.errs); await s2.close();
   });
 
   /* 25. The TrackPod sheet for the name tag scanners fills itself from the Schedule (Jonna, Nov 18) */
