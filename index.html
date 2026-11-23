@@ -7651,7 +7651,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Arrangement Options</b> builds a clean week that respects every request and keeps sessions that should not overlap apart.</li>
         <li><b>Held for Next Summit</b> keeps a note about a future Summit (&ldquo;these two should never run together&rdquo;) without changing the week in front of you.</li>
         <li><b>Rooms</b> change every Summit. Add A Summit makes the first pass from the hotel contract, and the <b>Rooms</b> card lets you add, rename, remove or update a room, the days it is held and what it is used for (Workgroup, General Sessions, Breakfast, Staff Office and so on).</li>
-        <li><b>Fixed</b> lists the set pieces of the week: Breakfast, the Staff Office, Champions Lounge, Member Engagement, Newcomer Orientation, the Workshop, both Receptions, General Sessions and the Joint Committee Meeting. Each one shows the room it sits in on the grid. The first time, it goes in the room whose use matches (Breakfast for the receptions, General Sessions for the Joint Committee); drag the card on the grid to change it. A line turns red if it has no room, or if the General Sessions room seats fewer in classroom than the headcount.</li>
+        <li><b>Fixed</b> lists the set pieces of the week: Breakfast, the Staff Office, Champions Lounge, Member Engagement, Newcomer Orientation, the Workshop, both Receptions, General Sessions and the Joint Committee Meeting. Each one shows the room it sits in on the grid. The first time, it goes in the room whose use matches (Breakfast for the receptions, General Sessions for the Joint Committee); drag the card on the grid to change it. A line turns red if it has no room, or if the General Sessions room seats fewer in classroom than the headcount. A standing item&rsquo;s <b>Time of Day</b> (Starts and Ends when you open its card) is its hours everywhere: on the card, in the hotel&rsquo;s resume and on the website agenda. Leave them blank and it follows its block (the Workshop&rsquo;s block is 1:30 to 4:30; Winter 2027&rsquo;s Workshop is set to 1:30 to 5:00).</li>
         <li>The <b>floor plan</b>, <b>capacity chart</b> and <b>contract</b> for each Summit open from the Schedule.</li>
         <li><b>Facilitator</b> choices on each session come from the MMS (People and Roles &rsaquo; Facilitators), so a facilitator added or removed there shows here too. <b>Walk-on</b> types a name for this Summit only, and <b>TBD</b> holds the spot.</li>
         <li><b>Chair Survey</b> prepares the survey to workgroup chairs that informs the grid. <b>Print / PDF</b> prints the week.</li>
@@ -18113,7 +18113,7 @@ function renderEditor(){
     stRow.appendChild(field('Starts', timeInput(s.tStart, v=>setEdit(s.id,{tStart:v}))));
     stRow.appendChild(field('Ends', timeInput(s.tEnd, v=>setEdit(s.id,{tEnd:v}))));
     form.appendChild(field('Time of day', stRow,
-      'Set these to show the hours on the card \u2014 breakfast at 7:30\u20139:00, say.'));
+      'Its hours on the card, the hotel\u2019s resume and the website agenda. Leave blank to follow the block.'));
     form.appendChild(field('Expected attendance',
       numInput(s.att, v=>setEdit(s.id,{att:v}), 'headcount'),
       'Drives the room-fit check and the count for Rosalyn.'));
@@ -19975,8 +19975,12 @@ prevState = snapState();
       if(!b || !rm || !S[lk.sid]) return;
       const id=lk.sid+'@'+b.day+'@'+rm.id;
       let st, en;
-      if(lk.sid==='breakfast'){ st=7*60+30; en=9*60; }
-      else { const h=hoursOf(null, b, 0); st=h[0]; en=h[1]; }
+      /* CN-012, Nov 23, 2026: a standing item's own Starts/Ends (the Time of Day on its
+         card) are its hours here too, so the Workshop running 1:30 to 5:00 reaches the
+         hotel's resume and the website agenda, not just the card */
+      const own=S[lk.sid], hasOwn=!!(own && own.tStart && own.tEnd);
+      if(lk.sid==='breakfast' && !hasOwn){ st=7*60+30; en=9*60; }
+      else { const h=hoursOf(hasOwn? own : null, b, 0); st=h[0]; en=h[1]; }
       const cur=seen.get(id);
       if(cur){ cur.start=Math.min(cur.start,st); cur.end=Math.max(cur.end,en); return; }
       const o=base(lk.sid, b, rm, {key: lk.sid+'@'+b.day+(Object.keys(LK).filter(x=>{

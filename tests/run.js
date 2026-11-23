@@ -688,6 +688,26 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 26b. A standing item's own hours reach the website agenda and the resume (CN-012, Nov 23, 2026:
+     the Workshop runs 1:30 to 5:00, not to the end of its 4:30 block) */
+  await check('The Workshop\'s own hours reach the website agenda', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(() => window.__hqGo('grid')); await s.page.waitForTimeout(3000);
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    const wk = () => ((((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).grid || {}).sessions || []).find(x => x.id === 'workshop@mon');
+    const w0 = wk();
+    expect(w0 && w0.start === '13:30' && w0.end === '16:30' && w0.type === 'Workshop', 'with no hours of its own the Workshop should follow its block, 13:30 to 16:30: ' + JSON.stringify(w0));
+    await s.page.evaluate(() => setEdit('workshop', { tStart: '13:30', tEnd: '17:00' }));
+    let tries = 0; while (tries++ < 20 && !(wk() && wk().end === '17:00')) await s.page.waitForTimeout(1000);
+    const w1 = wk();
+    expect(w1 && w1.start === '13:30' && w1.end === '17:00', 'the Workshop\'s own end time did not reach the website agenda: ' + JSON.stringify(w1));
+    const rf = await s.page.evaluate(() => (window.__resumeFunctions().functions || []).find(f => f.sid === 'workshop'));
+    expect(rf && rf.start === 13 * 60 + 30 && rf.end === 17 * 60, 'the resume feed does not carry the Workshop\'s own hours: ' + JSON.stringify(rf && { start: rf.start, end: rf.end }));
+    const bf = await s.page.evaluate(() => (window.__resumeFunctions().functions || []).find(f => f.sid === 'breakfast'));
+    expect(!bf || (bf.start === 7 * 60 + 30 && bf.end === 9 * 60), 'breakfast lost its 7:30 to 9:00: ' + JSON.stringify(bf && { start: bf.start, end: bf.end }));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 27. The MISMO team: Bernie only registers; the rooming list goes to Ros once every date is in (Jonna, Nov 18) */
   await check('MISMO team: Bernie registers, Ros gets the rooming list', async () => {
     const store = { resume: { docs: { 'resume/slc': { details: { hotelName: 'Sample Hotel' } } } },
