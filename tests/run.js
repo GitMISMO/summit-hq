@@ -362,6 +362,44 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 31. Bullets in a session description: pasted from an email, the Bullets button, and "- " (Amy, Nov 23) */
+  await check('Session descriptions keep bullets pasted from an email', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
+        { id: 'g1', kind: 'Presentation', title: 'UMDP Updates', desc: '', dur: 45, web: true, people: [] }] }); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
+    const paste = (html, plain) => s.page.evaluate(([html, plain]) => { const ta = document.querySelector('#app-gs .gs-desc'); ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+      const dt = new DataTransfer(); if (html) dt.setData('text/html', html); dt.setData('text/plain', plain);
+      ta.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); return ta.value; }, [html, plain]);
+    /* Outlook's way: list paragraphs with a hidden symbol */
+    let v = await paste('<html><body><p class=MsoNormal>Including developments related to:</p>' +
+      '<p class=MsoListParagraph style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">\u00b7<span>&nbsp;&nbsp;</span></span>Desktop Underwriter data specifications</p>' +
+      '<p class=MsoListParagraph style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">\u00b7<span>&nbsp;&nbsp;</span></span>The Uniform Closing Dataset (UCD) v2.0</p></body></html>', 'x');
+    expect(v === 'Including developments related to:\n\u2022 Desktop Underwriter data specifications\n\u2022 The Uniform Closing Dataset (UCD) v2.0',
+      'Outlook bullets did not come in: ' + JSON.stringify(v));
+    /* a list (Gmail and most others), with one inside it */
+    await s.page.evaluate(() => { const ta = document.querySelector('#app-gs .gs-desc'); ta.value = ''; });
+    v = await paste('<div>Topics:</div><ul><li>One</li><li>Two<ul><li>Two a</li></ul></li></ul><ol><li>First</li><li>Second</li></ol>', 'x');
+    expect(v === 'Topics:\n\u2022 One\n\u2022 Two\n   \u25e6 Two a\n1. First\n2. Second', 'a pasted list did not keep its bullets: ' + JSON.stringify(v));
+    /* the Bullets button, on and off */
+    v = await s.page.evaluate(() => { const ta = document.querySelector('#app-gs .gs-desc'); ta.value = 'Intro\nAlpha\nBeta'; ta.focus(); ta.setSelectionRange(7, 14);
+      document.querySelector('#app-gs .gs-bul').click(); const a = ta.value; ta.setSelectionRange(7, 18); document.querySelector('#app-gs .gs-bul').click(); return [a, ta.value]; });
+    expect(v[0] === 'Intro\n\u2022 Alpha\n\u2022 Beta' && v[1] === 'Intro\nAlpha\nBeta', 'the Bullets button did not work: ' + JSON.stringify(v));
+    /* "- " at the start of a line */
+    await s.page.evaluate(() => { const ta = document.querySelector('#app-gs .gs-desc'); ta.value = 'Intro\n'; ta.focus(); ta.setSelectionRange(6, 6); });
+    await s.page.keyboard.type('- Gamma');
+    await s.page.waitForTimeout(5000);
+    v = await s.page.evaluate(() => document.querySelector('#app-gs .gs-desc').value);
+    expect(v === 'Intro\n\u2022 Gamma', 'typing - and a space did not make a bullet: ' + JSON.stringify(v));
+    const sd = ((s.store.schedule || {}).docs || {})['schedule/gs-nola'];
+    expect(sd && sd.items[0].desc === 'Intro\n\u2022 Gamma', 'the description was not saved with its bullets: ' + JSON.stringify(sd && sd.items[0]));
+    const gs = ((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).gs;
+    expect(gs && gs.sessions[0].desc === 'Intro\n\u2022 Gamma', 'the website did not get the bullets: ' + JSON.stringify(gs && gs.sessions[0]));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 16. A sponsor's event app step: Vanessa's, and it ticks */
   await check('Sponsors have an event app step for Vanessa', async () => {
     const store = { 'portal-applications': { docs: { 'P-1': { appNo: 'P-1', company: 'Sample Sponsor Co', contactEmail: 'pat@sponsor.example', contactName: 'Pat Sponsor', status: 'Approved', level2027: 'GOLD', event: 'Winter 2027', opportunity: 'Breakfast' } } } };
@@ -705,6 +743,26 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(rf && rf.start === 13 * 60 + 30 && rf.end === 17 * 60, 'the resume feed does not carry the Workshop\'s own hours: ' + JSON.stringify(rf && { start: rf.start, end: rf.end }));
     const bf = await s.page.evaluate(() => (window.__resumeFunctions().functions || []).find(f => f.sid === 'breakfast'));
     expect(!bf || (bf.start === 7 * 60 + 30 && bf.end === 9 * 60), 'breakfast lost its 7:30 to 9:00: ' + JSON.stringify(bf && { start: bf.start, end: bf.end }));
+    /* retyping Ends: a box emptied mid-typing is not a change, and the resume does not ask about it (Jonna, Nov 23) */
+    await s.page.evaluate(() => { window.__tiCalls = []; const i = timeInput('17:00', v => { window.__tiCalls.push(v); setEdit('workshop', { tEnd: v }); });
+      i.id = 'test-ends'; document.body.appendChild(i); });
+    await s.page.focus('#test-ends');
+    await s.page.evaluate(() => { const i = document.getElementById('test-ends'); i.value = ''; i.dispatchEvent(new Event('change', { bubbles: true })); });
+    await s.page.waitForTimeout(3000);
+    let mid = await s.page.evaluate(() => ({ calls: window.__tiCalls, end: ((window.__resumeFunctions().functions || []).find(f => f.sid === 'workshop') || {}).end, prompt: !!document.getElementById('hq-rzprompt') }));
+    expect(!mid.calls.length && mid.end === 17 * 60 && !mid.prompt, 'emptying the box while typing changed the Workshop or asked about the resume: ' + JSON.stringify(mid));
+    await s.page.evaluate(() => { const i = document.getElementById('test-ends'); i.value = '17:00'; i.dispatchEvent(new Event('change', { bubbles: true })); i.blur(); });
+    await s.page.waitForTimeout(2000);
+    mid = await s.page.evaluate(() => ({ calls: window.__tiCalls, end: ((window.__resumeFunctions().functions || []).find(f => f.sid === 'workshop') || {}).end, prompt: !!document.getElementById('hq-rzprompt') }));
+    expect(!mid.calls.length && mid.end === 17 * 60 && !mid.prompt, 'typing 5:00 back changed something or the resume asked: ' + JSON.stringify(mid));
+    /* emptied and left empty: that is a real change, made when you leave the box */
+    await s.page.focus('#test-ends');
+    await s.page.evaluate(() => { const i = document.getElementById('test-ends'); i.value = ''; i.dispatchEvent(new Event('change', { bubbles: true })); i.blur(); });
+    await s.page.waitForTimeout(1500);
+    mid = await s.page.evaluate(() => ({ calls: window.__tiCalls, end: ((window.__resumeFunctions().functions || []).find(f => f.sid === 'workshop') || {}).end }));
+    expect(mid.calls.length === 1 && mid.calls[0] === null && mid.end === 16 * 60 + 30, 'leaving the box empty did not clear the end time: ' + JSON.stringify(mid));
+    /* back to 5:00 */
+    await s.page.evaluate(() => setEdit('workshop', { tEnd: '17:00' }));
     noErrors(s.errs); await s.close();
   });
 
