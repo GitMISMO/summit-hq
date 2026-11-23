@@ -5,6 +5,8 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 ## 2026-11-23
 
 - Schedule: a standing item's own Starts and Ends (Time of Day on its card) now reach the hotel's resume and the website agenda, not just the card. Winter 2027's Workshop is set to 1:30 to 5:00 PM (CN-012), so the website agenda shows 5:00
+- Schedule: clearing a Starts or Ends box to retype it no longer counts as a change until you leave the box, and the resume doesn't ask while a time is being typed (retyping the Workshop's 5:00 had asked to put 4:30 on the resume)
+- General Sessions and Workshop: bullets in a description — pasting from an email keeps them, a Bullets button adds or removes them, and a line started with a dash becomes one; a description change now reaches the website agenda as soon as it saves
 
 ## 2026-11-22
 

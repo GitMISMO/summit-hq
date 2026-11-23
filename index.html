@@ -7702,6 +7702,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <ul>
         <li>Start from the <b>Typical Tuesday</b> template, or <b>Start Blank</b>. <b>Start Over</b> clears it.</li>
         <li>Add a segment, give it a type (fireside chat, case study, presentation, panel, lunch and so on), a title, a description and a length. Drag segments to reorder them, or use the arrows. The times recalculate from the start time; pin a time when a segment must start at a set time and any gap or clash is flagged.</li>
+        <li><b>Bullets in a description.</b> Pasting from an email keeps its bullets. To add your own, select the lines and click <b>&bull; Bullets</b> in the corner of the description (click again to take them off), or start a line with a dash and a space. Bullets show on the website&rsquo;s agenda, the event app and the printed agenda.</li>
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
@@ -17706,7 +17707,14 @@ function timeInput(val, onChange){
   const i=document.createElement('input');
   i.type='time'; i.step='900';
   i.value=snap15(val)||'';
-  i.addEventListener('change',()=>{ const v=snap15(i.value); i.value=v||''; onChange(v||null); });
+  /* Nov 23, 2026: Jonna changed the Workshop's Ends from 4:30 to 5:00 and was asked to put
+     4:30 back on the resume. Clearing the box to retype it counted as a change: the hours went
+     blank for a moment, the Workshop fell back to its block (1:30 to 4:30), and the resume
+     asked about that. A box emptied while it is still being typed in waits until you leave it. */
+  let was=i.value;
+  const commit=()=>{ const v=snap15(i.value); i.value=v||''; if((v||'')===was) return; was=v||''; onChange(v||null); };
+  i.addEventListener('change',()=>{ if(!i.value && document.activeElement===i) return; commit(); });
+  i.addEventListener('blur',commit);
   return i;
 }
 function numInput(val, onInput, ph){
@@ -24200,6 +24208,8 @@ startClock();
   function checkSoon(){ clearTimeout(ckT); ckT=setTimeout(check, 900); }
   function check(){
     const f=feed(); if(!f || !ST.loaded || !f.loaded) return;
+    /* not while a time is still being typed on the Schedule: a half-typed hour is not a change to ask about */
+    const ae=document.activeElement; if(ae && ae.tagName==='INPUT' && ae.type==='time'){ checkSoon(); return; }
     /* first time for this summit: the resume starts from the Schedule as it stands */
     /* the resume taking the Schedule as it stands for the first time is the page
        settling into place, not something to step back through */
@@ -31318,6 +31328,11 @@ window.__desk={
 :is(#app-gs,#app-wk) .gs-desc{width:100%;min-height:34px;font:inherit;font-size:13px;line-height:1.45;padding:6px 8px;border:1px solid var(--line);
   border-radius:3px;background:var(--surface);color:var(--ink-2);resize:vertical}
 :is(#app-gs,#app-wk) .gs-desc:focus{border-color:var(--accent);outline:none}
+:is(#app-gs,#app-wk) .gs-dwrap{position:relative}
+:is(#app-gs,#app-wk) .gs-dwrap .gs-desc{display:block;padding-right:78px}
+:is(#app-gs,#app-wk) .gs-bul{position:absolute;top:5px;right:6px;font:inherit;font-size:11px;font-weight:700;line-height:1;padding:4px 6px;
+  border:1px solid var(--line);border-radius:3px;background:var(--surface-2,var(--surface));color:var(--ink-3);cursor:pointer;opacity:.75}
+:is(#app-gs,#app-wk) .gs-bul:hover,:is(#app-gs,#app-wk) .gs-dwrap:focus-within .gs-bul{opacity:1;color:var(--ink);border-color:var(--accent)}
 :is(#app-gs,#app-wk) .gs-spon{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--ink-3)}
 :is(#app-gs,#app-wk) .gs-spon-l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
 :is(#app-gs,#app-wk) .gs-spon select{font:inherit;font-size:12px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--surface);color:var(--ink);max-width:260px}
@@ -31872,7 +31887,8 @@ async function save(){
   if(!db||!doc) return;
   if(!gsRead){ paintSaved('Not saved \u2014 still loading, try again in a moment'); return; }   /* Jonna, 2026-10-31 */
   const body=JSON.parse(JSON.stringify(doc)), from=seen; seen=JSON.parse(JSON.stringify(body));
-  try{ await db.doc('schedule/'+C.p+'-'+vid).set(body, {base:from}); dirty=false; savedAt=Date.now(); paintSaved('Saved'); }
+  try{ await db.doc('schedule/'+C.p+'-'+vid).set(body, {base:from}); dirty=false; savedAt=Date.now(); paintSaved('Saved');
+    webSync(); }   /* Nov 23, 2026: a description or title typed in reaches the website without waiting for the page to redraw */
   catch(e){ paintSaved('Not saved — '+((e&&e.message)||'try again')); }
 }
 function paintSaved(t){ const n=$(C.p+'-saved'); if(n) n.textContent=t; }
@@ -32185,7 +32201,18 @@ function card(row, over){
   const grow=()=>{ ds.style.height='auto'; ds.style.height=Math.max(34,ds.scrollHeight+2)+'px'; };
   ds.addEventListener('input',()=>{ it.desc=ds.value; grow(); touch(); });
   setTimeout(grow,0);
-  m.appendChild(ds);
+  /* Amy, Nov 23, 2026: "is there a way to add bullets into session descriptions? I copied and
+     pasted from an email and the bullets disappeared". Bullets are kept as plain "• " lines, so
+     they read the same on the website, the event app and the printed agenda. */
+  const dw=el('div','gs-dwrap'); dw.appendChild(ds);
+  const bb=el('button','gs-bul','\u2022 Bullets'); bb.type='button';
+  bb.title='Put bullets on the lines you have selected (or the line you are on). Click again to take them off. Typing - and a space at the start of a line makes a bullet too.';
+  bb.addEventListener('mousedown',e=>e.preventDefault());
+  bb.addEventListener('click',()=>{ descBullets(ds); ds.dispatchEvent(new Event('input')); ds.focus(); });
+  ds.addEventListener('paste',e=>{ if(descPaste(ds,e)) ds.dispatchEvent(new Event('input')); });
+  ds.addEventListener('input',e=>{ if(e.inputType==='insertText' && e.data===' ') descDash(ds); });
+  dw.appendChild(bb);
+  m.appendChild(dw);
 
   /* Sponsored by */
   const sp=el('div','gs-spon'+(it.sponsor?' on':''));
@@ -32340,6 +32367,62 @@ function template(){
   const d=blank();
   (C.tpl||[]).forEach(([k,t,dur,at])=>{ const it=newItem(k); it.title=t; it.dur=dur; if(at) it.at=at; d.items.push(it); });
   return d;
+}
+
+/* ---------- bullets in a description (Amy, Nov 23, 2026) ---------- */
+const BUL='\u2022 ', SUB='   \u25e6 ';
+/* the lines a selection covers: [start of the first line, end of the last] */
+function descLines(ta){ const v=ta.value; let a=ta.selectionStart, b=ta.selectionEnd;
+  if(b>a && v[b-1]==='\n') b--;
+  a=v.lastIndexOf('\n',a-1)+1; let e=v.indexOf('\n',b); if(e<0) e=v.length; return [a,e]; }
+function descBullets(ta){
+  const [a,e]=descLines(ta), part=ta.value.slice(a,e).split('\n');
+  const has=l=>/^\s*(\u2022|\u25e6)\s/.test(l), full=part.filter(l=>l.trim());
+  const off=full.length && full.every(has);
+  const out=part.map(l=>!l.trim()? l : off? l.replace(/^\s*(\u2022|\u25e6)\s+/,'') : has(l)? l : BUL+l.replace(/^\s*(?:[-*\u00b7\u25aa\u25cf\u2013]|o(?=\s))\s*/,'')).join('\n');
+  ta.setRangeText(out,a,e,'select');
+}
+/* "- " or "* " at the start of a line becomes a bullet as it is typed */
+function descDash(ta){ const c=ta.selectionStart, v=ta.value, a=v.lastIndexOf('\n',c-1)+1;
+  if(c-a===2 && /^[-*] $/.test(v.slice(a,c))){ ta.setRangeText(BUL,a,c,'end'); ta.dispatchEvent(new Event('input')); } }
+/* pasting from an email: its bullets (a list, or Outlook's) come in as "• " lines instead of vanishing */
+function descPaste(ta,e){
+  const cd=e.clipboardData; if(!cd) return false;
+  const html=cd.getData('text/html')||'', plain=cd.getData('text/plain')||'';
+  let text='';
+  if(/<li[\s>]|mso-list|MsoListParagraph/i.test(html)) text=descFromHtml(html);
+  else if(/^[ \t]*(?:[\u00b7\u2022\u25aa\u25cf\u00a7]|o(?=\t))[ \t]+\S/m.test(plain))
+    text=plain.replace(/\r\n?/g,'\n').replace(/^[ \t]*(?:[\u00b7\u2022\u25aa\u25cf\u00a7]|o(?=\t))[ \t]+/gm,BUL);
+  if(!text) return false;
+  e.preventDefault(); ta.setRangeText(text,ta.selectionStart,ta.selectionEnd,'end'); return true;
+}
+function descFromHtml(html){
+  let d; try{ d=new DOMParser().parseFromString(html,'text/html'); }catch(x){ return ''; }
+  const out=[]; let line='', pre='';
+  const flush=gap=>{ const t=line.replace(/[ \t\u00a0]+/g,' ').trim(); if(t) out.push(pre+t); line=''; pre='';
+    if(gap && out.length && out[out.length-1]!=='') out.push(''); };
+  const lvl=el=>{ let n=0, p=el.parentElement; while(p){ if(/^(UL|OL)$/.test(p.tagName)) n++; p=p.parentElement; } return n; };
+  const walk=n=>{
+    if(n.nodeType===3){ line+=n.nodeValue.replace(/\s+/g,' '); return; }
+    if(n.nodeType!==1) return;
+    const tag=n.tagName, st=n.getAttribute('style')||'';
+    if(/^(SCRIPT|STYLE|HEAD|TITLE|META|LINK)$/.test(tag) || /mso-list\s*:\s*ignore/i.test(st)) return;
+    if(tag==='BR'){ flush(false); return; }
+    if(tag==='LI'){ flush(false); const ol=n.parentElement&&n.parentElement.tagName==='OL';
+      const i=ol? [...n.parentElement.children].filter(c=>c.tagName==='LI').indexOf(n)+1 : 0;
+      pre= ol? (lvl(n)>1?'   ':'')+i+'. ' : (lvl(n)>1? SUB : BUL);
+      [...n.childNodes].forEach(walk); flush(false); return; }
+    const outlook=tag==='P' && (/MsoListParagraph/i.test(n.className||'') || /mso-list/i.test(st));
+    if(outlook){ flush(false); pre=/level[2-9]/i.test(st)? SUB : BUL; [...n.childNodes].forEach(walk); flush(false); return; }
+    const block=/^(P|DIV|H[1-6]|UL|OL|TABLE|TR|BLOCKQUOTE|SECTION|ARTICLE)$/.test(tag);
+    if(block) flush(false);
+    [...n.childNodes].forEach(walk);
+    if(block) flush(/^(P|H[1-6]|UL|OL|TABLE|BLOCKQUOTE)$/.test(tag));
+  };
+  walk(d.body||d.documentElement); flush(false);
+  while(out.length && out[out.length-1]==='') out.pop(); while(out.length && out[0]==='') out.shift();
+  /* no blank line before a bullet: a list sits right under the line that leads into it */
+  return out.filter((l,i)=>!(l==='' && out[i+1]!=null && /^(\s*(\u2022|\u25e6)|\s*\d+\. )/.test(out[i+1]))).join('\n');
 }
 
 /* ---------- a printable agenda ---------- */
