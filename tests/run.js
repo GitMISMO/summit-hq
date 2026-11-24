@@ -400,6 +400,40 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 32. A speaker dragged from one segment to another moves there (Amy, Nov 24) */
+  await check('A speaker drags from one segment to another', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/mv-spk').set({ i: 'mv-spk', n: 'Morgan Mover', e: 'morgan@example.org', c: 'Sample Bank', st: { nola: { on: true, role: 'speaker', ses: ['gs-a1'] } } });
+      await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
+        { id: 'a1', kind: 'Keynote', title: 'Opening', dur: 30, people: [{ id: 'mv-spk', role: 'Moderator' }] },
+        { id: 'a2', kind: 'Panel', title: 'The Panel', dur: 45, people: [] },
+        { id: 'a3', kind: 'Presentation', title: 'Closing', dur: 30, people: [] }] }); });
+    await s.page.waitForTimeout(3000); await s.page.reload(); await s.page.waitForTimeout(5000);
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
+    const drag = (fromTitle, toTitle, ctrl) => s.page.evaluate(([fromTitle, toTitle, ctrl]) => {
+      const card = t => [...document.querySelectorAll('#app-gs .gs-item')].find(x => x.querySelector('.gs-title').value === t);
+      const chip = card(fromTitle).querySelector('.gs-chip'), to = card(toTitle), dt = new DataTransfer();
+      chip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: dt }));
+      to.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer: dt, ctrlKey: ctrl }));
+      to.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: dt, ctrlKey: ctrl }));
+      chip.dispatchEvent(new DragEvent('dragend', { bubbles: true, dataTransfer: dt })); }, [fromTitle, toTitle, !!ctrl]);
+    const who = () => s.page.evaluate(() => [...document.querySelectorAll('#app-gs .gs-item')].map(c => c.querySelector('.gs-title').value + ':' +
+      [...c.querySelectorAll('.gs-chip')].map(x => x.querySelector('.nm').textContent + '/' + x.querySelector('select').value).join(',')));
+    await drag('Opening', 'The Panel'); await s.page.waitForTimeout(1500);
+    let w = await who();
+    expect(w.join('|') === 'Opening:|The Panel:Morgan Mover/Moderator|Closing:', 'the speaker did not move with their role: ' + w.join(' | '));
+    await drag('The Panel', 'Closing', true); await s.page.waitForTimeout(1500);
+    w = await who();
+    expect(w.join('|') === 'Opening:|The Panel:Morgan Mover/Moderator|Closing:Morgan Mover/Moderator', 'holding Ctrl did not keep them on both: ' + w.join(' | '));
+    await s.page.waitForTimeout(4000);
+    const sd = ((s.store.schedule || {}).docs || {})['schedule/gs-nola'];
+    expect(sd && sd.items.map(i => (i.people || []).map(p => p.id).join(',')).join('|') === '|mv-spk|mv-spk', 'the move was not saved: ' + JSON.stringify(sd && sd.items.map(i => i.people)));
+    const ses = await s.page.evaluate(() => { const p = window.__people.all().find(x => x.i === 'mv-spk'); return p && p.st && p.st.nola; });
+    expect(ses && !ses.ses.includes('gs-a1') && ses.ses.includes('gs-a2') && ses.ses.includes('gs-a3'), 'their sessions on People did not follow: ' + JSON.stringify(ses));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 16. A sponsor's event app step: Vanessa's, and it ticks */
   await check('Sponsors have an event app step for Vanessa', async () => {
     const store = { 'portal-applications': { docs: { 'P-1': { appNo: 'P-1', company: 'Sample Sponsor Co', contactEmail: 'pat@sponsor.example', contactName: 'Pat Sponsor', status: 'Approved', level2027: 'GOLD', event: 'Winter 2027', opportunity: 'Breakfast' } } } };
