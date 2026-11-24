@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-24
+
+- General Sessions and Workshop: drag a speaker from one segment onto another to move them (hold Ctrl or Option to keep them on both)
+
 ## 2026-11-23
 
 - Schedule: a standing item's own Starts and Ends (Time of Day on its card) now reach the hotel's resume and the website agenda, not just the card. Winter 2027's Workshop is set to 1:30 to 5:00 PM (CN-012), so the website agenda shows 5:00

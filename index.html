@@ -7703,6 +7703,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Start from the <b>Typical Tuesday</b> template, or <b>Start Blank</b>. <b>Start Over</b> clears it.</li>
         <li>Add a segment, give it a type (fireside chat, case study, presentation, panel, lunch and so on), a title, a description and a length. Drag segments to reorder them, or use the arrows. The times recalculate from the start time; pin a time when a segment must start at a set time and any gap or clash is flagged.</li>
         <li><b>Bullets in a description.</b> Pasting from an email keeps its bullets. To add your own, select the lines and click <b>&bull; Bullets</b> in the corner of the description (click again to take them off), or start a line with a dash and a space. Bullets show on the website&rsquo;s agenda, the event app and the printed agenda.</li>
+        <li><b>Move a speaker to another segment</b> by dragging their name from one segment onto the other. They keep their role. Hold <b>Ctrl</b> (<b>Option</b> on a Mac) as you drop to keep them on both.</li>
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
@@ -31345,6 +31346,8 @@ window.__desk={
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
 :is(#app-gs,#app-wk) .gs-chip .av img{width:100%;height:100%;object-fit:cover}
 :is(#app-gs,#app-wk) .gs-chip .nm{font-weight:600;color:var(--ink);cursor:pointer}
+:is(#app-gs,#app-wk) .gs-chip[draggable=true]{cursor:grab}
+:is(#app-gs,#app-wk) .gs-chip.dragging{opacity:.45}
 :is(#app-gs,#app-wk) .gs-chip .co{color:var(--ink-3);font-size:11.5px}
 :is(#app-gs,#app-wk) .gs-chip select{font-size:11px;border:0;background:transparent;color:var(--ink-2);padding:0}
 :is(#app-gs,#app-wk) .gs-chip .miss{color:var(--warn-ink);font-size:11px;font-weight:700;cursor:help}
@@ -31765,7 +31768,7 @@ let db=null, doc=null, vid='', unsub=null, saveT=null, dirty=false, savedAt=0, d
    other people's saves are not pulled onto the screen, so a save sends only what was changed
    here and their changes stay. */
 let seen;
-let dragPerson=null, sideQ='', sideMode='speakers';
+let dragPerson=null, dragFrom=null, sideQ='', sideMode='speakers';
 /* Amy, 2026-11-16: Undo in the left menu was greyed out here. Each change (typing settles
    into one step) keeps the running order as it was before, and Undo puts it back, speakers'
    People links included. Changes Summit HQ makes by itself are not steps. */
@@ -31838,6 +31841,17 @@ function isLender(p){
   return false;
 }
 function setLender(pid,on){ if(!doc) return; doc.lenders=Object.assign({},doc.lenders||{}); doc.lenders[pid]=on; touch(); render(); }
+function movePerson(from,ref,to,keep){
+  if(!ref || !to) return;
+  if(!(to.people||[]).some(r=>r.id===ref.id)){
+    /* a Panelist stays a Panelist; a plain Speaker takes the new segment's usual role */
+    const role= (ref.role && ref.role!==personRole(from))? ref.role : personRole(to);
+    to.people=(to.people||[]).concat({id:ref.id, role}); linkPerson(ref.id,to,true); }
+  if(!keep && from){ from.people=(from.people||[]).filter(r=>r!==ref); linkPerson(ref.id,from,false); }
+  touch(); render();
+  try{ const p=personById(ref.id); flashGS((p?p.n:'Speaker')+(keep?' added to ':' moved to ')+(to.title||to.kind)); }catch(e){}
+}
+function flashGS(t){ try{ if(window.__hqFlash) window.__hqFlash(t); }catch(e){} }
 function addPersonTo(it,pid){
   if(!pid || (it.people||[]).some(r=>r.id===pid)) return;
   it.people=(it.people||[]).concat({id:pid,role:it.kind==='Panel'?'Panelist':'Speaker'}); linkPerson(pid,it,true); touch(); render();
@@ -32132,10 +32146,17 @@ function card(row, over){
   const c=el('div','gs-item'+(SOFT.has(it.kind)?' soft':'')+(over?' over':'')+(lend?' has-lender':''));
   c.dataset.id=it.id;
   /* a presenter dragged from the list on the right lands on the segment it is dropped on */
-  c.addEventListener('dragenter',e=>{ if(dragPerson){ e.preventDefault(); c.classList.add('droppable'); } });
-  c.addEventListener('dragover',e=>{ if(dragPerson){ e.preventDefault(); try{ e.dataTransfer.dropEffect='copy'; }catch(x){} c.classList.add('droppable'); } });
+  /* Amy, Nov 24, 2026: "could I have the ability to drag and drop them to different sessions?"
+     A speaker on a segment can be dragged onto another one: it moves them, keeping their role.
+     Hold Ctrl (Option on a Mac) while dropping to keep them on both. */
+  const fromHere=()=>!!(dragFrom && dragFrom.it===it);
+  c.addEventListener('dragenter',e=>{ if(dragPerson && !fromHere()){ e.preventDefault(); c.classList.add('droppable'); } });
+  c.addEventListener('dragover',e=>{ if(dragPerson && !fromHere()){ e.preventDefault(); try{ e.dataTransfer.dropEffect= dragFrom && !(e.ctrlKey||e.altKey)? 'move' : 'copy'; }catch(x){} c.classList.add('droppable'); } });
   c.addEventListener('dragleave',e=>{ if(dragPerson && !c.contains(e.relatedTarget)) c.classList.remove('droppable'); });
-  c.addEventListener('drop',e=>{ if(dragPerson){ e.preventDefault(); e.stopPropagation(); c.classList.remove('droppable'); const pid=dragPerson; dragPerson=null; addPersonTo(it,pid); } });
+  c.addEventListener('drop',e=>{ if(dragPerson){ e.preventDefault(); e.stopPropagation(); c.classList.remove('droppable');
+    const pid=dragPerson, from=dragFrom; dragPerson=null; dragFrom=null;
+    if(from && from.it!==it) movePerson(from.it, from.ref, it, e.ctrlKey||e.altKey);
+    else if(!from) addPersonTo(it,pid); } });
   const h=el('div','gs-handle','⋮⋮'); h.title='Drag to move'; h.draggable=true;
   h.addEventListener('dragstart',e=>{ dragId=it.id; c.classList.add('dragging'); try{ e.dataTransfer.setData('text/plain',it.id); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setDragImage(c,20,20); }catch(x){} });
   h.addEventListener('dragend',()=>{ c.classList.remove('dragging'); dragId=null; document.querySelectorAll('#app-'+C.p+' .drop-above,#app-'+C.p+' .drop-below').forEach(n=>n.classList.remove('drop-above','drop-below')); });
@@ -32243,6 +32264,12 @@ function chip(it,ref){
   const p=personById(ref.id);
   const L=isLender(p);
   const c=el('span','gs-chip'+(L?' lender':''));
+  if(p){ c.draggable=true; c.title='Drag '+p.n+' onto another segment to move them (hold Ctrl, or Option on a Mac, to keep them on both)';
+    c.addEventListener('dragstart',e=>{ if(/^(SELECT|BUTTON|OPTION)$/.test(e.target.tagName)){ e.preventDefault(); return; }
+      e.stopPropagation(); dragPerson=ref.id; dragFrom={it,ref}; dragId=null; c.classList.add('dragging');
+      try{ e.dataTransfer.setData('text/plain',p.n); e.dataTransfer.effectAllowed='copyMove'; }catch(x){} });
+    c.addEventListener('dragend',()=>{ c.classList.remove('dragging'); dragPerson=null; dragFrom=null;
+      document.querySelectorAll('#app-'+C.p+' .droppable').forEach(x=>x.classList.remove('droppable')); }); }
   const av=el('span','av'); if(p&&p.thumb){ const im=document.createElement('img'); im.src=p.thumb; im.alt=''; av.appendChild(im); } else av.textContent=initials(p?p.n:'?');
   c.appendChild(av);
   const nm=el('span','nm',p?p.n:'(removed from People)'); nm.title='Open '+(p?p.n:'them')+' on the People tab';
@@ -32315,7 +32342,7 @@ function focusTitle(id){ setTimeout(()=>{ const t=document.querySelector('#app-'
 function sidePanel(){
   const sd=el('aside','gs-side');
   const h=el('h3',null,'Presenters'); sd.appendChild(h);
-  sd.appendChild(el('div','hint','Drag a name onto a session to add them. Speakers on this summit are listed first; sponsors and the board are left out unless they are speaking. Search finds anyone else on the People list.'));
+  sd.appendChild(el('div','hint','Drag a name onto a session to add them, or drag a speaker from one session to another to move them. Speakers on this summit are listed first; sponsors and the board are left out unless they are speaking. Search finds anyone else on the People list.'));
   const seg=el('div','gs-seg');
   [['speakers','Confirmed Speakers'],['unplaced','Not Placed Yet'],['lenders','Lenders'],['all','Everyone']].forEach(([k,lab])=>{
     const b=el('button',null,lab); b.type='button'; b.setAttribute('aria-pressed',sideMode===k?'true':'false');
