@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-24
 
+- People: a plain frame around a headshot is cut off as it comes in (dropped on, form or email), and round headshots keep the face in view; the four already framed (Rhoshunda Kelly, Cindy Patterson, Michael Jackman, Rishi Godse) were fixed
 - General Sessions and Workshop: drag a speaker from one segment onto another to move them (hold Ctrl or Option to keep them on both)
 
 ## 2026-11-23

@@ -5247,7 +5247,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .pp-av{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--sunk);
   border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;overflow:hidden;
   font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-3)}
-#app-people .pp-av img{width:100%;height:100%;object-fit:cover;display:block}
+#app-people .pp-av img{width:100%;height:100%;object-fit:cover;object-position:50% 28%;display:block}
 #app-people .pp-av.none{border-style:dashed}
 #app-people .pp-tx{flex:1 1 200px;min-width:0}
 #app-people .pp-n{display:block;font-size:13px;font-weight:600;line-height:1.25;overflow-wrap:anywhere}
@@ -5306,7 +5306,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 #app-people .shot-pic{flex:0 0 auto;width:86px;height:86px;border-radius:5px;overflow:hidden;background:var(--sunk);
   border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center}
 #app-people .shot-pic.none{border-style:dashed}
-#app-people .shot-pic img{width:100%;height:100%;object-fit:cover;display:block}
+#app-people .shot-pic img{width:100%;height:100%;object-fit:cover;object-position:50% 28%;display:block}
 #app-people .shot-pic .ph{font-size:10px;color:var(--ink-3);text-align:center;padding:4px;line-height:1.3}
 #app-people .shot-acts{display:flex;flex-direction:column;gap:6px;align-items:flex-start;flex:1;min-width:0}
 #app-people .pickbtn{position:relative;overflow:hidden}
@@ -7619,6 +7619,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>The Run of Show is one running plan, so about 10 days after a summit starts its tasks, Planning Meeting agenda and Meeting Notes are kept as they stood. <b>Past Summits</b> on the Schedule Timeline opens any summit&rsquo;s kept plan, read only. Picking a summit that is over on the Schedule Timeline no longer moves the Run of Show back to it.</li>
         <li>Session details you change (attendance, AV, chairs, leaders, times, a session taken off) belong to the summit picked when you change them; the session&rsquo;s name and description are shared, so a fix there shows everywhere. A session you add belongs to that summit and the ones after it.</li>
         <li>A person&rsquo;s bio, title and headshot are the latest ones on file, not the ones from an earlier summit.</li>
+        <li><b>Headshots are all set up the same way.</b> However one comes in (dropped on a person, from the speaker form or by email), a plain white or one-colour frame around the picture is cut off, and every round headshot keeps the face in view, so they all fill their circle alike.</li>
       </ul>
       <h4>The Plan</h4>
       <ul>
@@ -25491,7 +25492,7 @@ html.hq-wide #app-people .v2-c{display:flex;flex-direction:column;gap:10px;min-w
 #app-people .v2-shot{position:relative;height:210px;border:2px dashed var(--line-2);border-radius:10px;background:var(--sunk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;font-size:12.5px;color:var(--ink-3);cursor:pointer;overflow:hidden}
 #app-people .v2-shot b{color:var(--ink-2)}
 #app-people .v2-shot.has{border-style:solid;border-color:var(--line)}
-#app-people .v2-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#app-people .v2-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 #app-people .v2-shot.over,#app-people .v2-bio.over{border-color:var(--accent);background:var(--accent-soft)}
 #app-people .v2-bio{position:relative;height:210px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);display:flex}
 #app-people .v2-bio textarea{flex:1;border:0;border-radius:10px;padding:10px 12px;resize:none;font:inherit;font-size:14px;line-height:1.5;background:transparent;color:var(--ink);outline:none}
@@ -25851,14 +25852,47 @@ function patchSt(id,fields,label){
 }
 
 /* ---------- headshots: a thumbnail on the person, the full picture beside it ---------- */
+/* Jonna, Nov 24, 2026: Rhoshunda Kelly's headshot sat small in its circle because the picture came
+   with a wide white frame around it. A plain border (white, grey, any one colour) is cut off every
+   headshot as it comes in, however it comes in, so they all fill their circle the same way. */
+function shotBox(img){
+  const W=img.naturalWidth||img.width, H=img.naturalHeight||img.height;
+  const full={x:0,y:0,w:W,h:H};
+  try{
+    const k=Math.min(1,400/Math.max(W,H)), w=Math.max(1,Math.round(W*k)), h=Math.max(1,Math.round(H*k));
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(img,0,0,w,h);
+    const d=g.getImageData(0,0,w,h).data, at=(x,y)=>{ const i=(y*w+x)*4; return [d[i],d[i+1],d[i+2],d[i+3]]; };
+    const cs=[at(0,0),at(w-1,0),at(0,h-1),at(w-1,h-1)];
+    const near=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])<=42 && Math.abs(a[3]-b[3])<=40;
+    const bg=cs[0]; if(!cs.every(x=>near(x,bg))) return full;          /* no plain frame: leave it */
+    const plainRow=y=>{ let n=0; for(let x=0;x<w;x++) if(near(at(x,y),bg)) n++; return n>=w*0.985; };
+    const plainCol=x=>{ let n=0; for(let y=0;y<h;y++) if(near(at(x,y),bg)) n++; return n>=h*0.985; };
+    let t=0,b=h-1,l=0,r=w-1;
+    while(t<b && plainRow(t)) t++; while(b>t && plainRow(b)) b--;
+    while(l<r && plainCol(l)) l++; while(r>l && plainCol(r)) r--;
+    const bw=r-l+1, bh=b-t+1;
+    if(bw<w*0.3 || bh<h*0.3) return full;                               /* too much: leave it */
+    /* only a true frame, on all four sides: a person on a white backdrop reaches the bottom edge, and is left as it is */
+    const m=Math.max(2,Math.round(Math.min(w,h)*0.01));
+    if(t<m || l<m || h-1-b<m || w-1-r<m) return full;
+    return {x:Math.round(l/k), y:Math.round(t/k), w:Math.round(bw/k), h:Math.round(bh/k)};
+  }catch(e){ return full; }
+}
+/* the picture, its frame cut off, scaled to fit px */
+function shotCanvas(img,px){
+  const B=shotBox(img), s=Math.min(1,px/Math.max(B.w,B.h));
+  const w=Math.max(1,Math.round(B.w*s)), h=Math.max(1,Math.round(B.h*s));
+  const c=document.createElement('canvas'); c.width=w; c.height=h;
+  c.getContext('2d').drawImage(img,B.x,B.y,B.w,B.h,0,0,w,h);
+  return c;
+}
+window.__shotTrim=(src,px,q)=>new Promise(res=>{ const img=new Image(); img.onload=()=>{ const c=shotCanvas(img,px); let o=''; try{ o=c.toDataURL('image/webp',q||0.85); }catch(e){} if(!o||o.indexOf('data:image/webp')!==0) o=c.toDataURL('image/jpeg',q||0.85); res(o); }; img.onerror=()=>res(''); img.src=src; });
 function shrink(file,px,q){
   return new Promise((res,rej)=>{
     const fr=new FileReader();
     fr.onload=()=>{ const img=new Image();
-      img.onload=()=>{ const s=Math.min(1,px/Math.max(img.width,img.height));
-        const w=Math.max(1,Math.round(img.width*s)), h=Math.max(1,Math.round(img.height*s));
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        c.getContext('2d').drawImage(img,0,0,w,h);
+      img.onload=()=>{ const c=shotCanvas(img,px);
         let out=''; try{ out=c.toDataURL('image/webp',q); }catch(e){}
         if(!out||out.indexOf('data:image/webp')!==0) out=c.toDataURL('image/jpeg',q);
         res(out); };
@@ -28019,9 +28053,7 @@ function drawSpeakerEmail(){
 const SI={busy:false, at:0, full:0};
 function siShrinkUrl(src,px,q){
   return new Promise(res=>{ const img=new Image();
-    img.onload=()=>{ const k=Math.min(1,px/Math.max(img.width,img.height)); const c=document.createElement('canvas');
-      c.width=Math.max(1,Math.round(img.width*k)); c.height=Math.max(1,Math.round(img.height*k));
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height); let o=''; try{ o=c.toDataURL('image/jpeg',q||0.8); }catch(e){} res(o); };
+    img.onload=()=>{ const c=shotCanvas(img,px); let o=''; try{ o=c.toDataURL('image/jpeg',q||0.8); }catch(e){} res(o); };
     img.onerror=()=>res(''); img.src=src; });
 }
 async function siApplyOne(p,d){
@@ -28031,12 +28063,12 @@ async function siApplyOne(p,d){
   const t=txt(d.title,160); if(t) f.t=t;
   const c=txt(d.company,160); if(c) f.c=c;
   const li=txt(d.linkedin,300); if(/^https?:\/\/\S+$/i.test(li)) f.li=li;
-  const img=String(d.photo||'');
+  let img=String(d.photo||'');
   if(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(img)){
+    img=(await siShrinkUrl(img,600,0.85)) || img;      /* any plain frame cut off (Nov 24, 2026) */
     ST.photos.set(p.i,img);
     if(ST.db){ try{ await ST.db.doc('photos/'+p.i).set({img}); }catch(e){} }
-    const th=String(d.thumb||'');
-    f.thumb=/^data:image\/(jpeg|png|webp);base64,/.test(th)? th : (await siShrinkUrl(img,96,0.8)) || img;
+    f.thumb=(await siShrinkUrl(img,96,0.8)) || img;
   }
   /* a bio sent as a file: noted on their record; the file itself stays with their answer */
   if(d.bioFile && String(d.bioFile).length>10) f.biofile={name:txt(d.bioFileName,120)||'bio', type:txt(d.bioFileType,100), tok:d.t, at:d.at||'', size:Math.round(String(d.bioFile).length*0.75)};
@@ -31344,7 +31376,7 @@ window.__desk={
   background:var(--surface);font-size:12.5px}
 :is(#app-gs,#app-wk) .gs-chip .av{width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:700;
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
-:is(#app-gs,#app-wk) .gs-chip .av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-chip .av img{width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 :is(#app-gs,#app-wk) .gs-chip .nm{font-weight:600;color:var(--ink);cursor:pointer}
 :is(#app-gs,#app-wk) .gs-chip[draggable=true]{cursor:grab}
 :is(#app-gs,#app-wk) .gs-chip.dragging{opacity:.45}
@@ -31384,7 +31416,7 @@ window.__desk={
 :is(#app-gs,#app-wk) .gs-pr:active{cursor:grabbing}
 :is(#app-gs,#app-wk) .gs-pr .av{width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:10.5px;font-weight:700;
   display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 auto}
-:is(#app-gs,#app-wk) .gs-pr .av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-pr .av img{width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 :is(#app-gs,#app-wk) .gs-pr .tx{min-width:0;flex:1}
 :is(#app-gs,#app-wk) .gs-pr .tx b{display:block;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 :is(#app-gs,#app-wk) .gs-pr .tx span{display:block;font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -31523,7 +31555,7 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 #app-people .pp-ring{--p:0;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:conic-gradient(#74bfeb calc(var(--p)*1%),rgba(255,255,255,.14) 0)}
 #app-people .pp-face.all .pp-ring{background:conic-gradient(#4fc79b 100%,transparent 0)}
 #app-people .pp-ring .pp-av{width:54px!important;height:54px!important;border-radius:50%;border:3px solid #0f314c;font-size:16px;overflow:hidden}
-#app-people .pp-ring .pp-av img{width:100%;height:100%;object-fit:cover}
+#app-people .pp-ring .pp-av img{width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 #app-people .pp-face b{font-size:12.5px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #app-people .pp-face small{font-size:10.5px;line-height:1.25;color:#9fd2f2}
 #app-people .pp-face.all small{color:#6fe0b5}
@@ -31548,7 +31580,7 @@ body.railmini .rail nav .rail-grp:first-child{border-top:0}
 :is(#app-gs,#app-wk) .gs-luf{display:flex;align-items:center}
 :is(#app-gs,#app-wk) .gs-av{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#2a5a80;color:#fff;font-size:11px;font-weight:700;border:2px solid #0f314c;margin-left:-6px;overflow:hidden}
 :is(#app-gs,#app-wk) .gs-av:first-child{margin-left:0}
-:is(#app-gs,#app-wk) .gs-av img{width:100%;height:100%;object-fit:cover}
+:is(#app-gs,#app-wk) .gs-av img{width:100%;height:100%;object-fit:cover;object-position:50% 28%}
 :is(#app-gs,#app-wk) .gs-av.more{background:rgba(255,255,255,.2)}
 :is(#app-gs,#app-wk) .gs-lunone{font-size:11.5px;color:rgba(255,255,255,.5)}
 :is(#app-gs,#app-wk) .gs-lus{font-size:11.5px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
