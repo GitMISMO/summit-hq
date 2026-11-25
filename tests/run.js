@@ -434,6 +434,29 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 33. A headshot with a plain frame around it comes in with the frame cut off (Jonna, Nov 24) */
+  await check('Headshot frames are cut off', async () => {
+    const s = await open(opts());
+    const r = await s.page.evaluate(async () => {
+      const mk = (frame) => { const c = document.createElement('canvas'); c.width = 400; c.height = 500; const g = c.getContext('2d');
+        g.fillStyle = '#ffffff'; g.fillRect(0, 0, 400, 500); g.fillStyle = '#336699';
+        if (frame) g.fillRect(60, 60, 280, 380); else g.fillRect(0, 0, 400, 500);
+        g.fillStyle = '#ffeecc'; g.beginPath(); g.arc(200, 200, 60, 0, 7); g.fill(); return c.toDataURL('image/png'); };
+      const dims = src => new Promise(res => { const i = new Image(); i.onload = () => res([i.naturalWidth, i.naturalHeight]); i.src = src; });
+      const framed = await window.__shotTrim(mk(true), 1000, 0.9), plain = await window.__shotTrim(mk(false), 1000, 0.9);
+      return { framed: await dims(framed), plain: await dims(plain) };
+    });
+    expect(Math.abs(r.framed[0] - 280) <= 4 && Math.abs(r.framed[1] - 380) <= 4, 'the white frame was not cut off: ' + JSON.stringify(r));
+    expect(r.plain[0] === 400 && r.plain[1] === 500, 'a picture with no frame was cropped: ' + JSON.stringify(r));
+    /* someone on a white backdrop (their shoulders reach the bottom) is not cropped */
+    const cut = await s.page.evaluate(async () => { const c = document.createElement('canvas'); c.width = 400; c.height = 500; const g = c.getContext('2d');
+      g.fillStyle = '#fff'; g.fillRect(0, 0, 400, 500); g.fillStyle = '#223344'; g.fillRect(80, 300, 240, 200); g.beginPath(); g.arc(200, 220, 80, 0, 7); g.fill();
+      const out = await window.__shotTrim(c.toDataURL('image/png'), 1000, 0.9);
+      return await new Promise(res => { const i = new Image(); i.onload = () => res([i.naturalWidth, i.naturalHeight]); i.src = out; }); });
+    expect(cut[0] === 400 && cut[1] === 500, 'a person on a white backdrop was cropped: ' + JSON.stringify(cut));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 16. A sponsor's event app step: Vanessa's, and it ticks */
   await check('Sponsors have an event app step for Vanessa', async () => {
     const store = { 'portal-applications': { docs: { 'P-1': { appNo: 'P-1', company: 'Sample Sponsor Co', contactEmail: 'pat@sponsor.example', contactName: 'Pat Sponsor', status: 'Approved', level2027: 'GOLD', event: 'Winter 2027', opportunity: 'Breakfast' } } } };
