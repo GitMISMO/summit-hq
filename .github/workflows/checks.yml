@@ -46,5 +46,9 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      # GitHub sometimes takes a moment to list a just-finished upload; publishing straight
+      # away then fails with "No artifacts named github-pages" (Nov 24, 2026, three times).
+      - name: Give GitHub a moment to list the upload
+        run: sleep 15
       - id: deployment
         uses: actions/deploy-pages@v4
