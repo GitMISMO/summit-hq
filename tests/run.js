@@ -192,6 +192,17 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const bar = await t.page.evaluate(() => { const b = document.getElementById('hh-bar'); return b && !b.hidden ? b.innerText : ''; });
     expect(/Speaker Emails Flow/.test(bar), 'the warning bar did not show');
     noErrors(t.errs); await t.close();
+    /* New Speakers to Register goes by the flow's 5:43 AM run (Jonna, Nov 25): a speaker added after
+       the last weekday run is just waiting; one added before it and never sent is flagged */
+    const u = await open(opts({ store: {
+      'feed-speaker-adds': { doc: { adds: [
+        { id: 'sa-old', name: 'Olive Older', addedAt: minsAgo(60 * 24 * 4) },
+        { id: 'sa-new', name: 'Nina Newer', addedAt: minsAgo(60 * 24 * 2) }] } },
+      'feed-speaker-adds-sent': { doc: { ids: [] } } } }));
+    const rows = await u.page.evaluate(async () => (await window.__hqHealth.run()).rows.filter(r => r.key === 'add').map(r => JSON.stringify(r)));
+    expect(rows.length === 1 && /"bad"/.test(rows[0]) && /1 speaker was/.test(rows[0]) && /Olive Older/.test(rows[0]) && !/Nina Newer/.test(rows[0]),
+      'the New Speakers to Register check is wrong: ' + rows.join(' '));
+    noErrors(u.errs); await u.close();
   });
 
   /* 9. Errors are caught and logged for the team */
