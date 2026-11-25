@@ -40,6 +40,20 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(!bad.length, bad.join('\n'));
   });
 
+  /* 1b. Every page's tab icon is the shared mismo.org one, and nothing else (CN-030, Nov 25) */
+  await check('Every page has the shared mismo.org tab icon and no other', async () => {
+    const ICON = '<link rel="icon" type="image/png" sizes="48x48" href="https://resources.mismo.org/assets/favicon-48x48.png">';
+    const bad = [];
+    for (const f of fs.readdirSync(ROOT).filter(f => f.endsWith('.html'))) {
+      const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      const head = (html.match(/<head>([\s\S]*?)<\/head>/i) || [])[1] || '';
+      const icons = head.match(/<link\b[^>]*\brel=["']?(?:shortcut )?icon\b[^>]*>/gi) || [];
+      if (icons.length !== 1 || icons[0] !== ICON) bad.push(f + ': ' + (icons.join(' ') || 'no icon line'));
+      if (/favicon|rel\s*=\s*['"](?:shortcut )?icon|\.rel\s*=\s*['"](?:shortcut )?icon/i.test(html.replace(ICON, ''))) bad.push(f + ': another icon is set somewhere on the page');
+    }
+    expect(!bad.length, bad.join('\n'));
+  });
+
   /* 2. Every tab opens with no errors */
   await check('Every tab opens without errors', async () => {
     const s = await open(opts());

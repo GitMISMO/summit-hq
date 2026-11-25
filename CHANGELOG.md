@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-25
+
+- Browser tab icon now matches mismo.org (the shared icon at resources.mismo.org/assets/favicon-48x48.png, on Summit HQ and its speaker, travel, Board and Champion forms) (CN-030)
+
 ## 2026-11-24
 
 - People: a plain frame around a headshot is cut off as it comes in (dropped on, form or email), and round headshots keep the face in view; the four already framed (Rhoshunda Kelly, Cindy Patterson, Michael Jackman, Rishi Godse) were fixed
