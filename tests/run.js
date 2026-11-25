@@ -1037,6 +1037,17 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.evaluate(() => history.forward()); await s.page.waitForTimeout(1200);
     st = await state(); expect(st.tab === 'gs', 'Forward should go back to General Sessions: ' + JSON.stringify(st));
     await back(); await back(); st = await state(); expect(st.tab === start, 'Back to where the page opened (' + start + '): ' + JSON.stringify(st));
+    /* Help in the foot of the menu is a page too (CN-033): Schedule, Help, Back, Forward */
+    const helpOn = () => s.page.evaluate(() => ({ help: !document.getElementById('app-help').hidden,
+      cur: document.getElementById('help-btn').hasAttribute('aria-current'),
+      tab: (document.querySelector('.hq nav button[data-hq][aria-current]') || {}).dataset?.hq || '' }));
+    await go('grid');
+    await s.page.click('#help-btn'); await s.page.waitForTimeout(1500);
+    let h = await helpOn(); expect(h.help && h.cur, 'Help did not open: ' + JSON.stringify(h));
+    await back(); h = await helpOn(); expect(!h.help && h.tab === 'grid', 'Back from Help should land on the Schedule: ' + JSON.stringify(h));
+    await s.page.evaluate(() => history.forward()); await s.page.waitForTimeout(1200);
+    h = await helpOn(); expect(h.help && h.cur, 'Forward should go back to Help: ' + JSON.stringify(h));
+    await back(); await back(); st = await state(); expect(st.tab === start, 'Back past the Schedule to where the page opened (' + start + '): ' + JSON.stringify(st));
     /* a panel: Back closes it first and stays on the page */
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       await db.doc('people/pat-back').set({ i: 'pat-back', n: 'Pat Back', e: 'pat@example.org', h: ['26f'], st: { nola: { r: ['speaker'] } } }); });
