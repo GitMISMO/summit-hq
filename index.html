@@ -7878,7 +7878,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
       <div class="hp-tblwrap"><table class="hp-tbl">
         <thead><tr><th>Email</th><th>When It Sends</th><th>Who Gets It</th><th>Flow</th></tr></thead>
         <tbody>
-          <tr><td>New Speakers to Register</td><td>Every weekday morning: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
+          <tr><td>New Speakers to Register</td><td>Every weekday morning at 5:43 AM Mountain: one list of the speakers added on People since the last one (a speaker taken off or marked registered first drops out)</td><td>Bernie; copied to Jonna, Amy and Kelly</td><td>Summit HQ - New Speakers to Register</td></tr>
           <tr><td>Speaker email, travel form, MISMO Team to Register, MISMO Team Rooming List (to Ros, you copied), trunk review</td><td>Sent from inside Summit HQ (a speaker&rsquo;s email or <b>Choose Speakers to Email</b> on People, copied to Amy and Jonna; <b>Ask for Travel Dates</b>, <b>Send to Bernie</b> and <b>Send the Rooming List to Ros</b> on the MISMO Team card, <b>Send for Review</b>, <b>Looks Good</b> and <b>Needs a Change</b> on the Trunk); goes out within a couple of minutes</td><td>Whoever it is addressed to</td><td>Summit HQ - Speaker Emails (sends whatever Summit HQ queues)</td></tr>
           <tr><td>Travel form answers</td><td>Someone sends their dates on the travel form</td><td>No email: the answers land on their row on the MISMO Team card</td><td>Summit HQ - Team Travel Answers</td></tr>
           <tr><td>Weekly bio and headshot follow-ups</td><td>Every morning at 7:17 AM Mountain it sends the reminders due that day: every week on the day the speaker&rsquo;s email went, until their bio and headshot are in or the Summit starts. Anyone who has already sent theirs through the form is skipped</td><td>The speaker; copied to Amy and Jonna; replies go to Amy</td><td>Summit HQ - Speaker Reminders (reads feeds/speaker-reminders, notes each one sent in feeds/speaker-reminders-sent)</td></tr>
@@ -34837,10 +34837,13 @@ body.railmini #hh-btn .hh-dot{left:24px;top:7px}
   }
   async function chkAdds(){
     const q=await read('feeds/speaker-adds'), s=await read('feeds/speaker-adds-sent');
-    const sent=new Set((s&&s.ids)||[]), runAt=lastWeekdayRun(11*60);
+    /* Nov 25, 2026: the flow runs each weekday at 5:43 AM Mountain (its run history), not 11:00, so
+       speakers added mid-morning were flagged as missed though they were simply waiting for the next
+       morning. Checked from 6:15 AM, a speaker counts as missed only if added before 5:40 AM that day. */
+    const sent=new Set((s&&s.ids)||[]), runAt=lastWeekdayRun(6*60+15)-35*MIN;
     const adds=((q&&q.adds)||[]).filter(a=>a && !sent.has(a.id));
     const late=adds.filter(a=>Date.parse(a.addedAt||0)<runAt);
-    if(late.length) return row('add','New Speakers to Register Flow','bad', late.length+' speaker'+(late.length>1?'s were':' was')+' added before this morning&rsquo;s email and '+(late.length>1?'were':'was')+' not on it. The Summit HQ - New Speakers to Register flow may be off or failing.',
+    if(late.length) return row('add','New Speakers to Register Flow','bad', late.length+' speaker'+(late.length>1?'s were':' was')+' added before this morning&rsquo;s 5:43 AM email and '+(late.length>1?'were':'was')+' not on it. The Summit HQ - New Speakers to Register flow may be off or failing.',
       late.slice(0,5).map(a=>(a.name||'')+', added '+when(a.addedAt)));
     return row('add','New Speakers to Register Flow','ok', adds.length? adds.length+' speaker'+(adds.length>1?'s':'')+' for the next weekday morning&rsquo;s email.' : 'Nothing waiting for Bernie&rsquo;s next list.');
   }

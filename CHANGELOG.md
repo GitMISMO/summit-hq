@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-25
 
+- System Health: New Speakers to Register no longer flags speakers added mid-morning; it now goes by the flow's real run time (5:43 AM Mountain each weekday), not 11:00
 - The browser's Back button now goes to the last page you were on, and closes an open panel or drawer first (Forward works too); the pilot for every MISMO system (shared /assets/back.js)
 - Browser tab icon now matches mismo.org (the shared icon at resources.mismo.org/assets/favicon-48x48.png, on Summit HQ and its speaker, travel, Board and Champion forms) (CN-030)
 
