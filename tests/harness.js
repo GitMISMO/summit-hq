@@ -30,6 +30,12 @@ async function open(opts = {}) {
     if (u.startsWith('http://hq.test/summit-hq/')) return r.fulfill({ body: fs.readFileSync(file), contentType: 'text/html' });
     if (u.includes('/assets/session.js')) return r.fulfill({ contentType: 'application/javascript', body: SESSION });
     if (u.includes('/assets/back.js')) return r.fulfill({ contentType: 'application/javascript', body: await backJs() });
+    /* MyMISMO's routes on the relay (CN-037): a check passes its own stand-in; otherwise they
+       answer 404, as the relay does until MyMISMO alerts are switched on */
+    if (u.includes('lambda-url') && u.includes('/mymismo/')) {
+      if (opts.mymismo) return opts.mymismo(r);
+      return r.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'NOT_FOUND' }) });
+    }
     if (u.includes('lambda-url')) {
       /* like the real relay: each file has a version, and a save made from an older version
          is refused (409) so the page reloads it and merges */
