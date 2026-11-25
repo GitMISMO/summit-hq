@@ -29,6 +29,7 @@ async function open(opts = {}) {
     }
     if (u.startsWith('http://hq.test/summit-hq/')) return r.fulfill({ body: fs.readFileSync(file), contentType: 'text/html' });
     if (u.includes('/assets/session.js')) return r.fulfill({ contentType: 'application/javascript', body: SESSION });
+    if (u.includes('/assets/back.js')) return r.fulfill({ contentType: 'application/javascript', body: await backJs() });
     if (u.includes('lambda-url')) {
       /* like the real relay: each file has a version, and a save made from an older version
          is refused (409) so the page reloads it and merges */
@@ -53,6 +54,18 @@ async function open(opts = {}) {
   /* a change saved meanwhile by someone else */
   const external = (name, fn) => { fn(store); shas[name] = 's' + (++ver); };
   return { browser, page, errs, puts, store, external, close: () => opts.browser ? page.close() : browser.close() };
+}
+
+/* The shared Back-button helper (resources.mismo.org/assets/back.js) is tested as it is live:
+   MISMO_BACK can point at a local copy instead (for trying a change before it is published). */
+let BACK = null;
+async function backJs() {
+  if (BACK !== null) return BACK;
+  try {
+    if (process.env.MISMO_BACK) BACK = fs.readFileSync(process.env.MISMO_BACK, 'utf8');
+    else { const r = await fetch('https://resources.mismo.org/assets/back.js'); BACK = r.ok ? await r.text() : ''; }
+  } catch (e) { BACK = ''; }
+  return BACK;
 }
 
 module.exports = { open, NOW, ROOT };

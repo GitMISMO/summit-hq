@@ -999,6 +999,42 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 31. The browser's Back button: it closes what is open, then goes to the last page you were on (Jonna, Nov 25) */
+  await check('Back button: closes the panel, then returns to the last page', async () => {
+    const s = await open(opts());
+    const state = () => s.page.evaluate(() => ({
+      tab: (document.querySelector('.hq nav button[data-hq][aria-current]') || {}).dataset?.hq || '',
+      pane: document.body.classList.contains('paneon'), helper: !!window.MismoBack }));
+    expect((await state()).helper, 'the shared Back helper (/assets/back.js) did not load');
+    const go = async tab => { await s.page.click('.hq nav button[data-hq="' + tab + '"]'); await s.page.waitForTimeout(1500); };
+    const back = async () => { await s.page.evaluate(() => history.back()); await s.page.waitForTimeout(1200); };
+    const start = (await state()).tab;
+    await go('grid'); await go('gs'); await go('specs');
+    let st = await state(); expect(st.tab === 'specs', 'Hotel Specs did not open: ' + JSON.stringify(st));
+    await back(); st = await state(); expect(st.tab === 'gs', 'Back from Hotel Specs should land on General Sessions: ' + JSON.stringify(st));
+    await back(); st = await state(); expect(st.tab === 'grid', 'Back again should land on the Schedule: ' + JSON.stringify(st));
+    await s.page.evaluate(() => history.forward()); await s.page.waitForTimeout(1200);
+    st = await state(); expect(st.tab === 'gs', 'Forward should go back to General Sessions: ' + JSON.stringify(st));
+    await back(); await back(); st = await state(); expect(st.tab === start, 'Back to where the page opened (' + start + '): ' + JSON.stringify(st));
+    /* a panel: Back closes it first and stays on the page */
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('people/pat-back').set({ i: 'pat-back', n: 'Pat Back', e: 'pat@example.org', h: ['26f'], st: { nola: { r: ['speaker'] } } }); });
+    await go('people'); await s.page.waitForTimeout(1500);
+    const row = await s.page.$('#app-people .v2-table tbody tr');
+    expect(row, 'People has no rows to open');
+    await row.click(); await s.page.waitForTimeout(1500);
+    expect((await state()).pane, 'a person did not open in the right-hand panel');
+    await back(); st = await state();
+    expect(!st.pane && st.tab === 'people', 'Back should close the panel and stay on People: ' + JSON.stringify(st));
+    await back(); st = await state(); expect(st.tab === start, 'Back after the panel should go to the page before People: ' + JSON.stringify(st));
+    /* closing the panel with its X doesn't leave a step behind */
+    await go('people'); await (await s.page.$('#app-people .v2-table tbody tr')).click(); await s.page.waitForTimeout(1500);
+    await s.page.click('#hq-pane .pane-x'); await s.page.waitForTimeout(800);
+    expect(!(await state()).pane, 'the X did not close the panel');
+    await back(); st = await state(); expect(st.tab === start, 'after closing the panel with X, Back should go straight to the page before: ' + JSON.stringify(st));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');

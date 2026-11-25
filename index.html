@@ -40,6 +40,21 @@ html.hq-in:not(.hq-ready) body > *:not(#hq-gate):not(.rs-scrim){visibility:hidde
   });
 })();</script>
 <script src="/assets/session.js"></script>
+<script src="/assets/back.js"></script>
+<script>
+/* The browser's Back button (Jonna, Nov 25, 2026): Back steps to the last page you were on in the
+   left menu, and first closes whatever is open over the page, one layer at a time, the same way
+   Escape does: a task or session drawer, a card on top of the panel, then the right-hand panel.
+   The shared helper is /assets/back.js; these are Summit HQ's layers, bottom first. */
+(function(){
+  if(!window.MismoBack) return;
+  const esc=()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));
+  const on=c=>!!document.body && document.body.classList.contains(c);
+  MismoBack.layer({ isOpen:()=>on('paneon'), close:esc });
+  MismoBack.layer({ isOpen:()=>on('sheeton'), close:esc });
+  MismoBack.layer({ isOpen:()=>!!document.querySelector('#drawer-host .drawer, #rs-drawer-host .drawer'), close:esc });
+})();
+</script>
 <script>(function(){
   /* Keep the class in step afterwards: signing in reveals the app without a reload, and
      signing out in another tab hides it again. */
@@ -7580,6 +7595,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Search</b> finds a session, a task or a person wherever it lives and takes you to it.</li>
         <li><b>The pages</b>, in three groups: <b>The Plan</b> (Run of Show, Schedule, General Sessions, Workshop), <b>The People</b> (People, Registration) and <b>The Hotel</b> (Hotel Specs, Resume, The Trunk). Each has its own section below.</li>
         <li><b>Summit</b> picks which Summit every tab is showing. The 2027 Summits are Winter (InterContinental New Orleans), Spring (Salt Lake Marriott Downtown at City Creek) and Fall (The Bethesdan, Bethesda).</li>
+        <li><b>The browser&rsquo;s Back button</b> takes you to the last page you were on in the left menu. If a panel or drawer is open, Back closes it first, one at a time, the way Escape does. Forward goes the other way. Back never undoes a change; that&rsquo;s what Undo is for.</li>
         <li><b>Undo</b> steps back the last change, on any tab, including General Sessions, the Workshop and Champion Codes. It takes you to where the change was. Ctrl+Z (Cmd+Z on a Mac) does the same once you have clicked out of the box you were typing in. It is greyed out when there is nothing to take back.</li>
         <li><b>Backup</b> downloads everything Summit HQ holds as one file, or puts a backup file back.</li>
         <li><b>System Health</b> shows whether saving, storage and the email flows are working. Its dot is green when all is well, amber for a warning and red when something needs attention; red also puts a bar across the top of the page for everyone.</li>
