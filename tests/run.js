@@ -363,6 +363,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const s = await open(opts());
     await s.page.evaluate(async () => { const db = await window.claude.use('db');
       await db.doc('people/gs-spk').set({ i: 'gs-spk', n: 'Gail Speaker', e: 'gail@example.org', t: 'CTO', c: 'Sample Bank', thumb: 'data:image/png;base64,iVBORw0KGgo=',
+        bio: '<p>Gail leads technology at Sample Bank.</p>\r\n\r\n\r\nWrite to her at gail@example.org or mailto:g.s@bank.com today!  She speaks often.', nt: { a: 'private note' },
         st: { nola: { on: true, role: 'speaker', ses: ['gs-g1'] } } });
       await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
         { id: 'g1', kind: 'Keynote', title: 'The Year Ahead', desc: 'Where the industry goes next.', dur: 45, people: [{ id: 'gs-spk', role: 'Speaker' }] },
@@ -377,6 +378,15 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(gs && gs.sessions.length === 1 && gs.sessions[0].title === 'The Year Ahead' && gs.sessions[0].start === '9:00 AM', 'only the marked segment should be on the website: ' + JSON.stringify(f).slice(0, 300));
     const p = gs.sessions[0].people[0];
     expect(p && p.name === 'Gail Speaker' && p.company === 'Sample Bank' && p.photo && !('email' in p) && !JSON.stringify(f).includes('gail@'), 'the speaker was not written right, or an email went out: ' + JSON.stringify(p));
+    /* CN-036: the bio goes too, as plain text with no email address in it (MyMISMO's View Bio) */
+    expect(p.bio === 'Gail leads technology at Sample Bank.\n\nShe speaks often.' && !JSON.stringify(f).includes('private note'), 'the bio was not written as plain text: ' + JSON.stringify(p.bio));
+    /* a bio changed on People reaches the website without opening General Sessions again */
+    await s.page.evaluate(() => window.__hqGo('people')); await s.page.waitForTimeout(1500);
+    await s.page.evaluate(async () => { const db = await window.claude.use('db'); const d = (await db.doc('people/gs-spk').get()).data(); d.bio = 'A new bio.\n\nSecond paragraph.'; await db.doc('people/gs-spk').set(d); });
+    await s.page.waitForTimeout(5000);
+    const nb = (((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).gs || {}).sessions[0].people[0].bio;
+    expect(nb === 'A new bio.\n\nSecond paragraph.', 'a new bio on People did not reach the website: ' + JSON.stringify(nb));
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(2000);
     await s.page.evaluate(() => [...document.querySelectorAll('#gs-acts button')].find(b => /Mark All for the Website/.test(b.textContent)).click());
     await s.page.waitForTimeout(5000);
     gs = ((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).gs;

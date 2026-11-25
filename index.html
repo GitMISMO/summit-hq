@@ -7724,7 +7724,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Drag names</b> from the Presenters list on the right onto a segment to add them, then choose their role: Speaker, Moderator, Panelist or Host. The list can show this Summit&rsquo;s people, those not placed yet, lenders, or everyone.</li>
         <li><b>Lenders are highlighted.</b> A presenter whose company is a lender in Member 360 (Member Type Lender, or the Lender/Servicer sector) is marked automatically. The company name on their People record is matched to Member 360; when Member 360 has that exact company as a non-lender (First American, the title company, say), they are not marked, even if a similarly named bank is a lender. A name Member 360 does not have exactly is matched to the closest lender name that starts the same way. To correct anyone, click the <b>Lender</b> or <b>L?</b> mark on their chip; that choice is kept for this Summit. The tiles at the top count segments with a lender, and presenters still missing a bio or headshot.</li>
         <li><b>Print Agenda</b> prints the running order. The segments also go into the event app&rsquo;s sessions file in place of a single General Sessions block.</li>
-        <li><b>On Website</b>, on each segment, puts that segment on the website&rsquo;s agenda: its time, title, description and sponsor, and each speaker&rsquo;s name, title, company and headshot (never an email or a note). Tick only the segments that are ready; the rest stay off until you tick them, so the agenda can go up a few segments at a time. Changes to a ticked segment reach the website on their own, usually within about five minutes, and unticking it takes it off. <b>Mark All for the Website Agenda</b> at the top ticks every segment at once, and the <b>On the Website Agenda</b> figure shows how many are on. Each summit, and General Sessions and the Workshop, are marked separately.</li>
+        <li><b>On Website</b>, on each segment, puts that segment on the website&rsquo;s agenda: its time, title, description and sponsor, and each speaker&rsquo;s name, title, company, headshot and bio (never an email or a note). The bio is the one on their People row (from the speaker form, or typed in), sent as plain text (any sentence with an email address in it is left out), up to 5,000 characters; MyMISMO shows it behind a <b>View Bio</b> button on General Sessions speakers, and a speaker with no bio simply has no button. A bio added or changed on People reaches the website and MyMISMO on its own. Tick only the segments that are ready; the rest stay off until you tick them, so the agenda can go up a few segments at a time. Changes to a ticked segment reach the website on their own, usually within about five minutes, and unticking it takes it off. <b>Mark All for the Website Agenda</b> at the top ticks every segment at once, and the <b>On the Website Agenda</b> figure shows how many are on. Each summit, and General Sessions and the Workshop, are marked separately.</li>
       </ul>
       <h4>The Workshop</h4>
       <p><b>Workshop</b> in the left menu works exactly the same way for Monday afternoon&rsquo;s Workshop. Start from a <b>Typical Workshop</b> (a welcome, sections, a break, a hands-on exercise and a wrap-up) or start blank, add sections, and drag speakers onto them from the <b>Confirmed Speakers</b> list on the right. Its start and end times come from the Workshop on the Schedule. Each Summit keeps its own Workshop, and its sections go into the event app&rsquo;s sessions file in place of the single Workshop block. A speaker put on a section shows it under <b>Sessions They Are In</b> on People, and the speaker email names it.</p>
@@ -25847,6 +25847,7 @@ function write(id,doc){
   clearTimeout(pend.get(id));
   pend.set(id,setTimeout(()=>{ try{ ST.db.doc('people/'+id).set(JSON.parse(JSON.stringify(doc))); }catch(e){} },260));
   try{ speakerAddsTouch(id); }catch(e){}
+  try{ window.dispatchEvent(new Event('hq:people')); }catch(e){}
 }
 /* a change to the person themselves */
 function patch(id,fields,label){
@@ -30610,6 +30611,7 @@ function init(){
             ST.docs.set(c.doc.id,Object.assign({i:c.doc.id},c.doc.data()));
         });
         render();
+        try{ window.dispatchEvent(new Event('hq:people')); }catch(e){}
         /* Amy, 2026-11-03: answers from the bio and headshot form */
         if(!SI.first){ SI.first=true; setTimeout(()=>siCheck(true),1500); setInterval(()=>siCheck(),60000);
           /* the follow-ups the flow has sent, so each speaker shows how many and when */
@@ -31971,7 +31973,23 @@ function webEntry(){
     sessions: timeline().filter(r=>r.it.web).map(r=>{ const it=r.it;
       return {start:clock(r.s), end:clock(r.e), kind:it.kind, title:it.title||it.kind, desc:it.desc||'', sponsor:it.sponsor||'', brk:SOFT.has(it.kind),
         people:(it.people||[]).map(ref=>{ const p=personById(ref.id); if(!p) return null;
-          return {name:p.n||'', title:p.t||'', company:p.c||'', role:ref.role||personRole(it), photo:p.thumb? photoFile(p.i) : '', photoUrl:p.purl||''}; }).filter(Boolean)}; })};
+          return {name:p.n||'', title:p.t||'', company:p.c||'', role:ref.role||personRole(it), photo:p.thumb? photoFile(p.i) : '', photoUrl:p.purl||'', bio:webBio(p.bio)}; }).filter(Boolean)}; })};
+}
+/* CN-036 (MyMISMO, approved by Jonna Nov 25, 2026): each speaker carries their bio (the speaker
+   form's answer, or the bio typed on People) so MyMISMO's speaker panels can show View Bio.
+   Plain text only: tags taken out, and any sentence with an email address in it, paragraphs separated by one blank line,
+   at most 5,000 characters (cut at a word). Empty when there is none. */
+function webBio(x){
+  let t=String(x||'').replace(/\r\n?/g,'\n');
+  t=t.replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|div|li|h[1-6]|tr)\s*>/gi,'\n\n').replace(/<\/?[a-z!][^>]*>/gi,'');
+  t=t.replace(/&nbsp;/gi,' ').replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/&quot;/gi,'"').replace(/&(#39|apos);/gi,"'")
+     .replace(/&#(\d+);/g,(m,d)=>String.fromCharCode(+d)).replace(/&amp;/gi,'&').replace(/<\/?[a-z!][^>]*>/gi,'');
+  t=t.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b\ufeff]/g,'');
+  /* an email address takes its whole sentence with it ("Please email John at ..."), not just the address */
+  t=t.replace(/(mailto:)?[A-Z0-9._%+-]+@[A-Z0-9-]+(\.[A-Z0-9-]+)*\.[A-Z]{2,}/gi,'\u0001').replace(/[^.!?\n\u0001]*\u0001[^.!?\n]*[.!?]?/g,'');
+  t=t.split(/\n[ \t\u00a0]*\n\s*/).map(par=>par.split('\n').map(l=>l.replace(/[ \t\u00a0]+/g,' ').trim()).filter(Boolean).join('\n')).filter(Boolean).join('\n\n');
+  if(t.length>5000){ t=t.slice(0,5000); const w=t.search(/\s\S*$/); if(w>4000) t=t.slice(0,w); t=t.trim(); }
+  return t;
 }
 function webSync(){
   clearTimeout(webT); webT=setTimeout(async()=>{
@@ -32553,6 +32571,7 @@ function attach(){
   const tryAttach=()=>{ try{ attach(); }catch(e){} };
   const pick=$('venue-pick'); if(pick) pick.addEventListener('change',()=>setTimeout(tryAttach,50));
   window.addEventListener('hq:schedule',tryAttach);
+  window.addEventListener('hq:people',()=>{ try{ webSync(); }catch(e){} });   /* CN-036: a bio (or title, company, headshot) changed on People reaches the website's agenda */
   let n=0; const iv=setInterval(()=>{ tryAttach(); if(vid || ++n>40) clearInterval(iv); },500);
   window.addEventListener('beforeunload',()=>{ if(dirty) save(); });
   /* coming to the tab redraws it, so the room and hours follow the Schedule */
