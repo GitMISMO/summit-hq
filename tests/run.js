@@ -1134,6 +1134,56 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 33. MyMISMO attendee reports (CN-040, Nov 25, 2026; relay request 15) */
+  await check('MyMISMO: attendee reports show once the route answers, and Close sends a note', async () => {
+    let on = false; const posts = [], gets = [];
+    const reports = [
+      { id: 'RPb2', about: 'a2', aboutName: 'Pat Example', byName: 'Lee Sample', reason: 'harassment', note: 'Rude messages.', at: Date.UTC(2026, 10, 1, 15), status: 'open', action: '' },
+      { id: 'RPa1', about: 'a3', aboutName: 'Sam Test', byName: 'Lee Sample', reason: 'spam', note: '', at: Date.UTC(2026, 9, 30, 15), status: 'closed', action: 'Spoke with them.' }
+    ];
+    const s = await open(opts({ mymismo: async r => {
+      const u = r.request().url(), m = r.request().method();
+      if (u.includes('/mymismo/staff/reports')) {
+        if (!on) return r.fulfill({ status: 404, contentType: 'application/json', body: '{"error":"NOT_FOUND"}' });
+        if (m === 'GET') { gets.push({ u, auth: r.request().headers()['authorization'] }); return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ reports }) }); }
+        const b = JSON.parse(r.request().postData() || '{}'); posts.push({ b, auth: r.request().headers()['authorization'] });
+        const x = reports.find(y => y.id === b.id); x.status = b.status === 'open' ? 'open' : 'closed'; x.action = b.action;
+        return r.fulfill({ contentType: 'application/json', body: '{"ok":true}' });
+      }
+      return r.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
+    } }));
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(1500);
+    /* not a sender: never asked, never shown */
+    await s.page.evaluate(() => window.__mymismo.reports());
+    expect(!(await s.page.$('#mm-reports')) && gets.length === 0, 'reports were read or shown for someone who is not a sender');
+    await s.page.evaluate(() => { window.__mymismo.SENDERS.push('tester@example.org'); });
+    /* a sender, but the route is not there yet: hidden */
+    await s.page.evaluate(() => window.__mymismo.reports());
+    expect(!(await s.page.$('#mm-reports')) && !(await s.page.$('#mm-rep-tile')) && await s.page.$eval('#mm-rep-n', b => b.hidden), 'the reports panel showed before the route answered');
+    on = true;
+    await s.page.evaluate(() => window.__mymismo.reports()); await s.page.waitForTimeout(300);
+    expect(await s.page.$('#mm-reports'), 'the reports panel did not show once the route answered');
+    expect(/summit=nola/.test(gets[gets.length - 1].u) && gets[gets.length - 1].auth === 'Bearer t', 'the reports were not read for the summit with the sign-in: ' + JSON.stringify(gets));
+    const txt = await s.page.textContent('#mm-reports');
+    expect(/Pat Example/.test(txt) && /Lee Sample/.test(txt) && /Harassment/.test(txt) && /Rude messages/.test(txt) && /Spoke with them/.test(txt), 'a report is missing who, by whom, reason or note: ' + txt);
+    expect(await s.page.$eval('#mm-rep-n', b => !b.hidden && b.textContent === '1'), 'the menu does not show 1 open report');
+    expect(/1\s*Open Reports/.test(await s.page.textContent('#mm-rep-tile')), 'the Open Reports figure is not 1');
+    /* Close needs a note */
+    await s.page.click('[data-repclose="RPb2"]'); await s.page.waitForTimeout(300);
+    expect(posts.length === 0 && /short note/.test(await s.page.textContent('#mm-reports')), 'a report closed with no note of what was done');
+    await s.page.fill('#mm-rn-RPb2', 'Removed them from the directory.');
+    await s.page.click('[data-repclose="RPb2"]'); await s.page.waitForTimeout(800);
+    expect(posts.length === 1 && JSON.stringify(posts[0].b) === JSON.stringify({ summit: 'nola', id: 'RPb2', status: 'closed', action: 'Removed them from the directory.' }) && posts[0].auth === 'Bearer t', 'Close did not POST {summit, id, status, action} with the sign-in: ' + JSON.stringify(posts));
+    expect(await s.page.$eval('#mm-rep-n', b => b.hidden) && /0\s*Open Reports/.test(await s.page.textContent('#mm-rep-tile')), 'the open count did not drop to 0');
+    /* Undo reopens it; Reopen keeps the note */
+    await s.page.evaluate(() => window.__hqUndo.undo()); await s.page.waitForTimeout(1000);
+    expect(posts.length === 2 && posts[1].b.status === 'open' && reports[0].status === 'open', 'Undo did not reopen the report: ' + JSON.stringify(posts));
+    await s.page.click('[data-repopen="RPa1"]'); await s.page.waitForTimeout(800);
+    expect(posts.length === 3 && posts[2].b.status === 'open' && posts[2].b.action === 'Spoke with them.', 'Reopen did not keep the note: ' + JSON.stringify(posts[2]));
+    expect(await s.page.$eval('#mm-rep-n', b => b.textContent === '2'), 'the menu count is not 2 after reopening');
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');

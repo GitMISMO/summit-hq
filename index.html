@@ -4369,7 +4369,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
     <!-- CN-037 (Nov 25, 2026): MyMISMO alerts and presentation slides -->
     <button type="button" data-hq="mm" title="MyMISMO">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4M9 7h6M9 11h6"/></svg>
-      <span>MyMISMO</span></button>
+      <span>MyMISMO</span><b class="mm-rep-n" id="mm-rep-n" hidden title="Open attendee reports"></b></button>
     <div class="rail-grp">The Hotel</div>
     <button type="button" data-hq="specs" title="Hotel Specs">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V7l9-4 9 4v14"/><path d="M8 21v-5h8v5M8 10h.01M12 10h.01M16 10h.01M8 13h.01M12 13h.01M16 13h.01"/></svg>
@@ -7287,7 +7287,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
     <div>
       <div class="eyebrow">MyMISMO</div>
       <h1 id="mm-title">MyMISMO Alerts and Slides</h1>
-      <div class="sub" id="mm-sub">What attendees get in the MyMISMO app: alerts sent to their phones, and each session&rsquo;s presentation slides.</div>
+      <div class="sub" id="mm-sub">What attendees get in the MyMISMO app: alerts sent to their phones, each session&rsquo;s presentation slides, and the reports attendees send about someone.</div>
     </div>
   </header>
   <div id="mm-root"></div>
@@ -7885,7 +7885,8 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li><b>Member 360 &rarr; General Sessions.</b> Member 360&rsquo;s list of organizations says which are lenders, so General Sessions can highlight lender presenters.</li>
         <li><b>Summit HQ &rarr; the event app.</b> The speakers and sessions files from People are uploaded to the event app by Vanessa.</li>
         <li><b>Summit HQ &rarr; MyMISMO.</b> MISMO&rsquo;s own app (resources.mismo.org/mymismo/) lets attendees sign in with their registration email. Who may sign in comes from Summit HQ&rsquo;s attendee list, kept up to date in GitHub whenever the registration report, People or the MISMO Team card changes, and every day: for each upcoming Summit, everyone registered in Aptify (in person and virtual, never a cancelled registration), the speakers on People, and the MISMO Team card (except anyone marked not going). It lists each person&rsquo;s email, name, company and title, stays private (only the save relay reads it), and nothing is emailed from it.</li>
-        <li><b>Summit HQ &rarr; MyMISMO alerts and slides.</b> The <b>MyMISMO</b> page in the left menu (for the Summit picked in the menu) has two parts. <b>Send an Alert</b>: write a title (up to 80 characters) and a message (up to 300), and if it is about one session, pick it (tapping the alert on a phone opens that session). The preview shows how it looks on a phone. <b>Send to Phones</b> asks once, then sends it through the save relay to every phone that turned on MyMISMO alerts for that Summit, and says how many phones it reached; <b>Alerts Sent</b> keeps the list. Only Jonna can send for now (the relay checks too), and the button only shows once the relay has alerts switched on. Nothing is ever sent on its own. <b>Presentation Slides</b>: each session of the week (from the Schedule) has <b>Add Slides</b> for PDF or PowerPoint files, up to 25 MB each. They are kept in Summit HQ&rsquo;s private data and listed in a private slides list that only the save relay reads, so only attendees signed in to MyMISMO can download them. The &times; on a file takes it off MyMISMO (Undo brings it back; the file itself is kept). Click a file&rsquo;s name to open it.</li>
+        <li><b>Summit HQ &rarr; MyMISMO alerts and slides.</b> The <b>MyMISMO</b> page in the left menu (for the Summit picked in the menu) has three parts: alerts and slides, here, and attendee reports, next. <b>Send an Alert</b>: write a title (up to 80 characters) and a message (up to 300), and if it is about one session, pick it (tapping the alert on a phone opens that session). The preview shows how it looks on a phone. <b>Send to Phones</b> asks once, then sends it through the save relay to every phone that turned on MyMISMO alerts for that Summit, and says how many phones it reached; <b>Alerts Sent</b> keeps the list. Only Jonna can send for now (the relay checks too), and the button only shows once the relay has alerts switched on. Nothing is ever sent on its own. <b>Presentation Slides</b>: each session of the week (from the Schedule) has <b>Add Slides</b> for PDF or PowerPoint files, up to 25 MB each. They are kept in Summit HQ&rsquo;s private data and listed in a private slides list that only the save relay reads, so only attendees signed in to MyMISMO can download them. The &times; on a file takes it off MyMISMO (Undo brings it back; the file itself is kept). Click a file&rsquo;s name to open it.</li>
+        <li><b>MyMISMO &rarr; Summit HQ: attendee reports.</b> Attendees can <b>Report</b> someone in MyMISMO, from that person&rsquo;s profile or from a conversation, picking a reason (harassment, spam, inappropriate or other) and adding a note. Apple requires the MISMO team to look into these promptly. On the <b>MyMISMO</b> page, <b>Attendee Reports</b> lists each report for the Summit picked in the menu: who it is about, who sent it, the reason, their note and when. Look into it, write a short note of what was done, and press <b>Close</b>. Closed reports stay listed with that note, and <b>Reopen</b> puts one back. The <b>Open Reports</b> figure at the top and the red number on the MyMISMO menu button show how many are still open (checked when Summit HQ opens and every five minutes). The reports are kept in MyMISMO&rsquo;s own data and read through the save relay; Summit HQ keeps no copy, and nobody is emailed. Only Jonna sees them for now (the same people who can send alerts; the relay checks too), and the panel only shows once the relay answers for reports. Undo puts a report back the way it was.</li>
         <li><b>Summit HQ &rarr; the hotel.</b> The resume, issued from the Resume tab.</li>
         <li><b>Summit HQ &rarr; the scheduled emails.</b> Summit HQ keeps two small ready-to-read summaries up to date on its own whenever anything changes: the open tasks (read by the Monday task email) and each Summit&rsquo;s registrants by company, name, job title and In-Person or Virtual (read by the Registration List to Sponsors email, together with that email&rsquo;s finished wording). That flow writes back what it sent each Friday, which Registration shows under Weekly List to Sponsors.</li>
         <li><b>People &rarr; Bernie.</b> Each speaker added on People is written to a small ready-made list that the <b>New Speakers to Register</b> flow reads every weekday morning, so Bernie gets one email rather than one per speaker.</li>
@@ -7990,7 +7991,7 @@ textarea,input,select{font-family:var(--ui,inherit)}
         <li>Sponsors register themselves with their comp code; Summit HQ does not track their registration.</li>
         <li>Champion Codes&rsquo; <b>Used</b> counts come from the campaign code on the weekly SummitHQ_Registration report (added November 9, 2026), so they start with the Friday, November 13 email; until then Winter 2027&rsquo;s counts are the ones from the Smartsheet.</li>
         <li>Champion Codes refreshes from Member 360 only when someone with Member 360 access opens Summit HQ, and it cannot set up codes in Aptify; Bernie does that.</li>
-        <li>MyMISMO: the slide files themselves are not in the Backup file (the list of which file goes with which session is). A sent alert cannot be taken back. Slides are tied to a session of the week; if a session is taken off the Schedule, its slides show under <b>Slides on Sessions No Longer on the Week</b> until they are taken off.</li>
+        <li>MyMISMO: the slide files themselves are not in the Backup file (the list of which file goes with which session is). Attendee reports are MyMISMO&rsquo;s, read live through the save relay, so they are not in the Backup file either; if the relay can&rsquo;t be reached, the reports panel doesn&rsquo;t show until it can. A sent alert cannot be taken back. Slides are tied to a session of the week; if a session is taken off the Schedule, its slides show under <b>Slides on Sessions No Longer on the Week</b> until they are taken off.</li>
       </ul>
     </div>
   </details>
@@ -32775,6 +32776,21 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
 #app-mm .mm-add{white-space:nowrap}
 #app-mm .mm-prog{font-size:11.5px;color:var(--ink-2);margin-top:4px}
 #app-mm .mm-foot{font-size:11.5px;color:var(--ink-3);margin-top:10px}
+/* CN-040: attendee reports */
+#app-mm .mm-tile.mm-warn b{color:var(--bad-ink)}
+#app-mm .mm-rep{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,auto);gap:6px 16px;padding:10px 0;border-bottom:1px solid var(--line);align-items:start}
+#app-mm .mm-rep:last-child{border-bottom:0}
+#app-mm .mm-rep .mm-rh{font-size:13px;color:var(--ink)}
+#app-mm .mm-rep .mm-rh small{color:var(--ink-3);font-size:11.5px;margin-left:6px}
+#app-mm .mm-rep .mm-why{display:inline-block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;border-radius:3px;padding:1px 6px;background:var(--bad-soft);color:var(--bad-ink);margin-right:6px}
+#app-mm .mm-rep.closed .mm-why{background:var(--sunk);color:var(--ink-3)}
+#app-mm .mm-rep p{margin:4px 0 0;font-size:12.5px;color:var(--ink-2);white-space:pre-wrap;word-break:break-word}
+#app-mm .mm-rep .mm-do{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#app-mm .mm-rep .mm-do .mm-in{flex:1 1 200px;width:auto}
+#app-mm .mm-rep .mm-done{font-size:12.5px;color:var(--ink-2)}
+#app-mm .mm-rep .mm-done b{color:var(--good)}
+.hq nav button .mm-rep-n{margin-left:auto;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:var(--bad-ink,#b42318);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center;font-variant-numeric:tabular-nums}
+.hq nav button .mm-rep-n[hidden]{display:none}
 </style>
 
 <script>
@@ -32802,6 +32818,17 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
    (not a Summit HQ document), for the relay to read:
      {updated, summits:{<summit>:{sessions:{<agenda id>:[{name, type, size, file, parts}]}}}}
    Only the relay reads it; only attendees signed in to MyMISMO can download the files.
+
+   ATTENDEE REPORTS (CN-040, relay request 15, for Apple's App Review Guideline 1.2). An
+   attendee can report someone from MyMISMO; the relay keeps the reports in MyMISMO's own
+   data. For the people in SENDERS (the relay's alertSenders, which it checks again) the page
+   reads GET /mymismo/staff/reports?summit=<id> with the signed-in token
+     -> {reports:[{id, about, aboutName, byName, reason, note, at, status, action}]}
+   and closes or reopens one with POST /mymismo/staff/reports {summit, id, status:'closed'|
+   'open', action} (action: a short note of what was done, 300 characters). The panel, its
+   Open Reports tile and the count on the MyMISMO menu button stay hidden until the GET
+   answers 200. Summit HQ keeps no copy of the reports. Nothing is emailed. Undo (`mm`) puts
+   a report back the way it was.
    ============================================================ */
 (function(){
   'use strict';
@@ -32869,7 +32896,12 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
     await publish();
   }
   async function undoSlides(){
-    const e=ST.undo.pop(); if(!e||!ST.db) return;
+    const e=ST.undo.pop(); if(!e) return;
+    if(e.rep){
+      if(e.rep.sid!==vid()){ const p=$('venue-pick'); if(p){ p.value=e.rep.sid; p.dispatchEvent(new Event('change')); } await loadReports(true); }
+      await setReport(e.rep.id, e.rep.status, {action:e.rep.action}); return;
+    }
+    if(!ST.db) return;
     const from=clone(ST.slides[e.sid]||{sessions:{}});
     ST.slides[e.sid]=e.data; render();
     try{ await ST.db.doc('mymismo-slides/'+e.sid).set(e.data, {base:from}); }catch(x){}
@@ -32937,6 +32969,87 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
     }catch(e){ if(win) win.close(); window.alert('That file could not be opened: '+((e&&e.message)||'try again')); }
   }
 
+  /* ---------- attendee reports (CN-040) ---------- */
+  const REP={on:false, sid:'', list:[], at:0, busy:'', note:{}, msg:null};
+  const REASON={harassment:'Harassment', spam:'Spam', inappropriate:'Inappropriate', other:'Other'};
+  const openReports=()=>REP.list.filter(r=>r.status!=='closed');
+  function paintBadge(){
+    const b=$('mm-rep-n'); if(!b) return;
+    const n=REP.on && REP.sid===vid()? openReports().length : 0;
+    b.textContent=n? String(n) : ''; b.hidden=!n;
+    b.title=n? n+' open attendee report'+(n===1?'':'s') : '';
+  }
+  async function loadReports(force){
+    const sid=vid();
+    if(!sid || !isSender() || !tok()){ REP.on=false; REP.list=[]; REP.sid=sid; paintBadge(); return false; }
+    if(!force && REP.sid===sid && REP.at && Date.now()-REP.at<60000) return REP.on;
+    REP.at=Date.now();
+    let res=null, b={};
+    try{
+      res=await fetch(RELAY+'/mymismo/staff/reports?summit='+encodeURIComponent(sid),{cache:'no-store', headers:{Authorization:'Bearer '+tok()}});
+      b=await res.json().catch(()=>({}));
+    }catch(e){ res=null; }
+    if(vid()!==sid) return REP.on;                 /* the summit changed meanwhile */
+    if(!res && REP.sid===sid && REP.on) return true; /* a blip: keep what is showing */
+    if(res && res.status===200 && b && Array.isArray(b.reports)){ REP.on=true; REP.list=b.reports.filter(r=>r && r.id); }
+    else { REP.on=false; REP.list=[]; }
+    REP.sid=sid; paintBadge(); return REP.on;
+  }
+  async function postReport(sid, id, status, action){
+    let res=null, b={};
+    try{
+      res=await fetch(RELAY+'/mymismo/staff/reports',{method:'POST', cache:'no-store',
+        headers:{'Content-Type':'application/json', Authorization:'Bearer '+tok()},
+        body:JSON.stringify({summit:sid, id, status, action})});
+      b=await res.json().catch(()=>({}));
+    }catch(e){ res=null; }
+    if(res && res.ok && b && b.ok) return '';
+    const st=res? res.status : 0;
+    return !res? 'Could not reach the save relay; nothing changed. Try again.'
+      : st===401? 'Your sign-in has run out. Sign in again and try again.'
+      : st===403? 'Only the people Jonna named can handle attendee reports.'
+      : 'The relay answered '+st+'; nothing changed. Try again.';
+  }
+  async function setReport(id, status, fromUndo){
+    const sid=vid(), r=REP.list.find(x=>x.id===id); if(!sid||!r||REP.busy) return;
+    const action=status==='closed'? String(fromUndo? fromUndo.action : (REP.note[id]||'')).trim().slice(0,300) : String((fromUndo? fromUndo.action : r.action)||'');
+    if(status==='closed' && !action && !fromUndo){ REP.msg={id, bad:true, t:'Write a short note of what was done, then Close.'}; render(); return; }
+    const before={status:r.status==='closed'?'closed':'open', action:String(r.action||'')};
+    REP.busy=id; REP.msg={id, t:status==='closed'? 'Closing…' : 'Reopening…'}; render();
+    const err=await postReport(sid, id, status, action);
+    REP.busy='';
+    if(err){ REP.msg={id, bad:true, t:err}; render(); return; }
+    r.status=status; r.action=action; delete REP.note[id];
+    REP.msg={id, t:status==='closed'? 'Closed.' : 'Reopened.'};
+    if(!fromUndo){
+      ST.undo.push({rep:{sid, id, status:before.status, action:before.action}}); if(ST.undo.length>40) ST.undo.shift();
+      try{ if(window.__hqUndo){ window.__hqUndo.register('mm', undoSlides); window.__hqUndo.record('mm', (status==='closed'?'closed':'reopened')+' a report about '+(r.aboutName||'an attendee')); } }catch(e){}
+    }
+    paintBadge(); render();
+    await loadReports(true); render();
+  }
+  function reportsCard(sid){
+    if(!REP.on || REP.sid!==sid) return '';
+    const open=openReports(), closed=REP.list.filter(r=>r.status==='closed');
+    const row=r=>{
+      const m=REP.msg && REP.msg.id===r.id? REP.msg : null, isC=r.status==='closed', busy=REP.busy===r.id;
+      return '<div class="mm-rep'+(isC?' closed':'')+'" data-rep="'+esc(r.id)+'"><div>'
+        +'<div class="mm-rh"><span class="mm-why">'+esc(REASON[r.reason]||r.reason||'Other')+'</span>About <b>'+esc(r.aboutName||'Deleted account')+'</b>'
+        +'<small>from '+esc(r.byName||'Deleted account')+' · '+esc(when(r.at))+'</small></div>'
+        +(r.note? '<p>'+esc(r.note)+'</p>' : '<p><i>No note.</i></p>')+'</div>'
+        +'<div class="mm-do">'+(isC
+          ? '<span class="mm-done"><b>Closed.</b> '+esc(r.action||'')+'</span><button class="btn ghost" type="button" data-repopen="'+esc(r.id)+'"'+(busy?' disabled':'')+'>Reopen</button>'
+          : '<input class="mm-in" id="mm-rn-'+esc(r.id)+'" data-repnote="'+esc(r.id)+'" maxlength="300" placeholder="What was done (e.g. spoke with them; blocked them)" value="'+esc(REP.note[r.id]||'')+'">'
+            +'<button class="btn" type="button" data-repclose="'+esc(r.id)+'"'+(busy?' disabled':'')+'>Close</button>')
+        +(m? '<span class="mm-msg'+(m.bad?' bad':' ok')+'">'+esc(m.t)+'</span>' : '')+'</div></div>';
+    };
+    return '<section class="mm-card" id="mm-reports"><h2>Attendee Reports</h2>'
+      +'<p class="mm-lede">When an attendee reports someone in MyMISMO (from a profile or a conversation), it shows here. Look into each one promptly, then Close it with a short note of what was done. Nobody is emailed; the person reported is not told who sent it.</p>'
+      +(open.length? open.map(row).join('') : '<p class="mm-lede" style="margin:0">No open reports for this Summit.</p>')
+      +(closed.length? '<div class="mm-day">Closed ('+closed.length+')</div>'+closed.map(row).join('') : '')
+      +'</section>';
+  }
+
   /* ---------- alerts ---------- */
   async function checkReady(force){
     if(!force && ST.readyAt && Date.now()-ST.readyAt<5*60000) return ST.ready;
@@ -32994,7 +33107,8 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
     const files=ids.reduce((a,k)=>a+ses[k].filter(live).length,0);
     const t=(n,l)=>'<div class="mm-tile"><b>'+n+'</b><span>'+l+'</span></div>';
     return '<div class="mm-strip">'+t(sent.length,'Alerts Sent')+t(phones,'Phones Reached')+t(ids.length,'Sessions With Slides')+t(files,'Slide Files')
-      +t(ST.ready===null? '…' : ST.ready? 'On' : 'Not Yet','Alerts Switched On')+'</div>';
+      +t(ST.ready===null? '…' : ST.ready? 'On' : 'Not Yet','Alerts Switched On')
+      +(REP.on && REP.sid===sid? t(openReports().length,'Open Reports').replace('mm-tile"','mm-tile'+(openReports().length?' mm-warn':'')+'" id="mm-rep-tile"') : '')+'</div>';
   }
   function alertCard(sid, list){
     const v=venue(), sender=isSender(), tl=draft.title.length, bl=draft.body.length;
@@ -33062,8 +33176,8 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
     const sid=vid(), v=venue(), list=sessions();
     const t=$('mm-title'); if(t) t.textContent=((v&&v.name)? v.name+': ' : '')+'MyMISMO Alerts and Slides';
     if(!sid){ root.innerHTML='<p class="mm-lede">Pick a Summit in the left menu.</p>'; return; }
-    root.innerHTML=tiles(sid,list)+'<div class="mm-grid"><div>'+alertCard(sid,list)+'</div><div>'+sentCard(sid)+'</div></div>'+slidesCard(sid,list)
-      +'<p class="mm-foot">Slides are kept in Summit HQ&rsquo;s private data and listed for MyMISMO in its private slides list; alerts go out through the save relay. See Help, How the Systems Connect.</p>';
+    root.innerHTML=tiles(sid,list)+reportsCard(sid)+'<div class="mm-grid"><div>'+alertCard(sid,list)+'</div><div>'+sentCard(sid)+'</div></div>'+slidesCard(sid,list)
+      +'<p class="mm-foot">Slides are kept in Summit HQ&rsquo;s private data and listed for MyMISMO in its private slides list; alerts go out and reports come in through the save relay. See Help, How the Systems Connect.</p>';
     if(keep){ const n=$(keep.id); if(n){ n.focus(); try{ if(keep.s!=null) n.setSelectionRange(keep.s,keep.e); }catch(e){} } }
   }
   function wire(){
@@ -33072,6 +33186,8 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
       const id=e.target.id;
       if(id==='mm-at'){ draft.title=e.target.value; delete ST.msg.alert; softPaint(); }
       else if(id==='mm-ab'){ draft.body=e.target.value; delete ST.msg.alert; softPaint(); }
+      const rn=e.target.getAttribute && e.target.getAttribute('data-repnote');
+      if(rn){ REP.note[rn]=e.target.value; if(REP.msg && REP.msg.id===rn && REP.msg.bad){ REP.msg=null; const m=e.target.parentNode.querySelector('.mm-msg'); if(m) m.remove(); } }
     });
     root.addEventListener('change',e=>{
       if(e.target.id==='mm-as'){ draft.session=e.target.value; render(); }
@@ -33080,6 +33196,9 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
     });
     root.addEventListener('click',e=>{
       if(e.target.closest('#mm-send')){ send(); return; }
+      const rc=e.target.closest('[data-repclose]'), ro=e.target.closest('[data-repopen]');
+      if(rc){ setReport(rc.dataset.repclose, 'closed'); return; }
+      if(ro){ setReport(ro.dataset.repopen, 'open'); return; }
       const rm=e.target.closest('[data-rm]'), op=e.target.closest('[data-open]'), row=e.target.closest('[data-ses]');
       if(rm && row){ removeFile(row.dataset.ses, rm.dataset.rm); return; }
       if(op && row){ const f=(((ST.slides[vid()]||{}).sessions||{})[row.dataset.ses]||[]).find(x=>x.id===op.dataset.open); if(f) openFile(f); }
@@ -33109,12 +33228,15 @@ SessionDay({p:'wk', label:'Workshop', sid:'workshop', dayOff:0, dayName:'Monday'
       const next={}; qs.forEach(d=>{ if(d.exists) next[d.id]=d.data(); });
       ST.alerts=next; ST.loaded.alerts=true; render();
     }, ()=>{});
-    const p=$('venue-pick'); if(p) p.addEventListener('change',()=>{ draft.session=''; ST.msg={}; render(); });
+    const p=$('venue-pick'); if(p) p.addEventListener('change',()=>{ draft.session=''; ST.msg={}; REP.msg=null; REP.note={}; paintBadge(); render(); loadReports(true).then(render); });
     window.addEventListener('hq:schedule',()=>render());
-    window.addEventListener('hq:tab',e=>{ if(e.detail==='mm'){ render(); checkReady(false).then(render); } });
+    window.addEventListener('hq:tab',e=>{ if(e.detail==='mm'){ render(); checkReady(false).then(render); loadReports(false).then(render); } });
+    /* the count on the menu button: on opening, then every five minutes */
+    setTimeout(()=>loadReports(true).then(render), 2500);
+    setInterval(()=>{ if(!document.hidden) loadReports(true).then(render); }, 5*60000);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();
-  window.__mymismo={render, publish, feed:feedSummits, ready:()=>checkReady(true), state:ST, draft, SENDERS};
+  window.__mymismo={render, publish, feed:feedSummits, ready:()=>checkReady(true), state:ST, draft, SENDERS, reports:()=>loadReports(true).then(r=>{ render(); return r; }), rep:REP};
 })();
 </script>
 
