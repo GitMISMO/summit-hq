@@ -2212,7 +2212,7 @@ button.ovl-chip.on{background:var(--accent);border-color:var(--accent);color:#ff
 
 /* the rail is down the left now, so nothing sits above the page: every sticky bar
    and drawer that offsets by --hq-h offsets by nothing */
-:root{--hq-h:64px;--rail-w:240px;--rail-mini:62px;--tileh:100px}
+:root{--hq-h:68px;--rail-w:240px;--rail-mini:62px;--tileh:100px}
 /* THE HEADER IS THE SAME AT EVERY WINDOW SIZE (Jonna, 2026-09-19: the summit called
    out big with the hotel and the dates under it, the same on all three tabs). It used
    to shrink, fold onto one line and drop the hotel-and-dates on a short window; it no
@@ -3276,7 +3276,7 @@ body.ros-peek #app-ros > :not(#rs-drawer-host){display:none !important}
 #app-ros .pm-sw b{font-size:26px;line-height:1.05;font-weight:700;font-variant-numeric:tabular-nums;color:#fff}
 #app-ros .pm-sw span{font-size:11.5px;color:rgba(255,255,255,.78);font-weight:600;margin-top:2px}
 
-#app-ros .pm-sec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px 18px;box-shadow:var(--shadow);scroll-margin-top:130px}
+#app-ros .pm-sec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px 18px;box-shadow:var(--shadow);scroll-margin-top:calc(var(--hq-h) + 66px)}
 #app-ros .pm-sec.pm-flash{animation:pmFlash 1.1s ease-out}
 @keyframes pmFlash{0%{box-shadow:0 0 0 3px var(--accent),var(--shadow)}100%{box-shadow:0 0 0 0 transparent,var(--shadow)}}
 #app-ros .pm-sh{display:flex;gap:8px 18px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px}
@@ -3512,20 +3512,21 @@ body{background:var(--paper);color:var(--ink);
    ═════════════════════════════════════════════════════════════════════════ */
 /* the masthead, across the top, as every MISMO page wears it */
 .hqtop{position:sticky;top:env(safe-area-inset-top,0px);z-index:141;height:var(--hq-h);
-  background:var(--navy);color:#fff;display:flex;align-items:center;gap:0;
-  padding:0 22px;box-shadow:0 1px 0 rgba(80,164,219,.28);
+  background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;
+  padding:13px 22px;box-sizing:border-box;box-shadow:0 1px 0 rgba(80,164,219,.28);
   /* it runs the whole way across, above the sections, so the page's own left
      padding has to be given back to it */
   margin-left:calc(0px - var(--rail-w));width:calc(100% + var(--rail-w));
   transition:margin-left .2s cubic-bezier(.4,0,.2,1), width .2s cubic-bezier(.4,0,.2,1)}
 body.railmini .hqtop{margin-left:calc(0px - var(--rail-mini));width:calc(100% + var(--rail-mini))}
 @media (prefers-reduced-motion:reduce){ .hqtop{transition:none} }
-/* the rule and the page name, set the way the Certification Management board sets
-   them: a sky hairline the height of the plate, then the name in sky, not white */
-.hqtop .mastrule{display:block;width:2px;height:34px;flex:0 0 auto;
-  margin-inline:20px;border-radius:1px;background:var(--sky)}
-.hqtop .hqname{font-family:var(--display);font-size:15.5px;font-weight:700;
-  letter-spacing:-.005em;color:var(--sky);white-space:nowrap}
+/* CN-053 (Jonna, Nov 26, 2026): Certification Management's masthead, to the pixel, so the
+   logo sits in the same spot in every tool. Bar 68px (13px above and below the logo box,
+   22px in), 14px gaps, a 1px divider 42px tall, the name 16px/500 in #94c8e9. */
+.hqtop .mastrule{display:block;width:1px;height:42px;flex:0 0 auto;
+  background:rgba(80,164,219,.4)}
+.hqtop .hqname{font-family:var(--display);font-size:16px;font-weight:500;
+  letter-spacing:0;color:#94c8e9;white-space:nowrap}
 .hqtop-r{margin-left:auto;display:flex;align-items:center;gap:13px}
 .hqtop .eyebrow-m{font-family:var(--display);font-size:10.5px;letter-spacing:.11em;
   text-transform:uppercase;color:rgba(255,255,255,.62);font-weight:600;white-space:nowrap}
@@ -3539,10 +3540,10 @@ body.railmini .hqtop{margin-left:calc(0px - var(--rail-mini));width:calc(100% + 
    rows. The same numbers, so the two read as one family on a phone. */
 @media (max-width:560px){
   :root{--hq-h:55px}
-  .hqtop{padding:0 16px}
+  .hqtop{padding:0 16px;gap:11px}
   .logoplate{padding:7px 10px}
   .logoplate .wordmark{height:19px}
-  .hqtop .mastrule{height:33px;margin-inline:11px}
+  .hqtop .mastrule{height:33px}
   .hqtop .hqname{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .hqtop-r{gap:10px}
 }
@@ -3631,13 +3632,6 @@ body.railmini .hq .mast-right #theme-btn{margin-top:4px;padding-top:10px;border-
 .railhits .rh i{display:block;font-style:normal;font-family:var(--mono);font-size:9.5px;
   letter-spacing:.03em;color:var(--ink-3);margin-top:1px;overflow-wrap:anywhere}
 .railhits .rh-none{padding:10px;font-size:12px;color:var(--ink-3)}
-/* December, internal tools only. The header stays exactly 40px — the sticky bars
-   and drawers are positioned from --hq-h — so the hat sits on the plate, not above it. */
-/* December, internal tools only. The header stays exactly 40px — the sticky bars
-   and drawers are positioned from --hq-h — so the hat sits on the plate, not above it. */
-.santa{position:absolute;display:none;pointer-events:none;
-  left:-9px;top:-12px;width:31px;height:31px}
-html[data-season="december"] .santa{display:block}
 
 
 .hq nav{display:flex;flex-direction:column;gap:1px;padding:8px 8px 4px;flex:0 0 auto}
@@ -4293,15 +4287,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 46 29 c79 50 122 121 139 231 21 140 -19 248 -111 299 -79 44 -134 50 -555 62
 -220 5 -410 14 -422 19 -29 12 -30 43 -3 70 19 19 33 20 288 20 277 0 331 -6
 355 -41 13 -18 24 -19 218 -17 l204 3 3 44 c4 60 -31 168 -70 215 -17 21 -52
-52 -77 67 l-45 29 -550 0 c-440 -1 -557 -3 -581 -14z"/></g></symbol><symbol id="mismo-hat" viewBox="0 0 100 100">
-  <path d="M17,73 C9,44 20,17 42,9 C59,3 72,10 80,22 C85,30 86,38 81,41
-           C76,44 70,40 65,32 C60,46 57,60 57,73 Z" fill="#c0392f"/>
-  <path d="M17,73 C9,44 20,17 42,9 C48,7 53,6 58,7 C41,19 30,45 30,73 Z"
-        fill="#0f314c" opacity=".17"/>
-  <rect x="10" y="65" width="56" height="20" rx="10" fill="#ffffff"/>
-  <rect x="10" y="75" width="56" height="10" rx="5" fill="#0f314c" opacity=".07"/>
-  <circle cx="86" cy="45" r="11.5" fill="#ffffff"/>
-</symbol></defs></svg>
+52 -77 67 l-45 29 -550 0 c-440 -1 -557 -3 -581 -14z"/></g></symbol></defs></svg>
 <!-- Everything that says WHERE YOU ARE lives down the left: the five tabs, which
      summit, the search, and the three buttons at the foot. It slides out of the way
      entirely when the week needs the whole screen, and the tab at the edge brings it
@@ -4310,7 +4296,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 <!-- The masthead stays across the top, the way every MISMO page wears it. The
      sections run down the left beneath it. -->
 <header class="hqtop">
-  <span class="logoplate"><svg class="wordmark" role="img" aria-label="MISMO" viewBox="0 0 708 108"><use href="#mismo-logo"/></svg><svg class="santa" viewBox="0 0 100 100" aria-hidden="true"><use href="#mismo-hat"/></svg></span>
+  <span class="logoplate"><svg class="wordmark" data-mismo-logo role="img" aria-label="MISMO" viewBox="0 0 708 108"><use href="#mismo-logo"/></svg></span>
   <span class="mastrule"></span>
   <span class="hqname">Summit HQ</span>
   <span class="hqtop-r"><span class="eyebrow-m">Programs &amp; Operations</span>
@@ -4755,7 +4741,7 @@ c57 -33 76 -84 76 -200 0 -116 -19 -167 -76 -200 -32 -19 -52 -20 -294 -20
 .psg-wn ul{margin:5px 0 0;padding-left:18px}
 .psg-wn li span{color:var(--ink-3)}
 .psg-room.psg-flash,.psg-sec.psg-flash,.psw.psg-flash,.gs-wrap.psg-flash{animation:psgPing 1.4s ease-out}
-#ps-glance .psg-sec,#ps-glance .psw,#ps-glance .gs-wrap{scroll-margin-top:84px}
+#ps-glance .psg-sec,#ps-glance .psw,#ps-glance .gs-wrap{scroll-margin-top:calc(var(--hq-h) + 20px)}
 #app-specs .mast{position:relative}
 #app-specs .mast > .psg-contract{position:absolute;right:0;top:4px;display:inline-flex;align-items:center;gap:8px;width:auto;padding:9px 14px;
   background:var(--surface);border:1px solid var(--line-2);border-radius:7px;box-shadow:var(--shadow)}
@@ -7119,7 +7105,7 @@ html body .psg-li .bar i{display:block !important;height:4px !important;width:0;
 :is(#app-reg,#app-desk) .ws-body{display:grid;gap:28px}
 :is(#app-reg,#app-desk) .mast{margin-bottom:22px}
 :is(#app-reg,#app-desk) .rg-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-:is(#app-reg,#app-desk) #rg-spon,:is(#app-reg,#app-desk) #rg-champ{scroll-margin-top:84px}
+:is(#app-reg,#app-desk) #rg-spon,:is(#app-reg,#app-desk) #rg-champ{scroll-margin-top:calc(var(--hq-h) + 20px)}
 /* the heading under the masthead */
 :is(#app-reg,#app-desk) .ws-head h2{margin:0;font-size:24px;font-weight:600;letter-spacing:-.012em;color:var(--ink);line-height:1.25}
 :is(#app-reg,#app-desk) .ws-head .ws-sub{margin:6px 0 0;color:var(--ink-3);font-size:14px;line-height:1.5}
@@ -14217,7 +14203,7 @@ function fitBoard(){
   /* Jonna, 2026-10-31: the week fits the window on any screen \u2014 sized to the window
      under the masthead and the strip above the grid, wherever the page is scrolled to, so
      the grid itself never scrolls up and down; the page brings it into view */
-  const hqH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||64;
+  const hqH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||68;
   const barEl=document.querySelector('#app-grid .bar');
   const barH=barEl? barEl.offsetHeight+6 : 0;
   /* Enlarge: the week has the whole window under its own header */
@@ -14332,6 +14318,8 @@ if(document.fonts && document.fonts.ready){
 [250, 900, 2000].forEach(ms=>setTimeout(()=>{ refit=0; fitBoard(); }, ms));
 
 /* Point at the offending cards on the grid and scroll them into view. */
+/* the masthead's height (--hq-h: 68px, 55px on a phone), for scrolling clear of it */
+function hqHeight(){ return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||68; }
 /* Open a panel and put it on screen. */
 function goToPanel(fragment){
   const h=[...document.querySelectorAll('.panel > h2')].find(x=>x.textContent.includes(fragment));
@@ -14341,13 +14329,13 @@ function goToPanel(fragment){
   if(typeof setView==='function') setView(host);
   if(host==='planning'){
     requestAnimationFrame(()=>{
-      const y=h.getBoundingClientRect().top + window.scrollY - 64;
+      const y=h.getBoundingClientRect().top + window.scrollY - hqHeight();
       window.scrollTo({top:y, behavior:'smooth'});
     });
   }
   if(h.getAttribute('aria-expanded')!=='true') h.click();
   requestAnimationFrame(()=>{
-    const y=h.getBoundingClientRect().top + window.scrollY - 64;
+    const y=h.getBoundingClientRect().top + window.scrollY - hqHeight();
     window.scrollTo({top:y, behavior:'smooth'});
   });
 }
@@ -14364,7 +14352,7 @@ function flagOnGrid(ids, blks){
       bw.scrollLeft += (cr.left - br.left) - (br.width/2 - cr.width/2);
       bw.scrollTop  += (cr.top - br.top) - (br.height/2 - cr.height/2);
     }
-    const y = bw.getBoundingClientRect().top + window.scrollY - 70;
+    const y = bw.getBoundingClientRect().top + window.scrollY - hqHeight() - 6;
     window.scrollTo({top:y, behavior:'smooth'});
   });
 }
@@ -24037,7 +24025,7 @@ startClock();
     if(key && !ST.folds.has(key)){ openFold(key); const el=document.getElementById(id);
       const h=el && el.querySelector('.rz-foldh'); if(h) fold(el, h, key); }
     const n=document.getElementById(id); if(!n) return;
-    const y=n.getBoundingClientRect().top+window.scrollY-120;
+    const y=n.getBoundingClientRect().top+window.scrollY-(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--hq-h'),10)||68)-56;
     window.scrollTo({top:y, behavior:'smooth'});
   }
 
@@ -25439,12 +25427,6 @@ startClock();
 
 </script>
 
-<script>
-/* December hat: on 1-31 December, every year, with no upkeep. */
-(function season(){
-  if(new Date().getMonth() === 11) document.documentElement.setAttribute("data-season","december");
-})();
-</script>
 
 <style>
 /* ── THE NEW PEOPLE PAGE (Jonna, 2026-11-07) ── one list of everyone, each person in the
@@ -31449,8 +31431,8 @@ window.__desk={
 :is(#app-gs,#app-wk) .gs-foot{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
 :is(#app-gs,#app-wk) .gs-saved{font-size:11.5px;color:var(--ink-3)}
 :is(#app-gs,#app-wk) .gs-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
-:is(#app-gs,#app-wk) .gs-side{position:sticky;top:calc(var(--hq-h,64px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:6px;
-  padding:12px;max-height:calc(100vh - var(--hq-h,64px) - 32px);display:flex;flex-direction:column;gap:8px}
+:is(#app-gs,#app-wk) .gs-side{position:sticky;top:calc(var(--hq-h,68px) + 12px);background:var(--surface);border:1px solid var(--line);border-radius:6px;
+  padding:12px;max-height:calc(100vh - var(--hq-h,68px) - 32px);display:flex;flex-direction:column;gap:8px}
 :is(#app-gs,#app-wk) .gs-side h3{font-size:14px;display:flex;align-items:baseline;gap:6px}
 :is(#app-gs,#app-wk) .gs-side h3 small{font-family:var(--ui);font-size:11px;font-weight:500;color:var(--ink-3)}
 :is(#app-gs,#app-wk) .gs-side .hint{font-size:11.5px;color:var(--ink-3);line-height:1.4}
@@ -34838,7 +34820,7 @@ html :is(#app-ros,#app-grid,#hqx) .drawer.rl > footer{padding:11px 22px;backgrou
    REGISTRATION DESK (Jonna, 2026-11-19). It wears the Registration look (the ws- styles hang off
    #app-reg and #app-desk alike); these are its own pieces.
    ============================================================ */
-#app-desk .dk-card{scroll-margin-top:84px}
+#app-desk .dk-card{scroll-margin-top:calc(var(--hq-h) + 20px)}
 #app-desk .dk-tiles{grid-template-columns:repeat(auto-fit,minmax(min(100%,8.6rem),1fr))!important}
 @media(min-width:1180px){#app-desk .dk-tiles{grid-template-columns:repeat(7,minmax(0,1fr))!important}}
 #app-desk .dk-tiles .ws-tile{cursor:pointer;text-align:left;font:inherit;color:var(--ink);min-width:0}

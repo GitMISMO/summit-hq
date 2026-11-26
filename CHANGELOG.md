@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-26
 
+- Masthead matches the other MISMO tools (CN-053): the navy bar is 68px tall with the logo box, divider and name set exactly as Certification Management's, so the MISMO logo sits in the same spot in every tool; the left menu, sticky bars and jumps to a section line up under it on a wide screen and a phone; the old December hat is gone (the shared one from resources.mismo.org now does it)
 - MyMISMO page: Next Summit box (CN-047). A Registration Link for each Summit and, on the current Summit, Announce Next Summit with an optional Announce At backup time; the next Summit (the first after the current one with a link) is published with the website agenda as upcoming {id, name, city, venue, dates, first, last, register, announced, announceAt} for MyMISMO's Next Summit card. Nothing goes out until a link is entered; Take Back and Undo; Help section 13 explains it
 
 ## 2026-11-25

@@ -54,6 +54,41 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(!bad.length, bad.join('\n'));
   });
 
+  /* 1c. The masthead is Certification Management's to the pixel (CN-053, Nov 26): the logo box
+        in the same spot as every MISMO tool, the left menu and sticky bars under a 68px bar
+        (55px on a phone), and the old December hat gone */
+  await check('Masthead matches Certification Management on a wide screen and a phone', async () => {
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    expect(!/class="santa"|\.santa\b|mismo-hat|data-season/.test(html), 'the old December hat (.santa, #mismo-hat, data-season) is still in the page');
+    const bad = [];
+    for (const v of [{ w: 1440, h: 900, bar: 68, plate: [22, 13, 42], logo: 24, rule: 42, name: 16 },
+                     { w: 390, h: 844, bar: 55, plate: [16, 11, 33], logo: 19, rule: 33, name: 13 }]) {
+      const s = await open(opts({ w: v.w, h: v.h }));
+      await s.page.evaluate(() => window.__hqGo('ros')); await s.page.waitForTimeout(1200);
+      const m = await s.page.evaluate(() => {
+        const r = sel => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; };
+        const nm = getComputedStyle(document.querySelector('.hqtop .hqname'));
+        const pl = getComputedStyle(document.querySelector('.logoplate'));
+        return { top: r('.hqtop'), plate: r('.logoplate'), logo: r('.logoplate .wordmark'), rule: r('.hqtop .mastrule'), rail: r('.hq.rail'),
+          viewbar: getComputedStyle(document.querySelector('#viewbar') || document.body).top,
+          name: [nm.fontSize, nm.fontWeight, nm.color], radius: pl.borderRadius, plateShadow: pl.boxShadow,
+          barShadow: getComputedStyle(document.querySelector('.hqtop')).boxShadow, ruleBg: getComputedStyle(document.querySelector('.hqtop .mastrule')).backgroundColor };
+      });
+      const at = v.w + 'px: ';
+      if (Math.round(m.top.h) !== v.bar || Math.round(m.top.y) !== 0 || Math.round(m.top.x) !== 0) bad.push(at + 'bar ' + JSON.stringify(m.top));
+      if (Math.round(m.plate.x) !== v.plate[0] || Math.round(m.plate.y) !== v.plate[1] || Math.round(m.plate.h) !== v.plate[2]) bad.push(at + 'logo box ' + JSON.stringify(m.plate));
+      if (Math.round(m.logo.h) !== v.logo) bad.push(at + 'logo ' + JSON.stringify(m.logo));
+      if (Math.round(m.rule.w) !== 1 || Math.round(m.rule.h) !== v.rule || Math.round(m.rule.x - (m.plate.x + m.plate.w)) !== (v.w > 560 ? 14 : 11)) bad.push(at + 'divider ' + JSON.stringify(m.rule));
+      if (m.name[0] !== v.name + 'px' || m.name[1] !== '500' || m.name[2] !== 'rgb(148, 200, 233)') bad.push(at + 'name ' + m.name.join(' '));
+      if (m.radius !== '5px' || !/rgba\(80, 164, 219, 0\.35\) 0px 1px 0px/.test(m.plateShadow)) bad.push(at + 'logo box corners/line ' + m.radius + ' ' + m.plateShadow);
+      if (!/rgba\(80, 164, 219, 0\.28\) 0px 1px 0px/.test(m.barShadow) || m.ruleBg !== 'rgba(80, 164, 219, 0.4)') bad.push(at + 'bar line/divider colour ' + m.barShadow + ' ' + m.ruleBg);
+      if (Math.round(m.rail.y) !== v.bar) bad.push(at + 'the left menu starts at ' + m.rail.y + ', not under the bar');
+      if (m.viewbar !== v.bar + 'px') bad.push(at + 'the Run of Show strip sticks at ' + m.viewbar);
+      noErrors(s.errs, v.w + 'px'); await s.close();
+    }
+    expect(!bad.length, bad.join('\n'));
+  });
+
   /* 2. Every tab opens with no errors */
   await check('Every tab opens without errors', async () => {
     const s = await open(opts());
