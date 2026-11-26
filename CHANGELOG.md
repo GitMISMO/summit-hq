@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-26
+
+- MyMISMO page: Next Summit box (CN-047). A Registration Link for each Summit and, on the current Summit, Announce Next Summit with an optional Announce At backup time; the next Summit (the first after the current one with a link) is published with the website agenda as upcoming {id, name, city, venue, dates, first, last, register, announced, announceAt} for MyMISMO's Next Summit card. Nothing goes out until a link is entered; Take Back and Undo; Help section 13 explains it
+
 ## 2026-11-25
 
 - MyMISMO page: Summit Wi-Fi box (CN-044). Network name, password, sponsor (as named in the Sponsorship Portal, e.g. Factual Data) and an optional note for each Summit; once a network is entered it is published with the website agenda (summits.<id>.wifi) for MyMISMO's Summit Wi-Fi card. Nothing goes out until the network is entered; Undo takes a change back; Help section 13 explains it

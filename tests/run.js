@@ -1231,6 +1231,64 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 35. Next Summit (CN-047, Nov 26, 2026): each summit's Registration Link, and on the current summit the
+     Announce Next Summit button and Announce At, reach the public website agenda feed as the top-level
+     upcoming. Tried on the summit after Winter 2027 (Spring, Salt Lake City); nothing real is pressed. */
+  await check('MyMISMO: the Next Summit reaches the website agenda as upcoming', async () => {
+    const s = await open(opts());
+    s.page.on('dialog', d => d.accept());
+    const doc = () => ((s.store['feed-website-agenda'] || {}).doc || {});
+    const pick = v => s.page.evaluate(v => { const p = document.getElementById('venue-pick'); p.value = v; p.dispatchEvent(new Event('change', { bubbles: true })); }, v);
+    const put = async (id, v) => { await s.page.fill(id, v); await s.page.$eval(id, n => n.dispatchEvent(new Event('change', { bubbles: true }))); await s.page.waitForTimeout(1500); };
+    /* the dates are read the same way as summit-hq-data's attendee list */
+    const dd = await s.page.evaluate(() => [window.__mymismo.summitDates('June 7–10, 2027'), window.__mymismo.summitDates('June 30 – July 3, 2027'), window.__mymismo.summitDates('TBD')]);
+    expect(JSON.stringify(dd) === JSON.stringify([{ first: '2027-06-07', last: '2027-06-10' }, { first: '2027-06-30', last: '2027-07-03' }, null]), 'summit dates read wrong: ' + JSON.stringify(dd));
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(2000);
+    expect(await s.page.$('#mm-next'), 'the Next Summit box is not on the MyMISMO page');
+    /* Winter 2027 is the current summit: the button is there, but with no link on Spring there is nothing to announce */
+    expect(await s.page.$eval('#mm-nx-go', b => b.disabled), 'Announce Next Summit can be pressed with no next summit');
+    expect(!('upcoming' in doc()), 'upcoming was published with no Registration Link: ' + JSON.stringify(doc().upcoming));
+    await pick('slc'); await s.page.waitForTimeout(800);
+    expect(!(await s.page.$('#mm-nx-go')), 'the Announce button shows on a summit that is not the current one');
+    await put('#mm-nx-reg', 'www.example.org/spring');
+    expect(!('upcoming' in doc()) && !((((s.store['mymismo-next'] || {}).docs || {})['mymismo-next/slc']) || {}).register, 'a link without https:// was saved or published');
+    await put('#mm-nx-reg', 'https://example.org/register/spring-2027');
+    let u = doc().upcoming;
+    const want = { id: 'slc', name: '2027 Spring Summit', city: 'Salt Lake City', venue: 'Salt Lake Marriott Downtown at City Creek', dates: 'June 7–10, 2027',
+      first: '2027-06-07', last: '2027-06-10', register: 'https://example.org/register/spring-2027', announced: null, announceAt: null };
+    expect(JSON.stringify(u) === JSON.stringify(want), 'upcoming is not as the notice says:\n' + JSON.stringify(u));
+    expect(!(doc().summits || {}).slc, 'the next summit was added to summits before its agenda');
+    /* Announce At on the current summit, then the button */
+    await pick('nola'); await s.page.waitForTimeout(800);
+    await put('#mm-nx-at', '2027-01-12T10:30');
+    const at = await s.page.evaluate(() => new Date('2027-01-12T10:30').toISOString());
+    u = doc().upcoming;
+    expect(u && u.announceAt === at && u.announced === null, 'Announce At did not reach upcoming: ' + JSON.stringify(u));
+    expect(await s.page.$eval('#mm-nx-go', b => !b.disabled), 'Announce Next Summit cannot be pressed once Spring has a link');
+    await s.page.click('#mm-nx-go'); await s.page.waitForTimeout(1500);
+    u = doc().upcoming;
+    expect(u && /^\d{4}-\d\d-\d\dT/.test(u.announced || '') && u.announceAt === at && u.id === 'slc', 'pressing the button did not set announced: ' + JSON.stringify(u));
+    expect(s.puts.includes('feed-website-agenda'), 'the press did not rewrite the website agenda file (which starts the Website Agenda Kick)');
+    /* the other writers keep it */
+    await put('#mm-wf-network', 'MISMO Summit');
+    expect(doc().upcoming && doc().upcoming.announced === u.announced && (doc().summits.nola || {}).wifi, 'the Wi-Fi writer dropped upcoming: ' + JSON.stringify(doc()).slice(0, 300));
+    await s.page.evaluate(() => window.__hqGo('grid')); await s.page.waitForTimeout(2000);
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    expect((doc().summits.nola || {}).grid && doc().upcoming && doc().upcoming.id === 'slc', 'switching the week on dropped upcoming');
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    expect(doc().upcoming && doc().upcoming.id === 'slc', 'switching the week off dropped upcoming');
+    /* Take Back, Undo, and clearing the link */
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(1000);
+    await s.page.click('#mm-nx-take'); await s.page.waitForTimeout(1500);
+    expect(doc().upcoming && doc().upcoming.announced === null && doc().upcoming.announceAt === at, 'Take Back did not clear announced: ' + JSON.stringify(doc().upcoming));
+    await s.page.evaluate(() => window.__hqUndo.undo()); await s.page.waitForTimeout(2000);
+    expect(doc().upcoming && doc().upcoming.announced === u.announced, 'Undo did not bring the announcement back: ' + JSON.stringify(doc().upcoming));
+    await pick('slc'); await s.page.waitForTimeout(800);
+    await put('#mm-nx-reg', '');
+    expect(!('upcoming' in doc()) && (doc().summits.nola || {}).wifi, 'clearing the link did not take upcoming out (or took the summit with it): ' + JSON.stringify(doc()).slice(0, 300));
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
