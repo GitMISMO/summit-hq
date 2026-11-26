@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-25
 
+- MyMISMO page: Summit Wi-Fi box (CN-044). Network name, password, sponsor (as named in the Sponsorship Portal, e.g. Factual Data) and an optional note for each Summit; once a network is entered it is published with the website agenda (summits.<id>.wifi) for MyMISMO's Summit Wi-Fi card. Nothing goes out until the network is entered; Undo takes a change back; Help section 13 explains it
 - Help is a Back stop: open Help, and the browser's Back returns to the page you were on (Forward goes to Help again) (CN-033)
 - MyMISMO page: Attendee Reports (CN-040). Reports attendees send from MyMISMO about someone are listed for the summit (who it is about, who sent it, reason, note, when), with Close and a note of what was done, Reopen, an Open Reports figure and a count on the MyMISMO menu button. Shows only once the relay answers for reports; Jonna only for now; Help sections 13 and 18 explain it
 - MyMISMO (new page in the left menu): send an alert to attendees' phones for the Summit (title, message, optionally the session it's about, with a phone preview; only Jonna can send, and Send shows once MyMISMO alerts are switched on), see how many phones it reached and the list of alerts sent; and add each session's presentation slides (PDF or PowerPoint), which only attendees signed in to MyMISMO can download (CN-037); Help sections 4, 13 and 18 explain it

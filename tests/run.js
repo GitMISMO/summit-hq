@@ -1195,6 +1195,42 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 34. Summit Wi-Fi (CN-044, Nov 25, 2026): the box on the MyMISMO page reaches the public website agenda
+     feed as summits.<id>.wifi {network, password, sponsor, note}, only once a network is entered */
+  await check('MyMISMO: the Summit Wi-Fi reaches the website agenda once a network is entered', async () => {
+    const s = await open(opts());
+    const feed = () => (((s.store['feed-website-agenda'] || {}).doc || {}).summits || {});
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(2000);
+    expect(await s.page.$('#mm-wifi'), 'the Summit Wi-Fi box is not on the MyMISMO page');
+    const put = async (k, v) => { await s.page.fill('#mm-wf-' + k, v); await s.page.$eval('#mm-wf-' + k, n => n.dispatchEvent(new Event('change', { bubbles: true }))); await s.page.waitForTimeout(1200); };
+    /* a sponsor with no network publishes nothing */
+    await put('sponsor', 'Factual Data');
+    expect(!(feed().nola || {}).wifi, 'Wi-Fi was published before a network was entered: ' + JSON.stringify(feed().nola || {}).slice(0, 200));
+    const kept = (((s.store['mymismo-wifi'] || {}).docs || {})['mymismo-wifi/nola']) || {};
+    expect(kept.sponsor === 'Factual Data', 'the Wi-Fi box was not kept for the summit: ' + JSON.stringify(kept));
+    await put('network', 'MISMO Summit');
+    await put('password', 'sample-pass-1');
+    await put('note', 'Accept the terms on the page that opens');
+    let w = (feed().nola || {}).wifi;
+    expect(w && JSON.stringify(w) === JSON.stringify({ network: 'MISMO Summit', password: 'sample-pass-1', sponsor: 'Factual Data', note: 'Accept the terms on the page that opens' }), 'the feed does not carry wifi {network, password, sponsor, note}: ' + JSON.stringify(w));
+    expect(feed().nola.name && feed().nola.dates, 'a summit carrying only Wi-Fi has no name or dates');
+    /* the General Sessions writer keeps it */
+    await s.page.evaluate(() => window.__hqGo('grid')); await s.page.waitForTimeout(2000);
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    expect(feed().nola && feed().nola.grid && (feed().nola.wifi || {}).network === 'MISMO Summit', 'switching the week on lost the Wi-Fi');
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    expect(feed().nola && !feed().nola.grid && (feed().nola.wifi || {}).network === 'MISMO Summit', 'switching the week off took the Wi-Fi (or the summit) off');
+    /* clearing the network takes wifi out; Undo puts it back */
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(1000);
+    await put('network', '');
+    expect(!feed().nola, 'clearing the network did not take the Wi-Fi off: ' + JSON.stringify(feed().nola || {}).slice(0, 200));
+    await s.page.evaluate(() => window.__hqUndo.undo()); await s.page.waitForTimeout(2000);
+    w = (feed().nola || {}).wifi;
+    expect(w && w.network === 'MISMO Summit' && w.password === 'sample-pass-1', 'Undo did not bring the Wi-Fi back: ' + JSON.stringify(w));
+    expect(await s.page.$eval('#mm-wf-network', n => n.value) === 'MISMO Summit', 'the box does not show the network again after Undo');
+    noErrors(s.errs); await s.close();
+  });
+
   await browser.close();
   const failed = results.filter(r => !r.ok);
   console.log('\n' + (results.length - failed.length) + ' of ' + results.length + ' checks passed.');
