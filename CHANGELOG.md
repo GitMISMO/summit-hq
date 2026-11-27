@@ -2,6 +2,10 @@
 
 One line per change people would notice, newest first. Before October 27, 2026 changes were uploaded without descriptions; the page has been in use since September 26, 2026.
 
+## 2026-11-27
+
+- MyMISMO attendee list: each registered person now carries their Aptify registration number(s) for the Summit (reg: in person first, then virtual; cancelled left out), the barcode on their name tag, so MyMISMO can scan name tags for sponsors' leads and staff conversations (CN-055). Speakers and MISMO Team with no registration have none. Onsite registrations come in with each morning's registration report; Help section 13 says so
+
 ## 2026-11-26
 
 - Masthead matches the other MISMO tools (CN-053): the navy bar is 68px tall with the logo box, divider and name set exactly as Certification Management's, so the MISMO logo sits in the same spot in every tool; the left menu, sticky bars and jumps to a section line up under it on a wide screen and a phone; the old December hat is gone (the shared one from resources.mismo.org now does it)
