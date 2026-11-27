@@ -843,6 +843,11 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(!ses.some(x => /General Sessions|Board of Directors|Reception|Breakfast/.test(x.name)), 'a session nobody scans reached check-in');
     expect(!feed.summits.past && feed.summits.later && feed.summits.later.extra === 1, 'a past summit was kept, or another summit was changed: ' + Object.keys(feed.summits));
     expect(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(feed)), 'an email address reached the check-in feed');
+    /* CN-058: each session carries its facilitator as the Schedule has it ('' for TBD, Staff or none) */
+    expect(ses.every(x => typeof x.facilitator === 'string' && x.facilitator !== 'TBD' && x.facilitator !== 'Staff'), 'a session has no facilitator field, or a placeholder: ' + JSON.stringify(ses.map(x => x.facilitator)));
+    expect(ses.some(x => x.facilitator), 'no workgroup carries its facilitator: ' + JSON.stringify(ses.slice(0, 3)));
+    expect(ses.every((x, i) => x.facilitator === (tp[i].fac || '')), 'the facilitator is not the Schedule\'s');
+    const wk = ses.find(x => /^WKSHP/.test(x.code)); expect(!wk || wk.facilitator === '', 'the Workshop got a facilitator: ' + JSON.stringify(wk));
     /* a change on the Schedule rewrites it */
     const n = s.puts.filter(x => x === 'feed-mymismo-checkin').length;
     await s.page.evaluate(() => window.__checkin.publish()); await s.page.waitForTimeout(500);
@@ -851,6 +856,12 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     for (let i = 0; i < 20 && s.puts.filter(x => x === 'feed-mymismo-checkin').length === n; i++) await s.page.waitForTimeout(500);
     const ai2 = (s.store['feed-mymismo-checkin'].summits.nola.sessions || []).find(x => x.code === 'AICOP2027');
     expect(ai2 && ai2.name === 'Artificial Intelligence COP Renamed', 'a change on the Schedule did not reach the check-in feed: ' + JSON.stringify(ai2));
+    /* a new facilitator on the Schedule reaches it too */
+    const n2 = s.puts.filter(x => x === 'feed-mymismo-checkin').length;
+    await s.page.evaluate(() => { const p = place().ai; if (p) p.fac = 'Kelly R.'; sessionEdits.ai = Object.assign({}, sessionEdits.ai || {}, { fac: 'Kelly R.', facLock: false }); rebuildSessions(); render(); });
+    for (let i = 0; i < 20 && s.puts.filter(x => x === 'feed-mymismo-checkin').length === n2; i++) await s.page.waitForTimeout(500);
+    const ai3 = (s.store['feed-mymismo-checkin'].summits.nola.sessions || []).find(x => x.code === 'AICOP2027');
+    expect(ai3 && ai3.facilitator === 'Kelly R.', 'a facilitator change did not reach the check-in feed: ' + JSON.stringify(ai3));
     noErrors(s.errs); await s.close();
   });
 

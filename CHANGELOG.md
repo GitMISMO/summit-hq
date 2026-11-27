@@ -4,6 +4,7 @@ One line per change people would notice, newest first. Before October 27, 2026 c
 
 ## 2026-11-27
 
+- MyMISMO Session Check-In: each session in the check-in feed now carries `facilitator`, the facilitator's name as the Schedule shows it ('' for TBD, Staff or none), so MyMISMO's facilitators can scan name tags at their own workgroups with their sessions listed first (CN-058). Help section 13 says so
 - MyMISMO Session Check-In: Summit HQ now publishes the sessions on the TrackPod Scanner Sheet (same names, rooms, times, codes like AICOP2027 and descriptions) to a private feed for MyMISMO's staff check-in at session doors, rewritten whenever the Schedule changes; upcoming Summits only (CN-056). Help section 13 says so
 - MyMISMO attendee list: each registered person now carries their Aptify registration number(s) for the Summit (reg: in person first, then virtual; cancelled left out), the barcode on their name tag, so MyMISMO can scan name tags for sponsors' leads and staff conversations (CN-055). Speakers and MISMO Team with no registration have none. Onsite registrations come in with each morning's registration report; Help section 13 says so
 
