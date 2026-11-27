@@ -894,6 +894,52 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 26a. Each meal's menu reaches the website agenda from Hotel Specs (CN-066, MyMISMO, Nov 27, 2026) */
+  await check('Meal and break menus reach the website agenda from Hotel Specs', async () => {
+    const s = await open(opts());
+    await s.page.evaluate(async () => { const db = await window.claude.use('db');
+      await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
+        { id: 'g1', kind: 'Keynote', title: 'The Year Ahead', dur: 60, web: true, people: [] },
+        { id: 'g2', kind: 'Break', title: 'Networking Break', dur: 20, web: true, people: [] },
+        { id: 'g3', kind: 'Lunch', title: 'Lunch', dur: 60, at: '12:00', web: true, people: [] },
+        { id: 'g4', kind: 'Break', title: 'Afternoon Break', dur: 20, web: true, people: [] }] }); });
+    await s.page.waitForTimeout(3000); await s.page.reload();
+    /* the sample data has no saved Schedule, so the page tries a few times before starting a new one */
+    for (let i = 0; i < 40 && !(await s.page.evaluate(() => !!window.__scheduleLoaded)); i++) await s.page.waitForTimeout(500);
+    await s.page.evaluate(() => window.__hqGo('grid')); await s.page.waitForTimeout(3000);
+    await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
+    const nola = () => ((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola) || {};
+    const gridRow = id => ((nola().grid || {}).sessions || []).find(x => x.id === id);
+    expect(gridRow('breakfast@mon') && !((nola().grid || {}).sessions || []).some(x => 'menu' in x), 'a menu went out before one was entered: ' + JSON.stringify(gridRow('breakfast@mon')));
+    await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
+    const gsSes = () => ((nola().gs || {}).sessions || []);
+    expect(gsSes().length === 4 && !gsSes().some(x => 'menu' in x), 'General Sessions should be on the website with no menus yet: ' + JSON.stringify(gsSes()).slice(0, 300));
+    await s.page.evaluate(() => { const hs = window.__hotelSpecs;
+      hs.setServing('mon|breakfast', 'Hot Breakfast:\n\u2022 Buttermilk Biscuits \u2013 honey butter (V)\nScrambled Eggs (GF); Coffee - $5.50 per person\nContact Rosalyn at 504-555-1234\n(150) Fresh Fruit (VG)\nGuarantee: 150\nrosalyn@hotel.example');
+      hs.setServing('tue|breakfast', 'Menu to be confirmed');
+      hs.setServing('mon|reception', '(TBD) Hors d\u2019oeuvres \u2014 menu to be confirmed\nTBD');
+      hs.setServing('mon|newcomer', 'Boxed Lunches:\nTurkey Club (DF)');
+      hs.setServing('tue|am', 'Coffee and Tea\nGranola Bars (V) (N)'); });
+    let tries = 0; while (tries++ < 20 && !(gridRow('breakfast@mon') || {}).menu) await s.page.waitForTimeout(1000);
+    const bm = gridRow('breakfast@mon');
+    expect(bm && bm.menu === 'Hot Breakfast:\nButtermilk Biscuits \u2013 honey butter (V)\nScrambled Eggs (GF)\nCoffee\nFresh Fruit (VG)',
+      'the Monday breakfast menu is not one plain item a line, with no price, count or contact: ' + JSON.stringify(bm));
+    expect(!('menu' in gridRow('breakfast@tue')) && !('menu' in gridRow('reception-mon@mon')) && !('menu' in gridRow('breakfast@wed')), 'a placeholder or empty menu reached the website');
+    expect((gridRow('newcomer@mon') || {}).menu === 'Boxed Lunches:\nTurkey Club (DF)', 'the Newcomer Orientation lunch menu is missing: ' + JSON.stringify(gridRow('newcomer@mon')));
+    expect(!((nola().grid || {}).sessions || []).some(x => 'menu' in x && !/^(breakfast|reception|newcomer)/.test(x.id)), 'a menu went on a session that is not a meal');
+    tries = 0; while (tries++ < 20 && !(gsSes()[1] || {}).menu) await s.page.waitForTimeout(1000);
+    const g = gsSes();
+    expect(g[1] && g[1].menu === 'Coffee and Tea\nGranola Bars (V) (N)' && !('menu' in g[0]) && !('menu' in g[2]) && !('menu' in g[3]),
+      'the morning break did not get its menu, or another segment did: ' + JSON.stringify(g.map(x => [x.title, x.menu])));
+    const all = JSON.stringify(s.store['feed-website-agenda']);
+    expect(!/rosalyn|555-1234|\$5|Guarantee|to be confirmed/i.test(all), 'a contact, price, count or placeholder reached the website');
+    /* clearing the box takes the menu off again */
+    await s.page.evaluate(() => window.__hotelSpecs.setServing('tue|am', ''));
+    tries = 0; while (tries++ < 20 && (gsSes()[1] || {}).menu) await s.page.waitForTimeout(1000);
+    expect(gsSes()[1] && !('menu' in gsSes()[1]), 'an emptied menu stayed on the website');
+    noErrors(s.errs); await s.close();
+  });
+
   /* 26b. A standing item's own hours reach the website agenda and the resume (CN-012, Nov 23, 2026:
      the Workshop runs 1:30 to 5:00, not to the end of its 4:30 block) */
   await check('The Workshop\'s own hours reach the website agenda', async () => {
