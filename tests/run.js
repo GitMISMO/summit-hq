@@ -1143,81 +1143,29 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
-  /* 32. MyMISMO alerts and slides (CN-037, Nov 25, 2026) */
-  await check('MyMISMO: alerts send only when switched on, and slides reach the private feed', async () => {
-    let pushOn = false; const sends = [];
-    const s = await open(opts({ mymismo: async r => {
-      const u = r.request().url(), m = r.request().method();
-      if (u.includes('/mymismo/push/ready')) return r.fulfill({ status: pushOn ? 200 : 404, contentType: 'application/json', body: JSON.stringify(pushOn ? { ok: true, publicKey: 'k', summits: ['nola'] } : { error: 'NOT_FOUND' }) });
-      if (u.includes('/mymismo/push/send') && m === 'POST') {
-        sends.push({ body: JSON.parse(r.request().postData() || '{}'), auth: r.request().headers()['authorization'] });
-        return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, id: 'Atest1', sent: 3, failed: 0, removed: 0 }) });
-      }
-      return r.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
-    } }));
+  /* 32. MyMISMO alerts and slides moved to MISMO Media (CN-065, Nov 27, 2026): the page has no alert or
+     slides parts, never calls the alert routes, never writes the slides feed, and leaves what was kept alone */
+  await check('MyMISMO: alerts and slides are gone from the page, the old records kept', async () => {
+    const calls = [];
+    const alerts = { docs: { 'mymismo-alerts/nola': { list: [{ id: 'Aold', title: 'Room Change', body: 'Moved.', session: '', at: '2026-10-30T15:00:00.000Z', by: 'jcritchley@mismo.org', sent: 2, failed: 0 }] } } };
+    const slides = { docs: { 'mymismo-slides/nola': { sessions: { x1: [{ id: 'old1', name: 'Deck.pdf', type: 'application/pdf', size: 10, file: 'data/slide-old1.json', parts: 1 }] } } } };
+    const s = await open(opts({ store: { 'mymismo-alerts': JSON.parse(JSON.stringify(alerts)), 'mymismo-slides': JSON.parse(JSON.stringify(slides)) },
+      mymismo: async r => { calls.push(r.request().url()); return r.fulfill({ status: 404, contentType: 'application/json', body: '{}' }); } }));
     await s.page.evaluate(() => { window.confirm = () => true; });
-    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(2000);
-    expect(!(await s.page.$('#mm-send')), 'the Send button showed before /mymismo/push/ready answered 200');
-    expect(/not switched on yet/.test(await s.page.textContent('#mm-alert')), 'no word that alerts are not switched on');
-    const ses = await s.page.evaluate(() => window.__webGrid.sessions());
-    expect(ses && ses.length > 5, 'the week\'s sessions did not load for MyMISMO');
-    const sid = (ses.find(x => /^Artificial Intelligence/.test(x.title)) || ses[0]).id;
-    /* switched on, but this tester is not one of the senders */
-    pushOn = true;
-    await s.page.evaluate(async () => { await window.__mymismo.ready(); window.__mymismo.render(); });
-    expect(!(await s.page.$('#mm-send')) && /Only Jonna/.test(await s.page.textContent('#mm-alert')), 'someone other than Jonna was offered Send');
-    await s.page.evaluate(() => { window.__mymismo.SENDERS.push('tester@example.org'); window.__mymismo.render(); });
-    expect(await s.page.$('#mm-send'), 'Send did not show for a sender once alerts are on');
-    expect(await s.page.$eval('#mm-send', b => b.disabled), 'Send was ready with no title or message');
-    await s.page.fill('#mm-at', 'Room Change: AI COP');
-    await s.page.fill('#mm-ab', 'The AI COP has moved to Napoleon C.');
-    await s.page.selectOption('#mm-as', sid); await s.page.waitForTimeout(300);
-    const prev = await s.page.textContent('#mm-alert .mm-note');
-    expect(/Room Change: AI COP/.test(prev) && /Napoleon C/.test(prev), 'the phone preview does not show the alert: ' + prev);
-    expect(await s.page.$eval('#mm-at', i => i.maxLength) === 80 && await s.page.$eval('#mm-ab', i => i.maxLength) === 300, 'the title and message limits are not 80 and 300');
-    await s.page.click('#mm-send'); await s.page.waitForTimeout(2500);
-    expect(sends.length === 1, 'the alert was not sent once: ' + sends.length);
-    const sb = sends[0].body;
-    expect(sb.summit === 'nola' && sb.title === 'Room Change: AI COP' && sb.body === 'The AI COP has moved to Napoleon C.' && sb.session === sid && sends[0].auth === 'Bearer t', 'the send was not {summit, title, body, session} with the sign-in: ' + JSON.stringify(sends[0]));
-    expect(/Sent to 3 phones/.test(await s.page.textContent('#mm-alert')), 'the answer (how many phones) was not shown');
-    expect(/Room Change: AI COP/.test(await s.page.textContent('#mm-sent')), 'the sent list does not show it');
-    await s.page.waitForTimeout(1500);
-    const rec = (((s.store['mymismo-alerts'] || {}).docs || {})['mymismo-alerts/nola'] || {}).list || [];
-    expect(rec.length === 1 && rec[0].sent === 3 && rec[0].session === sid && rec[0].id === 'Atest1', 'what was sent was not kept: ' + JSON.stringify(rec));
-    /* slides: a small PDF, a big one in parts, and a Word file that is refused */
-    const pdf = Buffer.from('%PDF-1.4\n' + 'slide '.repeat(40) + '\n%%EOF');
-    await s.page.setInputFiles('input[data-up="' + sid + '"]', { name: 'AI COP.pdf', mimeType: 'application/pdf', buffer: pdf });
-    await s.page.waitForTimeout(3500);
-    let feed = s.store['feed-mymismo-slides'];
-    let fl = feed && feed.summits && feed.summits.nola && feed.summits.nola.sessions[sid];
-    expect(feed && feed.updated && fl && fl.length === 1, 'the slides feed was not written: ' + JSON.stringify(feed));
-    const f0 = fl[0];
-    expect(f0.name === 'AI COP.pdf' && f0.type === 'application/pdf' && f0.size === pdf.length && /^data\/slide-[a-z0-9]+\.json$/.test(f0.file) && f0.parts === 1 && Object.keys(f0).sort().join() === 'file,name,parts,size,type', 'the feed entry is not {name, type, size, file, parts}: ' + JSON.stringify(f0));
-    const nm = f0.file.slice(5, -5), head = s.store[nm];
-    expect(head && head.chunked && head.chunked.n === 1 && !head.doc, 'the file is not stored in the chunked format: ' + JSON.stringify(head));
-    const joined = s.store[nm + '--' + head.chunked.ver + '-0'].s;
-    expect(joined === 'data:application/pdf;base64,' + pdf.toString('base64'), 'the stored file does not join back into the PDF');
-    expect(nm.length <= 40 && (nm + '--' + head.chunked.ver + '-9').length <= 40, 'a stored file name is longer than the relay allows');
-    const big = Buffer.alloc(700000, 7);
-    await s.page.setInputFiles('input[data-up="' + sid + '"]', { name: 'Deck.pptx', mimeType: '', buffer: big });
-    await s.page.waitForTimeout(5000);
-    fl = s.store['feed-mymismo-slides'].summits.nola.sessions[sid];
-    const f1 = fl.find(x => x.name === 'Deck.pptx');
-    expect(f1 && f1.parts === 2 && f1.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'a big PowerPoint was not stored in two parts: ' + JSON.stringify(fl));
-    const h1 = s.store[f1.file.slice(5, -5)], whole = [0, 1].map(i => s.store[f1.file.slice(5, -5) + '--' + h1.chunked.ver + '-' + i].s).join('');
-    expect(whole.endsWith(big.toString('base64')), 'the big file\'s parts do not join back');
-    await s.page.setInputFiles('input[data-up="' + sid + '"]', { name: 'Notes.docx', mimeType: 'application/msword', buffer: Buffer.from('x') });
-    await s.page.waitForTimeout(1500);
-    expect(s.store['feed-mymismo-slides'].summits.nola.sessions[sid].length === 2 && /not a PDF or PowerPoint/.test(await s.page.textContent('#mm-slides')), 'a Word file was not refused');
-    /* taking a file off takes it out of the feed; it is kept (retired) in the list; Undo brings it back */
-    await s.page.click('[data-ses="' + sid + '"] [data-rm="' + f0.file.slice(11, -5) + '"]'); await s.page.waitForTimeout(3000);
-    fl = s.store['feed-mymismo-slides'].summits.nola.sessions[sid];
-    expect(fl.length === 1 && fl[0].name === 'Deck.pptx', 'removing a file did not take it out of the feed: ' + JSON.stringify(fl));
-    const kept = s.store['mymismo-slides'].docs['mymismo-slides/nola'].sessions[sid].find(x => x.name === 'AI COP.pdf');
-    expect(kept && kept.gone === true && s.store[nm], 'the removed file was not kept (retired)');
-    await s.page.evaluate(() => window.__hqUndo.undo()); await s.page.waitForTimeout(3000);
-    expect(s.store['feed-mymismo-slides'].summits.nola.sessions[sid].length === 2, 'Undo did not bring the file back to MyMISMO');
-    expect(!/[a-z0-9._-]+@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(s.store['feed-mymismo-slides'].summits)), 'an email address reached the slides feed');
+    await s.page.click('.hq nav button[data-hq="mm"]'); await s.page.waitForTimeout(2500);
+    for (const sel of ['#mm-alert', '#mm-sent', '#mm-send', '#mm-slides', 'input[data-up]', '#app-mm .mm-phone'])
+      expect(!(await s.page.$(sel)), sel + ' is still on the MyMISMO page');
+    expect(await s.page.$('#mm-wifi') && await s.page.$('#mm-next'), 'the Summit Wi-Fi or Next Summit box went missing');
+    const txt = await s.page.textContent('#app-mm');
+    expect(/MISMO Media/.test(txt) && !/Alerts and Slides/.test(txt), 'the page does not say alerts and slides are in MISMO Media: ' + txt.slice(0, 300));
+    const api = await s.page.evaluate(() => Object.keys(window.__mymismo));
+    expect(!api.includes('publish') && !api.includes('ready') && !api.includes('draft'), 'the alert or slides code is still there: ' + api.join());
+    /* a change on the page (the Wi-Fi) does not bring the slides feed back */
+    await s.page.fill('#mm-wf-network', 'MISMO Summit'); await s.page.$eval('#mm-wf-network', n => n.dispatchEvent(new Event('change', { bubbles: true }))); await s.page.waitForTimeout(2500);
+    expect(!s.puts.includes('feed-mymismo-slides') && !('feed-mymismo-slides' in s.store), 'the slides feed was written');
+    expect(!calls.some(u => /\/mymismo\/push\//.test(u)), 'the alert routes were called: ' + calls.join(' '));
+    expect(!s.puts.includes('mymismo-alerts') && !s.puts.includes('mymismo-slides'), 'the kept alerts or slide lists were rewritten');
+    expect(JSON.stringify(s.store['mymismo-alerts']) === JSON.stringify(alerts) && JSON.stringify(s.store['mymismo-slides']) === JSON.stringify(slides), 'the kept alerts or slide lists changed');
     noErrors(s.errs); await s.close();
   });
 
