@@ -824,6 +824,36 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     noErrors(s.errs); await s.close();
   });
 
+  /* 25b. MyMISMO's Session Check-In gets the TrackPod sheet's sessions (CN-056, Nov 27, 2026) */
+  await check('MyMISMO check-in sessions match the TrackPod sheet', async () => {
+    const old = { updated: '2026-01-01T00:00:00Z', summits: { past: { sessions: [{ code: 'AICOP2026', name: 'Old', room: 'R', date: '2026-04-20', start: 540, end: 720, desc: '' }] },
+      later: { sessions: [{ code: 'AICOP2028', name: 'Later', room: 'R', date: '2028-04-20', start: 540, end: 720, desc: '' }], extra: 1 } } };
+    const s = await open(opts({ store: { 'feed-mymismo-checkin': old } }));
+    await s.page.evaluate(() => window.__hqGo('grid'));
+    for (let i = 0; i < 30 && !(((s.store['feed-mymismo-checkin'] || {}).summits || {}).nola); i++) await s.page.waitForTimeout(500);
+    const feed = s.store['feed-mymismo-checkin'] || {};
+    const ses = ((feed.summits || {}).nola || {}).sessions || [];
+    const tp = await s.page.evaluate(() => window.__trackpod.sessions());
+    expect(feed.updated && feed.updated !== old.updated && ses.length > 5, 'the check-in feed was not written: ' + JSON.stringify(feed).slice(0, 300));
+    expect(ses.length === tp.length && ses.every((x, i) => x.name === tp[i].name && x.room === tp[i].room && x.code === tp[i].stem + '2027' && x.start === tp[i].start && x.end === tp[i].end),
+      'the check-in sessions are not the TrackPod sheet\'s: ' + JSON.stringify(ses.slice(0, 2)));
+    const ai = ses.find(x => x.code === 'AICOP2027');
+    expect(ai && ai.date === '2027-01-11' && ai.start === 540 && ai.end === 720 && /AI Community of Practice/.test(ai.desc) && ai.room, 'the AI COP row is not right: ' + JSON.stringify(ai));
+    expect(ses.every(x => /^\d{4}-\d\d-\d\d$/.test(x.date) && typeof x.desc === 'string') && ses.some(x => x.code === 'NewO2027'), 'a date or description is not in shape, or Newcomer Orientation is missing');
+    expect(!ses.some(x => /General Sessions|Board of Directors|Reception|Breakfast/.test(x.name)), 'a session nobody scans reached check-in');
+    expect(!feed.summits.past && feed.summits.later && feed.summits.later.extra === 1, 'a past summit was kept, or another summit was changed: ' + Object.keys(feed.summits));
+    expect(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(feed)), 'an email address reached the check-in feed');
+    /* a change on the Schedule rewrites it */
+    const n = s.puts.filter(x => x === 'feed-mymismo-checkin').length;
+    await s.page.evaluate(() => window.__checkin.publish()); await s.page.waitForTimeout(500);
+    expect(s.puts.filter(x => x === 'feed-mymismo-checkin').length === n, 'the feed was rewritten with nothing changed');
+    await s.page.evaluate(() => { sessionEdits.ai = Object.assign({}, sessionEdits.ai || {}, { full: 'Artificial Intelligence COP Renamed' }); rebuildSessions(); render(); });
+    for (let i = 0; i < 20 && s.puts.filter(x => x === 'feed-mymismo-checkin').length === n; i++) await s.page.waitForTimeout(500);
+    const ai2 = (s.store['feed-mymismo-checkin'].summits.nola.sessions || []).find(x => x.code === 'AICOP2027');
+    expect(ai2 && ai2.name === 'Artificial Intelligence COP Renamed', 'a change on the Schedule did not reach the check-in feed: ' + JSON.stringify(ai2));
+    noErrors(s.errs); await s.close();
+  });
+
   /* 26. The Schedule's week reaches the website's agenda once switched on (website's Claude, Nov 18) */
   await check('The Schedule reaches the website agenda once switched on', async () => {
     const s = await open(opts());
