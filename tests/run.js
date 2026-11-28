@@ -903,8 +903,20 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     const want = segs.filter(g => !g.web && /^(Lunch|Break)$/.test(g.kind)).length;
     expect(tue.length === want, 'Tuesday should carry the running order\'s unticked lunch and breaks (' + want + '): ' + JSON.stringify(tue));
     expect(ses.filter(x => x.type === 'Lunch' && !/@tue$/.test(x.id)).length === 3 && ses.filter(x => x.type === 'Break' && !/@tue$/.test(x.id)).length === 6, 'one lunch and two breaks a day, no more');
+    /* CN-069: the Champions Lounge, from its standing room and the days it is held, no times */
+    const nolaFeed = () => ((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola) || {};
+    const champ = await s.page.evaluate(() => (window.__resumeFunctions().functions || []).filter(f => f.sid === 'champions').map(f => ({ day: f.day, room: f.room })));
+    const lg = nolaFeed().lounges || [];
+    expect(champ.length > 0 && lg.length >= 1 && lg.every(x => x.title === 'Champions Lounge' && x.room && x.desc && !('start' in x) && !('end' in x) && x.days.every(d => /^2027-01-1[1-4]$/.test(d))), 'the Champions Lounge did not reach the feed: ' + JSON.stringify(lg) + ' from ' + JSON.stringify(champ));
+    expect([].concat(...lg.map(x => x.days)).length === new Set(champ.map(f => f.day)).size && lg.every(x => champ.some(f => f.room === x.room)), 'the lounge days or room do not match the Schedule: ' + JSON.stringify(lg) + ' vs ' + JSON.stringify(champ));
+    /* a move on the Schedule reaches it */
+    const moved = await s.page.evaluate(() => { const v = V(); const cur = standingRoomFor('champions'); const taken = STANDING_IDS.map(x => standingRoomFor(x)); const to = (v.rooms || []).find(r => r.id !== cur && taken.indexOf(r.id) < 0);
+      if (!to) return null; v.standingRooms = Object.assign({}, v.standingRooms || {}, { champions: to.id }); delete (v.standingRoomAt || {}).champions; render(); window.dispatchEvent(new Event('hq:schedule')); return to.nm; });
+    let tw = 0; while (moved && tw++ < 20 && !(nolaFeed().lounges || []).some(x => x.room === moved)) await s.page.waitForTimeout(500);
+    expect(moved && (nolaFeed().lounges || []).length === 1 && nolaFeed().lounges[0].room === moved, 'moving the lounge did not change its room on the feed: ' + moved + ' ' + JSON.stringify(nolaFeed().lounges));
     await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
     expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).grid, 'switching it off did not take the week off');
+    expect(!nolaFeed().lounges, 'switching it off left the Champions Lounge on the feed');
     noErrors(s.errs); await s.close();
   });
 
