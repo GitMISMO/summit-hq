@@ -889,6 +889,20 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(nb && nb.b === 'wed-am' && nb.confirmed === true && /boardroom/.test(nb.r), 'a new summit did not get the Board meeting on its own: ' + JSON.stringify(nb));
     expect(by('Joint Committee Meeting') && by('Joint Committee Meeting').type === 'Invite Only' && !ses.some(x => /lounge|member engagement/i.test(x.title)), 'invite-only or internal items are wrong');
     expect(!/@[a-z0-9-]+\.[a-z]{2,}/i.test(JSON.stringify(g)), 'an email address reached the website');
+    /* CN-067: every lunch and coffee break, on the days General Sessions does not fill */
+    const row = id => ses.find(x => x.id === id);
+    ['mon', 'wed', 'thu'].forEach(d => {
+      const l = row('lunch@' + d), am = row('break-am@' + d), pm = row('break-pm@' + d);
+      expect(l && l.type === 'Lunch' && l.title === 'Lunch' && l.start === '12:00' && l.end === '13:30' && l.status === 'confirmed', 'the ' + d + ' lunch is not 12:00 to 13:30: ' + JSON.stringify(l));
+      expect(am && am.type === 'Break' && am.title === 'Morning Break' && am.start === '10:20' && am.end === '10:40', 'the ' + d + ' morning break is wrong: ' + JSON.stringify(am));
+      expect(pm && pm.type === 'Break' && pm.title === 'Afternoon Break' && pm.start === '14:50' && pm.end === '15:10', 'the ' + d + ' afternoon break is wrong: ' + JSON.stringify(pm));
+      expect(l.date === row('breakfast@' + d).date, 'the ' + d + ' lunch is on the wrong date');
+    });
+    const tue = ses.filter(x => /@tue$/.test(x.id) && /^(Lunch|Break)$/.test(x.type));
+    const segs = await s.page.evaluate(() => (window.__gsSegments && window.__gsSegments('nola')) || []);
+    const want = segs.filter(g => !g.web && /^(Lunch|Break)$/.test(g.kind)).length;
+    expect(tue.length === want, 'Tuesday should carry the running order\'s unticked lunch and breaks (' + want + '): ' + JSON.stringify(tue));
+    expect(ses.filter(x => x.type === 'Lunch' && !/@tue$/.test(x.id)).length === 3 && ses.filter(x => x.type === 'Break' && !/@tue$/.test(x.id)).length === 6, 'one lunch and two breaks a day, no more');
     await s.page.click('#grid-web'); await s.page.waitForTimeout(5000);
     expect(!((((s.store['feed-website-agenda'] || {}).doc || {}).summits || {}).nola || {}).grid, 'switching it off did not take the week off');
     noErrors(s.errs); await s.close();
@@ -901,7 +915,7 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
       await db.doc('schedule/gs-nola').set({ start: '09:00', end: '16:30', items: [
         { id: 'g1', kind: 'Keynote', title: 'The Year Ahead', dur: 60, web: true, people: [] },
         { id: 'g2', kind: 'Break', title: 'Networking Break', dur: 20, web: true, people: [] },
-        { id: 'g3', kind: 'Lunch', title: 'Lunch', dur: 60, at: '12:00', web: true, people: [] },
+        { id: 'g3', kind: 'Lunch', title: 'Lunch', desc: 'Enjoy lunch on your own near the hotel.', dur: 60, at: '12:00', web: true, people: [] },
         { id: 'g4', kind: 'Break', title: 'Afternoon Break', dur: 20, web: true, people: [] }] }); });
     await s.page.waitForTimeout(3000); await s.page.reload();
     /* the sample data has no saved Schedule, so the page tries a few times before starting a new one */
@@ -913,20 +927,26 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     expect(gridRow('breakfast@mon') && !((nola().grid || {}).sessions || []).some(x => 'menu' in x), 'a menu went out before one was entered: ' + JSON.stringify(gridRow('breakfast@mon')));
     await s.page.evaluate(() => window.__hqGo('gs')); await s.page.waitForTimeout(4000);
     const gsSes = () => ((nola().gs || {}).sessions || []);
+    /* CN-067: lunch on your own reads as General Sessions' lunch, once that reaches the website */
+    let tl = 0; while (tl++ < 20 && !(gridRow('lunch@wed') || {}).desc) await s.page.waitForTimeout(1000);
+    expect(['mon', 'wed', 'thu'].every(d => (gridRow('lunch@' + d) || {}).desc === 'Enjoy lunch on your own near the hotel.'), 'lunch on your own did not get the General Sessions lunch description: ' + JSON.stringify(gridRow('lunch@wed')));
+    expect(!((nola().grid || {}).sessions || []).some(x => /@tue$/.test(x.id) && /^(Lunch|Break)$/.test(x.type)), 'a Tuesday lunch or break ticked On Website went on the grid too');
     expect(gsSes().length === 4 && !gsSes().some(x => 'menu' in x), 'General Sessions should be on the website with no menus yet: ' + JSON.stringify(gsSes()).slice(0, 300));
     await s.page.evaluate(() => { const hs = window.__hotelSpecs;
       hs.setServing('mon|breakfast', 'Hot Breakfast:\n\u2022 Buttermilk Biscuits \u2013 honey butter (V)\nScrambled Eggs (GF); Coffee - $5.50 per person\nContact Rosalyn at 504-555-1234\n(150) Fresh Fruit (VG)\nGuarantee: 150\nrosalyn@hotel.example');
       hs.setServing('tue|breakfast', 'Menu to be confirmed');
       hs.setServing('mon|reception', '(TBD) Hors d\u2019oeuvres \u2014 menu to be confirmed\nTBD');
       hs.setServing('mon|newcomer', 'Boxed Lunches:\nTurkey Club (DF)');
-      hs.setServing('tue|am', 'Coffee and Tea\nGranola Bars (V) (N)'); });
+      hs.setServing('tue|am', 'Coffee and Tea\nGranola Bars (V) (N)');
+      hs.setServing('wed|pm', 'Cookies\nLemonade'); });
     let tries = 0; while (tries++ < 20 && !(gridRow('breakfast@mon') || {}).menu) await s.page.waitForTimeout(1000);
     const bm = gridRow('breakfast@mon');
     expect(bm && bm.menu === 'Hot Breakfast:\nButtermilk Biscuits \u2013 honey butter (V)\nScrambled Eggs (GF)\nCoffee\nFresh Fruit (VG)',
       'the Monday breakfast menu is not one plain item a line, with no price, count or contact: ' + JSON.stringify(bm));
     expect(!('menu' in gridRow('breakfast@tue')) && !('menu' in gridRow('reception-mon@mon')) && !('menu' in gridRow('breakfast@wed')), 'a placeholder or empty menu reached the website');
     expect((gridRow('newcomer@mon') || {}).menu === 'Boxed Lunches:\nTurkey Club (DF)', 'the Newcomer Orientation lunch menu is missing: ' + JSON.stringify(gridRow('newcomer@mon')));
-    expect(!((nola().grid || {}).sessions || []).some(x => 'menu' in x && !/^(breakfast|reception|newcomer)/.test(x.id)), 'a menu went on a session that is not a meal');
+    expect((gridRow('break-pm@wed') || {}).menu === 'Cookies\nLemonade' && !('menu' in gridRow('break-am@wed')) && !('menu' in gridRow('lunch@wed')), 'the Wednesday afternoon break did not get its menu (CN-067): ' + JSON.stringify(gridRow('break-pm@wed')));
+    expect(!((nola().grid || {}).sessions || []).some(x => 'menu' in x && !/^(breakfast|reception|newcomer|break-)/.test(x.id)), 'a menu went on a session that is not a meal');
     tries = 0; while (tries++ < 20 && !(gsSes()[1] || {}).menu) await s.page.waitForTimeout(1000);
     const g = gsSes();
     expect(g[1] && g[1].menu === 'Coffee and Tea\nGranola Bars (V) (N)' && !('menu' in g[0]) && !('menu' in g[2]) && !('menu' in g[3]),
@@ -937,6 +957,13 @@ const minsAgo = m => new Date(new Date(NOW).getTime() - m * 60000).toISOString()
     await s.page.evaluate(() => window.__hotelSpecs.setServing('tue|am', ''));
     tries = 0; while (tries++ < 20 && (gsSes()[1] || {}).menu) await s.page.waitForTimeout(1000);
     expect(gsSes()[1] && !('menu' in gsSes()[1]), 'an emptied menu stayed on the website');
+    /* CN-067: a Tuesday break not ticked On Website goes on the week instead, at its running-order time, once */
+    await s.page.evaluate(async () => { const db = await window.claude.use('db'); const d = (await db.doc('schedule/gs-nola').get()).data();
+      d.items[3].web = false; await db.doc('schedule/gs-nola').set(d); });
+    tries = 0; while (tries++ < 20 && !gridRow('break-pm@tue')) await s.page.waitForTimeout(1000);
+    const tb = gridRow('break-pm@tue');
+    expect(tb && tb.type === 'Break' && tb.title === 'Afternoon Break' && tb.date === '2027-01-12' && tb.start === '13:00' && tb.end === '13:20', 'an unticked Tuesday break did not reach the week at its time: ' + JSON.stringify(tb));
+    expect(!gridRow('break-am@tue') && !gridRow('lunch@tue'), 'a ticked Tuesday break or lunch went on the week too');
     noErrors(s.errs); await s.close();
   });
 
